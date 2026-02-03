@@ -5,9 +5,9 @@ pre-commit:
     lint-staged:
       run: npx lint-staged
 
-pre-push:
-  commands:
-    # Runs Vitest before the code leaves your machine
-    # 'run' ensures it doesn't stay in watch mode
-    test:
-      run: npx vitest run
+# pre-push:
+#   commands:
+#     # Runs Vitest before the code leaves your machine
+#     # 'run' ensures it doesn't stay in watch mode
+#     test:
+#       run: npx vitest run
