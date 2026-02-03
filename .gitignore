@@ -27,3 +27,6 @@ data/
 *.db
 *.db-shm
 *.db-wal
+
+# Sentry Config File
+.env.sentry-build-plugin
