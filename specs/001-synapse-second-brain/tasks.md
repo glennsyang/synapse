@@ -42,23 +42,23 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T015 Create Drizzle config in drizzle.config.ts pointing to data/synapse.db
-- [ ] T016 Define better-auth tables in src/lib/server/db/schema.ts (user, session, account, verification) per data-model.md
-- [ ] T017 Define email_notifications table in src/lib/server/db/schema.ts with UUID primary key
-- [ ] T018 Initialize Drizzle client in src/lib/server/db/index.ts with better-sqlite3 driver
-- [ ] T019 Configure better-auth in src/lib/server/auth.ts with Drizzle adapter, email/password provider, Resend integration
-- [ ] T020 Create better-auth client in src/lib/client/auth.ts for client-side auth actions
-- [ ] T021 Implement hooks.server.ts with better-auth session middleware
-- [ ] T022 Create Resend email templates in src/lib/server/email/verify.ts (verification email)
-- [ ] T023 Create Resend email templates in src/lib/server/email/reset.ts (password reset email)
-- [ ] T024 Generate initial database migration with `drizzle-kit generate:sqlite`
-- [ ] T025 Apply database migration with `drizzle-kit push:sqlite`
-- [ ] T026 Create base layout in src/routes/+layout.svelte with global styles
-- [ ] T027 Create app.html with viewport meta and base HTML structure
-- [ ] T028 Create health check endpoint in src/routes/api/healthz/+server.ts
-- [ ] T029 [P] Create base Shadcn UI components in src/lib/components/ui/ (Button, Input, Card, etc.)
-- [ ] T030 Create error handling utility in src/lib/utils/errors.ts
-- [ ] T031 [P] Create logger utility in src/lib/utils/logger.ts with request ID tracking
+- [x] T015 Create Drizzle config in drizzle.config.ts pointing to data/synapse.db
+- [x] T016 Define better-auth tables in src/lib/server/db/schema.ts (user, session, account, verification) per data-model.md
+- [x] T017 Define email_notifications table in src/lib/server/db/schema.ts with UUID primary key
+- [x] T018 Initialize Drizzle client in src/lib/server/db/index.ts with better-sqlite3 driver
+- [x] T019 Configure better-auth in src/lib/server/auth.ts with Drizzle adapter, email/password provider, Resend integration
+- [x] T020 Create better-auth client in src/lib/client/auth.ts for client-side auth actions
+- [x] T021 Implement hooks.server.ts with better-auth session middleware
+- [x] T022 Create Resend email templates in src/lib/server/email/verify.ts (verification email)
+- [x] T023 Create Resend email templates in src/lib/server/email/reset.ts (password reset email)
+- [x] T024 Generate initial database migration with `drizzle-kit generate:sqlite`
+- [x] T025 Apply database migration with `drizzle-kit push:sqlite`
+- [x] T026 Create base layout in src/routes/+layout.svelte with global styles
+- [x] T027 Create app.html with viewport meta and base HTML structure
+- [x] T028 Create health check endpoint in src/routes/api/healthz/+server.ts
+- [x] T029 [P] Create base Shadcn UI components in src/lib/components/ui/ (Button, Input, Card, etc.)
+- [x] T030 Create error handling utility in src/lib/utils/errors.ts
+- [x] T031 [P] Create logger utility in src/lib/utils/logger.ts with request ID tracking
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -292,7 +292,7 @@
 - [ ] T175 [P] Create fly.toml for deployment configuration
 - [ ] T176 Create Dockerfile (if needed) or use SvelteKit adapter-node
 - [ ] T177 Configure fly.io volume for persistent SQLite database
-- [ ] T178 Set fly.io secrets (BETTER_AUTH_SECRET, RESEND_API_KEY, BETTER_AUTH_URL)
+- [ ] T178 Set fly.io secrets (BETTER_AUTH_SECRET, RESEND_API_KEY, BETTER_AUTH_BASE_URL)
 - [ ] T179 Deploy to fly.io and verify production environment
 - [ ] T180 [P] Write README.md with project overview, setup, and deployment instructions
 - [ ] T181 [P] Document API contracts in contracts/ files (already done in planning phase)

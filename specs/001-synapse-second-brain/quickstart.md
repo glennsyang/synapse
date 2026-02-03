@@ -67,7 +67,7 @@ DATABASE_URL="file:./data/synapse.db"
 
 # Better-Auth
 BETTER_AUTH_SECRET="your-random-secret-here"  # Generate with: openssl rand -base64 32
-BETTER_AUTH_URL="http://localhost:5173"       # Production: https://synapse.fly.dev
+BETTER_AUTH_BASE_URL="http://localhost:5173"       # Production: https://synapse.fly.dev
 
 # Resend (Email)
 RESEND_API_KEY="re_..."  # Get from https://resend.com
@@ -83,7 +83,7 @@ WEATHER_API_KEY=""
 
 ```bash
 fly secrets set BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
-fly secrets set BETTER_AUTH_URL="https://synapse.fly.dev"
+fly secrets set BETTER_AUTH_BASE_URL="https://synapse.fly.dev"
 fly secrets set RESEND_API_KEY="re_..."
 fly secrets set DATABASE_URL="file:/data/synapse.db"
 ```
@@ -374,7 +374,7 @@ npm run preview
 ### Production Checklist
 
 - [ ] Set `BETTER_AUTH_SECRET` environment variable
-- [ ] Set `BETTER_AUTH_URL` to production URL
+- [ ] Set `BETTER_AUTH_BASE_URL` to production URL
 - [ ] Set `RESEND_API_KEY` for email notifications
 - [ ] Configure `DATABASE_URL` for persistent storage
 - [ ] Enable HTTPS/TLS (fly.io provides automatically)
@@ -421,7 +421,7 @@ primary_region = "sjc"
 [env]
   PORT = "8080"
   DATABASE_URL = "file:/data/synapse.db"
-  BETTER_AUTH_URL = "https://synapse-<username>.fly.dev"
+  BETTER_AUTH_BASE_URL = "https://synapse-<username>.fly.dev"
 
 [mounts]
   source = "synapse_data"
