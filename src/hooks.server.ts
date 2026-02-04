@@ -3,6 +3,7 @@ import { svelteKitHandler } from 'better-auth/svelte-kit';
 
 import { building, dev } from '$app/environment';
 import { auth } from '$lib/server/auth';
+import { generateId } from '$lib/server/db/utils';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	if (dev && event.url.pathname === '/.well-known/appspecific/com.chrome.devtools.json') {
@@ -10,7 +11,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	// Generate unique request ID for logging
-	event.locals.requestId = crypto.randomUUID();
+	event.locals.requestId = generateId();
 
 	// Better-auth session middleware
 	const session = await auth.api.getSession({

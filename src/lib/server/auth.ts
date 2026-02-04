@@ -35,12 +35,16 @@ export const auth = betterAuth({
 		resetPasswordTokenExpiresIn: 60 * 10, // 10 minutes
 		sendVerificationEmail: async ({
 			user,
-			url
+			url,
+			token
 		}: {
 			user: { email: string; name: string };
 			url: string;
+			token: string;
 		}) => {
-			await sendVerificationEmail(user.email, user.name, url);
+			logger.debug('✉️ Email verification sent');
+			const verifyUrl = `${url}?token=${token}`;
+			void sendVerificationEmail(user.email, user.name, verifyUrl);
 		},
 		sendResetPassword: async ({ user, url, token }) => {
 			const urlObj = new URL(url, 'http://localhost');

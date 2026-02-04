@@ -337,7 +337,7 @@ import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	if (!locals.user || !locals.user.emailVerified) {
-		throw redirect(303, '/login');
+		throw redirect(303, '/sign-in');
 	}
 
 	return {
@@ -392,7 +392,7 @@ export async function signIn(email: string, password: string) {
 
 export async function signOut() {
 	await client.signOut();
-	window.location.href = '/login';
+	window.location.href = '/sign-in';
 }
 ```
 
@@ -509,7 +509,7 @@ export const actions = {
 			return fail(400, { form, message: result.error.message });
 		}
 
-		return redirect(303, '/login?reset=true');
+		return redirect(303, '/sign-in?reset=true');
 	}
 };
 ```
@@ -545,7 +545,7 @@ export const actions = {
 
 ### Login
 
-1. User visits `/login`
+1. User visits `/sign-in`
 2. Fills form: email, password
 3. Client calls `client.signIn.email()` → POST `/api/auth/sign-in/email`
 4. Better-auth verifies credentials, creates session
@@ -554,11 +554,11 @@ export const actions = {
 
 ### Password Reset
 
-1. User visits `/login` → clicks "Forgot password?"
+1. User visits `/sign-in` → clicks "Forgot password?"
 2. Visits `/forgot-password`, enters email
 3. Client calls `client.forgetPassword()` → POST `/api/auth/forgot-password`
 4. Better-auth creates reset token, sends email via Resend
 5. User clicks link → GET `/reset-password?token=xyz`
 6. User enters new password → POST `/reset-password`
 7. Server calls `auth.api.resetPassword()`
-8. Password updated, redirect to `/login?reset=true`
+8. Password updated, redirect to `/sign-in?reset=true`

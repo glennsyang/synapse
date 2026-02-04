@@ -72,23 +72,23 @@
 
 ### Implementation for User Story 1
 
-- [ ] T032 [P] [US1] Create auth route group layout in src/routes/(auth)/+layout.svelte
-- [ ] T033 [P] [US1] Create register page in src/routes/(auth)/register/+page.svelte with email/name/password form
-- [ ] T034 [US1] Create register form action in src/routes/(auth)/register/+page.server.ts using Superforms + Zod
-- [ ] T035 [P] [US1] Create login page in src/routes/(auth)/login/+page.svelte with email/password form
-- [ ] T036 [US1] Create login form action in src/routes/(auth)/login/+page.server.ts using better-auth client
-- [ ] T037 [P] [US1] Create verify-email callback page in src/routes/(auth)/verify-email/+page.server.ts
-- [ ] T038 [P] [US1] Create forgot-password page in src/routes/(auth)/forgot-password/+page.svelte
-- [ ] T039 [US1] Create forgot-password action in src/routes/(auth)/forgot-password/+page.server.ts
-- [ ] T040 [P] [US1] Create reset-password page in src/routes/(auth)/reset-password/+page.svelte
-- [ ] T041 [US1] Create reset-password action in src/routes/(auth)/reset-password/+page.server.ts
-- [ ] T042 [US1] Create protected app layout in src/routes/(app)/+layout.svelte with sidebar navigation
-- [ ] T043 [US1] Create protected layout guard in src/routes/(app)/+layout.server.ts (redirect if not authenticated)
-- [ ] T044 [P] [US1] Create Sidebar component in src/lib/components/app/Sidebar.svelte with menu items
-- [ ] T045 [P] [US1] Create Header component in src/lib/components/app/Header.svelte with user menu and logout
-- [ ] T046 [US1] Implement logout action using better-auth client in Header component
-- [ ] T047 [US1] Create dashboard/home page in src/routes/(app)/+page.svelte with welcome message
-- [ ] T048 [P] [US1] Style authentication pages with Tailwind CSS for sleek appearance
+- [x] T032 [P] [US1] Create auth route group layout in src/routes/(auth)/+layout.svelte
+- [x] T033 [P] [US1] Create register page in src/routes/(auth)/register/+page.svelte with email/name/password form
+- [x] T034 [US1] Create register form action in src/routes/(auth)/register/+page.server.ts using Superforms + Zod
+- [x] T035 [P] [US1] Create login page in src/routes/(auth)/sign-in/+page.svelte with email/password form
+- [x] T036 [US1] Create login form action in src/routes/(auth)/sign-in/+page.server.ts using better-auth client
+- [x] T037 [P] [US1] Create verify-email callback page in src/routes/(auth)/verify-email/+page.server.ts
+- [x] T038 [P] [US1] Create forgot-password page in src/routes/(auth)/forgot-password/+page.svelte
+- [x] T039 [US1] Create forgot-password action in src/routes/(auth)/forgot-password/+page.server.ts
+- [x] T040 [P] [US1] Create reset-password page in src/routes/(auth)/reset-password/+page.svelte
+- [x] T041 [US1] Create reset-password action in src/routes/(auth)/reset-password/+page.server.ts
+- [x] T042 [US1] Create protected app layout in src/routes/(app)/+layout.svelte with sidebar navigation
+- [x] T043 [US1] Create protected layout guard in src/routes/(app)/+layout.server.ts (redirect if not authenticated)
+- [x] T044 [P] [US1] Create Sidebar component in src/lib/components/app/Sidebar.svelte with menu items
+- [x] T045 [P] [US1] Create Header component in src/lib/components/app/Header.svelte with user menu and logout
+- [x] T046 [US1] Implement logout action using better-auth client in Header component
+- [x] T047 [US1] Create dashboard/home page in src/routes/(app)/+page.svelte with welcome message
+- [x] T048 [P] [US1] Style authentication pages with Tailwind CSS for sleek appearance
 
 **Checkpoint**: User Story 1 complete - users can sign up, verify email, log in, see sidebar, log out
 
