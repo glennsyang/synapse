@@ -4,6 +4,8 @@
 	import { navItems } from './../sidebar';
 
 	let { data } = $props();
+
+	const features = $derived(navItems.navMain.filter((item) => item.title !== 'Dashboard'));
 </script>
 
 <svelte:head>
@@ -21,24 +23,24 @@
 	</div>
 
 	<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-		{#each navItems.navMain as navItem (navItem.title)}
-			<a href={navItem.url} class="group block">
+		{#each features as feature (feature.title)}
+			<a href={feature.url} class="group block">
 				<Card.Root class="h-full transition-all hover:scale-[1.02] hover:shadow-lg">
 					<Card.Header>
-						{@const IconComponent = navItem.icon}
+						{@const IconComponent = feature.icon}
 						<div
 							class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800"
 						>
-							<span class="h-6 w-6 {navItem.color}">
+							<span class="h-6 w-6 {feature.color}">
 								<IconComponent />
 							</span>
 						</div>
 						<Card.Title
 							class="transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400"
 						>
-							{navItem.title}
+							{feature.title}
 						</Card.Title>
-						<Card.Description>{navItem.description}</Card.Description>
+						<Card.Description>{feature.description}</Card.Description>
 					</Card.Header>
 				</Card.Root>
 			</a>

@@ -11,3 +11,18 @@ export type SidebarNav = {
 		items?: { title: string; url: string }[];
 	}[];
 };
+
+export type JournalEntry = {
+	id: string;
+	userId: string;
+	date: string;
+	content: string;
+	tags: string[] | null;
+	location: string | null;
+	weather: {
+		temp?: number;
+		condition?: string;
+	} | null;
+	createdAt: string;
+	updatedAt: string;
+};

@@ -18,7 +18,7 @@ Synapse is a modern second-brain application providing journaling, todo manageme
 
 ## Libraries and Frameworks
 
-- SvelteKit (using Svelte 5 in runes mode)
+- SvelteKit (**MUST use Svelte 5 in runes mode** - no options API)
 - Tailwind CSS
 - Drizzle ORM for SQLite
 - Zod for validation
@@ -46,6 +46,7 @@ Synapse is a modern second-brain application providing journaling, todo manageme
 - Use semicolons at the end of each statement.
 - Use single quotes for strings.
 - Avoid using `any` type entirely - use proper typing, generics, or `unknown` instead.
+- **NEVER use `console.log()`** - always use the logger utility from `src/lib/utils/logger.ts` instead.
 - Follows ESLint (`eslint.config.js`) and Prettier conventions.
 - Uses Tailwind CSS for consistent styling.
 
@@ -122,7 +123,8 @@ $effect(() => {
 
 ### Component Structure
 
-- UI primitives in `/src/lib/components/ui/` (shadcn-svelte based): Button, Dialog, Table, Select, etc.
+- **ALWAYS check `/src/lib/components/ui/` first** for existing shadcn-svelte components before creating new UI components. Available components include: Button, Dialog, Card, Table, Popover, Dropdown, Select, Input, Label, Checkbox, Tabs, Sheet, Sidebar, Avatar, Badge, Calendar, Chart, Command, Data Table, Navigation Menu, Progress, Separator, Skeleton, Sonner (Toast), Textarea, Tooltip, and more.
+- UI primitives in `/src/lib/components/ui/` (shadcn-svelte based) - reuse these extensively.
 - Business components in `/src/lib/components/app`: Header, Sidebar, etc.
 - Use `$bindable()` for two-way binding (Svelte 5 runes): `open = $bindable()`
 - Toast notifications via `svelte-sonner`: `import { toast } from 'svelte-sonner'`
@@ -136,12 +138,18 @@ $effect(() => {
 - **Type imports**: Use `type` keyword: `import type { PageServerLoad } from './$types'`
 - **Database types**: Defined in `$lib/server/db/types.ts`
 
-**For reactivity:** Use Svelte 5 runes:
+**For reactivity:** **MUST use Svelte 5 runes exclusively:**
 
 - `$state()` for reactive state
 - `$derived()` for computed values
 - `$effect()` for side effects (replaces most onMount use cases)
+- **DO NOT use** options API (`let`, `$:` reactive statements) - runes mode only
 
 ## Node.js Version
 
-- This project requires **Node.js version 22.21.1** for development and production to ensure compatibility and stability. Please use a version manager (like nvm or asdf) to set your Node version accordingly. If you encounter any errors while running commands in the terminal, please make sure the node version being used is 22.21.1. You can achieve this by running the command: `nvm use 22.21.1`.
+**CRITICAL**: This project requires **Node.js version 22.21.1** for development and production to ensure compatibility with better-sqlite3 and other native dependencies.
+
+- **Before running ANY commands**, verify Node version: `node -v` should show `v22.21.1`
+- **If you encounter terminal errors**, first check and switch Node version: `nvm use 22.21.1`
+- Use a version manager (nvm or asdf) to manage Node versions
+- This version is **non-negotiable** - other versions may cause build failures or runtime errors

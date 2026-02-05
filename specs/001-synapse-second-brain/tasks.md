@@ -102,22 +102,22 @@
 
 ### Implementation for User Story 2
 
-- [ ] T049 [P] [US2] Define journalEntries table in src/lib/server/db/schema.ts with UUID keys per data-model.md
-- [ ] T050 [US2] Generate and apply migration for journalEntries table
-- [ ] T051 [P] [US2] Create Zod schema for journal entry in src/lib/schemas/journal.ts (date, content, tags, location, weather)
-- [ ] T052 [US2] Create journal list page in src/routes/(app)/journal/+page.svelte with timeline view
-- [ ] T053 [US2] Create journal list loader in src/routes/(app)/journal/+page.server.ts (load entries with filters)
-- [ ] T054 [P] [US2] Create JournalEntryCard component in src/lib/components/journal/JournalEntryCard.svelte
-- [ ] T055 [P] [US2] Create new entry page in src/routes/(app)/journal/new/+page.svelte with form
-- [ ] T056 [US2] Create new entry action in src/routes/(app)/journal/new/+page.server.ts using Superforms
-- [ ] T057 [P] [US2] Create edit entry page in src/routes/(app)/journal/[id]/edit/+page.svelte
-- [ ] T058 [US2] Create edit entry loader and action in src/routes/(app)/journal/[id]/edit/+page.server.ts
-- [ ] T059 [P] [US2] Create delete entry action in journal pages
-- [ ] T060 [P] [US2] Implement location auto-capture using browser geolocation API in journal form
+- [x] T049 [P] [US2] Define journalEntries table in src/lib/server/db/schema.ts with UUID keys per data-model.md
+- [x] T050 [US2] Generate and apply migration for journalEntries table
+- [x] T051 [P] [US2] Create Zod schema for journal entry in src/lib/schemas/journal.ts (date, content, tags, location, weather)
+- [x] T052 [US2] Create journal list page in src/routes/(app)/journal/+page.svelte with timeline view
+- [x] T053 [US2] Create journal list loader in src/routes/(app)/journal/+page.server.ts (load entries with filters)
+- [x] T054 [P] [US2] Create JournalEntryCard component in src/lib/components/journal/JournalEntryCard.svelte
+- [x] T055 [P] [US2] Create new entry page in src/routes/(app)/journal/new/+page.svelte with form
+- [x] T056 [US2] Create new entry action in src/routes/(app)/journal/new/+page.server.ts using Superforms
+- [x] T057 [P] [US2] Create edit entry page in src/routes/(app)/journal/[id]/edit/+page.svelte
+- [x] T058 [US2] Create edit entry loader and action in src/routes/(app)/journal/[id]/edit/+page.server.ts
+- [x] T059 [P] [US2] Create delete entry action in journal pages
+- [x] T060 [P] [US2] Implement location auto-capture using browser geolocation API in journal form
 - [ ] T061 [P] [US2] Implement weather API integration (optional) in src/lib/server/weather.ts
-- [ ] T062 [P] [US2] Create tag input component in src/lib/components/journal/TagInput.svelte
-- [ ] T063 [P] [US2] Add filter UI for tags, date range in journal list page
-- [ ] T064 [US2] Implement filter logic in journal loader (by tag, date range)
+- [x] T062 [P] [US2] Create tag input component in src/lib/components/journal/TagInput.svelte
+- [x] T063 [P] [US2] Add filter UI for tags, date range in journal list page
+- [x] T064 [US2] Implement filter logic in journal loader (by tag, date range)
 
 **Checkpoint**: User Story 2 complete - journal entries fully functional with metadata
 
