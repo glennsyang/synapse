@@ -131,29 +131,29 @@
 
 ### Implementation for User Story 3
 
-- [ ] T065 [P] [US3] Define projects table in src/lib/server/db/schema.ts with UUID keys
-- [ ] T066 [P] [US3] Define todoItems table in src/lib/server/db/schema.ts with UUID keys, project FK
-- [ ] T067 [US3] Generate and apply migration for projects and todoItems tables
-- [ ] T068 [P] [US3] Create Zod schema for project in src/lib/schemas/project.ts
-- [ ] T069 [P] [US3] Create Zod schema for todo item in src/lib/schemas/todo.ts (title, description, cadence, project, tags, priority, state, sub_steps, due_date)
-- [ ] T070 [US3] Create todos page in src/routes/(app)/todos/+page.svelte with view selector (list/grid/kanban)
-- [ ] T071 [US3] Create todos loader in src/routes/(app)/todos/+page.server.ts (load todos + projects by cadence filter)
-- [ ] T072 [P] [US3] Create TodoListView component in src/lib/components/todos/TodoListView.svelte with TanStack Table
-- [ ] T073 [P] [US3] Create TodoGridView component in src/lib/components/todos/TodoGridView.svelte
-- [ ] T074 [P] [US3] Create TodoKanbanView component in src/lib/components/todos/TodoKanbanView.svelte with columns by state
-- [ ] T075 [P] [US3] Create TodoCard component in src/lib/components/todos/TodoCard.svelte showing all metadata
-- [ ] T076 [P] [US3] Create new todo modal/page in src/routes/(app)/todos/new/+page.svelte
-- [ ] T077 [US3] Create new todo action in src/routes/(app)/todos/new/+page.server.ts
-- [ ] T078 [P] [US3] Create edit todo page in src/routes/(app)/todos/[id]/edit/+page.svelte
-- [ ] T079 [US3] Create edit todo action in src/routes/(app)/todos/[id]/edit/+page.server.ts
-- [ ] T080 [P] [US3] Create delete todo action
-- [ ] T081 [P] [US3] Create project management page in src/routes/(app)/todos/projects/+page.svelte
-- [ ] T082 [US3] Create project CRUD actions in src/routes/(app)/todos/projects/+page.server.ts
-- [ ] T083 [P] [US3] Create SubStepsInput component in src/lib/components/todos/SubStepsInput.svelte for adding/editing sub-steps
-- [ ] T084 [P] [US3] Implement priority selector UI (1-4 tier)
-- [ ] T085 [P] [US3] Implement state selector UI (new, in_progress, blocked, done)
-- [ ] T086 [P] [US3] Implement cadence filter tabs (daily, weekly, monthly)
-- [ ] T087 [US3] Implement drag-and-drop state change in kanban view (update todo state on drop)
+- [x] T065 [P] [US3] Define projects table in src/lib/server/db/schema.ts with UUID keys
+- [x] T066 [P] [US3] Define todoItems table in src/lib/server/db/schema.ts with UUID keys, project FK
+- [x] T067 [US3] Generate and apply migration for projects and todoItems tables
+- [x] T068 [P] [US3] Create Zod schema for project in src/lib/schemas/project.ts
+- [x] T069 [P] [US3] Create Zod schema for todo item in src/lib/schemas/todo.ts (title, description, cadence, project, tags, priority, state, sub_steps, due_date)
+- [x] T070 [US3] Create todos page in src/routes/(app)/todos/+page.svelte with view selector (list/grid/kanban)
+- [x] T071 [US3] Create todos loader in src/routes/(app)/todos/+page.server.ts (load todos + projects by cadence filter)
+- [x] T072 [P] [US3] Create TodoListView component in src/lib/components/todos/TodoListView.svelte with TanStack Table
+- [x] T073 [P] [US3] Create TodoGridView component in src/lib/components/todos/TodoGridView.svelte
+- [x] T074 [P] [US3] Create TodoKanbanView component in src/lib/components/todos/TodoKanbanView.svelte with columns by state
+- [x] T075 [P] [US3] Create TodoCard component in src/lib/components/todos/TodoCard.svelte showing all metadata
+- [x] T076 [P] [US3] Create new todo modal/page in src/routes/(app)/todos/new/+page.svelte
+- [x] T077 [US3] Create new todo action in src/routes/(app)/todos/new/+page.server.ts
+- [x] T078 [P] [US3] Create edit todo page in src/routes/(app)/todos/[id]/edit/+page.svelte
+- [x] T079 [US3] Create edit todo action in src/routes/(app)/todos/[id]/edit/+page.server.ts
+- [x] T080 [P] [US3] Create delete todo action
+- [x] T081 [P] [US3] Create project management page in src/routes/(app)/todos/projects/+page.svelte
+- [x] T082 [US3] Create project CRUD actions in src/routes/(app)/todos/projects/+page.server.ts
+- [x] T083 [P] [US3] Create SubStepsInput component in src/lib/components/todos/SubStepsInput.svelte for adding/editing sub-steps
+- [x] T084 [P] [US3] Implement priority selector UI (1-4 tier)
+- [x] T085 [P] [US3] Implement state selector UI (new, in_progress, blocked, done)
+- [x] T086 [P] [US3] Implement cadence filter tabs (daily, weekly, monthly)
+- [x] T087 [US3] Implement drag-and-drop state change in kanban view (update todo state on drop)
 
 **Checkpoint**: User Story 3 complete - todos fully functional with all views and metadata
 

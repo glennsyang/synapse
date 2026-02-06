@@ -152,7 +152,7 @@
 
 				<div class="flex gap-2">
 					<Button type="submit" disabled={$submitting}>
-						{$submitting ? 'Saving...' : 'Update Entry'}
+						{$submitting ? 'Saving...' : 'Update'}
 					</Button>
 					<Button type="button" variant="outline" href="/journal">Cancel</Button>
 				</div>
