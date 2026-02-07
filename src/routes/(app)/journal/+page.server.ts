@@ -8,10 +8,7 @@ import { logger } from '$lib/utils/logger';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (!locals.user) {
-		logger.warn('Unauthorized access attempt to journal page');
-		return { entries: [] };
-	}
+	// Auth handled by (app)/+layout.server.ts
 
 	const filters = journalFilterSchema.safeParse({
 		tag: url.searchParams.get('tag') ?? undefined,
@@ -29,7 +26,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	try {
 		const db = getDb();
-		const conditions = [eq(journalEntries.userId, locals.user.id)];
+		const conditions = [eq(journalEntries.userId, locals.user!.id)];
 
 		if (startDate) {
 			conditions.push(gte(journalEntries.date, startDate));

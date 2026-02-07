@@ -49,6 +49,7 @@ export const updateTodoSchema = z.object({
  * Schema for updating todoItem state (for drag-and-drop kanban)
  */
 export const updateTodoStateSchema = z.object({
+	id: z.uuid(),
 	state: z.enum(['new', 'in_progress', 'blocked', 'done'])
 });
 

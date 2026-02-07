@@ -1,9 +1,10 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { createTodoSchema } from '$lib/schemas/todo';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import getDb from '$lib/server/db';
 import { projects, todoItems } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -11,13 +12,11 @@ import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) {
-		redirect(303, '/sign-in');
-	}
+	// Auth handled by (app)/+layout.server.ts
 
 	// Load user projects for the project dropdown
 	const userProjects = await getDb().query.projects.findMany({
-		where: eq(projects.userId, locals.user.id),
+		where: eq(projects.userId, locals.user!.id),
 		orderBy: [projects.name]
 	});
 
@@ -30,15 +29,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	default: requireAuth(async ({ request }, user) => {
 		const form = await superValidate(request, zod4(createTodoSchema));
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return { form, status: 400 };
 		}
 
 		try {
@@ -48,8 +43,8 @@ export const actions: Actions = {
 					where: eq(projects.id, form.data.projectId)
 				});
 
-				if (!project || project.userId !== locals.user.id) {
-					return fail(400, { form, error: 'Invalid project' });
+				if (!project || project.userId !== user.id) {
+					return { form, error: 'Invalid project', status: 400 };
 				}
 			}
 
@@ -67,7 +62,7 @@ export const actions: Actions = {
 			const [newTodo] = await getDb()
 				.insert(todoItems)
 				.values({
-					userId: locals.user.id,
+					userId: user.id,
 					title: form.data.title,
 					description: form.data.description || null,
 					cadence: form.data.cadence,
@@ -82,12 +77,12 @@ export const actions: Actions = {
 				})
 				.returning();
 
-			logger.info('Todo created', { todoId: newTodo.id, userId: locals.user.id });
+			logger.info('Todo created', { todoId: newTodo.id, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to create todo', { error, userId: locals.user.id });
-			return fail(500, { form, error: 'Failed to create todo' });
+			logger.error('Failed to create todo', { error, userId: user.id });
+			return { form, error: 'Failed to create todo', status: 500 };
 		}
 
-		redirect(303, '/todos');
-	}
+		throw redirect(303, '/todos');
+	})
 };

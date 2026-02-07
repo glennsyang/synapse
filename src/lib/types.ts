@@ -26,3 +26,10 @@ export type JournalEntry = {
 	createdAt: string;
 	updatedAt: string;
 };
+
+export type Exercise = {
+	exerciseName: string;
+	sets: number | null;
+	reps: number | null;
+	weightLbs: number | null;
+};

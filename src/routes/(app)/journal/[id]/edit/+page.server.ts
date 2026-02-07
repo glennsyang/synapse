@@ -1,9 +1,10 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { journalEntrySchema } from '$lib/schemas/journal';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -11,12 +12,10 @@ import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	if (!locals.user) {
-		throw error(401, 'Unauthorized');
-	}
+	// Auth handled by (app)/+layout.server.ts
 
 	const entry = await getDb().query.journalEntries.findFirst({
-		where: and(eq(journalEntries.id, params.id), eq(journalEntries.userId, locals.user.id))
+		where: and(eq(journalEntries.id, params.id), eq(journalEntries.userId, locals.user!.id))
 	});
 
 	if (!entry) {
@@ -42,16 +41,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
-	update: async ({ request, params, locals }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	update: requireAuth(async ({ request, params }, user) => {
+		const entryId = params.id as string;
 		const form = await superValidate(request, zod4(journalEntrySchema));
 
 		if (!form.valid) {
 			logger.warn('Invalid journal entry form data', { errors: form.errors });
-			return fail(400, { form });
+			return { form, status: 400 };
 		}
 
 		try {
@@ -83,14 +79,14 @@ export const actions: Actions = {
 					weather,
 					updatedAt: new Date().toISOString()
 				})
-				.where(and(eq(journalEntries.id, params.id), eq(journalEntries.userId, locals.user.id)));
+				.where(and(eq(journalEntries.id, entryId), eq(journalEntries.userId, user.id)));
 
-			logger.info('Journal entry updated', { entryId: params.id, userId: locals.user.id });
+			logger.info('Journal entry updated', { entryId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to update journal entry', { error });
-			return fail(500, { form, error: 'Failed to update journal entry' });
+			return { form, error: 'Failed to update journal entry', status: 500 };
 		}
 
 		throw redirect(303, '/journal');
-	}
+	})
 };

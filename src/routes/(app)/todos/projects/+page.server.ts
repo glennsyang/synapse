@@ -1,9 +1,9 @@
-import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { createProjectSchema, updateProjectSchema } from '$lib/schemas/project';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import getDb from '$lib/server/db';
 import { projects } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -11,13 +11,11 @@ import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) {
-		redirect(303, '/sign-in');
-	}
+	// Auth handled by (app)/+layout.server.ts
 
 	// Load all user projects
 	const userProjects = await getDb().query.projects.findMany({
-		where: eq(projects.userId, locals.user.id),
+		where: eq(projects.userId, locals.user!.id),
 		orderBy: [projects.name]
 	});
 
@@ -30,69 +28,61 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	create: async ({ request, locals }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	create: requireAuth(async ({ request }, user) => {
 		const form = await superValidate(request, zod4(createProjectSchema));
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return { form, status: 400 };
 		}
 
 		try {
 			// Check for duplicate project name
 			const existing = await getDb().query.projects.findFirst({
-				where: and(eq(projects.userId, locals.user.id), eq(projects.name, form.data.name))
+				where: and(eq(projects.userId, user.id), eq(projects.name, form.data.name))
 			});
 
 			if (existing) {
-				return fail(400, { form, error: 'A project with this name already exists' });
+				return { form, error: 'A project with this name already exists', status: 400 };
 			}
 
 			// Create project
 			await getDb()
 				.insert(projects)
 				.values({
-					userId: locals.user.id,
+					userId: user.id,
 					name: form.data.name,
 					color: form.data.color || null,
 					createdAt: new Date().toISOString(),
 					updatedAt: new Date().toISOString()
 				});
 
-			logger.info('Project created', { projectName: form.data.name, userId: locals.user.id });
+			logger.info('Project created', { projectName: form.data.name, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to create project', { error, userId: locals.user.id });
-			return fail(500, { form, error: 'Failed to create project' });
+			logger.error('Failed to create project', { error, userId: user.id });
+			return { form, error: 'Failed to create project', status: 500 };
 		}
 
 		return { form };
-	},
+	}),
 
-	update: async ({ request, locals }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	update: requireAuth(async ({ request }, user) => {
 		const formData = await request.formData();
 		const projectId = formData.get('id') as string;
 
 		const form = await superValidate(formData, zod4(updateProjectSchema));
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return { form, status: 400 };
 		}
 
 		try {
 			// Verify project belongs to user
 			const existing = await getDb().query.projects.findFirst({
-				where: and(eq(projects.id, projectId), eq(projects.userId, locals.user.id))
+				where: and(eq(projects.id, projectId), eq(projects.userId, user.id))
 			});
 
 			if (!existing) {
-				return fail(404, { form, error: 'Project not found' });
+				return { form, error: 'Project not found', status: 404 };
 			}
 
 			// Build update data
@@ -106,42 +96,38 @@ export const actions: Actions = {
 			// Update project
 			await getDb().update(projects).set(updateData).where(eq(projects.id, projectId));
 
-			logger.info('Project updated', { projectId, userId: locals.user.id });
+			logger.info('Project updated', { projectId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to update project', { error, projectId });
-			return fail(500, { form, error: 'Failed to update project' });
+			return { form, error: 'Failed to update project', status: 500 };
 		}
 
 		return { form };
-	},
+	}),
 
-	delete: async ({ request, locals }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	delete: requireAuth(async ({ request }, user) => {
 		const formData = await request.formData();
 		const projectId = formData.get('id') as string;
 
 		try {
 			// Verify project belongs to user
 			const existing = await getDb().query.projects.findFirst({
-				where: and(eq(projects.id, projectId), eq(projects.userId, locals.user.id))
+				where: and(eq(projects.id, projectId), eq(projects.userId, user.id))
 			});
 
 			if (!existing) {
-				return fail(404, { error: 'Project not found' });
+				return { error: 'Project not found', status: 404 };
 			}
 
 			// Delete project (todos will have projectId set to null due to ON DELETE SET NULL)
 			await getDb().delete(projects).where(eq(projects.id, projectId));
 
-			logger.info('Project deleted', { projectId, userId: locals.user.id });
+			logger.info('Project deleted', { projectId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to delete project', { error, projectId });
-			return fail(500, { error: 'Failed to delete project' });
+			return { error: 'Failed to delete project', status: 500 };
 		}
 
 		return { success: true };
-	}
+	})
 };

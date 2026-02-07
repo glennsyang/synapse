@@ -1,9 +1,10 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { updateTodoSchema } from '$lib/schemas/todo';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import getDb from '$lib/server/db';
 import { projects, todoItems } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -11,13 +12,11 @@ import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	if (!locals.user) {
-		redirect(303, '/sign-in');
-	}
+	// Auth handled by (app)/+layout.server.ts
 
 	// Load todoItem
 	const todo = await getDb().query.todoItems.findFirst({
-		where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user.id)),
+		where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user!.id)),
 		with: {
 			project: true
 		}
@@ -29,7 +28,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	// Load user projects
 	const userProjects = await getDb().query.projects.findMany({
-		where: eq(projects.userId, locals.user.id),
+		where: eq(projects.userId, locals.user!.id),
 		orderBy: [projects.name]
 	});
 
@@ -61,27 +60,23 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 export const actions: Actions = {
-	update: async ({ request, locals, params }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
-		const todoId = params.id;
+	update: requireAuth(async ({ request, params }, user) => {
+		const todoId = params.id as string;
 
 		const form = await superValidate(request, zod4(updateTodoSchema));
 
 		if (!form.valid) {
-			return fail(400, { form });
+			return { form, status: 400 };
 		}
 
 		try {
 			// Verify todoItem belongs to user
 			const existing = await getDb().query.todoItems.findFirst({
-				where: and(eq(todoItems.id, todoId), eq(todoItems.userId, locals.user.id))
+				where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
 			});
 
 			if (!existing) {
-				return fail(404, { form, error: 'Todo not found' });
+				return { form, error: 'Todo not found', status: 404 };
 			}
 
 			// Verify project belongs to user if provided
@@ -90,8 +85,8 @@ export const actions: Actions = {
 					where: eq(projects.id, form.data.projectId)
 				});
 
-				if (!project || project.userId !== locals.user.id) {
-					return fail(400, { form, error: 'Invalid project' });
+				if (!project || project.userId !== user.id) {
+					return { form, error: 'Invalid project', status: 400 };
 				}
 			}
 
@@ -132,41 +127,37 @@ export const actions: Actions = {
 			// Update todoItem
 			await getDb().update(todoItems).set(updateData).where(eq(todoItems.id, todoId));
 
-			logger.info('Todo updated', { todoId, userId: locals.user.id });
+			logger.info('Todo updated', { todoId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to update todo', { error, todoId });
-			return fail(500, { form, error: 'Failed to update todo' });
+			return { form, error: 'Failed to update todo', status: 500 };
 		}
 
-		redirect(303, `/todos`);
-	},
+		throw redirect(303, `/todos`);
+	}),
 
-	delete: async ({ locals, params }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
-		const todoId = params.id;
+	delete: requireAuth(async ({ params }, user) => {
+		const todoId = params.id as string;
 
 		try {
 			// Verify todoItem belongs to user
 			const existing = await getDb().query.todoItems.findFirst({
-				where: and(eq(todoItems.id, todoId), eq(todoItems.userId, locals.user.id))
+				where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
 			});
 
 			if (!existing) {
-				return fail(404, { error: 'Todo not found' });
+				return { error: 'Todo not found', status: 404 };
 			}
 
 			// Delete todoItem
 			await getDb().delete(todoItems).where(eq(todoItems.id, todoId));
 
-			logger.info('Todo deleted', { todoId, userId: locals.user.id });
+			logger.info('Todo deleted', { todoId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to delete todo', { error, todoId });
-			return fail(500, { error: 'Failed to delete todo' });
+			return { error: 'Failed to delete todo', status: 500 };
 		}
 
-		redirect(303, '/todos');
-	}
+		throw redirect(303, '/todos');
+	})
 };

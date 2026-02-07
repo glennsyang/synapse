@@ -1,8 +1,9 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { journalEntrySchema } from '$lib/schemas/journal';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
@@ -10,11 +11,8 @@ import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) {
-		logger.warn('Unauthorized access attempt to new journal entry page');
-		throw redirect(302, '/sign-in');
-	}
+export const load: PageServerLoad = async () => {
+	// Auth handled by (app)/+layout.server.ts
 	const form = await superValidate(zod4(journalEntrySchema));
 
 	// Set default date to today, use local timezone
@@ -25,16 +23,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	default: requireAuth(async ({ request }, user) => {
 		const form = await superValidate(request, zod4(journalEntrySchema));
 
 		if (!form.valid) {
 			logger.warn('Invalid journal entry form data', { errors: form.errors });
-			return fail(400, { form });
+			return { form, status: 400 };
 		}
 
 		try {
@@ -60,7 +54,7 @@ export const actions: Actions = {
 			await getDb()
 				.insert(journalEntries)
 				.values({
-					userId: locals.user.id,
+					userId: user.id,
 					date: form.data.date,
 					content: form.data.content,
 					tags,
@@ -70,7 +64,7 @@ export const actions: Actions = {
 					updatedAt: new Date().toISOString()
 				});
 
-			logger.info('Journal entry created', { entryId, userId: locals.user.id });
+			logger.info('Journal entry created', { entryId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to create journal entry', { error });
 			return message(
@@ -84,5 +78,5 @@ export const actions: Actions = {
 		}
 
 		throw redirect(303, '/journal');
-	}
+	})
 };

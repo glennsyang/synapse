@@ -167,42 +167,42 @@
 
 ### Implementation for User Story 4
 
-- [ ] T088 [P] [US4] Define weightEntries table in src/lib/server/db/schema.ts with UUID keys
-- [ ] T089 [P] [US4] Define goalWeights table in src/lib/server/db/schema.ts
-- [ ] T090 [P] [US4] Define workoutLogs table in src/lib/server/db/schema.ts
-- [ ] T091 [P] [US4] Define workoutExercises table in src/lib/server/db/schema.ts with workout FK
-- [ ] T092 [P] [US4] Define mealLogs table in src/lib/server/db/schema.ts
-- [ ] T093 [P] [US4] Define dailyCalorieTargets table in src/lib/server/db/schema.ts
-- [ ] T094 [P] [US4] Define workoutReminders table in src/lib/server/db/schema.ts
-- [ ] T095 [US4] Generate and apply migration for fitness tables
-- [ ] T096 [P] [US4] Create Zod schemas for weight, workout, meal, goals in src/lib/schemas/fitness.ts
-- [ ] T097 [US4] Create fitness page in src/routes/(app)/fitness/+page.svelte with tabs (Weight, Workouts, Meals)
-- [ ] T098 [US4] Create fitness loader in src/routes/(app)/fitness/+page.server.ts
-- [ ] T099 [P] [US4] Create weight tab in src/routes/(app)/fitness/weight/+page.svelte with log form and chart
-- [ ] T100 [US4] Create weight CRUD actions in src/routes/(app)/fitness/weight/+page.server.ts
-- [ ] T101 [P] [US4] Create WeightChart component in src/lib/components/fitness/WeightChart.svelte using Chart.js (line graph, weekly trends)
-- [ ] T102 [P] [US4] Create goal weight form in weight page
-- [ ] T103 [US4] Create goal weight action in weight page server
-- [ ] T104 [P] [US4] Display "Remaining to Goal" calculation in weight page
-- [ ] T105 [P] [US4] Create workouts tab in src/routes/(app)/fitness/workouts/+page.svelte with workout list
-- [ ] T106 [US4] Create workouts loader in src/routes/(app)/fitness/workouts/+page.server.ts
-- [ ] T107 [P] [US4] Create new workout page in src/routes/(app)/fitness/workouts/new/+page.svelte
-- [ ] T108 [US4] Create new workout action (workout type, date, time, duration, notes)
-- [ ] T109 [P] [US4] Create ExerciseInput component in src/lib/components/fitness/ExerciseInput.svelte for strength workouts (exercise name, sets, reps, weight)
-- [ ] T110 [US4] Save workout exercises in workoutExercises table
-- [ ] T111 [P] [US4] Create workout detail/edit page showing exercises
-- [ ] T112 [P] [US4] Create meals tab in src/routes/(app)/fitness/meals/+page.svelte with meal log list
-- [ ] T113 [US4] Create meals loader in src/routes/(app)/fitness/meals/+page.server.ts
-- [ ] T114 [P] [US4] Create new meal form (date, time_of_day, description, calories_estimate)
-- [ ] T115 [US4] Create meal CRUD actions
-- [ ] T116 [P] [US4] Create daily calorie target form
-- [ ] T117 [US4] Create calorie target action
-- [ ] T118 [P] [US4] Create CalorieProgress component showing progress bar (consumed vs target)
-- [ ] T119 [US4] Calculate daily total calories from meal logs
-- [ ] T120 [P] [US4] Create workout reminders page in src/routes/(app)/fitness/reminders/+page.svelte
-- [ ] T121 [US4] Create reminder CRUD actions (workout_type, cadence, days_of_week, time, enabled)
-- [ ] T122 [US4] Implement workout reminder email worker in src/lib/server/email/workout-reminder.ts using Resend
-- [ ] T123 [US4] Create cron/scheduled task to check reminders and send emails (log in email_notifications table)
+- [x] T088 [P] [US4] Define weightEntries table in src/lib/server/db/schema.ts with UUID keys
+- [x] T089 [P] [US4] Define goalWeights table in src/lib/server/db/schema.ts
+- [x] T090 [P] [US4] Define workoutLogs table in src/lib/server/db/schema.ts
+- [x] T091 [P] [US4] Define workoutExercises table in src/lib/server/db/schema.ts with workout FK
+- [x] T092 [P] [US4] Define mealLogs table in src/lib/server/db/schema.ts
+- [x] T093 [P] [US4] Define dailyCalorieTargets table in src/lib/server/db/schema.ts
+- [x] T094 [P] [US4] Define workoutReminders table in src/lib/server/db/schema.ts
+- [x] T095 [US4] Generate and apply migration for fitness tables
+- [x] T096 [P] [US4] Create Zod schemas for weight, workout, meal, goals in src/lib/schemas/fitness.ts
+- [x] T097 [US4] Create fitness page in src/routes/(app)/fitness/+page.svelte with tabs (Weight, Workouts, Meals)
+- [x] T098 [US4] Create fitness loader in src/routes/(app)/fitness/+page.server.ts
+- [x] T099 [P] [US4] Create weight tab in src/routes/(app)/fitness/weight/+page.svelte with log form and chart
+- [x] T100 [US4] Create weight CRUD actions in src/routes/(app)/fitness/weight/+page.server.ts
+- [x] T101 [P] [US4] Create WeightChart component in src/lib/components/fitness/WeightChart.svelte using Chart.js (line graph, weekly trends)
+- [x] T102 [P] [US4] Create goal weight form in weight page
+- [x] T103 [US4] Create goal weight action in weight page server
+- [x] T104 [P] [US4] Display "Remaining to Goal" calculation in weight page
+- [x] T105 [P] [US4] Create workouts tab in src/routes/(app)/fitness/workouts/+page.svelte with workout list
+- [x] T106 [US4] Create workouts loader in src/routes/(app)/fitness/workouts/+page.server.ts
+- [x] T107 [P] [US4] Create new workout page in src/routes/(app)/fitness/workouts/new/+page.svelte
+- [x] T108 [US4] Create new workout action (workout type, date, time, duration, notes)
+- [x] T109 [P] [US4] Create ExerciseInput component in src/lib/components/fitness/ExerciseInput.svelte for strength workouts (exercise name, sets, reps, weight)
+- [x] T110 [US4] Save workout exercises in workoutExercises table
+- [x] T111 [P] [US4] Create workout detail/edit page showing exercises
+- [x] T112 [P] [US4] Create meals tab in src/routes/(app)/fitness/meals/+page.svelte with meal log list
+- [x] T113 [US4] Create meals loader in src/routes/(app)/fitness/meals/+page.server.ts
+- [x] T114 [P] [US4] Create new meal form (date, time_of_day, description, calories_estimate)
+- [x] T115 [US4] Create meal CRUD actions
+- [x] T116 [P] [US4] Create daily calorie target form
+- [x] T117 [US4] Create calorie target action
+- [x] T118 [P] [US4] Create CalorieProgress component showing progress bar (consumed vs target)
+- [x] T119 [US4] Calculate daily total calories from meal logs
+- [ ] T120 [P] [US4] Create workout reminders page in src/routes/(app)/fitness/reminders/+page.svelte (DEFERRED - email infrastructure needed)
+- [ ] T121 [US4] Create reminder CRUD actions (workout_type, cadence, days_of_week, time, enabled) (DEFERRED - email infrastructure needed)
+- [ ] T122 [US4] Implement workout reminder email worker in src/lib/server/email/workout-reminder.ts using Resend (DEFERRED - email infrastructure needed)
+- [ ] T123 [US4] Create cron/scheduled task to check reminders and send emails (log in email_notifications table) (DEFERRED - email infrastructure needed)
 
 **Checkpoint**: User Story 4 complete - fitness tracking with goals, charts, and reminders
 
@@ -216,26 +216,26 @@
 
 ### Implementation for User Story 5
 
-- [ ] T124 [P] [US5] Define meditationRoutines table in src/lib/server/db/schema.ts with UUID keys
-- [ ] T125 [P] [US5] Define meditationSchedules table in src/lib/server/db/schema.ts with routine FK
-- [ ] T126 [P] [US5] Define meditationSessions table in src/lib/server/db/schema.ts with routine FK
-- [ ] T127 [US5] Generate and apply migration for meditation tables
-- [ ] T128 [P] [US5] Create Zod schemas for routine, schedule, session in src/lib/schemas/meditation.ts
-- [ ] T129 [US5] Create meditation page in src/routes/(app)/meditation/+page.svelte with tabs (Routines, History)
-- [ ] T130 [US5] Create meditation loader in src/routes/(app)/meditation/+page.server.ts (load routines, sessions)
-- [ ] T131 [P] [US5] Create RoutineLibrary component in src/lib/components/meditation/RoutineLibrary.svelte showing predefined + user routines
-- [ ] T132 [P] [US5] Create new routine page in src/routes/(app)/meditation/routines/new/+page.svelte (title, description, link_url, duration, mood_tags)
-- [ ] T133 [US5] Create routine CRUD actions
-- [ ] T134 [P] [US5] Create seed script in scripts/seed.js to insert predefined routines with UUID IDs
-- [ ] T135 [US5] Run seed script to populate predefined routines
-- [ ] T136 [P] [US5] Create schedule reminder form in routine detail page (cadence, days_of_week, time, enabled)
-- [ ] T137 [US5] Create schedule CRUD actions in src/routes/(app)/meditation/schedules/+page.server.ts
-- [ ] T138 [US5] Implement meditation reminder email worker in src/lib/server/email/meditation-reminder.ts using Resend
-- [ ] T139 [US5] Create cron/scheduled task to check meditation schedules and send emails (log in email_notifications table)
-- [ ] T140 [P] [US5] Create complete session modal/page (routine selection, completion timestamp, mood_rating 1-5, notes)
-- [ ] T141 [US5] Create session completion action saving to meditationSessions table
-- [ ] T142 [P] [US5] Create SessionHistory component in src/lib/components/meditation/SessionHistory.svelte showing date, routine title, mood rating
-- [ ] T143 [P] [US5] Implement mood tag filter (Anxious, Low Energy, Focused, Pre-Sleep, General)
+- [x] T124 [P] [US5] Define meditationRoutines table in src/lib/server/db/schema.ts with UUID keys
+- [x] T125 [P] [US5] Define meditationSchedules table in src/lib/server/db/schema.ts with routine FK
+- [x] T126 [P] [US5] Define meditationSessions table in src/lib/server/db/schema.ts with routine FK
+- [x] T127 [US5] Generate and apply migration for meditation tables
+- [x] T128 [P] [US5] Create Zod schemas for routine, schedule, session in src/lib/schemas/meditation.ts
+- [x] T129 [US5] Create meditation page in src/routes/(app)/meditation/+page.svelte with tabs (Routines, History)
+- [x] T130 [US5] Create meditation loader in src/routes/(app)/meditation/+page.server.ts (load routines, sessions)
+- [x] T131 [P] [US5] Create RoutineLibrary component (integrated in main meditation page)
+- [x] T132 [P] [US5] Create new routine page in src/routes/(app)/meditation/routines/new/+page.svelte (title, description, link_url, duration, mood_tags)
+- [x] T133 [US5] Create routine CRUD actions
+- [x] T134 [P] [US5] Create seed script in scripts/seed-meditation.js to insert predefined routines with UUID IDs
+- [x] T135 [US5] Run seed script to populate predefined routines
+- [x] T136 [P] [US5] Create schedule reminder form in routine detail page (cadence, days_of_week, time, enabled)
+- [x] T137 [US5] Create schedule CRUD actions in src/routes/(app)/meditation/routines/[id]/+page.server.ts
+- [ ] T138 [US5] Implement meditation reminder email worker in src/lib/server/email/meditation-reminder.ts using Resend (DEFERRED - email infrastructure needed)
+- [ ] T139 [US5] Create cron/scheduled task to check meditation schedules and send emails (log in email_notifications table) (DEFERRED - email infrastructure needed)
+- [x] T140 [P] [US5] Create complete session modal/page (routine selection, completion timestamp, mood_rating 1-5, notes)
+- [x] T141 [US5] Create session completion action saving to meditationSessions table
+- [x] T142 [P] [US5] Create SessionHistory component (integrated in main meditation page)
+- [x] T143 [P] [US5] Implement mood tag filter (Anxious, Low Energy, Focused, Pre-Sleep, General)
 
 **Checkpoint**: User Story 5 complete - meditation routines, scheduling, and tracking
 

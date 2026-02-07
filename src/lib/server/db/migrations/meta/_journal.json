@@ -22,6 +22,20 @@
 			"when": 1770334262175,
 			"tag": "0002_perfect_captain_cross",
 			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "6",
+			"when": 1770419519308,
+			"tag": "0003_overrated_cerebro",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "6",
+			"when": 1770425307499,
+			"tag": "0004_mature_strong_guy",
+			"breakpoints": true
 		}
 	]
 }
