@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const token = url.searchParams.get('token');
 
 	if (!token) {
-		throw redirect(302, '/auth/forgot-password');
+		throw redirect(302, '/forgot-password');
 	}
 
 	const form = await superValidate(zod4(resetPasswordSchema));
@@ -45,7 +45,7 @@ export const actions: Actions = {
 				}
 			});
 
-			throw redirect(302, '/auth/sign-in?message=Password reset successful! Please sign in.');
+			throw redirect(302, '/sign-in?message=Password reset successful! Please sign in.');
 		} catch (error) {
 			// Don't catch redirects as errors - re-throw them
 			if (isRedirect(error)) {

@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
 
-	import Button from '$lib/components/ui/button/button.svelte';
-	import Input from '$lib/components/ui/input/input.svelte';
-	import Label from '$lib/components/ui/label/label.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import {
+		Field,
+		FieldDescription,
+		FieldGroup,
+		FieldLabel
+	} from '$lib/components/ui/field/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 
 	let { data } = $props();
 
@@ -49,47 +55,48 @@
 		</a>
 	</div>
 {:else}
-	<form method="POST" use:enhance class="space-y-6">
-		<div class="mb-6 text-center">
-			<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Forgot password?</h2>
-			<p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-				Enter your email and we'll send you reset instructions
-			</p>
-		</div>
+	<Card.Root class="mx-auto w-full max-w-sm">
+		<Card.Header class="text-center">
+			<Card.Title class="text-2xl">Forgot your password?</Card.Title>
+			<Card.Description>Enter your email to receive reset instructions</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			<form method="POST" use:enhance class="space-y-6">
+				{#if $message}
+					<div
+						class="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
+					>
+						{$message}
+					</div>
+				{/if}
 
-		{#if $message}
-			<div
-				class="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
-			>
-				{$message}
-			</div>
-		{/if}
+				<FieldGroup>
+					<Field>
+						<FieldLabel for="email">Email</FieldLabel>
+						<Input
+							id="email"
+							name="email"
+							type="email"
+							autocomplete="email"
+							bind:value={$form.email}
+							placeholder="you@example.com"
+							class={$errors.email ? 'border-red-500' : ''}
+							required
+						/>
+						{#if $errors.email}
+							<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.email}</p>
+						{/if}
+					</Field>
 
-		<div class="space-y-2">
-			<Label for="email">Email</Label>
-			<Input
-				id="email"
-				name="email"
-				type="email"
-				autocomplete="email"
-				bind:value={$form.email}
-				placeholder="you@example.com"
-				class={$errors.email ? 'border-red-500' : ''}
-				required
-			/>
-			{#if $errors.email}
-				<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.email}</p>
-			{/if}
-		</div>
+					<Button type="submit" class="w-full" disabled={$submitting}>
+						{$submitting ? 'Sending...' : 'Send reset link'}
+					</Button>
 
-		<Button type="submit" class="w-full" disabled={$submitting}>
-			{$submitting ? 'Sending...' : 'Send reset link'}
-		</Button>
-
-		<div class="text-center">
-			<a href="/sign-in" class="text-sm text-blue-600 hover:underline dark:text-blue-400">
-				Back to sign in
-			</a>
-		</div>
-	</form>
+					<FieldDescription class="text-center">
+						<a href="/sign-in"> Back to Sign in </a>
+					</FieldDescription>
+				</FieldGroup>
+			</form>
+		</Card.Content>
+	</Card.Root>
 {/if}

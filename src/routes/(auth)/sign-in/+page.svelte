@@ -2,9 +2,15 @@
 	import { superForm } from 'sveltekit-superforms';
 
 	import { page } from '$app/state';
-	import Button from '$lib/components/ui/button/button.svelte';
-	import Input from '$lib/components/ui/input/input.svelte';
-	import Label from '$lib/components/ui/label/label.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import {
+		Field,
+		FieldDescription,
+		FieldGroup,
+		FieldLabel
+	} from '$lib/components/ui/field/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 
 	let { data } = $props();
 
@@ -26,84 +32,88 @@
 	<title>Sign In - Synapse</title>
 </svelte:head>
 
-<form method="POST" use:enhance class="space-y-6">
-	<div class="mb-6 text-center">
-		<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
-		<p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Sign in to your account</p>
-	</div>
-
-	{#if registered}
-		<div
-			class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
-		>
-			Account created successfully! Please check your email to verify your account before signing
-			in.
-		</div>
-	{/if}
-
-	{#if verified}
-		<div
-			class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
-		>
-			Email verified successfully! You can now sign in.
-		</div>
-	{/if}
-
-	{#if reset}
-		<div
-			class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
-		>
-			Password reset successfully! You can now sign in with your new password.
-		</div>
-	{/if}
-
-	{#if $message}
-		<div class="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400">
-			{$message}
-		</div>
-	{/if}
-
-	<div class="space-y-4">
-		<div class="space-y-2">
-			<Label for="email">Email</Label>
-			<Input
-				id="email"
-				name="email"
-				type="email"
-				autocomplete="email"
-				bind:value={$form.email}
-				placeholder="you@example.com"
-				class={$errors.email ? 'border-red-500' : ''}
-				required
-			/>
-			{#if $errors.email}
-				<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.email}</p>
+<Card.Root class="mx-auto w-full max-w-sm">
+	<Card.Header class="text-center">
+		<Card.Title class="text-2xl">Welcome back</Card.Title>
+		<Card.Description>Sign in to your account with email</Card.Description>
+	</Card.Header>
+	<Card.Content>
+		<form method="POST" use:enhance class="space-y-6">
+			{#if registered}
+				<div
+					class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
+				>
+					Account created successfully! Please check your email to verify your account before
+					signing in.
+				</div>
 			{/if}
-		</div>
-
-		<div>
-			<div class="mb-2 flex items-center justify-between">
-				<Label for="password">Password</Label>
-				<a href="/forgot-password" class="text-xs text-blue-600 hover:underline dark:text-blue-400">
-					Forgot password?
-				</a>
-			</div>
-			<Input
-				id="password"
-				name="password"
-				type="password"
-				bind:value={$form.password}
-				placeholder="••••••••"
-				class={$errors.password ? 'border-red-500' : ''}
-				required
-			/>
-			{#if $errors.password}
-				<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.password}</p>
+			{#if verified}
+				<div
+					class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
+				>
+					Email verified successfully! You can now sign in.
+				</div>
 			{/if}
-		</div>
-	</div>
-
-	<Button type="submit" class="w-full" disabled={$submitting}>
-		{$submitting ? 'Signing in...' : 'Sign in'}
-	</Button>
-</form>
+			{#if reset}
+				<div
+					class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
+				>
+					Password reset successfully! You can now sign in with your new password.
+				</div>
+			{/if}
+			{#if $message}
+				<div
+					class="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
+				>
+					{$message}
+				</div>
+			{/if}
+			<FieldGroup>
+				<Field>
+					<FieldLabel for="email">Email</FieldLabel>
+					<Input
+						id="email"
+						name="email"
+						type="email"
+						autocomplete="email"
+						bind:value={$form.email}
+						placeholder="you@example.com"
+						class={$errors.email ? 'border-red-500' : ''}
+						required
+					/>
+					{#if $errors.email}
+						<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.email}</p>
+					{/if}
+				</Field>
+				<Field>
+					<div class="flex items-center">
+						<FieldLabel for="password">Password</FieldLabel>
+						<a href="/forgot-password" class="ms-auto inline-block text-sm underline">
+							Forgot your password?
+						</a>
+					</div>
+					<Input
+						id="password"
+						name="password"
+						type="password"
+						bind:value={$form.password}
+						placeholder="••••••••"
+						class={$errors.password ? 'border-red-500' : ''}
+						required
+					/>
+					{#if $errors.password}
+						<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.password}</p>
+					{/if}
+				</Field>
+				<Field>
+					<Button type="submit" class="w-full" disabled={$submitting}>
+						{$submitting ? 'Signing in...' : 'Sign in'}
+					</Button>
+					<FieldDescription class="text-center">
+						Don't have an account? <a href="/register">Sign up</a>
+					</FieldDescription>
+				</Field>
+			</FieldGroup>
+		</form>
+	</Card.Content>
+</Card.Root>

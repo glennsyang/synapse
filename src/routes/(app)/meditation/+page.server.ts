@@ -8,8 +8,6 @@ import { logger } from '$lib/utils/logger';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	// Auth handled by (app)/+layout.server.ts
-
 	const filters = routineFilterSchema.safeParse({
 		mood: url.searchParams.get('mood') ?? undefined,
 		type: url.searchParams.get('type') ?? undefined

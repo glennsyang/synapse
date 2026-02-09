@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { ModeWatcher } from 'mode-watcher';
 
-	import { page } from '$app/state';
-
 	import '../../app.css';
 </script>
 
@@ -16,24 +14,8 @@
 			<p class="text-slate-600 dark:text-slate-400">Your Second Brain</p>
 		</div>
 
-		<div class="rounded-lg bg-white p-8 shadow-xl dark:bg-slate-800">
+		<div>
 			<slot />
 		</div>
-
-		{#if page.url.pathname === '/sign-in'}
-			<div class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
-				Don't have an account? <a
-					href="/register"
-					class="text-blue-600 hover:underline dark:text-blue-400">Sign up</a
-				>
-			</div>
-		{:else if page.url.pathname === '/register'}
-			<div class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
-				Already have an account? <a
-					href="/sign-in"
-					class="text-blue-600 hover:underline dark:text-blue-400">Sign in</a
-				>
-			</div>
-		{/if}
 	</div>
 </div>

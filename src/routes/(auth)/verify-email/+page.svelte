@@ -59,9 +59,7 @@
 		<div class="text-center">
 			<p class="text-sm text-muted-foreground">
 				Wrong email address?
-				<a href="/auth/register" class="font-medium text-primary hover:underline">
-					Register again
-				</a>
+				<a href="/register" class="font-medium text-primary hover:underline"> Register again </a>
 			</p>
 		</div>
 
