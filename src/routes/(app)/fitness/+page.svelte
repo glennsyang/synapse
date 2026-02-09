@@ -1,0 +1,714 @@
+<script lang="ts">
+	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
+	import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
+	import MinusIcon from '@lucide/svelte/icons/minus';
+	import ScaleIcon from '@lucide/svelte/icons/scale';
+	import TargetIcon from '@lucide/svelte/icons/target';
+	import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
+	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
+
+	import CalorieProgress from '$lib/components/fitness/CalorieProgress.svelte';
+	import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
+	import WeightChart from '$lib/components/fitness/WeightChart.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import type { Exercise } from '$lib/types';
+
+	import type { PageData } from './$types.js';
+
+	let { data }: { data: PageData } = $props();
+
+	// svelte-ignore state_referenced_locally
+	const {
+		form: weightForm,
+		errors: weightErrors,
+		enhance: weightEnhance,
+		message: weightMessage
+	} = superForm(data.weightForm, {
+		resetForm: true,
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				toast.success('Weight logged successfully!');
+			}
+			if ($weightMessage?.type === 'error') {
+				toast.error(`Error logging weight. Reason: ${$weightMessage.text}`);
+			}
+		}
+	});
+
+	// svelte-ignore state_referenced_locally
+	const {
+		form: workoutForm,
+		errors: workoutErrors,
+		enhance: workoutEnhance,
+		message: workoutMessage
+	} = superForm(data.workoutForm, {
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				toast.success('Workout logged successfully!');
+			}
+			if ($workoutMessage?.type === 'error') {
+				toast.error(`Error logging workout. Reason: ${$workoutMessage.text}`);
+			}
+		}
+	});
+
+	// svelte-ignore state_referenced_locally
+	const {
+		form: goalForm,
+		errors: goalErrors,
+		enhance: goalEnhance,
+		message: goalMessage
+	} = superForm(data.goalForm, {
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				toast.success('Goal weight set successfully!');
+			}
+			if ($goalMessage?.type === 'error') {
+				toast.error(`Error setting goal weight. Reason: ${$goalMessage.text}`);
+			}
+		}
+	});
+
+	// svelte-ignore state_referenced_locally
+	const {
+		form: mealForm,
+		errors: mealErrors,
+		enhance: mealEnhance,
+		message: mealMessage
+	} = superForm(data.mealForm, {
+		resetForm: true,
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				toast.success('Meal logged successfully!');
+			}
+			if ($mealMessage?.type === 'error') {
+				toast.error(`Error logging meal. Reason: ${$mealMessage.text}`);
+			}
+		}
+	});
+
+	// svelte-ignore state_referenced_locally
+	const {
+		form: calorieForm,
+		errors: calorieErrors,
+		enhance: calorieEnhance,
+		message: calorieMessage
+	} = superForm(data.calorieForm, {
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				toast.success('Calorie target set successfully!');
+			}
+			if ($calorieMessage?.type === 'error') {
+				toast.error(`Error setting calorie target. Reason: ${$calorieMessage.text}`);
+			}
+		}
+	});
+
+	let workoutExercises = $state<Exercise[]>([]);
+
+	// When form is valid, sync to hidden input
+	$effect(() => {
+		if (workoutExercises.length > 0) {
+			$workoutForm.exercises = JSON.stringify(workoutExercises);
+		}
+	});
+
+	// Calculate today's total calories
+	let todayTotalCalories = $derived(() => {
+		const today = new Date().toLocaleDateString('en-CA');
+		const todayMeals = data.meals.filter((meal) => meal.date === today);
+		return todayMeals.reduce((sum, meal) => sum + (meal.caloriesEstimate || 0), 0);
+	});
+</script>
+
+<div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
+	<div class="mb-8">
+		<h1 class="text-3xl font-bold">Fitness & Nutrition</h1>
+		<p class="mt-2 text-muted-foreground">
+			Track your weight, workouts, and meals to achieve your fitness goals
+		</p>
+	</div>
+
+	<Tabs.Root value="weight" class="w-full">
+		<Tabs.List class="grid w-full grid-cols-3">
+			<Tabs.Trigger value="weight" class="flex items-center gap-2">
+				<ScaleIcon class="h-4 w-4" />
+				<span>Weight</span>
+			</Tabs.Trigger>
+			<Tabs.Trigger value="workouts" class="flex items-center gap-2">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="h-4 w-4"
+				>
+					<path d="m6.5 6.5 11 11" />
+					<path d="m21 21-1-1" />
+					<path d="m3 3 1 1" />
+					<path d="m18 22 4-4" />
+					<path d="m2 6 4-4" />
+					<path d="m3 10 7-7" />
+					<path d="m14 21 7-7" />
+				</svg>
+				<span>Workouts</span>
+			</Tabs.Trigger>
+			<Tabs.Trigger value="meals" class="flex items-center gap-2">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="h-4 w-4"
+				>
+					<path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8" />
+					<path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7" />
+					<path d="m2.1 21.8 6.4-6.3" />
+					<path d="m19 5-7 7" />
+				</svg>
+				<span>Meals</span>
+			</Tabs.Trigger>
+		</Tabs.List>
+
+		<Tabs.Content value="weight" class="mt-6 space-y-6">
+			<!-- Stats Cards -->
+			<div class="grid gap-4 md:grid-cols-4">
+				<Card.Root>
+					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+						<Card.Title class="text-sm font-medium">Current Weight</Card.Title>
+						<ScaleIcon class="h-4 w-4 text-muted-foreground" />
+					</Card.Header>
+					<Card.Content>
+						<div class="text-2xl font-bold">
+							{data.weightStats.currentWeight ?? '-'} lbs
+						</div>
+					</Card.Content>
+				</Card.Root>
+
+				<Card.Root>
+					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+						<Card.Title class="text-sm font-medium">Goal Weight</Card.Title>
+						<TargetIcon class="h-4 w-4 text-muted-foreground" />
+					</Card.Header>
+					<Card.Content>
+						<div class="text-2xl font-bold">
+							{data.goalWeight?.targetWeightLbs ?? '-'} lbs
+						</div>
+					</Card.Content>
+				</Card.Root>
+
+				<Card.Root>
+					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+						<Card.Title class="text-sm font-medium">Remaining</Card.Title>
+						{#if data.weightStats.remainingToGoal && data.weightStats.remainingToGoal > 0}
+							<ArrowUpIcon class="h-4 w-4 text-destructive" />
+						{:else if data.weightStats.remainingToGoal && data.weightStats.remainingToGoal < 0}
+							<ArrowDownIcon class="h-4 w-4 text-green-600" />
+						{:else}
+							<MinusIcon class="h-4 w-4 text-muted-foreground" />
+						{/if}
+					</Card.Header>
+					<Card.Content>
+						<div class="text-2xl font-bold">
+							{data.weightStats.remainingToGoal
+								? `${Math.abs(data.weightStats.remainingToGoal).toFixed(1)} lbs`
+								: '-'}
+						</div>
+					</Card.Content>
+				</Card.Root>
+
+				<Card.Root>
+					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+						<Card.Title class="text-sm font-medium">Trend</Card.Title>
+						{#if data.weightStats.trend === 'down'}
+							<TrendingDownIcon class="h-4 w-4 text-green-600" />
+						{:else if data.weightStats.trend === 'up'}
+							<TrendingUpIcon class="h-4 w-4 text-destructive" />
+						{:else}
+							<MinusIcon class="h-4 w-4 text-muted-foreground" />
+						{/if}
+					</Card.Header>
+					<Card.Content>
+						<div class="text-2xl font-bold capitalize">{data.weightStats.trend}</div>
+					</Card.Content>
+				</Card.Root>
+			</div>
+
+			<div class="grid gap-6 lg:grid-cols-2">
+				<!-- Log Weight Form -->
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Log Weight</Card.Title>
+						<Card.Description>Record your current weight</Card.Description>
+					</Card.Header>
+					<Card.Content>
+						<form method="POST" action="?/logWeight" use:weightEnhance>
+							<div class="grid gap-4">
+								<div class="grid gap-2">
+									<Label for="weight-date">Date</Label>
+									<Input
+										id="weight-date"
+										name="date"
+										type="date"
+										bind:value={$weightForm.date}
+										required
+									/>
+									{#if $weightErrors.date}
+										<p class="text-sm text-destructive">{$weightErrors.date}</p>
+									{/if}
+								</div>
+								<div class="grid gap-2">
+									<Label for="weight-time">Time (optional)</Label>
+									<Input id="weight-time" name="time" type="time" bind:value={$weightForm.time} />
+									{#if $weightErrors.time}
+										<p class="text-sm text-destructive">{$weightErrors.time}</p>
+									{/if}
+								</div>
+								<div class="grid gap-2">
+									<Label for="weight-lbs">Weight (lbs)</Label>
+									<Input
+										id="weight-lbs"
+										name="weightLbs"
+										type="number"
+										step="0.1"
+										bind:value={$weightForm.weightLbs}
+										required
+									/>
+									{#if $weightErrors.weightLbs}
+										<p class="text-sm text-destructive">{$weightErrors.weightLbs}</p>
+									{/if}
+									<Button type="submit" class="w-full">Log Weight</Button>
+								</div>
+							</div>
+						</form>
+					</Card.Content>
+				</Card.Root>
+
+				<!-- Set Goal Weight Form -->
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Set Goal Weight</Card.Title>
+						<Card.Description>Define your target weight goal</Card.Description>
+					</Card.Header>
+					<Card.Content>
+						<form method="POST" action="?/setGoal" use:goalEnhance>
+							<div class="grid gap-4">
+								<div class="grid gap-2">
+									<Label for="goal-weight">Target Weight (lbs)</Label>
+									<Input
+										id="goal-weight"
+										name="targetWeightLbs"
+										type="number"
+										step="0.1"
+										bind:value={$goalForm.targetWeightLbs}
+										required
+									/>
+									{#if $goalErrors.targetWeightLbs}
+										<p class="text-sm text-destructive">{$goalErrors.targetWeightLbs}</p>
+									{/if}
+								</div>
+								<Button type="submit" class="w-full">Set Goal</Button>
+							</div>
+						</form>
+					</Card.Content>
+				</Card.Root>
+			</div>
+
+			<!-- Weight Chart -->
+			{#if data.weightEntries.length === 0}
+				<div class="flex h-75 items-center justify-center rounded-lg border border-dashed">
+					<p class="text-sm text-muted-foreground">
+						No weight data yet. Start logging to see your progress!
+					</p>
+				</div>
+			{:else}
+				<WeightChart
+					title="Weight Progress"
+					description="Track your weight over time"
+					entries={data.weightEntries}
+					goalWeight={data.goalWeight?.targetWeightLbs || null}
+				/>
+			{/if}
+
+			<!-- Recent Entries -->
+			{#if data.weightEntries.length > 0}
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Recent Entries</Card.Title>
+					</Card.Header>
+					<Card.Content>
+						<div class="space-y-2">
+							{#each data.weightEntries.slice(0, 10) as entry (entry.id)}
+								<div class="flex items-center justify-between rounded-lg border p-3">
+									<div>
+										<p class="font-medium">{entry.weightLbs} lbs</p>
+										<p class="text-sm text-muted-foreground">
+											{new Date(entry.date).toLocaleDateString('en-US', {
+												month: 'short',
+												day: 'numeric',
+												year: 'numeric'
+											})}
+											{#if entry.time}
+												at {entry.time}
+											{/if}
+										</p>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</Card.Content>
+				</Card.Root>
+			{/if}
+		</Tabs.Content>
+
+		<Tabs.Content value="workouts" class="mt-6 space-y-6">
+			<!-- Log Workout Form -->
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Log Workout</Card.Title>
+					<Card.Description>Record your workout session</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<form method="POST" action="?/logWorkout" use:workoutEnhance>
+						<div class="grid gap-4">
+							<div class="grid grid-cols-2 gap-4">
+								<div class="grid gap-2">
+									<Label for="workout-date">Date</Label>
+									<Input
+										id="workout-date"
+										name="date"
+										type="date"
+										bind:value={$workoutForm.date}
+										required
+									/>
+									{#if $workoutErrors.date}
+										<p class="text-sm text-destructive">{$workoutErrors.date}</p>
+									{/if}
+								</div>
+								<div class="grid gap-2">
+									<Label for="workout-time">Time (optional)</Label>
+									<Input id="workout-time" name="time" type="time" bind:value={$workoutForm.time} />
+									{#if $workoutErrors.time}
+										<p class="text-sm text-destructive">{$workoutErrors.time}</p>
+									{/if}
+								</div>
+							</div>
+
+							<div class="grid gap-2">
+								<Label for="workout-type">Workout Type</Label>
+								<Select.Root type="single" name="type" bind:value={$workoutForm.type}>
+									<Select.Trigger id="workout-type">
+										{$workoutForm.type || 'Select workout type'}
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Item value="strength" label="Strength">Strength</Select.Item>
+										<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
+										<Select.Item value="yoga" label="Yoga">Yoga</Select.Item>
+										<Select.Item value="other" label="Other">Other</Select.Item>
+									</Select.Content>
+								</Select.Root>
+								{#if $workoutErrors.type}
+									<p class="text-sm text-destructive">{$workoutErrors.type}</p>
+								{/if}
+							</div>
+
+							<div class="grid gap-2">
+								<Label for="workout-duration">Duration (minutes)</Label>
+								<Input
+									id="workout-duration"
+									name="durationMinutes"
+									type="number"
+									bind:value={$workoutForm.durationMinutes}
+									placeholder="60"
+								/>
+								{#if $workoutErrors.durationMinutes}
+									<p class="text-sm text-destructive">{$workoutErrors.durationMinutes}</p>
+								{/if}
+							</div>
+
+							{#if $workoutForm.type === 'strength'}
+								<ExerciseInput bind:exercises={workoutExercises} />
+								<Input type="hidden" name="exercises" value={JSON.stringify(workoutExercises)} />
+								{#if $workoutErrors.exercises}
+									<p class="text-sm text-destructive">{$workoutErrors.exercises}</p>
+								{/if}
+							{/if}
+
+							<div class="grid gap-2">
+								<Label for="workout-notes">Notes (optional)</Label>
+								<textarea
+									id="workout-notes"
+									name="notes"
+									bind:value={$workoutForm.notes}
+									rows="3"
+									class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+									placeholder="How did the workout feel?"
+								></textarea>
+								{#if $workoutErrors.notes}
+									<p class="text-sm text-destructive">{$workoutErrors.notes}</p>
+								{/if}
+							</div>
+
+							<Button type="submit" class="w-full">Log Workout</Button>
+						</div>
+					</form>
+				</Card.Content>
+			</Card.Root>
+
+			<!-- Recent Workouts -->
+			{#if data.workouts.length > 0}
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Recent Workouts</Card.Title>
+					</Card.Header>
+					<Card.Content>
+						<div class="space-y-3">
+							{#each data.workouts.slice(0, 10) as workout (workout.id)}
+								<div class="rounded-lg border p-4">
+									<div class="flex items-start justify-between">
+										<div class="space-y-1">
+											<div class="flex items-center gap-2">
+												<span
+													class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize"
+													class:bg-orange-100={workout.type === 'strength'}
+													class:text-orange-800={workout.type === 'strength'}
+													class:bg-blue-100={workout.type === 'cardio'}
+													class:text-blue-800={workout.type === 'cardio'}
+													class:bg-purple-100={workout.type === 'yoga'}
+													class:text-purple-800={workout.type === 'yoga'}
+													class:bg-gray-100={workout.type === 'other'}
+													class:text-gray-800={workout.type === 'other'}
+												>
+													{workout.type}
+												</span>
+												{#if workout.durationMinutes}
+													<span class="text-sm text-muted-foreground">
+														{workout.durationMinutes} min
+													</span>
+												{/if}
+											</div>
+											<p class="text-sm text-muted-foreground">
+												{new Date(workout.date).toLocaleDateString('en-US', {
+													month: 'short',
+													day: 'numeric',
+													year: 'numeric'
+												})}
+												{#if workout.time}
+													at {workout.time}
+												{/if}
+											</p>
+											{#if workout.notes}
+												<p class="mt-2 text-sm">{workout.notes}</p>
+											{/if}
+											{#if workout.exercises && workout.exercises.length > 0}
+												<div class="mt-3 space-y-2">
+													<p class="text-sm font-medium">Exercises:</p>
+													{#each workout.exercises as exercise (exercise.exerciseName)}
+														<div class="ml-4 text-sm text-muted-foreground">
+															• {exercise.exerciseName}
+															{#if exercise.sets || exercise.reps || exercise.weightLbs}
+																<span class="ml-2">
+																	{#if exercise.sets}
+																		{exercise.sets} sets
+																	{/if}
+																	{#if exercise.reps}
+																		× {exercise.reps} reps
+																	{/if}
+																	{#if exercise.weightLbs}
+																		@ {exercise.weightLbs} lbs
+																	{/if}
+																</span>
+															{/if}
+														</div>
+													{/each}
+												</div>
+											{/if}
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</Card.Content>
+				</Card.Root>
+			{/if}
+		</Tabs.Content>
+
+		<Tabs.Content value="meals" class="mt-6 space-y-6">
+			<!-- Calorie Progress -->
+			<CalorieProgress
+				consumed={todayTotalCalories()}
+				target={data.calorieTarget?.targetCalories || null}
+			/>
+
+			<div class="grid gap-6 lg:grid-cols-2">
+				<!-- Log Meal Form -->
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Log Meal</Card.Title>
+						<Card.Description>Record what you ate</Card.Description>
+					</Card.Header>
+					<Card.Content>
+						<form method="POST" action="?/logMeal" use:mealEnhance>
+							<div class="grid gap-4">
+								<div class="grid gap-2">
+									<Label for="meal-date">Date</Label>
+									<Input
+										id="meal-date"
+										name="date"
+										type="date"
+										bind:value={$mealForm.date}
+										required
+									/>
+									{#if $mealErrors.date}
+										<p class="text-sm text-destructive">{$mealErrors.date}</p>
+									{/if}
+								</div>
+								<div class="grid gap-2">
+									<Label for="meal-time">Meal Type</Label>
+									<Select.Root type="single" name="timeOfDay" bind:value={$mealForm.timeOfDay}>
+										<Select.Trigger id="meal-time">
+											{$mealForm.timeOfDay || 'Select meal type'}
+										</Select.Trigger>
+										<Select.Content>
+											<Select.Item value="breakfast" label="Breakfast">Breakfast</Select.Item>
+											<Select.Item value="lunch" label="Lunch">Lunch</Select.Item>
+											<Select.Item value="dinner" label="Dinner">Dinner</Select.Item>
+											<Select.Item value="snack" label="Snack">Snack</Select.Item>
+										</Select.Content>
+									</Select.Root>
+									{#if $mealErrors.timeOfDay}
+										<p class="text-sm text-destructive">{$mealErrors.timeOfDay}</p>
+									{/if}
+								</div>
+								<div class="grid gap-2">
+									<Label for="meal-description">Description</Label>
+									<textarea
+										id="meal-description"
+										name="description"
+										bind:value={$mealForm.description}
+										rows="3"
+										class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+										placeholder="e.g., Chicken salad with olive oil dressing"
+										required
+									></textarea>
+									{#if $mealErrors.description}
+										<p class="text-sm text-destructive">{$mealErrors.description}</p>
+									{/if}
+								</div>
+								<div class="grid gap-2">
+									<Label for="meal-calories">Calories (estimate)</Label>
+									<Input
+										id="meal-calories"
+										name="caloriesEstimate"
+										type="number"
+										bind:value={$mealForm.caloriesEstimate}
+										placeholder="500"
+									/>
+									{#if $mealErrors.caloriesEstimate}
+										<p class="text-sm text-destructive">{$mealErrors.caloriesEstimate}</p>
+									{/if}
+								</div>
+								<Button type="submit" class="w-full">Log Meal</Button>
+							</div>
+						</form>
+					</Card.Content>
+				</Card.Root>
+
+				<!-- Set Calorie Target Form -->
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Set Calorie Target</Card.Title>
+						<Card.Description>Define your daily calorie goal</Card.Description>
+					</Card.Header>
+					<Card.Content>
+						<form method="POST" action="?/setCalorieTarget" use:calorieEnhance>
+							<div class="grid gap-4">
+								<div class="grid gap-2">
+									<Label for="calorie-target">Daily Target (calories)</Label>
+									<Input
+										id="calorie-target"
+										name="targetCalories"
+										type="number"
+										bind:value={$calorieForm.targetCalories}
+										placeholder="2000"
+										class={$calorieErrors.targetCalories ? 'border-destructive' : ''}
+										required
+									/>
+									{#if $calorieErrors.targetCalories}
+										<p class="text-sm text-destructive">{$calorieErrors.targetCalories}</p>
+									{/if}
+								</div>
+								{#if $calorieMessage}
+									<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+										{$calorieMessage}
+									</div>
+								{/if}
+								<Button type="submit" class="w-full">Set Target</Button>
+							</div>
+						</form>
+					</Card.Content>
+				</Card.Root>
+			</div>
+
+			<!-- Recent Meals -->
+			{#if data.meals.length > 0}
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Recent Meals</Card.Title>
+					</Card.Header>
+					<Card.Content>
+						<div class="space-y-3">
+							{#each data.meals.slice(0, 15) as meal (meal.id)}
+								<div class="rounded-lg border p-4">
+									<div class="flex items-start justify-between">
+										<div class="space-y-1">
+											<div class="flex items-center gap-2">
+												<span
+													class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize"
+													class:bg-yellow-100={meal.timeOfDay === 'breakfast'}
+													class:text-yellow-800={meal.timeOfDay === 'breakfast'}
+													class:bg-green-100={meal.timeOfDay === 'lunch'}
+													class:text-green-800={meal.timeOfDay === 'lunch'}
+													class:bg-blue-100={meal.timeOfDay === 'dinner'}
+													class:text-blue-800={meal.timeOfDay === 'dinner'}
+													class:bg-purple-100={meal.timeOfDay === 'snack'}
+													class:text-purple-800={meal.timeOfDay === 'snack'}
+												>
+													{meal.timeOfDay}
+												</span>
+												{#if meal.caloriesEstimate}
+													<span class="text-sm font-medium">{meal.caloriesEstimate} cal</span>
+												{/if}
+											</div>
+											<p class="text-sm text-muted-foreground">
+												{new Date(meal.date).toLocaleDateString('en-US', {
+													month: 'short',
+													day: 'numeric',
+													year: 'numeric'
+												})}
+											</p>
+											<p class="mt-2 text-sm">{meal.description}</p>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</Card.Content>
+				</Card.Root>
+			{/if}
+		</Tabs.Content>
+	</Tabs.Root>
+</div>

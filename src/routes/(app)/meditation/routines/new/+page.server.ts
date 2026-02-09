@@ -1,0 +1,91 @@
+import { fail, redirect } from '@sveltejs/kit';
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
+
+import { createRoutineSchema, MOOD_TAGS, type MoodTag } from '$lib/schemas/meditation';
+import { getDb } from '$lib/server/db';
+import { meditationRoutines } from '$lib/server/db/schema';
+import { generateId } from '$lib/server/db/utils';
+import { logger } from '$lib/utils/logger';
+
+import type { Actions, PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.user) {
+		logger.warn('Unauthorized access attempt to new meditation routine page');
+		throw redirect(302, '/sign-in');
+	}
+
+	const form = await superValidate(zod4(createRoutineSchema));
+
+	return { form };
+};
+
+export const actions: Actions = {
+	default: async ({ request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { error: 'Unauthorized' });
+		}
+
+		const form = await superValidate(request, zod4(createRoutineSchema));
+
+		if (!form.valid) {
+			logger.warn('Invalid routine form data', { errors: form.errors });
+			return fail(400, { form });
+		}
+
+		try {
+			// Parse and validate mood tags
+			const moodTagsArray = form.data.mood_tags
+				.split(',')
+				.map((tag) => tag.trim())
+				.filter((tag) => tag.length > 0);
+
+			// Validate each mood tag
+			const invalidTags = moodTagsArray.filter((tag) => !MOOD_TAGS.includes(tag as MoodTag));
+			if (invalidTags.length > 0) {
+				logger.warn('Invalid mood tags provided', { invalidTags });
+				return message(
+					form,
+					{
+						type: 'error',
+						text: `Invalid mood tags: ${invalidTags.join(', ')}. Allowed tags: ${MOOD_TAGS.join(', ')}`
+					},
+					{ status: 400 }
+				);
+			}
+
+			const moodTagsJson = JSON.stringify(moodTagsArray);
+			const routineId = generateId();
+
+			await getDb()
+				.insert(meditationRoutines)
+				.values({
+					id: routineId,
+					userId: locals.user.id,
+					title: form.data.title,
+					description: form.data.description || null,
+					linkUrl: form.data.link_url,
+					durationMinutes: form.data.duration_minutes,
+					moodTags: moodTagsJson,
+					isPredefined: false,
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString()
+				});
+
+			logger.info('Meditation routine created', { routineId, userId: locals.user.id });
+		} catch (error) {
+			logger.error('Failed to create meditation routine', { error });
+			return message(
+				form,
+				{
+					type: 'error',
+					text: 'An error occurred while creating the routine. Please try again.'
+				},
+				{ status: 500 }
+			);
+		}
+
+		throw redirect(303, '/meditation');
+	}
+};

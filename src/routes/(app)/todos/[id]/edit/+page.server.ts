@@ -1,0 +1,163 @@
+import { redirect } from '@sveltejs/kit';
+import { and, eq } from 'drizzle-orm';
+import { superValidate } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
+
+import { updateTodoSchema } from '$lib/schemas/todo';
+import { requireAuth } from '$lib/server/actions/auth-guard';
+import getDb from '$lib/server/db';
+import { projects, todoItems } from '$lib/server/db/schema';
+import { logger } from '$lib/utils/logger';
+
+import type { Actions, PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ locals, params }) => {
+	// Auth handled by (app)/+layout.server.ts
+
+	// Load todoItem
+	const todo = await getDb().query.todoItems.findFirst({
+		where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user!.id)),
+		with: {
+			project: true
+		}
+	});
+
+	if (!todo) {
+		redirect(303, '/todos');
+	}
+
+	// Load user projects
+	const userProjects = await getDb().query.projects.findMany({
+		where: eq(projects.userId, locals.user!.id),
+		orderBy: [projects.name]
+	});
+
+	// Parse JSON fields for form
+	const tagsArray = todo.tags ? JSON.parse(todo.tags) : [];
+	const tagsString = Array.isArray(tagsArray) ? tagsArray.join(', ') : '';
+
+	// Prepare form data
+	const form = await superValidate(
+		{
+			title: todo.title,
+			description: todo.description ?? undefined,
+			cadence: todo.cadence as 'daily' | 'weekly' | 'monthly',
+			projectId: todo.projectId ?? undefined,
+			priority: todo.priority,
+			dueDate: todo.dueDate ?? undefined,
+			state: todo.state as 'new' | 'in_progress' | 'blocked' | 'done',
+			tags: tagsString,
+			subSteps: todo.subSteps ?? undefined
+		},
+		zod4(updateTodoSchema)
+	);
+
+	return {
+		todo,
+		form,
+		projects: userProjects
+	};
+};
+
+export const actions: Actions = {
+	update: requireAuth(async ({ request, params }, user) => {
+		const todoId = params.id as string;
+
+		const form = await superValidate(request, zod4(updateTodoSchema));
+
+		if (!form.valid) {
+			return { form, status: 400 };
+		}
+
+		try {
+			// Verify todoItem belongs to user
+			const existing = await getDb().query.todoItems.findFirst({
+				where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
+			});
+
+			if (!existing) {
+				return { form, error: 'Todo not found', status: 404 };
+			}
+
+			// Verify project belongs to user if provided
+			if (form.data.projectId) {
+				const project = await getDb().query.projects.findFirst({
+					where: eq(projects.id, form.data.projectId)
+				});
+
+				if (!project || project.userId !== user.id) {
+					return { form, error: 'Invalid project', status: 400 };
+				}
+			}
+
+			// Parse tags from comma-separated string to JSON array
+			let tagsJson: string | null = null;
+			if (form.data.tags) {
+				const tagsArray = form.data.tags
+					.split(',')
+					.map((t) => t.trim())
+					.filter((t) => t.length > 0);
+				tagsJson = JSON.stringify(tagsArray);
+			}
+
+			// Build update data
+			const updateData: Record<string, unknown> = {
+				updatedAt: new Date().toISOString()
+			};
+
+			if (form.data.title !== undefined) updateData.title = form.data.title;
+			if (form.data.description !== undefined) updateData.description = form.data.description;
+			if (form.data.cadence !== undefined) updateData.cadence = form.data.cadence;
+			if (form.data.projectId !== undefined) updateData.projectId = form.data.projectId;
+			if (form.data.tags !== undefined) updateData.tags = tagsJson;
+			if (form.data.dueDate !== undefined) updateData.dueDate = form.data.dueDate;
+			if (form.data.priority !== undefined) updateData.priority = form.data.priority;
+			if (form.data.subSteps !== undefined) updateData.subSteps = form.data.subSteps;
+
+			// Handle state change and completedAt
+			if (form.data.state !== undefined) {
+				updateData.state = form.data.state;
+				if (form.data.state === 'done' && existing.state !== 'done') {
+					updateData.completedAt = new Date().toISOString();
+				} else if (form.data.state !== 'done' && existing.state === 'done') {
+					updateData.completedAt = null;
+				}
+			}
+
+			// Update todoItem
+			await getDb().update(todoItems).set(updateData).where(eq(todoItems.id, todoId));
+
+			logger.info('Todo updated', { todoId, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to update todo', { error, todoId });
+			return { form, error: 'Failed to update todo', status: 500 };
+		}
+
+		throw redirect(303, `/todos`);
+	}),
+
+	delete: requireAuth(async ({ params }, user) => {
+		const todoId = params.id as string;
+
+		try {
+			// Verify todoItem belongs to user
+			const existing = await getDb().query.todoItems.findFirst({
+				where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
+			});
+
+			if (!existing) {
+				return { error: 'Todo not found', status: 404 };
+			}
+
+			// Delete todoItem
+			await getDb().delete(todoItems).where(eq(todoItems.id, todoId));
+
+			logger.info('Todo deleted', { todoId, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to delete todo', { error, todoId });
+			return { error: 'Failed to delete todo', status: 500 };
+		}
+
+		throw redirect(303, '/todos');
+	})
+};
