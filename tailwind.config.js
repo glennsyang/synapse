@@ -47,6 +47,36 @@ const config = {
 				card: {
 					DEFAULT: 'hsl(var(--card) / <alpha-value>)',
 					foreground: 'hsl(var(--card-foreground) / <alpha-value>)'
+				},
+				teal: {
+					light: 'var(--color-teal-light)',
+					DEFAULT: 'var(--color-teal)',
+					dark: 'var(--color-teal-dark)'
+				},
+				blue: {
+					light: 'var(--color-blue-light)',
+					DEFAULT: 'var(--color-blue)',
+					dark: 'var(--color-blue-dark)'
+				},
+				green: {
+					light: 'var(--color-green-light)',
+					DEFAULT: 'var(--color-green)',
+					dark: 'var(--color-green-dark)'
+				},
+				orange: {
+					light: 'var(--color-orange-light)',
+					DEFAULT: 'var(--color-orange)',
+					dark: 'var(--color-orange-dark)'
+				},
+				purple: {
+					light: 'var(--color-purple-light)',
+					DEFAULT: 'var(--color-purple)',
+					dark: 'var(--color-purple-dark)'
+				},
+				pink: {
+					light: 'var(--color-pink-light)',
+					DEFAULT: 'var(--color-pink)',
+					dark: 'var(--color-pink-dark)'
 				}
 			},
 			borderRadius: {
@@ -55,7 +85,8 @@ const config = {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: [...fontFamily.sans]
+				display: ['Lexend', 'system-ui', 'sans-serif'],
+				sans: ['Inter', 'system-ui', ...fontFamily.sans]
 			}
 		}
 	}

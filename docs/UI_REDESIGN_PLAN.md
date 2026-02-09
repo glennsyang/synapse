@@ -124,25 +124,7 @@ For subtle backgrounds:
 
 ---
 
-### 3. Install Additional shadcn-svelte Components
-
-**Commands to run**:
-
-```bash
-npx shadcn-svelte@latest add breadcrumb
-npx shadcn-svelte@latest add carousel
-npx shadcn-svelte@latest add accordion
-npx shadcn-svelte@latest add alert-dialog
-npx shadcn-svelte@latest add collapsible
-npx shadcn-svelte@latest add scroll-area
-npx shadcn-svelte@latest add drawer
-```
-
-**New component locations**: `/src/lib/components/ui/{component-name}/`
-
----
-
-### 4. Navigation & Layout Transformation
+### 3. Navigation & Layout Transformation
 
 #### AppSidebar Component
 
@@ -187,7 +169,7 @@ npx shadcn-svelte@latest add drawer
 
 ---
 
-### 5. Dashboard Overhaul
+### 4. Dashboard Overhaul
 
 **File**: `src/routes/(app)/dashboard/+page.svelte`
 
@@ -244,7 +226,7 @@ npx shadcn-svelte@latest add drawer
 
 ---
 
-### 6. Layout Patterns & Visual Hierarchy
+### 5. Layout Patterns & Visual Hierarchy
 
 #### New Reusable Components
 
@@ -333,7 +315,7 @@ Display font for title - Description with muted color - CTA button
 
 ---
 
-### 7. Data Visualization Enhancement
+### 6. Data Visualization Enhancement
 
 #### Chart Expansion
 
@@ -381,7 +363,7 @@ Add to all metric displays:
 
 ---
 
-### 8. Loading Pattern Replacement
+### 7. Loading Pattern Replacement
 
 #### Remove Full-Screen Spinner
 
@@ -443,7 +425,7 @@ Add Svelte page transitions for smooth navigation:
 
 ---
 
-### 9. Component Polish & Micro-interactions
+### 8. Component Polish & Micro-interactions
 
 #### Button Enhancements
 
@@ -497,7 +479,7 @@ Add Svelte page transitions for smooth navigation:
 
 ---
 
-### 10. Responsive Refinements
+### 9. Responsive Refinements
 
 #### Mobile Navigation
 
@@ -561,7 +543,6 @@ Add Svelte page transitions for smooth navigation:
 
 ### Components
 
-- [ ] All 7 new shadcn components installed successfully
 - [ ] Breadcrumb works on detail pages
 - [ ] Carousel swipes smoothly on mobile
 - [ ] Accordion sections expand/collapse properly
@@ -629,7 +610,6 @@ Add Svelte page transitions for smooth navigation:
 
 ### Component Strategy
 
-- **New Components**: 7 shadcn additions (Breadcrumb, Carousel, Accordion, Alert Dialog, Collapsible, Scroll Area, Drawer)
 - **Rationale**: Use shadcn exclusively - no custom implementations where shadcn equivalent exists
 - **Migration**: Replace ConfirmDialog with Alert Dialog, add Breadcrumb where navigation context needed
 
@@ -669,10 +649,9 @@ Add Svelte page transitions for smooth navigation:
 
 Recommended sequence for development:
 
-1. **Phase 1: Foundation**
-   - Typography system (fonts, config)
-   - Color system redesign
-   - Install new shadcn components
+1. **Phase 1: Foundation** ✅ COMPLETE
+   - ✅ Typography system (fonts, config)
+   - ✅ Color system redesign
 
 2. **Phase 2: Navigation**
    - AppSidebar redesign

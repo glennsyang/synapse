@@ -171,6 +171,7 @@
 	<Tooltip.Root>
 		<Tooltip.Trigger>
 			<Button
+				type="button"
 				variant="ghost"
 				size="icon"
 				onclick={handleSyncClick}

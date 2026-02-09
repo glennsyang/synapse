@@ -73,9 +73,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const csp = [
 		"default-src 'self'",
 		"script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-eval needed for layerchart/d3
-		"style-src 'self' 'unsafe-inline'",
+		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // unsafe-inline needed for SvelteKit, Google Fonts for typography
 		"img-src 'self' data: https:",
-		"font-src 'self'",
+		"font-src 'self' https://fonts.gstatic.com", // Google Fonts
 		"connect-src 'self'",
 		"frame-ancestors 'none'"
 	].join('; ');
