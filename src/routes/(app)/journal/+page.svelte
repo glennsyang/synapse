@@ -34,10 +34,10 @@
 	}
 </script>
 
-<div class="container mx-auto space-y-6 py-6">
-	<div class="flex items-center justify-between">
-		<h1 class="text-3xl font-bold">Journal</h1>
-		<Button href="/journal/new">
+<div class="mobile-container mx-auto max-w-7xl space-y-6 py-4 sm:py-6">
+	<div class="mobile-stack justify-between">
+		<h1 class="text-2xl font-bold sm:text-3xl">Journal</h1>
+		<Button href="/journal/new" class="w-full sm:w-auto">
 			<Plus class="mr-2 h-4 w-4" />
 			New Entry
 		</Button>
@@ -46,10 +46,10 @@
 	<Card class="p-4">
 		<div class="space-y-4">
 			<h2 class="text-lg font-semibold">Filters</h2>
-			<div class="grid gap-4 md:grid-cols-3">
+			<div class="responsive-grid-3">
 				<div>
 					<label for="tag" class="text-sm font-medium">Tag</label>
-					<Input id="tag" bind:value={tagFilter} placeholder="e.g., anxious" />
+					<Input id="tag" type="text" bind:value={tagFilter} placeholder="e.g., anxious" />
 				</div>
 				<div>
 					<label for="startDate" class="text-sm font-medium">Start Date</label>
@@ -60,9 +60,9 @@
 					<Input id="endDate" type="date" bind:value={endDateFilter} />
 				</div>
 			</div>
-			<div class="flex gap-2">
-				<Button onclick={applyFilters}>Apply Filters</Button>
-				<Button variant="outline" onclick={clearFilters}>Clear</Button>
+			<div class="mobile-stack">
+				<Button onclick={applyFilters} class="w-full sm:w-auto">Apply Filters</Button>
+				<Button variant="outline" onclick={clearFilters} class="w-full sm:w-auto">Clear</Button>
 			</div>
 		</div>
 	</Card>

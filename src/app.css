@@ -120,7 +120,69 @@
 	}
 }
 
+/* Mobile Responsive Utilities */
+@layer utilities {
+	/* Touch-friendly tap targets (min 44x44px per Apple/Google guidelines) */
+	.touch-target {
+		@apply min-h-11 min-w-11;
+	}
+
+	/* Mobile-optimized spacing */
+	.mobile-container {
+		@apply px-4 sm:px-6 lg:px-8;
+	}
+
+	/* Stack on mobile, horizontal on desktop */
+	.mobile-stack {
+		@apply flex flex-col gap-4 sm:flex-row sm:items-center;
+	}
+
+	/* Responsive grid patterns */
+	.responsive-grid-2 {
+		@apply grid grid-cols-1 gap-4 sm:grid-cols-2;
+	}
+
+	.responsive-grid-3 {
+		@apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3;
+	}
+
+	.responsive-grid-4 {
+		@apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4;
+	}
+
+	/* Mobile-first form layouts */
+	.form-row {
+		@apply grid grid-cols-1 gap-4 md:grid-cols-2;
+	}
+
+	/* Hide scrollbar but keep functionality */
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+}
+
 /* Smooth scrolling for iOS devices */
 .table-scroll-container {
 	-webkit-overflow-scrolling: touch;
+}
+
+/* Ensure buttons and interactive elements are touch-friendly on mobile */
+@media (max-width: 768px) {
+	button,
+	a[role='button'],
+	[role='button'] {
+		@apply min-h-11 min-w-11;
+	}
+
+	/* Increase font size for better readability on mobile */
+	input,
+	textarea,
+	select {
+		@apply text-base;
+	}
 }

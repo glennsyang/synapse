@@ -509,3 +509,65 @@ export const meditationSessionsRelations = relations(meditationSessions, ({ one 
 		references: [meditationRoutines.id]
 	})
 }));
+
+/**
+ * People
+ * People to track visits for
+ */
+export const people = sqliteTable('people', {
+	id: text('id').primaryKey().$defaultFn(generateId),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	name: text('name').notNull(),
+	createdAt: text('created_at')
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+	updatedAt: text('updated_at')
+		.notNull()
+		.$defaultFn(() => new Date().toISOString())
+});
+
+export const peopleRelations = relations(people, ({ one, many }) => ({
+	user: one(user, {
+		fields: [people.userId],
+		references: [user.id]
+	}),
+	visits: many(visits)
+}));
+
+/**
+ * Visits
+ * Visit records with companions and follow-up tracking
+ */
+export const visits = sqliteTable('visits', {
+	id: text('id').primaryKey().$defaultFn(generateId),
+	personId: text('person_id')
+		.notNull()
+		.references(() => people.id, { onDelete: 'cascade' }),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	date: text('date').notNull(),
+	time: text('time'),
+	companions: text('companions'), // JSON array of companion names
+	notes: text('notes'),
+	followUpDate: text('follow_up_date'),
+	createdAt: text('created_at')
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+	updatedAt: text('updated_at')
+		.notNull()
+		.$defaultFn(() => new Date().toISOString())
+});
+
+export const visitsRelations = relations(visits, ({ one }) => ({
+	person: one(people, {
+		fields: [visits.personId],
+		references: [people.id]
+	}),
+	user: one(user, {
+		fields: [visits.userId],
+		references: [user.id]
+	})
+}));

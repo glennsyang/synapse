@@ -55,7 +55,7 @@
 	}
 </script>
 
-<div class="container mx-auto py-8">
+<div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
 	<div class="mb-6 flex items-center justify-between">
 		<div>
 			<h1 class="text-3xl font-bold">Meditation</h1>

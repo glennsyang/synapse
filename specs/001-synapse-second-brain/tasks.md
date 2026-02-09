@@ -249,24 +249,24 @@
 
 ### Implementation for User Story 6
 
-- [ ] T144 [P] [US6] Define people table in src/lib/server/db/schema.ts with UUID keys
-- [ ] T145 [P] [US6] Define visits table in src/lib/server/db/schema.ts with person FK, UUID keys
-- [ ] T146 [US6] Generate and apply migration for people and visits tables
-- [ ] T147 [P] [US6] Create Zod schemas for person, visit in src/lib/schemas/visits.ts
-- [ ] T148 [US6] Create visits page in src/routes/(app)/visits/+page.svelte with people list and status indicators
-- [ ] T149 [US6] Create visits loader in src/routes/(app)/visits/+page.server.ts (load people with last visit date, calculate status)
-- [ ] T150 [P] [US6] Create PersonCard component in src/lib/components/visits/PersonCard.svelte showing name, status (green/yellow/red), last visit
-- [ ] T151 [P] [US6] Implement visit status calculation logic in src/lib/utils/visit-status.ts (green: <6mo, yellow: 6-12mo, red: ≥12mo)
-- [ ] T152 [P] [US6] Create new person page in src/routes/(app)/visits/people/new/+page.svelte
-- [ ] T153 [US6] Create person CRUD actions
-- [ ] T154 [P] [US6] Create person detail page in src/routes/(app)/visits/people/[id]/+page.svelte showing visit history
-- [ ] T155 [US6] Create person detail loader loading visits for person
-- [ ] T156 [P] [US6] Create new visit form (date, time, companions array, notes, follow_up_date)
-- [ ] T157 [US6] Create visit CRUD actions in person detail page
-- [ ] T158 [P] [US6] Create VisitHistory component in src/lib/components/visits/VisitHistory.svelte showing timeline of visits
-- [ ] T159 [US6] Implement visit reminder email worker in src/lib/server/email/visit-warning.ts using Resend
-- [ ] T160 [US6] Create cron/scheduled task to check people 7 days before status change and send reminders (log in email_notifications table)
-- [ ] T161 [US6] Update status indicators when visits are added/edited/deleted
+- [x] T144 [P] [US6] Define people table in src/lib/server/db/schema.ts with UUID keys
+- [x] T145 [P] [US6] Define visits table in src/lib/server/db/schema.ts with person FK, UUID keys
+- [x] T146 [US6] Generate and apply migration for people and visits tables
+- [x] T147 [P] [US6] Create Zod schemas for person, visit in src/lib/schemas/visits.ts
+- [x] T148 [US6] Create visits page in src/routes/(app)/visits/+page.svelte with people list and status indicators
+- [x] T149 [US6] Create visits loader in src/routes/(app)/visits/+page.server.ts (load people with last visit date, calculate status)
+- [x] T150 [P] [US6] Create PersonCard component in src/lib/components/visits/PersonCard.svelte showing name, status (green/yellow/red), last visit (integrated inline in main page)
+- [x] T151 [P] [US6] Implement visit status calculation logic in src/lib/utils/visit-status.ts (green: <6mo, yellow: 6-12mo, red: ≥12mo)
+- [x] T152 [P] [US6] Create new person page in src/routes/(app)/visits/people/new/+page.svelte
+- [x] T153 [US6] Create person CRUD actions
+- [x] T154 [P] [US6] Create person detail page in src/routes/(app)/visits/[id]/+page.svelte showing visit history
+- [x] T155 [US6] Create person detail loader loading visits for person
+- [x] T156 [P] [US6] Create new visit form (date, time, companions array, notes, follow_up_date)
+- [x] T157 [US6] Create visit CRUD actions in person detail page
+- [x] T158 [P] [US6] Create VisitHistory component in src/lib/components/visits/VisitHistory.svelte showing timeline of visits (integrated inline)
+- [ ] T159 [US6] Implement visit reminder email worker in src/lib/server/email/visit-warning.ts using Resend (DEFERRED - email infrastructure needed)
+- [ ] T160 [US6] Create cron/scheduled task to check people 7 days before status change and send reminders (log in email_notifications table) (DEFERRED - email infrastructure needed)
+- [x] T161 [US6] Update status indicators when visits are added/edited/deleted
 
 **Checkpoint**: User Story 6 complete - visit tracking with status and reminders
 
@@ -276,28 +276,28 @@
 
 **Purpose**: Sync, offline support, responsive design, error handling, logging, deployment
 
-- [ ] T162 [P] Implement sync service in src/lib/server/sync/index.ts with last-write-wins conflict resolution
-- [ ] T163 [P] Create IndexedDB wrapper in src/lib/client/offline-db.ts for offline cache
-- [ ] T164 Implement sync endpoint in src/routes/api/sync/+server.ts
-- [ ] T165 [P] Add sync button/auto-sync logic in app layout
-- [ ] T166 [P] Implement offline detection and UI indicators
-- [ ] T167 [P] Add responsive breakpoints and mobile styles across all pages
-- [ ] T168 [P] Create mobile-optimized navigation (hamburger menu)
-- [ ] T169 [P] Ensure all forms are mobile-friendly with proper input types
-- [ ] T170 [P] Add loading states and skeletons for all async operations
-- [ ] T171 [P] Implement error boundaries and user-friendly error messages
-- [ ] T172 [P] Add toast notifications for success/error feedback
-- [ ] T173 [P] Implement structured logging with request IDs in hooks.server.ts
-- [ ] T174 [P] Add error tracking with stack traces
-- [ ] T175 [P] Create fly.toml for deployment configuration
-- [ ] T176 Create Dockerfile (if needed) or use SvelteKit adapter-node
-- [ ] T177 Configure fly.io volume for persistent SQLite database
-- [ ] T178 Set fly.io secrets (BETTER_AUTH_SECRET, RESEND_API_KEY, BETTER_AUTH_BASE_URL)
-- [ ] T179 Deploy to fly.io and verify production environment
-- [ ] T180 [P] Write README.md with project overview, setup, and deployment instructions
-- [ ] T181 [P] Document API contracts in contracts/ files (already done in planning phase)
-- [ ] T182 [P] Create CHANGELOG.md for version tracking
-- [ ] T183 Setup GitHub Actions (optional) for CI/CD (linting, tests, deployment)
+- [x] T162 [P] Implement sync service in src/lib/server/sync/index.ts with last-write-wins conflict resolution
+- [x] T163 [P] Create IndexedDB wrapper in src/lib/client/offline-db.ts for offline cache
+- [x] T164 Implement sync endpoint in src/routes/api/sync/+server.ts
+- [x] T165 [P] Add sync button/auto-sync logic in app layout
+- [x] T166 [P] Implement offline detection and UI indicators
+- [x] T167 [P] Add responsive breakpoints and mobile styles across all pages
+- [x] T168 [P] Create mobile-optimized navigation (hamburger menu)
+- [x] T169 [P] Ensure all forms are mobile-friendly with proper input types
+- [x] T170 [P] Add loading states and skeletons for all async operations
+- [x] T171 [P] Implement error boundaries and user-friendly error messages
+- [x] T172 [P] Add toast notifications for success/error feedback
+- [x] T173 [P] Implement structured logging with request IDs in hooks.server.ts
+- [x] T174 [P] Add error tracking with stack traces
+- [x] T175 [P] Create fly.toml for deployment configuration
+- [x] T176 Create Dockerfile (if needed) or use SvelteKit adapter-node
+- [x] T177 Configure fly.io volume for persistent SQLite database
+- [x] T178 Set fly.io secrets (BETTER_AUTH_SECRET, RESEND_API_KEY, BETTER_AUTH_BASE_URL)
+- [x] T179 Deploy to fly.io and verify production environment
+- [x] T180 [P] Write README.md with project overview, setup, and deployment instructions
+- [x] T181 [P] Document API contracts in contracts/ files (already done in planning phase)
+- [ ] T182 [P] Create CHANGELOG.md for version tracking (SKIPPED per user request)
+- [x] T183 Setup GitHub Actions (optional) for CI/CD (linting, tests, deployment)
 
 **Checkpoint**: Application complete, deployed, and production-ready
 

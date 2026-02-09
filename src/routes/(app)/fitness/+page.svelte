@@ -128,7 +128,7 @@
 	});
 </script>
 
-<div class="container mx-auto px-4 py-8">
+<div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
 	<div class="mb-8">
 		<h1 class="text-3xl font-bold">Fitness & Nutrition</h1>
 		<p class="mt-2 text-muted-foreground">

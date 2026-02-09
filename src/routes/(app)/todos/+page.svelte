@@ -31,13 +31,13 @@
 	);
 </script>
 
-<div class="container mx-auto py-8">
-	<div class="mb-8 flex items-center justify-between">
+<div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
+	<div class="mobile-stack mb-6 justify-between sm:mb-8">
 		<div>
-			<h1 class="text-3xl font-bold">Todos</h1>
-			<p class="text-muted-foreground">Manage your tasks by cadence</p>
+			<h1 class="text-2xl font-bold sm:text-3xl">Todos</h1>
+			<p class="text-sm text-muted-foreground sm:text-base">Manage your tasks by cadence</p>
 		</div>
-		<Button href="/todos/new">
+		<Button href="/todos/new" class="w-full sm:w-auto">
 			<Plus class="mr-2 h-4 w-4" />
 			New Todo
 		</Button>

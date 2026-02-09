@@ -3,6 +3,7 @@
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import { toggleMode } from 'mode-watcher';
 
+	import SyncIndicator from '$lib/components/app/SyncIndicator.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
@@ -16,6 +17,7 @@
 		<Separator orientation="vertical" class="mx-2 data-[orientation=vertical]:h-4" />
 		<h1 class="text-base font-medium md:text-lg">Synapse</h1>
 		<div class="ms-auto flex items-center gap-2">
+			<SyncIndicator />
 			<Button onclick={toggleMode} variant="outline" size="icon" class="h-11 w-11 md:h-9 md:w-9">
 				<SunIcon
 					class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
