@@ -7,6 +7,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
+	import { formatDateShort } from '$lib/utils/date';
 
 	import type { PageData } from './$types';
 
@@ -16,14 +17,6 @@
 
 	function getFilterUrl(status: string) {
 		return status ? `/visits?status=${status}` : '/visits';
-	}
-
-	function formatDate(dateString: string): string {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
 	}
 
 	function formatTimeSince(days: number): string {
@@ -38,10 +31,10 @@
 <div class="mobile-container mx-auto max-w-7xl py-4 sm:py-6">
 	<div class="mb-6 flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold">Visit Tracking</h1>
+			<h1 class="font-display text-3xl font-bold">Visit Tracking</h1>
 			<p class="mt-1 text-muted-foreground">Track visits made with your group</p>
 		</div>
-		<Button href="/visits/people/new">
+		<Button href="/visits/people/new" class="bg-pink-600 hover:bg-pink-700">
 			<PlusIcon class="mr-2 h-4 w-4" />
 			Add Person
 		</Button>
@@ -49,23 +42,45 @@
 
 	<!-- Status Filter Tabs -->
 	<Tabs.Root value={statusFilter || 'all'} class="mb-6">
-		<Tabs.List>
-			<Tabs.Trigger value="all" onclick={() => goto(getFilterUrl(''))}>
+		<Tabs.List
+			class="font-display inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
+		>
+			<Tabs.Trigger
+				value="all"
+				onclick={() => goto(getFilterUrl(''))}
+				class="border-b-2 border-transparent data-[state=active]:border-pink-500"
+			>
 				All ({data.people.length})
 			</Tabs.Trigger>
-			<Tabs.Trigger value="red" onclick={() => goto(getFilterUrl('red'))}>
+			<Tabs.Trigger
+				value="red"
+				onclick={() => goto(getFilterUrl('red'))}
+				class="border-b-2 border-transparent data-[state=active]:border-red-500"
+			>
 				<span class="mr-1 inline-block h-2 w-2 rounded-full bg-red-500"></span>
 				Critical
 			</Tabs.Trigger>
-			<Tabs.Trigger value="yellow" onclick={() => goto(getFilterUrl('yellow'))}>
+			<Tabs.Trigger
+				value="yellow"
+				onclick={() => goto(getFilterUrl('yellow'))}
+				class="border-b-2 border-transparent data-[state=active]:border-yellow-500"
+			>
 				<span class="mr-1 inline-block h-2 w-2 rounded-full bg-yellow-500"></span>
 				Overdue
 			</Tabs.Trigger>
-			<Tabs.Trigger value="green" onclick={() => goto(getFilterUrl('green'))}>
+			<Tabs.Trigger
+				value="green"
+				onclick={() => goto(getFilterUrl('green'))}
+				class="border-b-2 border-transparent data-[state=active]:border-green-500"
+			>
 				<span class="mr-1 inline-block h-2 w-2 rounded-full bg-green-500"></span>
 				Recent
 			</Tabs.Trigger>
-			<Tabs.Trigger value="none" onclick={() => goto(getFilterUrl('none'))}>
+			<Tabs.Trigger
+				value="none"
+				onclick={() => goto(getFilterUrl('none'))}
+				class="border-b-2 border-transparent data-[state=active]:border-gray-500"
+			>
 				<span class="mr-1 inline-block h-2 w-2 rounded-full bg-gray-400"></span>
 				No Visits
 			</Tabs.Trigger>
@@ -81,11 +96,19 @@
 	{:else}
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{#each data.people as person (person.id)}
+				{@const borderColor =
+					person.status === 'green'
+						? 'border-l-green-500'
+						: person.status === 'yellow'
+							? 'border-l-yellow-500'
+							: person.status === 'red'
+								? 'border-l-red-500'
+								: 'border-l-gray-400'}
 				<a href="/visits/{person.id}">
-					<Card.Root class="transition-shadow hover:shadow-md">
+					<Card.Root class="border-l-4 transition-shadow hover:shadow-md {borderColor}">
 						<Card.Header>
 							<div class="flex items-start justify-between">
-								<Card.Title>{person.name}</Card.Title>
+								<Card.Title class="font-display">{person.name}</Card.Title>
 								<Badge
 									variant={person.status === 'green'
 										? 'default'
@@ -95,10 +118,12 @@
 												? 'destructive'
 												: 'outline'}
 									class={person.status === 'green'
-										? 'bg-green-100 text-green-800 hover:bg-green-100'
+										? 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-200'
 										: person.status === 'yellow'
-											? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
-											: ''}
+											? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-200'
+											: person.status === 'red'
+												? 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900 dark:text-red-200'
+												: ''}
 								>
 									{person.status === 'green'
 										? 'Recent'
@@ -114,7 +139,7 @@
 							{#if person.lastVisit}
 								<div class="text-sm text-muted-foreground">
 									<p>
-										Last visit: {formatDate(person.lastVisit.date)}
+										Last visit: {formatDateShort(person.lastVisit.date)}
 										{#if person.daysSinceLastVisit !== null}
 											({formatTimeSince(person.daysSinceLastVisit)})
 										{/if}

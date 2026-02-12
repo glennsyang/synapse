@@ -7,6 +7,7 @@ import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
+import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
@@ -16,8 +17,7 @@ export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod4(journalEntrySchema));
 
 	// Set default date to today, use local timezone
-	form.data.date = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format
-	//form.data.date = new Date().toISOString().split('T')[0];
+	form.data.date = getTodayString();
 
 	return { form };
 };

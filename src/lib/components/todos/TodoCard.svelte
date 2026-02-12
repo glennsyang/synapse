@@ -38,12 +38,19 @@
 		totalSubSteps > 0 ? (completedSubSteps / totalSubSteps) * 100 : 0
 	);
 
-	// Priority color mapping
+	// Priority color mapping (larger, more vibrant)
 	const priorityColors = {
-		1: 'bg-red-500',
-		2: 'bg-orange-500',
-		3: 'bg-yellow-500',
-		4: 'bg-green-500'
+		1: 'bg-orange-500',
+		2: 'bg-orange-400',
+		3: 'bg-blue-500',
+		4: 'bg-blue-400'
+	};
+
+	const priorityLabels = {
+		1: 'Highest',
+		2: 'High',
+		3: 'Medium',
+		4: 'Low'
 	};
 
 	// State badges
@@ -64,11 +71,11 @@
 	const StateIcon = $derived(stateIcons[todo.state as keyof typeof stateIcons]);
 </script>
 
-<Card.Root class="transition-shadow hover:shadow-md">
+<Card.Root class="border transition-shadow hover:shadow-md">
 	<Card.Header class="pb-3">
-		<div class="flex items-start justify-between">
+		<div class="flex items-start justify-between gap-2">
 			<div class="flex-1">
-				<Card.Title class="text-lg">
+				<Card.Title class="font-display text-lg">
 					<a href={`/todos/${todo.id}`} class="hover:underline">
 						{todo.title}
 					</a>
@@ -77,10 +84,13 @@
 					<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{todo.description}</p>
 				{/if}
 			</div>
-			<div
-				class={`h-2 w-2 rounded-full ${priorityColors[todo.priority as keyof typeof priorityColors]}`}
-				title={`Priority ${todo.priority}`}
-			></div>
+			<div class="flex flex-col items-end gap-1">
+				<div
+					class={`h-4 w-4 rounded-full ${priorityColors[todo.priority as keyof typeof priorityColors]}`}
+					title={`Priority: ${priorityLabels[todo.priority as keyof typeof priorityLabels]}`}
+				></div>
+				<span class="text-xs text-muted-foreground">P{todo.priority}</span>
+			</div>
 		</div>
 	</Card.Header>
 

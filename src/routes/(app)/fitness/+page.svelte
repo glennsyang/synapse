@@ -19,6 +19,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import type { Exercise } from '$lib/types';
+	import { formatDateShort, getTodayString } from '$lib/utils/date';
 
 	import type { PageData } from './$types.js';
 
@@ -122,7 +123,7 @@
 
 	// Calculate today's total calories
 	let todayTotalCalories = $derived(() => {
-		const today = new Date().toLocaleDateString('en-CA');
+		const today = getTodayString();
 		const todayMeals = data.meals.filter((meal) => meal.date === today);
 		return todayMeals.reduce((sum, meal) => sum + (meal.caloriesEstimate || 0), 0);
 	});
@@ -130,19 +131,27 @@
 
 <div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
 	<div class="mb-8">
-		<h1 class="text-3xl font-bold">Fitness & Nutrition</h1>
+		<h1 class="font-display text-3xl font-bold">Fitness & Nutrition</h1>
 		<p class="mt-2 text-muted-foreground">
 			Track your weight, workouts, and meals to achieve your fitness goals
 		</p>
 	</div>
 
 	<Tabs.Root value="weight" class="w-full">
-		<Tabs.List class="grid w-full grid-cols-3">
-			<Tabs.Trigger value="weight" class="flex items-center gap-2">
+		<Tabs.List
+			class="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
+		>
+			<Tabs.Trigger
+				value="weight"
+				class="font-display flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-green-500"
+			>
 				<ScaleIcon class="h-4 w-4" />
 				<span>Weight</span>
 			</Tabs.Trigger>
-			<Tabs.Trigger value="workouts" class="flex items-center gap-2">
+			<Tabs.Trigger
+				value="workouts"
+				class="font-display flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-green-500"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 24 24"
@@ -163,7 +172,10 @@
 				</svg>
 				<span>Workouts</span>
 			</Tabs.Trigger>
-			<Tabs.Trigger value="meals" class="flex items-center gap-2">
+			<Tabs.Trigger
+				value="meals"
+				class="font-display flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-green-500"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 24 24"
@@ -192,7 +204,7 @@
 						<ScaleIcon class="h-4 w-4 text-muted-foreground" />
 					</Card.Header>
 					<Card.Content>
-						<div class="text-2xl font-bold">
+						<div class="font-display text-2xl font-bold">
 							{data.weightStats.currentWeight ?? '-'} lbs
 						</div>
 					</Card.Content>
@@ -204,7 +216,7 @@
 						<TargetIcon class="h-4 w-4 text-muted-foreground" />
 					</Card.Header>
 					<Card.Content>
-						<div class="text-2xl font-bold">
+						<div class="font-display text-2xl font-bold">
 							{data.goalWeight?.targetWeightLbs ?? '-'} lbs
 						</div>
 					</Card.Content>
@@ -222,7 +234,7 @@
 						{/if}
 					</Card.Header>
 					<Card.Content>
-						<div class="text-2xl font-bold">
+						<div class="font-display text-2xl font-bold">
 							{data.weightStats.remainingToGoal
 								? `${Math.abs(data.weightStats.remainingToGoal).toFixed(1)} lbs`
 								: '-'}
@@ -242,7 +254,7 @@
 						{/if}
 					</Card.Header>
 					<Card.Content>
-						<div class="text-2xl font-bold capitalize">{data.weightStats.trend}</div>
+						<div class="font-display text-2xl font-bold capitalize">{data.weightStats.trend}</div>
 					</Card.Content>
 				</Card.Root>
 			</div>
@@ -356,11 +368,7 @@
 									<div>
 										<p class="font-medium">{entry.weightLbs} lbs</p>
 										<p class="text-sm text-muted-foreground">
-											{new Date(entry.date).toLocaleDateString('en-US', {
-												month: 'short',
-												day: 'numeric',
-												year: 'numeric'
-											})}
+											{formatDateShort(entry.date)}
 											{#if entry.time}
 												at {entry.time}
 											{/if}
@@ -501,11 +509,7 @@
 												{/if}
 											</div>
 											<p class="text-sm text-muted-foreground">
-												{new Date(workout.date).toLocaleDateString('en-US', {
-													month: 'short',
-													day: 'numeric',
-													year: 'numeric'
-												})}
+												{formatDateShort(workout.date)}
 												{#if workout.time}
 													at {workout.time}
 												{/if}
@@ -694,11 +698,7 @@
 												{/if}
 											</div>
 											<p class="text-sm text-muted-foreground">
-												{new Date(meal.date).toLocaleDateString('en-US', {
-													month: 'short',
-													day: 'numeric',
-													year: 'numeric'
-												})}
+												{formatDateShort(meal.date)}
 											</p>
 											<p class="mt-2 text-sm">{meal.description}</p>
 										</div>

@@ -1,4 +1,3 @@
-import type { Icon } from '@lucide/svelte';
 import type { Component } from 'svelte';
 
 export type SidebarNav = {
@@ -6,7 +5,7 @@ export type SidebarNav = {
 		title: string;
 		description: string;
 		url?: string;
-		icon?: Component<Icon>;
+		icon?: Component;
 		color?: string;
 		items?: { title: string; url: string }[];
 	}[];

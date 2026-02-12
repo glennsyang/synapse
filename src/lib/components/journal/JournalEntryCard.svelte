@@ -9,31 +9,22 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import type { JournalEntry } from '$lib/types';
+	import { formatDateLong } from '$lib/utils/date';
 
 	import ConfirmDialog from '../shared/ConfirmDialog.svelte';
 
 	let { entry }: { entry: JournalEntry } = $props();
 
 	let openDeleteModal = $state<boolean>(false);
-
-	function formatDate(dateString: string) {
-		const date = new Date(dateString);
-		return date.toLocaleDateString('en-US', {
-			weekday: 'long',
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
-	}
 </script>
 
-<Card.Root>
+<Card.Root class="border-l-4 border-l-teal-500">
 	<Card.Header>
 		<div class="flex items-start justify-between">
 			<div class="space-y-1">
-				<Card.Title class="flex items-center gap-2">
+				<Card.Title class="font-display flex items-center gap-2">
 					<Calendar class="h-4 w-4" />
-					{formatDate(entry.date)}
+					{formatDateLong(entry.date)}
 				</Card.Title>
 				<Card.Description>
 					{#if entry.location}

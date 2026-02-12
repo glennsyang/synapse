@@ -7,7 +7,10 @@
 			variant: {
 				default: "bg-card text-card-foreground",
 				destructive:
-					"text-destructive bg-card *:data-[slot=alert-description]:text-destructive/90 [&>svg]:text-current",
+					"text-destructive bg-card *:data-[slot=alert-description]:text-destructive/90 [&>svg]:text-current border-l-4 border-l-destructive",
+				info: "bg-[oklch(var(--color-blue)/0.05)] dark:bg-[oklch(var(--color-blue)/0.1)] text-foreground border-l-4 border-l-[oklch(var(--color-blue))] [&>svg]:text-[oklch(var(--color-blue))]",
+				warning: "bg-[oklch(var(--color-orange)/0.05)] dark:bg-[oklch(var(--color-orange)/0.1)] text-foreground border-l-4 border-l-[oklch(var(--color-orange))] [&>svg]:text-[oklch(var(--color-orange))]",
+				success: "bg-[oklch(var(--color-green)/0.05)] dark:bg-[oklch(var(--color-green)/0.1)] text-foreground border-l-4 border-l-[oklch(var(--color-green))] [&>svg]:text-[oklch(var(--color-green))]",
 			},
 		},
 		defaultVariants: {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import ClockIcon from '@lucide/svelte/icons/clock';
 	import FilterIcon from '@lucide/svelte/icons/filter';
 	import PlayCircleIcon from '@lucide/svelte/icons/play-circle';
@@ -10,8 +11,10 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
+	import * as Collapsible from '$lib/components/ui/collapsible';
 	import * as Select from '$lib/components/ui/select';
 	import * as Tabs from '$lib/components/ui/tabs';
+	import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
 
 	import type { PageData } from './$types';
 
@@ -27,6 +30,7 @@
 
 	let selectedMood = $state<string | undefined>(undefined);
 	let selectedType = $state<string>('all');
+	let filtersOpen = $state(false);
 
 	function applyFilters() {
 		const params = new SvelteURLSearchParams(page.url.searchParams);
@@ -38,107 +42,118 @@
 		params.set('type', selectedType);
 		window.location.href = `/meditation?${params.toString()}`;
 	}
-
-	function formatDate(dateString: string) {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
-	}
-
-	function formatTime(dateString: string) {
-		return new Date(dateString).toLocaleTimeString('en-US', {
-			hour: 'numeric',
-			minute: '2-digit'
-		});
-	}
 </script>
 
 <div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
 	<div class="mb-6 flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold">Meditation</h1>
+			<h1 class="font-display text-3xl font-bold">Meditation</h1>
 			<p class="text-muted-foreground">Manage routines and track your practice</p>
 		</div>
-		<Button href="/meditation/routines/new">
+		<Button href="/meditation/routines/new" class="bg-purple-600 hover:bg-purple-700">
 			<PlusIcon class="mr-2 h-4 w-4" />
 			New Routine
 		</Button>
 	</div>
 
 	<Tabs.Root value="routines" class="w-full">
-		<Tabs.List class="grid w-full grid-cols-2">
-			<Tabs.Trigger value="routines">Routines</Tabs.Trigger>
-			<Tabs.Trigger value="history">History</Tabs.Trigger>
+		<Tabs.List
+			class="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
+		>
+			<Tabs.Trigger
+				value="routines"
+				class="font-display border-b-2 border-transparent data-[state=active]:border-purple-500"
+				>Routines</Tabs.Trigger
+			>
+			<Tabs.Trigger
+				value="history"
+				class="font-display border-b-2 border-transparent data-[state=active]:border-purple-500"
+				>History</Tabs.Trigger
+			>
 		</Tabs.List>
 
 		<!-- Routines Tab -->
 		<Tabs.Content value="routines" class="space-y-4">
 			<!-- Filters -->
-			<Card.Root>
-				<Card.Header>
-					<Card.Title class="flex items-center gap-2">
-						<FilterIcon class="h-5 w-5" />
+			<Collapsible.Root bind:open={filtersOpen}>
+				<Collapsible.Trigger>
+					<Button variant="outline" class="w-full sm:w-auto">
+						<FilterIcon class="mr-2 h-4 w-4" />
 						Filters
-					</Card.Title>
-				</Card.Header>
-				<Card.Content>
-					<div class="grid gap-4 md:grid-cols-3">
-						<div>
-							<label for="mood-filter" class="mb-2 block text-sm font-medium">Mood</label>
-							<Select.Root type="single" bind:value={selectedMood}>
-								<Select.Trigger id="mood-filter">
-									{selectedMood || 'All moods'}
-								</Select.Trigger>
-								<Select.Content>
-									<Select.Item value="">All moods</Select.Item>
-									<Select.Item value="Anxious">Anxious</Select.Item>
-									<Select.Item value="Low Energy">Low Energy</Select.Item>
-									<Select.Item value="Focused">Focused</Select.Item>
-									<Select.Item value="Pre-Sleep">Pre-Sleep</Select.Item>
-									<Select.Item value="General">General</Select.Item>
-								</Select.Content>
-							</Select.Root>
-						</div>
-						<div>
-							<label for="type-filter" class="mb-2 block text-sm font-medium">Type</label>
-							<Select.Root type="single" bind:value={selectedType}>
-								<Select.Trigger id="type-filter">
-									{selectedType === 'all'
-										? 'All'
-										: selectedType === 'predefined'
-											? 'Predefined'
-											: 'User Created'}
-								</Select.Trigger>
-								<Select.Content>
-									<Select.Item value="all">All</Select.Item>
-									<Select.Item value="predefined">Predefined</Select.Item>
-									<Select.Item value="user-created">User Created</Select.Item>
-								</Select.Content>
-							</Select.Root>
-						</div>
-						<div class="flex items-end">
-							<Button onclick={applyFilters} class="w-full">Apply Filters</Button>
+						<ChevronDown
+							class="ml-2 h-4 w-4 transition-transform duration-200 {filtersOpen
+								? 'rotate-180'
+								: ''}"
+						/>
+					</Button>
+				</Collapsible.Trigger>
+				<Collapsible.Content class="mt-4">
+					<div
+						class="space-y-4 rounded-lg border border-purple-200 bg-purple-500/5 p-4 dark:border-purple-800"
+					>
+						<div class="grid gap-4 md:grid-cols-3">
+							<div>
+								<label for="mood-filter" class="mb-2 block text-sm font-medium">Mood</label>
+								<Select.Root type="single" bind:value={selectedMood}>
+									<Select.Trigger id="mood-filter">
+										{selectedMood || 'All moods'}
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Item value="">All moods</Select.Item>
+										<Select.Item value="Anxious">Anxious</Select.Item>
+										<Select.Item value="Low Energy">Low Energy</Select.Item>
+										<Select.Item value="Focused">Focused</Select.Item>
+										<Select.Item value="Pre-Sleep">Pre-Sleep</Select.Item>
+										<Select.Item value="General">General</Select.Item>
+									</Select.Content>
+								</Select.Root>
+							</div>
+							<div>
+								<label for="type-filter" class="mb-2 block text-sm font-medium">Type</label>
+								<Select.Root type="single" bind:value={selectedType}>
+									<Select.Trigger id="type-filter">
+										{selectedType === 'all'
+											? 'All'
+											: selectedType === 'predefined'
+												? 'Predefined'
+												: 'User Created'}
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Item value="all">All</Select.Item>
+										<Select.Item value="predefined">Predefined</Select.Item>
+										<Select.Item value="user-created">User Created</Select.Item>
+									</Select.Content>
+								</Select.Root>
+							</div>
+							<div class="flex items-end">
+								<Button onclick={applyFilters} class="w-full bg-purple-600 hover:bg-purple-700"
+									>Apply Filters</Button
+								>
+							</div>
 						</div>
 					</div>
-				</Card.Content>
-			</Card.Root>
+				</Collapsible.Content>
+			</Collapsible.Root>
 
 			<!-- Routines List -->
 			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				{#each data.routines as routine (routine.id)}
-					<Card.Root class="transition-shadow hover:shadow-lg">
+					<Card.Root
+						class="to-lavender-50 border-purple-200 bg-gradient-to-br from-purple-50 transition-shadow hover:shadow-lg dark:border-purple-800 dark:from-purple-950/20 dark:to-purple-900/10"
+					>
 						<Card.Header>
 							<div class="flex items-start justify-between">
 								<div class="flex-1">
-									<Card.Title class="text-lg">{routine.title}</Card.Title>
+									<Card.Title class="font-display text-lg">{routine.title}</Card.Title>
 									{#if routine.description}
 										<p class="mt-2 text-sm text-muted-foreground">{routine.description}</p>
 									{/if}
 								</div>
 								{#if routine.isPredefined}
-									<Badge variant="secondary">
+									<Badge
+										variant="secondary"
+										class="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+									>
 										<SparklesIcon class="mr-1 h-3 w-3" />
 										Predefined
 									</Badge>
@@ -163,7 +178,7 @@
 								href={routine.linkUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="flex-1"
+								class="flex-1 bg-purple-600 hover:bg-purple-700"
 							>
 								<PlayCircleIcon class="mr-2 h-4 w-4" />
 								Practice
@@ -198,7 +213,9 @@
 									<div class="flex-1">
 										<h3 class="font-medium">{session.routine.title}</h3>
 										<p class="text-sm text-muted-foreground">
-											{formatDate(session.completedAt)} at {formatTime(session.completedAt)}
+											{formatTimestampShort(session.completedAt)} at {formatTimeFromTimestamp(
+												session.completedAt
+											)}
 										</p>
 										{#if session.notes}
 											<p class="mt-2 text-sm text-muted-foreground">{session.notes}</p>

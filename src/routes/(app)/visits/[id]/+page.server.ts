@@ -8,6 +8,7 @@ import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
+import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import { calculateVisitStatus } from '$lib/utils/visit-status';
 
@@ -46,7 +47,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	// Initialize forms
 	const visitForm = await superValidate(zod4(visitSchema));
-	visitForm.data.date = new Date().toLocaleDateString('en-CA'); // Set default to today
+	visitForm.data.date = getTodayString(); // Set default to today
 
 	const editForm = await superValidate(person, zod4(personSchema));
 

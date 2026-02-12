@@ -4,7 +4,30 @@ import { fontFamily } from 'tailwindcss/defaultTheme';
 const config = {
 	darkMode: ['class'],
 	content: ['./src/**/*.{html,js,svelte,ts}'],
-	safelist: ['dark'],
+	safelist: [
+		'dark',
+		// Section-specific navigation colors - backgrounds
+		'bg-teal/10',
+		'bg-blue/10',
+		'bg-green/10',
+		'bg-orange/10',
+		'bg-purple/10',
+		'bg-pink/10',
+		// Section-specific navigation colors - borders
+		'border-teal',
+		'border-blue',
+		'border-green',
+		'border-orange',
+		'border-purple',
+		'border-pink',
+		// Hover backgrounds
+		'hover:bg-teal/5',
+		'hover:bg-blue/5',
+		'hover:bg-green/5',
+		'hover:bg-orange/5',
+		'hover:bg-purple/5',
+		'hover:bg-pink/5'
+	],
 	theme: {
 		container: {
 			center: true,
@@ -47,6 +70,36 @@ const config = {
 				card: {
 					DEFAULT: 'hsl(var(--card) / <alpha-value>)',
 					foreground: 'hsl(var(--card-foreground) / <alpha-value>)'
+				},
+				teal: {
+					light: 'var(--color-teal-light)',
+					DEFAULT: 'var(--color-teal)',
+					dark: 'var(--color-teal-dark)'
+				},
+				blue: {
+					light: 'var(--color-blue-light)',
+					DEFAULT: 'var(--color-blue)',
+					dark: 'var(--color-blue-dark)'
+				},
+				green: {
+					light: 'var(--color-green-light)',
+					DEFAULT: 'var(--color-green)',
+					dark: 'var(--color-green-dark)'
+				},
+				orange: {
+					light: 'var(--color-orange-light)',
+					DEFAULT: 'var(--color-orange)',
+					dark: 'var(--color-orange-dark)'
+				},
+				purple: {
+					light: 'var(--color-purple-light)',
+					DEFAULT: 'var(--color-purple)',
+					dark: 'var(--color-purple-dark)'
+				},
+				pink: {
+					light: 'var(--color-pink-light)',
+					DEFAULT: 'var(--color-pink)',
+					dark: 'var(--color-pink-dark)'
 				}
 			},
 			borderRadius: {
@@ -55,7 +108,8 @@ const config = {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: [...fontFamily.sans]
+				display: ['Lexend', 'system-ui', 'sans-serif'],
+				sans: ['Inter', 'system-ui', ...fontFamily.sans]
 			}
 		}
 	}
