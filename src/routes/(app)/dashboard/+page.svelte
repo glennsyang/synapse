@@ -75,27 +75,39 @@
 	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 		<StatCard
 			label="Journal Entries"
-			value={data.stats.journalStreak}
+			value={data.stats.journalThisWeek}
 			icon={BookIcon}
 			color="blue"
 			trend="this week"
-			trendDirection="neutral"
+			trendDirection={data.stats.journalThisWeek > data.stats.journalLastWeek
+				? 'up'
+				: data.stats.journalThisWeek < data.stats.journalLastWeek
+					? 'down'
+					: 'neutral'}
 		/>
 		<StatCard
-			label="Workouts"
-			value="{data.stats.workoutsCompletedWeek} / {data.stats.workoutsCompletedMonth}"
+			label="Workouts Completed"
+			value={data.stats.workoutsThisWeek}
 			icon={DumbbellIcon}
 			color="green"
-			trend="week / month"
-			trendDirection={data.stats.workoutsCompletedWeek >= 3 ? 'up' : 'neutral'}
+			trend="this week"
+			trendDirection={data.stats.workoutsThisWeek > data.stats.workoutsLastWeek
+				? 'up'
+				: data.stats.workoutsThisWeek < data.stats.workoutsLastWeek
+					? 'down'
+					: 'neutral'}
 		/>
 		<StatCard
 			label="Meditation Sessions"
-			value={data.stats.meditationSessions}
+			value={data.stats.meditationThisWeek}
 			icon={HeartIcon}
 			color="purple"
 			trend="this week"
-			trendDirection="neutral"
+			trendDirection={data.stats.meditationThisWeek > data.stats.meditationLastWeek
+				? 'up'
+				: data.stats.meditationThisWeek < data.stats.meditationLastWeek
+					? 'down'
+					: 'neutral'}
 		/>
 	</div>
 

@@ -2,6 +2,7 @@ import { and, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { getDb } from '$lib/server/db';
 import { journalEntries, meditationSessions, workoutLogs } from '$lib/server/db/schema';
+import { logger } from '$lib/utils/logger';
 
 import type { PageServerLoad } from './$types';
 
@@ -10,9 +11,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (!user) {
 		return {
 			stats: {
-				journalStreak: 0,
-				meditationSessions: 0,
-				workoutsCompletedWeek: 0,
+				journalThisWeek: 0,
+				journalLastWeek: 0,
+				meditationThisWeek: 0,
+				meditationLastWeek: 0,
+				workoutsThisWeek: 0,
+				workoutsLastWeek: 0,
 				workoutsCompletedMonth: 0,
 				weeklyActivity: []
 			},
@@ -23,29 +27,96 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 
 	const today = new Date();
-	const startOfWeek = new Date(today);
-	startOfWeek.setDate(today.getDate() - 7);
+
+	// Calculate current week (Monday to Sunday)
+	const dayOfWeek = today.getDay();
+	const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday is 0, we want Monday as 0
+
+	const startOfThisWeek = new Date(today);
+	startOfThisWeek.setDate(today.getDate() - daysFromMonday);
+	startOfThisWeek.setHours(0, 0, 0, 0);
+
+	const endOfThisWeek = new Date(startOfThisWeek);
+	endOfThisWeek.setDate(startOfThisWeek.getDate() + 7);
+
+	// Calculate previous week (Monday to Sunday)
+	const startOfLastWeek = new Date(startOfThisWeek);
+	startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
+
+	const endOfLastWeek = new Date(startOfThisWeek);
+
 	const startOfMonth = new Date(today);
 	startOfMonth.setDate(today.getDate() - 30);
 
 	const db = getDb();
 
 	try {
-		const recentJournalCount = await db
+		// This week counts
+		const journalCountThisWeek = await db
 			.select({ count: sql<number>`count(*)` })
 			.from(journalEntries)
 			.where(
 				and(
 					eq(journalEntries.userId, user.id),
-					gte(journalEntries.createdAt, startOfWeek.toISOString())
+					gte(journalEntries.createdAt, startOfThisWeek.toISOString()),
+					sql`${journalEntries.createdAt} < ${endOfThisWeek.toISOString()}`
 				)
 			);
 
-		const workoutCountWeek = await db
+		const workoutCountThisWeek = await db
 			.select({ count: sql<number>`count(*)` })
 			.from(workoutLogs)
 			.where(
-				and(eq(workoutLogs.userId, user.id), gte(workoutLogs.createdAt, startOfWeek.toISOString()))
+				and(
+					eq(workoutLogs.userId, user.id),
+					gte(workoutLogs.createdAt, startOfThisWeek.toISOString()),
+					sql`${workoutLogs.createdAt} < ${endOfThisWeek.toISOString()}`
+				)
+			);
+
+		const meditationCountThisWeek = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(meditationSessions)
+			.where(
+				and(
+					eq(meditationSessions.userId, user.id),
+					gte(meditationSessions.createdAt, startOfThisWeek.toISOString()),
+					sql`${meditationSessions.createdAt} < ${endOfThisWeek.toISOString()}`
+				)
+			);
+
+		// Last week counts
+		const journalCountLastWeek = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(journalEntries)
+			.where(
+				and(
+					eq(journalEntries.userId, user.id),
+					gte(journalEntries.createdAt, startOfLastWeek.toISOString()),
+					sql`${journalEntries.createdAt} < ${endOfLastWeek.toISOString()}`
+				)
+			);
+
+		const workoutCountLastWeek = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(workoutLogs)
+			.where(
+				and(
+					eq(workoutLogs.userId, user.id),
+					gte(workoutLogs.createdAt, startOfLastWeek.toISOString()),
+					sql`${workoutLogs.createdAt} < ${endOfLastWeek.toISOString()}`
+				)
+			);
+
+		const meditationCountLastWeek = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(meditationSessions)
+			.where(
+				and(
+					eq(meditationSessions.userId, user.id),
+					gte(meditationSessions.createdAt, startOfLastWeek.toISOString()),
+					sql`${meditationSessions.createdAt} < ${endOfLastWeek.toISOString()}`
+				)
 			);
 
 		const workoutCountMonth = await db
@@ -53,16 +124,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.from(workoutLogs)
 			.where(
 				and(eq(workoutLogs.userId, user.id), gte(workoutLogs.createdAt, startOfMonth.toISOString()))
-			);
-
-		const meditationCount = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(meditationSessions)
-			.where(
-				and(
-					eq(meditationSessions.userId, user.id),
-					gte(meditationSessions.createdAt, startOfWeek.toISOString())
-				)
 			);
 
 		const weeklyActivity = [];
@@ -137,9 +198,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 		return {
 			stats: {
-				journalStreak: Number(recentJournalCount[0]?.count || 0),
-				meditationSessions: Number(meditationCount[0]?.count || 0),
-				workoutsCompletedWeek: Number(workoutCountWeek[0]?.count || 0),
+				journalThisWeek: Number(journalCountThisWeek[0]?.count || 0),
+				journalLastWeek: Number(journalCountLastWeek[0]?.count || 0),
+				meditationThisWeek: Number(meditationCountThisWeek[0]?.count || 0),
+				meditationLastWeek: Number(meditationCountLastWeek[0]?.count || 0),
+				workoutsThisWeek: Number(workoutCountThisWeek[0]?.count || 0),
+				workoutsLastWeek: Number(workoutCountLastWeek[0]?.count || 0),
 				workoutsCompletedMonth: Number(workoutCountMonth[0]?.count || 0),
 				weeklyActivity
 			},
@@ -148,12 +212,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 			recentMeditations
 		};
 	} catch (error) {
-		console.error('Dashboard data fetch error:', error);
+		logger.error('Failed to delete journal entry', { error });
+
 		return {
 			stats: {
-				journalStreak: 0,
-				meditationSessions: 0,
-				workoutsCompletedWeek: 0,
+				journalThisWeek: 0,
+				journalLastWeek: 0,
+				meditationThisWeek: 0,
+				meditationLastWeek: 0,
+				workoutsThisWeek: 0,
+				workoutsLastWeek: 0,
 				workoutsCompletedMonth: 0,
 				weeklyActivity: []
 			},
