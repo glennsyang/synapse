@@ -4,7 +4,6 @@
 	import { toggleMode } from 'mode-watcher';
 
 	import { page } from '$app/state';
-	import SyncIndicator from '$lib/components/app/SyncIndicator.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
@@ -105,7 +104,6 @@
 			{/if}
 		</div>
 		<div class="ms-auto flex items-center gap-2">
-			<SyncIndicator />
 			<Button onclick={toggleMode} variant="outline" size="icon" class="h-11 w-11 md:h-9 md:w-9">
 				<SunIcon
 					class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"

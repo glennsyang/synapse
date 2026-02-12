@@ -26,7 +26,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 		// Fetch routine
 		const routine = await db.query.meditationRoutines.findFirst({
-			where: eq(meditationRoutines.id, params.id)
+			where: and(
+				eq(meditationRoutines.id, params.id),
+				eq(meditationRoutines.userId, locals.user.id)
+			)
 		});
 
 		if (!routine) {
@@ -280,7 +283,10 @@ export const actions: Actions = {
 
 			// Check if routine exists and user owns it
 			const routine = await db.query.meditationRoutines.findFirst({
-				where: eq(meditationRoutines.id, params.id)
+				where: and(
+					eq(meditationRoutines.id, params.id),
+					eq(meditationRoutines.userId, locals.user.id)
+				)
 			});
 
 			if (!routine) {
@@ -336,7 +342,10 @@ export const actions: Actions = {
 
 			// Check if routine exists and user owns it
 			const routine = await db.query.meditationRoutines.findFirst({
-				where: eq(meditationRoutines.id, params.id)
+				where: and(
+					eq(meditationRoutines.id, params.id),
+					eq(meditationRoutines.userId, locals.user.id)
+				)
 			});
 
 			if (!routine) {

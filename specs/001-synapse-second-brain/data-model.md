@@ -168,7 +168,7 @@ export const journalEntries = sqliteTable('journal_entries', {
 - `location`: Optional location (e.g., "San Francisco, CA")
 - `weather`: Optional weather JSON (e.g., `{"temp": 72, "condition": "Sunny"}`)
 - `created_at`: Creation timestamp
-- `updated_at`: Last modification timestamp (for sync)
+- `updated_at`: Last modification timestamp
 
 **Indexes**:
 
@@ -758,25 +758,6 @@ user (better-auth) (1) ──< (*) visits
 ```
 
 **Note**: All `user` references point to the better-auth `user` table (not a custom `users` table).
-
----
-
-## Sync Strategy
-
-All user-owned tables include `updated_at` timestamps for conflict resolution:
-
-- Client sends changes with `updated_at`
-- Server compares with stored `updated_at`
-- Last-write-wins: keep record with latest timestamp
-- Return merged state to client
-
-**Sync Tables**: All application tables except better-auth managed tables (user, session, account, verification)
-
-**UUID Benefits for Sync**:
-
-- Client-generated UUIDs prevent ID collisions in offline scenarios
-- No need for server-side ID allocation before syncing
-- Simplifies offline-first architecture with IndexedDB
 
 ---
 

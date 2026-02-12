@@ -272,37 +272,6 @@
 
 ---
 
-## Phase 9: Polish & Cross-Cutting Concerns (Final Phase)
-
-**Purpose**: Sync, offline support, responsive design, error handling, logging, deployment
-
-- [x] T162 [P] Implement sync service in src/lib/server/sync/index.ts with last-write-wins conflict resolution
-- [x] T163 [P] Create IndexedDB wrapper in src/lib/client/offline-db.ts for offline cache
-- [x] T164 Implement sync endpoint in src/routes/api/sync/+server.ts
-- [x] T165 [P] Add sync button/auto-sync logic in app layout
-- [x] T166 [P] Implement offline detection and UI indicators
-- [x] T167 [P] Add responsive breakpoints and mobile styles across all pages
-- [x] T168 [P] Create mobile-optimized navigation (hamburger menu)
-- [x] T169 [P] Ensure all forms are mobile-friendly with proper input types
-- [x] T170 [P] Add loading states and skeletons for all async operations
-- [x] T171 [P] Implement error boundaries and user-friendly error messages
-- [x] T172 [P] Add toast notifications for success/error feedback
-- [x] T173 [P] Implement structured logging with request IDs in hooks.server.ts
-- [x] T174 [P] Add error tracking with stack traces
-- [x] T175 [P] Create fly.toml for deployment configuration
-- [x] T176 Create Dockerfile (if needed) or use SvelteKit adapter-node
-- [x] T177 Configure fly.io volume for persistent SQLite database
-- [x] T178 Set fly.io secrets (BETTER_AUTH_SECRET, RESEND_API_KEY, BETTER_AUTH_BASE_URL)
-- [x] T179 Deploy to fly.io and verify production environment
-- [x] T180 [P] Write README.md with project overview, setup, and deployment instructions
-- [x] T181 [P] Document API contracts in contracts/ files (already done in planning phase)
-- [ ] T182 [P] Create CHANGELOG.md for version tracking (SKIPPED per user request)
-- [x] T183 Setup GitHub Actions (optional) for CI/CD (linting, tests, deployment)
-
-**Checkpoint**: Application complete, deployed, and production-ready
-
----
-
 ## Dependencies & Parallel Execution
 
 ### Parallel Opportunities

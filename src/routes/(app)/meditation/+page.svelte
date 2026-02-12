@@ -139,7 +139,7 @@
 			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				{#each data.routines as routine (routine.id)}
 					<Card.Root
-						class="to-lavender-50 border-purple-200 bg-gradient-to-br from-purple-50 transition-shadow hover:shadow-lg dark:border-purple-800 dark:from-purple-950/20 dark:to-purple-900/10"
+						class="to-lavender-50 border-purple-200 bg-linear-to-br from-purple-50 transition-shadow hover:shadow-lg dark:border-purple-800 dark:from-purple-950/20 dark:to-purple-900/10"
 					>
 						<Card.Header>
 							<div class="flex items-start justify-between">
