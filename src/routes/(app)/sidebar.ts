@@ -28,14 +28,14 @@ export const navItems: SidebarNav = {
 			description: 'Organize tasks by daily, weekly, and monthly cadence',
 			url: '/todos',
 			icon: CheckSquareIcon,
-			color: 'text-green-600 dark:text-green-400'
+			color: 'text-orange-600 dark:text-orange-400'
 		},
 		{
 			title: 'Fitness',
 			description: 'Track workouts, meals, and weight progress',
 			url: '/fitness',
 			icon: DumbbellIcon,
-			color: 'text-orange-600 dark:text-orange-400'
+			color: 'text-green-600 dark:text-green-400'
 		},
 		{
 			title: 'Meditation',

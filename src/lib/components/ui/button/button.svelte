@@ -15,6 +15,13 @@
 				secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs",
 				ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
 				link: "text-primary underline-offset-4 hover:underline",
+				gradient: "bg-gradient-to-r from-[oklch(var(--color-teal))] to-[oklch(var(--color-blue))] text-white hover:opacity-90 shadow-xs",
+				"gradient-teal": "bg-[oklch(var(--color-teal))] text-white hover:opacity-90 shadow-xs",
+				"gradient-blue": "bg-[oklch(var(--color-blue))] text-white hover:opacity-90 shadow-xs",
+				"gradient-green": "bg-[oklch(var(--color-green))] text-white hover:opacity-90 shadow-xs",
+				"gradient-orange": "bg-[oklch(var(--color-orange))] text-white hover:opacity-90 shadow-xs",
+				"gradient-purple": "bg-[oklch(var(--color-purple))] text-white hover:opacity-90 shadow-xs",
+				"gradient-pink": "bg-[oklch(var(--color-pink))] text-white hover:opacity-90 shadow-xs",
 			},
 			size: {
 				default: "h-9 px-4 py-2 has-[>svg]:px-3",

@@ -17,6 +17,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import { formatTimestampLong } from '$lib/utils/date';
 
 	import type { PageData } from './$types';
 
@@ -88,16 +89,6 @@
 		'Pre-Sleep': 'bg-purple-100 text-purple-800',
 		General: 'bg-gray-100 text-gray-800'
 	};
-
-	function formatDate(dateString: string) {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit'
-		});
-	}
 
 	function getDayName(dayNumber: number) {
 		const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -221,7 +212,7 @@
 					<div class="space-y-3">
 						{#each data.sessions.slice(0, 5) as session (session.id)}
 							<div class="border-b pb-2 last:border-b-0">
-								<p class="text-sm font-medium">{formatDate(session.completedAt)}</p>
+								<p class="text-sm font-medium">{formatTimestampLong(session.completedAt)}</p>
 								{#if session.moodRating}
 									<p class="text-sm text-muted-foreground">Mood: {session.moodRating}/5</p>
 								{/if}

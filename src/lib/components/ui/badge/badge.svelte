@@ -12,6 +12,12 @@
 				destructive:
 					"bg-destructive [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/70 border-transparent text-white",
 				outline: "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+				teal: "bg-[oklch(var(--color-teal)/0.15)] text-[oklch(var(--color-teal))] border-[oklch(var(--color-teal)/0.3)] [a&]:hover:bg-[oklch(var(--color-teal)/0.25)]",
+				blue: "bg-[oklch(var(--color-blue)/0.15)] text-[oklch(var(--color-blue))] border-[oklch(var(--color-blue)/0.3)] [a&]:hover:bg-[oklch(var(--color-blue)/0.25)]",
+				green: "bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))] border-[oklch(var(--color-green)/0.3)] [a&]:hover:bg-[oklch(var(--color-green)/0.25)]",
+				orange: "bg-[oklch(var(--color-orange)/0.15)] text-[oklch(var(--color-orange))] border-[oklch(var(--color-orange)/0.3)] [a&]:hover:bg-[oklch(var(--color-orange)/0.25)]",
+				purple: "bg-[oklch(var(--color-purple)/0.15)] text-[oklch(var(--color-purple))] border-[oklch(var(--color-purple)/0.3)] [a&]:hover:bg-[oklch(var(--color-purple)/0.25)]",
+				pink: "bg-[oklch(var(--color-pink)/0.15)] text-[oklch(var(--color-pink))] border-[oklch(var(--color-pink)/0.3)] [a&]:hover:bg-[oklch(var(--color-pink)/0.25)]",
 			},
 		},
 		defaultVariants: {

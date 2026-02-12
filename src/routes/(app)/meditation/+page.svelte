@@ -12,6 +12,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Select from '$lib/components/ui/select';
 	import * as Tabs from '$lib/components/ui/tabs';
+	import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
 
 	import type { PageData } from './$types';
 
@@ -37,21 +38,6 @@
 		}
 		params.set('type', selectedType);
 		window.location.href = `/meditation?${params.toString()}`;
-	}
-
-	function formatDate(dateString: string) {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
-	}
-
-	function formatTime(dateString: string) {
-		return new Date(dateString).toLocaleTimeString('en-US', {
-			hour: 'numeric',
-			minute: '2-digit'
-		});
 	}
 </script>
 
@@ -198,7 +184,9 @@
 									<div class="flex-1">
 										<h3 class="font-medium">{session.routine.title}</h3>
 										<p class="text-sm text-muted-foreground">
-											{formatDate(session.completedAt)} at {formatTime(session.completedAt)}
+											{formatTimestampShort(session.completedAt)} at {formatTimeFromTimestamp(
+												session.completedAt
+											)}
 										</p>
 										{#if session.notes}
 											<p class="mt-2 text-sm text-muted-foreground">{session.notes}</p>

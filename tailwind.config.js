@@ -4,7 +4,30 @@ import { fontFamily } from 'tailwindcss/defaultTheme';
 const config = {
 	darkMode: ['class'],
 	content: ['./src/**/*.{html,js,svelte,ts}'],
-	safelist: ['dark'],
+	safelist: [
+		'dark',
+		// Section-specific navigation colors - backgrounds
+		'bg-teal/10',
+		'bg-blue/10',
+		'bg-green/10',
+		'bg-orange/10',
+		'bg-purple/10',
+		'bg-pink/10',
+		// Section-specific navigation colors - borders
+		'border-teal',
+		'border-blue',
+		'border-green',
+		'border-orange',
+		'border-purple',
+		'border-pink',
+		// Hover backgrounds
+		'hover:bg-teal/5',
+		'hover:bg-blue/5',
+		'hover:bg-green/5',
+		'hover:bg-orange/5',
+		'hover:bg-purple/5',
+		'hover:bg-pink/5'
+	],
 	theme: {
 		container: {
 			center: true,

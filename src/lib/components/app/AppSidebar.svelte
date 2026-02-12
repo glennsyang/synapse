@@ -29,8 +29,8 @@
 								<BrainIcon class="size-5!" />
 							</div>
 							<div class="flex flex-col gap-0.5 leading-none">
-								<span class="font-medium">Synapse</span>
-								<span class="">Your Second Brain</span>
+								<span class="font-display font-extrabold">Synapse</span>
+								<span class="text-xs">Your Second Brain</span>
 							</div>
 						</a>
 					{/snippet}

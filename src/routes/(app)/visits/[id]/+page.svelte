@@ -15,6 +15,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { personSchema, visitSchema } from '$lib/schemas/visits';
+	import { formatDateLong, formatDateShort } from '$lib/utils/date';
 
 	import type { PageData } from './$types';
 
@@ -98,15 +99,6 @@
 		}
 	}
 
-	function formatDate(dateString: string): string {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			weekday: 'long',
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
-	}
-
 	function formatTime(timeString: string): string {
 		const [hours, minutes] = timeString.split(':').map(Number);
 		const period = hours >= 12 ? 'PM' : 'AM';
@@ -120,14 +112,6 @@
 		}
 		const months = Math.floor(days / 30);
 		return `${months} month${months !== 1 ? 's' : ''} ago`;
-	}
-
-	function formatDateShort(dateString: string): string {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
 	}
 </script>
 
@@ -193,7 +177,7 @@
 								<div class="flex-1">
 									<div class="mb-2 flex items-center gap-4">
 										<p class="font-semibold">
-											{formatDate(visit.date)}
+											{formatDateLong(visit.date)}
 										</p>
 										{#if visit.time}
 											<span class="text-sm text-muted-foreground">{formatTime(visit.time)}</span>

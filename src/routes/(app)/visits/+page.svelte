@@ -7,6 +7,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
+	import { formatDateShort } from '$lib/utils/date';
 
 	import type { PageData } from './$types';
 
@@ -16,14 +17,6 @@
 
 	function getFilterUrl(status: string) {
 		return status ? `/visits?status=${status}` : '/visits';
-	}
-
-	function formatDate(dateString: string): string {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
 	}
 
 	function formatTimeSince(days: number): string {
@@ -114,7 +107,7 @@
 							{#if person.lastVisit}
 								<div class="text-sm text-muted-foreground">
 									<p>
-										Last visit: {formatDate(person.lastVisit.date)}
+										Last visit: {formatDateShort(person.lastVisit.date)}
 										{#if person.daysSinceLastVisit !== null}
 											({formatTimeSince(person.daysSinceLastVisit)})
 										{/if}

@@ -19,6 +19,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import type { Exercise } from '$lib/types';
+	import { formatDateShort, getTodayString } from '$lib/utils/date';
 
 	import type { PageData } from './$types.js';
 
@@ -122,7 +123,7 @@
 
 	// Calculate today's total calories
 	let todayTotalCalories = $derived(() => {
-		const today = new Date().toLocaleDateString('en-CA');
+		const today = getTodayString();
 		const todayMeals = data.meals.filter((meal) => meal.date === today);
 		return todayMeals.reduce((sum, meal) => sum + (meal.caloriesEstimate || 0), 0);
 	});
@@ -356,11 +357,7 @@
 									<div>
 										<p class="font-medium">{entry.weightLbs} lbs</p>
 										<p class="text-sm text-muted-foreground">
-											{new Date(entry.date).toLocaleDateString('en-US', {
-												month: 'short',
-												day: 'numeric',
-												year: 'numeric'
-											})}
+											{formatDateShort(entry.date)}
 											{#if entry.time}
 												at {entry.time}
 											{/if}
@@ -501,11 +498,7 @@
 												{/if}
 											</div>
 											<p class="text-sm text-muted-foreground">
-												{new Date(workout.date).toLocaleDateString('en-US', {
-													month: 'short',
-													day: 'numeric',
-													year: 'numeric'
-												})}
+												{formatDateShort(workout.date)}
 												{#if workout.time}
 													at {workout.time}
 												{/if}
@@ -694,11 +687,7 @@
 												{/if}
 											</div>
 											<p class="text-sm text-muted-foreground">
-												{new Date(meal.date).toLocaleDateString('en-US', {
-													month: 'short',
-													day: 'numeric',
-													year: 'numeric'
-												})}
+												{formatDateShort(meal.date)}
 											</p>
 											<p class="mt-2 text-sm">{meal.description}</p>
 										</div>
