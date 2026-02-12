@@ -12,6 +12,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Collapsible from '$lib/components/ui/collapsible';
+	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
@@ -93,7 +94,7 @@
 					>
 						<div class="grid gap-4 md:grid-cols-3">
 							<div>
-								<label for="mood-filter" class="mb-2 block text-sm font-medium">Mood</label>
+								<Label for="mood-filter" class="mb-2 block text-sm font-medium">Mood</Label>
 								<Select.Root type="single" bind:value={selectedMood}>
 									<Select.Trigger id="mood-filter">
 										{selectedMood || 'All moods'}
@@ -109,7 +110,7 @@
 								</Select.Root>
 							</div>
 							<div>
-								<label for="type-filter" class="mb-2 block text-sm font-medium">Type</label>
+								<Label for="type-filter" class="mb-2 block text-sm font-medium">Type</Label>
 								<Select.Root type="single" bind:value={selectedType}>
 									<Select.Trigger id="type-filter">
 										{selectedType === 'all'

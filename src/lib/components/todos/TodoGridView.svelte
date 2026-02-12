@@ -1,6 +1,4 @@
 <script lang="ts">
-	import type { Project } from '$lib/server/db/types';
-
 	import TodoCard from './TodoCard.svelte';
 
 	interface Props {
@@ -9,12 +7,10 @@
 			title: string;
 			description: string | null;
 			state: string;
-			cadence: string;
+			cadence: string | null;
 			dueDate: string | null;
 			priority: number;
-			project: Project | null;
 			tags: string[] | null;
-			subSteps: Array<{ title: string; completed: boolean }> | null;
 		}>;
 		onStateChange?: (todoId: string, newState: string) => void;
 	}

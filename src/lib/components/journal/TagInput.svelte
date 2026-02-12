@@ -72,17 +72,17 @@
 			{#each tags as tag (tag)}
 				<Badge variant="secondary" class="flex items-center gap-1">
 					{tag}
-					<button
+					<Button
 						type="button"
 						onclick={() => removeTag(tag)}
 						class="ml-1 rounded-full hover:bg-destructive/20"
 					>
 						<X class="h-3 w-3" />
-					</button>
+					</Button>
 				</Badge>
 			{/each}
 		</div>
 	{/if}
 
-	<input type="hidden" name="tags" value={value || ''} />
+	<Input type="hidden" name="tags" value={value || ''} />
 </div>

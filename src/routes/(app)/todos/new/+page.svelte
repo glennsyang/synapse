@@ -16,6 +16,7 @@
 
 	// svelte-ignore state_referenced_locally
 	const { form, errors, enhance, message } = superForm(data.form, {
+		dataType: 'form',
 		onUpdate: ({ form }) => {
 			if (form.valid) {
 				toast.success('Todo created successfully!');
@@ -28,7 +29,6 @@
 
 	// Type coercion helpers for Select components
 	let priorityString = $derived($form.priority?.toString() ?? '2');
-	let projectIdValue = $derived($form.projectId ?? undefined);
 </script>
 
 <div class="container mx-auto max-w-2xl py-8">
@@ -80,12 +80,13 @@
 
 				<!-- Cadence -->
 				<div class="space-y-2">
-					<Label for="cadence">Cadence *</Label>
-					<Select.Root type="single" name="cadence" bind:value={$form.cadence} required>
-						<Select.Trigger class="w-full {$errors.cadence ? 'border-destructive' : ''}">
-							{$form.cadence.charAt(0).toUpperCase() + $form.cadence.slice(1) || 'Select cadence'}
+					<Label for="cadence">Cadence (Optional)</Label>
+					<Select.Root type="single" name="cadence" bind:value={$form.cadence}>
+						<Select.Trigger id="cadence">
+							{$form.cadence || 'Select cadence (e.g., One-time, Daily)'}
 						</Select.Trigger>
 						<Select.Content>
+							<Select.Item value="" label="One-time">One-time</Select.Item>
 							<Select.Item value="daily" label="Daily">Daily</Select.Item>
 							<Select.Item value="weekly" label="Weekly">Weekly</Select.Item>
 							<Select.Item value="monthly" label="Monthly">Monthly</Select.Item>
@@ -96,38 +97,10 @@
 					{/if}
 				</div>
 
-				<!-- Project -->
-				<div class="space-y-2">
-					<Label for="projectId">Project</Label>
-					<Select.Root
-						type="single"
-						name="projectId"
-						bind:value={projectIdValue}
-						onValueChange={(v) => ($form.projectId = v || null)}
-					>
-						<Select.Trigger class="w-full {$errors.projectId ? 'border-destructive' : ''}">
-							{$form.projectId
-								? data.projects.find((c) => c.id === $form.projectId)?.name || 'Select a project'
-								: 'Select a project'}
-						</Select.Trigger>
-						<Select.Content>
-							<Select.Item value="">No Project</Select.Item>
-							{#each data.projects as project (project.id)}
-								<Select.Item value={project.id} label={project.name}>
-									{project.name}
-								</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-					{#if $errors.projectId}
-						<p class="text-sm text-destructive">{$errors.projectId}</p>
-					{/if}
-				</div>
-
 				<div class="grid gap-4 sm:grid-cols-2">
 					<!-- Priority -->
 					<div class="space-y-2">
-						<Label for="priority">Priority</Label>
+						<Label for="priority">Priority *</Label>
 						<Select.Root
 							type="single"
 							name="priority"
@@ -136,7 +109,17 @@
 							required
 						>
 							<Select.Trigger class="w-full">
-								{$form.priority || 'Select priority'}
+								{#if $form.priority === 1}
+									1 - Highest
+								{:else if $form.priority === 2}
+									2 - High
+								{:else if $form.priority === 3}
+									3 - Medium
+								{:else if $form.priority === 4}
+									4 - Low
+								{:else}
+									Select priority
+								{/if}
 							</Select.Trigger>
 							<Select.Content>
 								<Select.Item value="1" label="1 - Highest">1 - Highest</Select.Item>

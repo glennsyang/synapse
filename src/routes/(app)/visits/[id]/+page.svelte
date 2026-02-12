@@ -202,7 +202,7 @@
 								</div>
 
 								<form method="POST" action="?/deleteVisit">
-									<input type="hidden" name="visitId" value={visit.id} />
+									<Input type="hidden" name="visitId" value={visit.id} />
 									<Button
 										type="button"
 										variant="destructive"

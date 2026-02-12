@@ -13,7 +13,6 @@ import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	// Auth handled by (app)/+layout.server.ts
 	const form = await superValidate(zod4(journalEntrySchema));
 
 	// Set default date to today, use local timezone

@@ -5,6 +5,8 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog';
 
+	import Input from '../ui/input/input.svelte';
+
 	interface Props {
 		open: boolean;
 		title: string;
@@ -44,7 +46,7 @@
 				};
 			}}
 		>
-			<input type="hidden" name="id" value={id} />
+			<Input type="hidden" name="id" value={id} />
 			<Dialog.Footer>
 				<Dialog.Close><Button type="reset" variant="outline">Cancel</Button></Dialog.Close>
 				<Button type="submit">{confirmButtonText}</Button>

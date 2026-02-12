@@ -3,13 +3,11 @@
 	import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
 	import CircleIcon from '@lucide/svelte/icons/circle';
 	import ClockIcon from '@lucide/svelte/icons/clock';
-	import FolderOpenIcon from '@lucide/svelte/icons/folder-open';
+	import PauseCircleIcon from '@lucide/svelte/icons/pause-circle';
 
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import { Progress } from '$lib/components/ui/progress';
-	import type { Project } from '$lib/server/db/types';
 
 	interface Props {
 		todo: {
@@ -17,26 +15,15 @@
 			title: string;
 			description: string | null;
 			state: string;
-			cadence: string;
+			cadence: string | null;
 			dueDate: string | null;
 			priority: number;
-			project: Project | null;
 			tags: string[] | null;
-			subSteps: Array<{ title: string; completed: boolean }> | null;
 		};
 		onStateChange?: (newState: string) => void;
 	}
 
 	let { todo, onStateChange }: Props = $props();
-
-	// Calculate sub-steps progress
-	let completedSubSteps = $derived(
-		todo.subSteps ? todo.subSteps.filter((s) => s.completed).length : 0
-	);
-	let totalSubSteps = $derived(todo.subSteps?.length || 0);
-	let subStepsProgress = $derived(
-		totalSubSteps > 0 ? (completedSubSteps / totalSubSteps) * 100 : 0
-	);
 
 	// Priority color mapping (larger, more vibrant)
 	const priorityColors = {
@@ -57,6 +44,7 @@
 	const stateBadgeVariant = {
 		new: 'secondary',
 		in_progress: 'default',
+		on_hold: 'outline',
 		blocked: 'destructive',
 		done: 'outline'
 	} as const;
@@ -64,6 +52,7 @@
 	const stateIcons = {
 		new: CircleIcon,
 		in_progress: ClockIcon,
+		on_hold: PauseCircleIcon,
 		blocked: CircleIcon,
 		done: CheckCircle2Icon
 	};
@@ -107,15 +96,7 @@
 			</Badge>
 
 			<!-- Cadence -->
-			<Badge variant="outline">{todo.cadence}</Badge>
-
-			<!-- Project -->
-			{#if todo.project}
-				<div class="flex items-center gap-1">
-					<FolderOpenIcon class="h-3 w-3" />
-					<span style="color: {todo.project.color || 'currentColor'}">{todo.project.name}</span>
-				</div>
-			{/if}
+			<Badge variant="outline">{todo.cadence || 'One-time'}</Badge>
 
 			<!-- Due Date -->
 			{#if todo.dueDate}
@@ -132,17 +113,6 @@
 				{#each todo.tags as tag (tag)}
 					<Badge variant="secondary" class="text-xs">{tag}</Badge>
 				{/each}
-			</div>
-		{/if}
-
-		<!-- Sub-steps Progress -->
-		{#if totalSubSteps > 0}
-			<div class="mt-3">
-				<div class="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-					<span>Sub-steps</span>
-					<span>{completedSubSteps} / {totalSubSteps}</span>
-				</div>
-				<Progress value={subStepsProgress} class="h-1" />
 			</div>
 		{/if}
 	</Card.Content>

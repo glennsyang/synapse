@@ -8,8 +8,6 @@ import { logger } from '$lib/utils/logger';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	// Auth handled by (app)/+layout.server.ts
-
 	const filters = journalFilterSchema.safeParse({
 		tag: url.searchParams.get('tag') ?? undefined,
 		startDate: url.searchParams.get('startDate') ?? undefined,

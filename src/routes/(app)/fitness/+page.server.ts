@@ -24,8 +24,6 @@ import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	// Auth handled by (app)/+layout.server.ts
-
 	// Load up all the forms
 	const calorieForm = await superValidate(zod4(setCalorieTargetSchema));
 	const weightForm = await superValidate(zod4(logWeightSchema));
