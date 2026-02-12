@@ -34,10 +34,10 @@
 <div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
 	<div class="mobile-stack mb-6 justify-between sm:mb-8">
 		<div>
-			<h1 class="text-2xl font-bold sm:text-3xl">Todos</h1>
+			<h1 class="font-display text-2xl font-bold sm:text-3xl">Todos</h1>
 			<p class="text-sm text-muted-foreground sm:text-base">Manage your tasks by cadence</p>
 		</div>
-		<Button href="/todos/new" class="w-full sm:w-auto">
+		<Button href="/todos/new" class="w-full bg-orange-600 hover:bg-orange-700 sm:w-auto">
 			<Plus class="mr-2 h-4 w-4" />
 			New Todo
 		</Button>
@@ -49,7 +49,9 @@
 		onValueChange={(v) => (selectedCadence = v as typeof selectedCadence)}
 		class="mb-6"
 	>
-		<Tabs.List class="grid w-full max-w-md grid-cols-4">
+		<Tabs.List
+			class="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
+		>
 			<Tabs.Trigger value="all">All</Tabs.Trigger>
 			<Tabs.Trigger value="daily">Daily</Tabs.Trigger>
 			<Tabs.Trigger value="weekly">Weekly</Tabs.Trigger>

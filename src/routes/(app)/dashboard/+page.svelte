@@ -1,6 +1,6 @@
 <script lang="ts">
 	import BookIcon from '@lucide/svelte/icons/book';
-	import CheckSquareIcon from '@lucide/svelte/icons/check-square';
+	import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
 	import HeartIcon from '@lucide/svelte/icons/heart';
 	import { scaleTime } from 'd3-scale';
 	import { LineChart } from 'layerchart';
@@ -40,9 +40,9 @@
 		data.stats.weeklyActivity.map((d) => ({
 			date: new Date(d.date),
 			journal: d.journal,
-			todos: d.todos,
 			meditation: d.meditation,
-			total: d.journal + d.todos + d.meditation
+			workouts: d.workouts,
+			total: d.journal + d.meditation + d.workouts
 		}))
 	);
 
@@ -82,12 +82,12 @@
 			trendDirection="neutral"
 		/>
 		<StatCard
-			label="Todo Completion"
-			value="{data.stats.todoCompletionRate}%"
-			icon={CheckSquareIcon}
-			color="orange"
-			trend="last 30 days"
-			trendDirection={data.stats.todoCompletionRate >= 70 ? 'up' : 'neutral'}
+			label="Workouts"
+			value="{data.stats.workoutsCompletedWeek} / {data.stats.workoutsCompletedMonth}"
+			icon={DumbbellIcon}
+			color="green"
+			trend="week / month"
+			trendDirection={data.stats.workoutsCompletedWeek >= 3 ? 'up' : 'neutral'}
 		/>
 		<StatCard
 			label="Meditation Sessions"
@@ -197,37 +197,37 @@
 				</Accordion.Content>
 			</Accordion.Item>
 
-			<!-- Recent Todos -->
-			<Accordion.Item value="todos">
+			<!-- Recent Workouts -->
+			<Accordion.Item value="workouts">
 				<Accordion.Trigger class="hover:no-underline">
 					<div class="flex items-center gap-2">
-						<CheckSquareIcon class="size-4 text-[oklch(var(--color-orange))]" />
-						<span class="font-display font-semibold">Todos</span>
-						<Badge variant="orange">{data.recentTodos.length}</Badge>
+						<DumbbellIcon class="size-4 text-[oklch(var(--color-green))]" />
+						<span class="font-display font-semibold">Workouts</span>
+						<Badge variant="green">{data.recentWorkouts.length}</Badge>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content>
 					<ScrollArea.Root class="h-48 space-y-3">
-						{#if data.recentTodos.length === 0}
-							<p class="text-sm text-muted-foreground">No recent todos</p>
+						{#if data.recentWorkouts.length === 0}
+							<p class="text-sm text-muted-foreground">No recent workouts</p>
 						{:else}
-							{#each data.recentTodos as todo (todo.id)}
+							{#each data.recentWorkouts as workout (workout.id)}
 								<a
-									href="/todos"
-									class="block rounded-md border-l-4 border-[oklch(var(--color-orange))] bg-[oklch(var(--color-orange)/0.05)] p-3 transition-colors hover:bg-[oklch(var(--color-orange)/0.1)] dark:bg-[oklch(var(--color-orange)/0.1)]"
+									href="/fitness"
+									class="block rounded-md border-l-4 border-[oklch(var(--color-green))] bg-[oklch(var(--color-green)/0.05)] p-3 transition-colors hover:bg-[oklch(var(--color-green)/0.1)] dark:bg-[oklch(var(--color-green)/0.1)]"
 								>
 									<div class="flex items-start justify-between gap-2">
 										<div class="flex-1 space-y-1">
-											<p class="text-sm font-medium">{todo.title}</p>
+											<p class="text-sm font-medium capitalize">{workout.type} Workout</p>
 											<div class="flex items-center gap-2">
-												<Badge
-													variant={todo.state === 'completed' ? 'green' : 'outline'}
-													class="text-xs"
-												>
-													{todo.state}
-												</Badge>
+												{#if workout.durationMinutes}
+													<span class="text-xs text-muted-foreground"
+														>{workout.durationMinutes} min</span
+													>
+													<span class="text-xs text-muted-foreground">•</span>
+												{/if}
 												<span class="text-xs text-muted-foreground">
-													{formatTimestampShort(todo.createdAt)}
+													{formatTimestampShort(workout.createdAt)}
 												</span>
 											</div>
 										</div>

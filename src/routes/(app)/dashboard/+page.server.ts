@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { getDb } from '$lib/server/db';
-import { journalEntries, meditationSessions, todoItems } from '$lib/server/db/schema';
+import { journalEntries, meditationSessions, workoutLogs } from '$lib/server/db/schema';
 
 import type { PageServerLoad } from './$types';
 
@@ -11,12 +11,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		return {
 			stats: {
 				journalStreak: 0,
-				todoCompletionRate: 0,
 				meditationSessions: 0,
+				workoutsCompletedWeek: 0,
+				workoutsCompletedMonth: 0,
 				weeklyActivity: []
 			},
 			recentJournalEntries: [],
-			recentTodos: [],
+			recentWorkouts: [],
 			recentMeditations: []
 		};
 	}
@@ -40,22 +41,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 				)
 			);
 
-		const allTodos = await db
+		const workoutCountWeek = await db
 			.select({ count: sql<number>`count(*)` })
-			.from(todoItems)
+			.from(workoutLogs)
 			.where(
-				and(eq(todoItems.userId, user.id), gte(todoItems.createdAt, startOfMonth.toISOString()))
+				and(eq(workoutLogs.userId, user.id), gte(workoutLogs.createdAt, startOfWeek.toISOString()))
 			);
 
-		const completedTodos = await db
+		const workoutCountMonth = await db
 			.select({ count: sql<number>`count(*)` })
-			.from(todoItems)
+			.from(workoutLogs)
 			.where(
-				and(
-					eq(todoItems.userId, user.id),
-					eq(todoItems.state, 'done'),
-					gte(todoItems.createdAt, startOfMonth.toISOString())
-				)
+				and(eq(workoutLogs.userId, user.id), gte(workoutLogs.createdAt, startOfMonth.toISOString()))
 			);
 
 		const meditationCount = await db
@@ -87,18 +84,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 					)
 				);
 
-			const todoCount = await db
-				.select({ count: sql<number>`count(*)` })
-				.from(todoItems)
-				.where(
-					and(
-						eq(todoItems.userId, user.id),
-						eq(todoItems.state, 'done'),
-						gte(todoItems.updatedAt, date.toISOString()),
-						sql`${todoItems.updatedAt} < ${nextDate.toISOString()}`
-					)
-				);
-
 			const meditationCountDay = await db
 				.select({ count: sql<number>`count(*)` })
 				.from(meditationSessions)
@@ -110,11 +95,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 					)
 				);
 
+			const workoutCountDay = await db
+				.select({ count: sql<number>`count(*)` })
+				.from(workoutLogs)
+				.where(
+					and(
+						eq(workoutLogs.userId, user.id),
+						gte(workoutLogs.createdAt, date.toISOString()),
+						sql`${workoutLogs.createdAt} < ${nextDate.toISOString()}`
+					)
+				);
+
 			weeklyActivity.push({
 				date: date.toISOString().split('T')[0],
 				journal: Number(journalCount[0]?.count || 0),
-				todos: Number(todoCount[0]?.count || 0),
-				meditation: Number(meditationCountDay[0]?.count || 0)
+				meditation: Number(meditationCountDay[0]?.count || 0),
+				workouts: Number(workoutCountDay[0]?.count || 0)
 			});
 		}
 
@@ -124,9 +120,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 			limit: 3
 		});
 
-		const recentTodos = await db.query.todoItems.findMany({
-			where: eq(todoItems.userId, user.id),
-			orderBy: [desc(todoItems.createdAt)],
+		const recentWorkouts = await db.query.workoutLogs.findMany({
+			where: eq(workoutLogs.userId, user.id),
+			orderBy: [desc(workoutLogs.createdAt)],
 			limit: 3
 		});
 
@@ -139,20 +135,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 			}
 		});
 
-		const totalTodos = Number(allTodos[0]?.count || 0);
-		const completedTodosCount = Number(completedTodos[0]?.count || 0);
-		const completionRate =
-			totalTodos > 0 ? Math.round((completedTodosCount / totalTodos) * 100) : 0;
-
 		return {
 			stats: {
 				journalStreak: Number(recentJournalCount[0]?.count || 0),
-				todoCompletionRate: completionRate,
 				meditationSessions: Number(meditationCount[0]?.count || 0),
+				workoutsCompletedWeek: Number(workoutCountWeek[0]?.count || 0),
+				workoutsCompletedMonth: Number(workoutCountMonth[0]?.count || 0),
 				weeklyActivity
 			},
 			recentJournalEntries,
-			recentTodos,
+			recentWorkouts,
 			recentMeditations
 		};
 	} catch (error) {
@@ -160,12 +152,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		return {
 			stats: {
 				journalStreak: 0,
-				todoCompletionRate: 0,
 				meditationSessions: 0,
+				workoutsCompletedWeek: 0,
+				workoutsCompletedMonth: 0,
 				weeklyActivity: []
 			},
 			recentJournalEntries: [],
-			recentTodos: [],
+			recentWorkouts: [],
 			recentMeditations: []
 		};
 	}
