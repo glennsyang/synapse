@@ -26,7 +26,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 		// Fetch routine
 		const routine = await db.query.meditationRoutines.findFirst({
-			where: eq(meditationRoutines.id, params.id)
+			where: and(
+				eq(meditationRoutines.id, params.id),
+				eq(meditationRoutines.userId, locals.user.id)
+			)
 		});
 
 		if (!routine) {
@@ -106,6 +109,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		if (err instanceof Error && 'status' in err) {
 			throw err;
 		}
+		console.log(JSON.stringify(err));
 		logger.error('Failed to load meditation routine', { error: err });
 		throw error(500, 'Failed to load routine');
 	}
@@ -280,7 +284,10 @@ export const actions: Actions = {
 
 			// Check if routine exists and user owns it
 			const routine = await db.query.meditationRoutines.findFirst({
-				where: eq(meditationRoutines.id, params.id)
+				where: and(
+					eq(meditationRoutines.id, params.id),
+					eq(meditationRoutines.userId, locals.user.id)
+				)
 			});
 
 			if (!routine) {
@@ -336,7 +343,10 @@ export const actions: Actions = {
 
 			// Check if routine exists and user owns it
 			const routine = await db.query.meditationRoutines.findFirst({
-				where: eq(meditationRoutines.id, params.id)
+				where: and(
+					eq(meditationRoutines.id, params.id),
+					eq(meditationRoutines.userId, locals.user.id)
+				)
 			});
 
 			if (!routine) {

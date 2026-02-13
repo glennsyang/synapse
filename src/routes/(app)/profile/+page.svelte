@@ -10,6 +10,7 @@
 
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import * as Separator from '$lib/components/ui/separator';
 
 	import type { PageProps } from './$types';
@@ -127,7 +128,7 @@
 						{/if}
 						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 							<div>
-								<label for="name" class="mb-2 block text-sm font-medium"> Name </label>
+								<Label for="name" class="mb-2 block text-sm font-medium">Name</Label>
 								<Input
 									id="name"
 									name="name"
@@ -144,7 +145,7 @@
 						</div>
 
 						<div>
-							<label for="email" class="mb-2 block text-sm font-medium"> Email Address </label>
+							<Label for="email" class="mb-2 block text-sm font-medium">Email Address</Label>
 							<Input
 								id="email"
 								type="email"
@@ -223,9 +224,9 @@
 								</div>
 							{/if}
 							<div>
-								<label for="currentPassword" class="mb-2 block text-sm font-medium">
+								<Label for="currentPassword" class="mb-2 block text-sm font-medium">
 									Current Password
-								</label>
+								</Label>
 								<Input
 									id="currentPassword"
 									name="currentPassword"
@@ -241,9 +242,7 @@
 							</div>
 
 							<div>
-								<label for="newPassword" class="mb-2 block text-sm font-medium">
-									New Password
-								</label>
+								<Label for="newPassword" class="mb-2 block text-sm font-medium">New Password</Label>
 								<Input
 									id="newPassword"
 									name="newPassword"
@@ -259,9 +258,9 @@
 							</div>
 
 							<div>
-								<label for="confirmPassword" class="mb-2 block text-sm font-medium">
+								<Label for="confirmPassword" class="mb-2 block text-sm font-medium">
 									Confirm New Password
-								</label>
+								</Label>
 								<Input
 									id="confirmPassword"
 									name="confirmPassword"

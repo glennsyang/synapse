@@ -9,6 +9,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import { logger } from '$lib/utils/logger';
 
 	import type { PageData } from './$types';
 
@@ -42,13 +43,13 @@
 					location = `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
 					$form.location = location;
 				} catch (error) {
-					console.error('Failed to get location name', error);
+					logger.error('Failed to get location name', { error });
 				} finally {
 					gettingLocation = false;
 				}
 			},
 			(error) => {
-				console.error('Error getting location', error);
+				logger.error('Error getting location', { error });
 				alert('Unable to retrieve your location');
 				gettingLocation = false;
 			}

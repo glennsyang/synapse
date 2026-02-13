@@ -48,7 +48,7 @@ Use SQLite with Drizzle ORM:
 - **UUIDs (v4)** for all primary and foreign keys
 - Drizzle schema with TypeScript for type-safe queries
 - Drizzle adapter for better-auth integration
-- Timestamp columns (`created_at`, `updated_at`) on all entities for sync conflict resolution
+- Timestamp columns (`created_at`, `updated_at`) on all entities
 
 ### Rationale
 
@@ -56,8 +56,7 @@ Use SQLite with Drizzle ORM:
 - **Performance**: Better performance for single-user workloads compared to PostgreSQL
 - **Type safety**: Drizzle provides excellent TypeScript integration without code generation
 - **Migrations**: Drizzle Kit handles schema migrations cleanly
-- **Offline-first**: SQLite file can be synced to cloud storage for backup and multi-device access
-- **UUIDs**: Random UUIDs (v4) prevent collision in distributed/offline scenarios
+- **UUIDs**: Random UUIDs (v4) prevent collision
 - **better-sqlite3**: Synchronous driver is simpler and faster for Node.js server-side usage
 
 ### Alternatives Considered
@@ -65,7 +64,7 @@ Use SQLite with Drizzle ORM:
 - **PostgreSQL**: Rejected due to operational overhead and unnecessary for single-user app
 - **Prisma**: Rejected due to code generation step and larger runtime compared to Drizzle's lighter approach
 - **Raw SQL**: Rejected as it lacks type safety and migration management
-- **Integer IDs**: Rejected in favor of UUIDs for better offline/sync support
+- **Integer IDs**: Rejected in favor of UUIDs
 
 ### Schema Conventions
 
@@ -206,52 +205,6 @@ Implement authentication using Better-auth framework:
 
 ---
 
-## 5. Offline-First Sync Strategy
-
-### Decision
-
-Implement client-side sync with last-write-wins:
-
-- Service Worker caches app shell and assets
-- IndexedDB for client-side data cache
-- Periodic background sync when online
-- Conflict resolution: compare `updated_at` timestamps, keep latest
-- Optimistic UI updates with rollback on sync failure
-
-### Rationale
-
-- **User experience**: App works offline, syncs when connection restored
-- **Simplicity**: Last-write-wins is simple and sufficient for single-user app
-- **Performance**: No waiting for server on every action
-
-### Alternatives Considered
-
-- **Operational Transform**: Rejected as too complex for single-user productivity app
-- **CRDT**: Rejected as overkill and adds significant complexity
-- **Server-only**: Rejected as offline capability is a requirement
-
-### Sync Architecture
-
-1. **Write path**:
-   - User action → Update IndexedDB → Optimistic UI update
-   - Background: Queue sync → POST to `/api/sync` → Server merges changes
-2. **Read path**:
-   - Load from IndexedDB (instant)
-   - Background fetch from server → Merge with last-write-wins → Update IndexedDB + UI
-
-3. **Conflict resolution**:
-   - Compare `updated_at` timestamps
-   - Keep record with latest timestamp
-   - Log conflicts for manual review (future enhancement)
-
-### Technology Choices
-
-- **Service Worker**: Workbox for caching strategies
-- **Client DB**: Dexie.js wrapper around IndexedDB for easier API
-- **Sync queue**: Custom implementation with retry logic
-
----
-
 ## 6. Meditation Routine Library Patterns
 
 ### Decision
@@ -274,7 +227,6 @@ Support both predefined and user-created routines:
 
 - **Predefined only**: Rejected as too limiting
 - **User-created only**: Rejected as requires users to find resources themselves
-- **External API**: Rejected as offline capability is required
 
 ### Predefined Routine Examples
 
@@ -487,7 +439,7 @@ Deploy as single SvelteKit app on fly.io:
 Three-tier testing approach:
 
 1. **Unit tests** (Vitest): Validation schemas, utilities, pure functions
-2. **Integration tests** (Vitest): Database operations, form actions, sync logic
+2. **Integration tests** (Vitest): Database operations, form actions
 3. **E2E tests** (Playwright - optional): Critical user flows (auth, create journal entry)
 
 ### Rationale
@@ -647,11 +599,10 @@ export const emailNotifications = sqliteTable('email_notifications', {
 | Area           | Decision                                  | Rationale                                                               |
 | -------------- | ----------------------------------------- | ----------------------------------------------------------------------- |
 | Framework      | SvelteKit (full-stack) + Svelte 5 (runes) | Unified architecture, modern reactivity, type safety, built-in features |
-| Database       | SQLite + Drizzle ORM + better-sqlite3     | Simplicity, performance, type safety, UUIDs for offline support         |
+| Database       | SQLite + Drizzle ORM + better-sqlite3     | Simplicity, performance, type safety, UUIDs                             |
 | Authentication | Better-auth + Drizzle adapter             | Batteries-included auth, email verification, password reset             |
 | Email          | Resend                                    | Clean API, excellent DX, high deliverability                            |
 | Forms          | Superforms + Zod                          | Type-safe validation, excellent DX                                      |
-| Sync           | Last-write-wins + IndexedDB               | Simple conflict resolution, offline-first UX                            |
 | UI             | Shadcn-svelte + Tailwind                  | Consistent design, customizable, accessible                             |
 | State          | Svelte 5 runes                            | Modern reactivity, no stores needed                                     |
 | Charts         | Chart.js                                  | Lightweight, good Svelte integration                                    |
@@ -660,7 +611,7 @@ export const emailNotifications = sqliteTable('email_notifications', {
 | Git Hooks      | Lefthook + lint-staged                    | Fast, simple, language-agnostic                                         |
 | Linting        | ESLint + Prettier                         | Code quality, consistency                                               |
 | Node Version   | 22.21.1                                   | Latest LTS with modern features                                         |
-| IDs            | UUIDs (v4)                                | Prevents collisions in offline/distributed scenarios                    |
+| IDs            | UUIDs (v4)                                | Prevents collisions in distributed scenarios                            |
 
 ---
 

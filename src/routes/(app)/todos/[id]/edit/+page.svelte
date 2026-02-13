@@ -5,7 +5,6 @@
 	import { superForm } from 'sveltekit-superforms';
 
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import SubStepsInput from '$lib/components/todos/SubStepsInput.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
@@ -19,6 +18,7 @@
 
 	// svelte-ignore state_referenced_locally
 	const { form, errors, enhance, message, submitting } = superForm(data.form, {
+		dataType: 'form',
 		onUpdate: ({ form }) => {
 			if (form.valid) {
 				toast.success('Todo updated successfully!');
@@ -33,7 +33,6 @@
 
 	// Type coercion helpers for Select components
 	let priorityString = $derived($form.priority?.toString() ?? '2');
-	let projectIdValue = $derived($form.projectId ?? undefined);
 </script>
 
 <div class="container mx-auto max-w-2xl py-8">
@@ -94,14 +93,13 @@
 
 				<!-- Cadence -->
 				<div class="space-y-2">
-					<Label for="cadence">Cadence *</Label>
-					<Select.Root type="single" name="cadence" bind:value={$form.cadence} required>
-						<Select.Trigger class="w-full {$errors.cadence ? 'border-destructive' : ''}">
-							{$form.cadence
-								? $form.cadence.charAt(0).toUpperCase() + $form.cadence.slice(1)
-								: 'Select cadence'}
+					<Label for="cadence">Cadence (Optional)</Label>
+					<Select.Root type="single" name="cadence" bind:value={$form.cadence}>
+						<Select.Trigger id="cadence">
+							{$form.cadence || 'Select cadence (e.g., daily, weekly)'}
 						</Select.Trigger>
 						<Select.Content>
+							<Select.Item value="none" label="None">None</Select.Item>
 							<Select.Item value="daily" label="Daily">Daily</Select.Item>
 							<Select.Item value="weekly" label="Weekly">Weekly</Select.Item>
 							<Select.Item value="monthly" label="Monthly">Monthly</Select.Item>
@@ -112,39 +110,10 @@
 					{/if}
 				</div>
 
-				<!-- Project -->
-				<div class="space-y-2">
-					<Label for="projectId">Project</Label>
-					<Select.Root
-						type="single"
-						name="projectId"
-						bind:value={projectIdValue}
-						onValueChange={(v) => ($form.projectId = v || null)}
-					>
-						<Select.Trigger class="w-full {$errors.projectId ? 'border-destructive' : ''}">
-							{$form.projectId
-								? data.projects.find((c) => c.id === $form.projectId)?.name || 'Select a project'
-								: 'Select a project'}
-						</Select.Trigger>
-						<Select.Content>
-							<Select.Item value="">No Project</Select.Item>
-							{#each data.projects as project (project.id)}
-								<Select.Item value={project.id} label={project.name}>
-									{project.name}
-								</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-					<input type="hidden" name="projectId" bind:value={$form.projectId} />
-					{#if $errors.projectId}
-						<p class="text-sm text-destructive">{$errors.projectId}</p>
-					{/if}
-				</div>
-
 				<div class="grid gap-4 sm:grid-cols-2">
 					<!-- Priority -->
 					<div class="space-y-2">
-						<Label for="priority">Priority</Label>
+						<Label for="priority">Priority *</Label>
 						<Select.Root
 							type="single"
 							name="priority"
@@ -153,7 +122,17 @@
 							required
 						>
 							<Select.Trigger class="w-full">
-								{$form.priority || 'Select priority'}
+								{#if $form.priority === 1}
+									1 - Highest
+								{:else if $form.priority === 2}
+									2 - High
+								{:else if $form.priority === 3}
+									3 - Medium
+								{:else if $form.priority === 4}
+									4 - Low
+								{:else}
+									Select priority
+								{/if}
 							</Select.Trigger>
 							<Select.Content>
 								<Select.Item value="1" label="1 - Highest">1 - Highest</Select.Item>
@@ -188,11 +167,12 @@
 					<Label for="state">State</Label>
 					<Select.Root type="single" name="state" bind:value={$form.state}>
 						<Select.Trigger class="w-full {$errors.state ? 'border-destructive' : ''}" id="state">
-							{$form.state || 'Select state'}
+							{$form.state ? $form.state.replace('_', ' ') : 'Select state'}
 						</Select.Trigger>
 						<Select.Content>
 							<Select.Item value="new" label="New">New</Select.Item>
 							<Select.Item value="in_progress" label="In Progress">In Progress</Select.Item>
+							<Select.Item value="on_hold" label="On Hold">On Hold</Select.Item>
 							<Select.Item value="blocked" label="Blocked">Blocked</Select.Item>
 							<Select.Item value="done" label="Done">Done</Select.Item>
 						</Select.Content>
@@ -215,18 +195,6 @@
 					<p class="text-xs text-muted-foreground">Separate tags with commas</p>
 					{#if $errors.tags}
 						<p class="text-sm text-destructive">{$errors.tags}</p>
-					{/if}
-				</div>
-
-				<!-- Sub-steps -->
-				<div class="space-y-2">
-					<Label for="subSteps">Sub-steps</Label>
-					<SubStepsInput
-						value={$form.subSteps}
-						onValueChange={(newVal) => ($form.subSteps = newVal)}
-					/>
-					{#if $errors.subSteps}
-						<p class="text-sm text-destructive">{$errors.subSteps}</p>
 					{/if}
 				</div>
 

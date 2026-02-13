@@ -3,34 +3,23 @@ import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
-import { updateTodoSchema } from '$lib/schemas/todo';
+import { type Cadence, type TodoState, updateTodoSchema } from '$lib/schemas/todo';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import getDb from '$lib/server/db';
-import { projects, todoItems } from '$lib/server/db/schema';
+import { todoItems } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	// Auth handled by (app)/+layout.server.ts
-
 	// Load todoItem
 	const todo = await getDb().query.todoItems.findFirst({
-		where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user!.id)),
-		with: {
-			project: true
-		}
+		where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user!.id))
 	});
 
 	if (!todo) {
 		redirect(303, '/todos');
 	}
-
-	// Load user projects
-	const userProjects = await getDb().query.projects.findMany({
-		where: eq(projects.userId, locals.user!.id),
-		orderBy: [projects.name]
-	});
 
 	// Parse JSON fields for form
 	const tagsArray = todo.tags ? JSON.parse(todo.tags) : [];
@@ -41,21 +30,18 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		{
 			title: todo.title,
 			description: todo.description ?? undefined,
-			cadence: todo.cadence as 'daily' | 'weekly' | 'monthly',
-			projectId: todo.projectId ?? undefined,
+			cadence: (todo.cadence as Cadence) ?? 'none',
 			priority: todo.priority,
 			dueDate: todo.dueDate ?? undefined,
-			state: todo.state as 'new' | 'in_progress' | 'blocked' | 'done',
-			tags: tagsString,
-			subSteps: todo.subSteps ?? undefined
+			state: todo.state as TodoState,
+			tags: tagsString
 		},
 		zod4(updateTodoSchema)
 	);
 
 	return {
 		todo,
-		form,
-		projects: userProjects
+		form
 	};
 };
 
@@ -79,17 +65,6 @@ export const actions: Actions = {
 				return { form, error: 'Todo not found', status: 404 };
 			}
 
-			// Verify project belongs to user if provided
-			if (form.data.projectId) {
-				const project = await getDb().query.projects.findFirst({
-					where: eq(projects.id, form.data.projectId)
-				});
-
-				if (!project || project.userId !== user.id) {
-					return { form, error: 'Invalid project', status: 400 };
-				}
-			}
-
 			// Parse tags from comma-separated string to JSON array
 			let tagsJson: string | null = null;
 			if (form.data.tags) {
@@ -107,12 +82,14 @@ export const actions: Actions = {
 
 			if (form.data.title !== undefined) updateData.title = form.data.title;
 			if (form.data.description !== undefined) updateData.description = form.data.description;
-			if (form.data.cadence !== undefined) updateData.cadence = form.data.cadence;
-			if (form.data.projectId !== undefined) updateData.projectId = form.data.projectId;
+			if (form.data.cadence === undefined) {
+				updateData.cadence = null; // Clear cadence if not provided
+			} else {
+				updateData.cadence = form.data.cadence;
+			}
 			if (form.data.tags !== undefined) updateData.tags = tagsJson;
 			if (form.data.dueDate !== undefined) updateData.dueDate = form.data.dueDate;
 			if (form.data.priority !== undefined) updateData.priority = form.data.priority;
-			if (form.data.subSteps !== undefined) updateData.subSteps = form.data.subSteps;
 
 			// Handle state change and completedAt
 			if (form.data.state !== undefined) {

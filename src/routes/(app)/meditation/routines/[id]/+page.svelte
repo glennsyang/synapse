@@ -17,7 +17,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { formatTimestampLong } from '$lib/utils/date';
+	import { daysOfWeek, formatTimestampLong } from '$lib/utils/date';
 
 	import type { PageData } from './$types';
 
@@ -91,8 +91,7 @@
 	};
 
 	function getDayName(dayNumber: number) {
-		const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-		return days[dayNumber];
+		return daysOfWeek.find((d) => d.id === dayNumber)?.name || 'Unknown';
 	}
 </script>
 

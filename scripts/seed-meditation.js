@@ -1,5 +1,8 @@
+import { randomUUID } from 'node:crypto';
+
 import Database from 'better-sqlite3';
-import { randomUUID } from 'crypto';
+
+import { logger } from '$lib/utils/logger';
 
 const db = new Database('data/synapse.db');
 
@@ -130,9 +133,9 @@ try {
 
 	insertMany(predefinedRoutines);
 
-	console.log(`✅ Successfully seeded ${predefinedRoutines.length} predefined meditation routines`);
+	logger.log(`✅ Successfully seeded ${predefinedRoutines.length} predefined meditation routines`);
 } catch (error) {
-	console.error('❌ Error seeding meditation routines:', error);
+	logger.error('❌ Error seeding meditation routines:', error);
 	process.exit(1);
 } finally {
 	db.close();

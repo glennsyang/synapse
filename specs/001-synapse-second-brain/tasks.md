@@ -199,10 +199,10 @@
 - [x] T117 [US4] Create calorie target action
 - [x] T118 [P] [US4] Create CalorieProgress component showing progress bar (consumed vs target)
 - [x] T119 [US4] Calculate daily total calories from meal logs
-- [ ] T120 [P] [US4] Create workout reminders page in src/routes/(app)/fitness/reminders/+page.svelte (DEFERRED - email infrastructure needed)
-- [ ] T121 [US4] Create reminder CRUD actions (workout_type, cadence, days_of_week, time, enabled) (DEFERRED - email infrastructure needed)
-- [ ] T122 [US4] Implement workout reminder email worker in src/lib/server/email/workout-reminder.ts using Resend (DEFERRED - email infrastructure needed)
-- [ ] T123 [US4] Create cron/scheduled task to check reminders and send emails (log in email_notifications table) (DEFERRED - email infrastructure needed)
+- [x] T120 [P] [US4] Create workout reminders page in src/routes/(app)/fitness/reminders/+page.svelte
+- [x] T121 [US4] Create reminder CRUD actions (workout_type, cadence, days_of_week, time, enabled)
+- [x] T122 [US4] Implement workout reminder email worker in src/lib/server/email/workout-reminder.ts using Resend
+- [x] T123 [US4] Create cron/scheduled task to check reminders and send emails (log in email_notifications table)
 
 **Checkpoint**: User Story 4 complete - fitness tracking with goals, charts, and reminders
 
@@ -230,8 +230,8 @@
 - [x] T135 [US5] Run seed script to populate predefined routines
 - [x] T136 [P] [US5] Create schedule reminder form in routine detail page (cadence, days_of_week, time, enabled)
 - [x] T137 [US5] Create schedule CRUD actions in src/routes/(app)/meditation/routines/[id]/+page.server.ts
-- [ ] T138 [US5] Implement meditation reminder email worker in src/lib/server/email/meditation-reminder.ts using Resend (DEFERRED - email infrastructure needed)
-- [ ] T139 [US5] Create cron/scheduled task to check meditation schedules and send emails (log in email_notifications table) (DEFERRED - email infrastructure needed)
+- [x] T138 [US5] Implement meditation reminder email worker in src/lib/server/email/meditation-reminder.ts using Resend
+- [x] T139 [US5] Create cron/scheduled task to check meditation schedules and send emails (log in email_notifications table)
 - [x] T140 [P] [US5] Create complete session modal/page (routine selection, completion timestamp, mood_rating 1-5, notes)
 - [x] T141 [US5] Create session completion action saving to meditationSessions table
 - [x] T142 [P] [US5] Create SessionHistory component (integrated in main meditation page)
@@ -264,42 +264,11 @@
 - [x] T156 [P] [US6] Create new visit form (date, time, companions array, notes, follow_up_date)
 - [x] T157 [US6] Create visit CRUD actions in person detail page
 - [x] T158 [P] [US6] Create VisitHistory component in src/lib/components/visits/VisitHistory.svelte showing timeline of visits (integrated inline)
-- [ ] T159 [US6] Implement visit reminder email worker in src/lib/server/email/visit-warning.ts using Resend (DEFERRED - email infrastructure needed)
-- [ ] T160 [US6] Create cron/scheduled task to check people 7 days before status change and send reminders (log in email_notifications table) (DEFERRED - email infrastructure needed)
+- [x] T159 [US6] Implement visit reminder email worker in src/lib/server/email/visit-warning.ts using Resend
+- [x] T160 [US6] Create cron/scheduled task to check people 7 days before status change and send reminders (log in email_notifications table)
 - [x] T161 [US6] Update status indicators when visits are added/edited/deleted
 
 **Checkpoint**: User Story 6 complete - visit tracking with status and reminders
-
----
-
-## Phase 9: Polish & Cross-Cutting Concerns (Final Phase)
-
-**Purpose**: Sync, offline support, responsive design, error handling, logging, deployment
-
-- [x] T162 [P] Implement sync service in src/lib/server/sync/index.ts with last-write-wins conflict resolution
-- [x] T163 [P] Create IndexedDB wrapper in src/lib/client/offline-db.ts for offline cache
-- [x] T164 Implement sync endpoint in src/routes/api/sync/+server.ts
-- [x] T165 [P] Add sync button/auto-sync logic in app layout
-- [x] T166 [P] Implement offline detection and UI indicators
-- [x] T167 [P] Add responsive breakpoints and mobile styles across all pages
-- [x] T168 [P] Create mobile-optimized navigation (hamburger menu)
-- [x] T169 [P] Ensure all forms are mobile-friendly with proper input types
-- [x] T170 [P] Add loading states and skeletons for all async operations
-- [x] T171 [P] Implement error boundaries and user-friendly error messages
-- [x] T172 [P] Add toast notifications for success/error feedback
-- [x] T173 [P] Implement structured logging with request IDs in hooks.server.ts
-- [x] T174 [P] Add error tracking with stack traces
-- [x] T175 [P] Create fly.toml for deployment configuration
-- [x] T176 Create Dockerfile (if needed) or use SvelteKit adapter-node
-- [x] T177 Configure fly.io volume for persistent SQLite database
-- [x] T178 Set fly.io secrets (BETTER_AUTH_SECRET, RESEND_API_KEY, BETTER_AUTH_BASE_URL)
-- [x] T179 Deploy to fly.io and verify production environment
-- [x] T180 [P] Write README.md with project overview, setup, and deployment instructions
-- [x] T181 [P] Document API contracts in contracts/ files (already done in planning phase)
-- [ ] T182 [P] Create CHANGELOG.md for version tracking (SKIPPED per user request)
-- [x] T183 Setup GitHub Actions (optional) for CI/CD (linting, tests, deployment)
-
-**Checkpoint**: Application complete, deployed, and production-ready
 
 ---
 

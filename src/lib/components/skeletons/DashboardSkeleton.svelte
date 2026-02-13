@@ -8,6 +8,21 @@
 	}: {
 		class?: string;
 	} = $props();
+
+	const statsSkeleton = [
+		{ id: 1, value: '123' },
+		{ id: 2, value: '5 days' },
+		{ id: 3, value: '12 days' }
+	];
+	const featureSkeleton = [
+		{ id: 1, value: '123' },
+		{ id: 2, value: '5 days' },
+		{ id: 3, value: '12 days' },
+		{ id: 4, value: '123' },
+		{ id: 5, value: '5 days' },
+		{ id: 6, value: '12 days' }
+	];
+	const calendarSkeleton = Array.from({ length: 35 }, (_, i) => ({ id: i }));
 </script>
 
 <div class={cn('space-y-6', className)} {...restProps}>
@@ -22,7 +37,7 @@
 
 	<!-- Quick Stats Row Skeleton -->
 	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-		{#each [1, 2, 3] as _ (_)}
+		{#each statsSkeleton as stat (stat.id)}
 			<div class="rounded-lg border bg-card p-6 shadow-xs">
 				<div class="flex items-start justify-between gap-4">
 					<div class="flex-1 space-y-3">
@@ -38,7 +53,7 @@
 
 	<!-- Feature Navigation Skeleton -->
 	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-		{#each [1, 2, 3, 4, 5, 6] as _, i (_)}
+		{#each featureSkeleton as feature, i (feature.id)}
 			{@const colors = ['teal', 'blue', 'orange', 'green', 'purple', 'pink']}
 			{@const color = colors[i % colors.length]}
 			<div class="rounded-lg border bg-card p-6 shadow-xs">
@@ -65,7 +80,7 @@
 	<div class="rounded-lg border bg-card p-6 shadow-xs">
 		<Skeleton class="mb-4 h-6 w-40" />
 		<div class="grid grid-cols-7 gap-2">
-			{#each Array(35) as _ (_)}
+			{#each calendarSkeleton as day (day.id)}
 				<Skeleton class="aspect-square w-full rounded-md" />
 			{/each}
 		</div>

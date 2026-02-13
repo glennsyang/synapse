@@ -257,7 +257,6 @@ synapse/
 │   │   │   ├── db/          # Drizzle schema + client
 │   │   │   ├── auth.ts      # Better-auth configuration
 │   │   │   ├── email/       # Resend email templates
-│   │   │   └── sync/        # Sync & conflict resolution
 │   │   ├── client/          # Client-side code
 │   │   │   └── auth.ts      # Better-auth client
 │   │   ├── schemas/         # Zod validation schemas

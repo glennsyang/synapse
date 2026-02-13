@@ -9,7 +9,7 @@
 
 ### Session 2026-02-02
 
-- Q: What data storage/sync model should the app use? → A: Cloud sync with optional offline cache.
+- Q: What data storage/sync model should the app use? → A: Cloud sync.
 - Q: Which authentication method should the app use initially? → A: Email + password.
 - Q: What type of meditation routines should the app support? → A: Both predefined and user-created routines.
 - Q: How should sync conflicts be resolved? → A: Last-write-wins (timestamp-based).
@@ -151,9 +151,6 @@ As a user, I want to track visits to people with status and reminders so I can m
 - What happens if a visit is logged in the future?
 - What happens if a follow-up date is before the visit date?
 - How does the system display weight trends when only a single data point exists?
-- What happens when a user attempts to access the app while offline?
-- What happens if offline changes conflict during sync?
-- What happens when two devices update the same item before sync completes?
 
 ## Requirements _(mandatory)_
 
@@ -208,7 +205,7 @@ As a user, I want to track visits to people with status and reminders so I can m
 - **FR-009**: The system MUST keep all user data private to the authenticated user.
 - **FR-010**: The user interface MUST present a sleek, visually distinctive design with consistent styling across sections.
 - **FR-011**: The system MUST preserve user data between sessions.
-- **FR-012**: The system MUST sync user data across devices via cloud storage and support an optional offline cache.
+- **FR-012**: The system MUST sync user data across devices via cloud storage.
 - **FR-013**: Sync conflicts MUST resolve using last-write-wins based on timestamps.
 - **FR-014**: The system MUST support a single-user account model with no sharing in initial scope.
 
@@ -251,6 +248,6 @@ As a user, I want to track visits to people with status and reminders so I can m
 - The app is intended for personal use with a single primary user per account.
 - Data is retained until the user deletes it.
 - Dates are interpreted in the user’s local timezone.
-- Cloud sync is available with an optional offline cache.
+- Cloud sync is available.
 - Meditation routines include both predefined and user-created entries.
 - Sharing between users is out of scope for initial release.

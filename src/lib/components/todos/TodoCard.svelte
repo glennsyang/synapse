@@ -1,15 +1,14 @@
 <script lang="ts">
 	import CalendarIcon from '@lucide/svelte/icons/calendar';
-	import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
+	import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
 	import CircleIcon from '@lucide/svelte/icons/circle';
+	import CircleMinusIcon from '@lucide/svelte/icons/circle-minus';
 	import ClockIcon from '@lucide/svelte/icons/clock';
-	import FolderOpenIcon from '@lucide/svelte/icons/folder-open';
+	import PauseCircleIcon from '@lucide/svelte/icons/pause-circle';
 
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import { Progress } from '$lib/components/ui/progress';
-	import type { Project } from '$lib/server/db/types';
 
 	interface Props {
 		todo: {
@@ -17,33 +16,22 @@
 			title: string;
 			description: string | null;
 			state: string;
-			cadence: string;
+			cadence: string | null;
 			dueDate: string | null;
 			priority: number;
-			project: Project | null;
 			tags: string[] | null;
-			subSteps: Array<{ title: string; completed: boolean }> | null;
 		};
 		onStateChange?: (newState: string) => void;
 	}
 
 	let { todo, onStateChange }: Props = $props();
 
-	// Calculate sub-steps progress
-	let completedSubSteps = $derived(
-		todo.subSteps ? todo.subSteps.filter((s) => s.completed).length : 0
-	);
-	let totalSubSteps = $derived(todo.subSteps?.length || 0);
-	let subStepsProgress = $derived(
-		totalSubSteps > 0 ? (completedSubSteps / totalSubSteps) * 100 : 0
-	);
-
 	// Priority color mapping (larger, more vibrant)
 	const priorityColors = {
-		1: 'bg-orange-500',
+		1: 'bg-red-500',
 		2: 'bg-orange-400',
 		3: 'bg-blue-500',
-		4: 'bg-blue-400'
+		4: 'bg-gray-400'
 	};
 
 	const priorityLabels = {
@@ -54,18 +42,20 @@
 	};
 
 	// State badges
-	const stateBadgeVariant = {
-		new: 'secondary',
-		in_progress: 'default',
-		blocked: 'destructive',
-		done: 'outline'
+	const stateBadgeColor = {
+		new: 'bg-orange-500',
+		in_progress: 'bg-blue-500',
+		on_hold: 'bg-yellow-500',
+		blocked: 'bg-red-500',
+		done: 'bg-green-500'
 	} as const;
 
 	const stateIcons = {
 		new: CircleIcon,
 		in_progress: ClockIcon,
-		blocked: CircleIcon,
-		done: CheckCircle2Icon
+		on_hold: PauseCircleIcon,
+		blocked: CircleMinusIcon,
+		done: CheckCircleIcon
 	};
 
 	const StateIcon = $derived(stateIcons[todo.state as keyof typeof stateIcons]);
@@ -89,7 +79,6 @@
 					class={`h-4 w-4 rounded-full ${priorityColors[todo.priority as keyof typeof priorityColors]}`}
 					title={`Priority: ${priorityLabels[todo.priority as keyof typeof priorityLabels]}`}
 				></div>
-				<span class="text-xs text-muted-foreground">P{todo.priority}</span>
 			</div>
 		</div>
 	</Card.Header>
@@ -99,22 +88,16 @@
 		<div class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
 			<!-- State Badge -->
 			<Badge
-				variant={stateBadgeVariant[todo.state as keyof typeof stateBadgeVariant]}
-				class="gap-1"
+				variant="default"
+				class={`gap-1 ${stateBadgeColor[todo.state as keyof typeof stateBadgeColor]}`}
 			>
 				<StateIcon class="h-3 w-3" />
 				{todo.state.replace('_', ' ')}
 			</Badge>
 
 			<!-- Cadence -->
-			<Badge variant="outline">{todo.cadence}</Badge>
-
-			<!-- Project -->
-			{#if todo.project}
-				<div class="flex items-center gap-1">
-					<FolderOpenIcon class="h-3 w-3" />
-					<span style="color: {todo.project.color || 'currentColor'}">{todo.project.name}</span>
-				</div>
+			{#if todo.cadence}
+				<Badge variant="outline">{todo.cadence}</Badge>
 			{/if}
 
 			<!-- Due Date -->
@@ -132,17 +115,6 @@
 				{#each todo.tags as tag (tag)}
 					<Badge variant="secondary" class="text-xs">{tag}</Badge>
 				{/each}
-			</div>
-		{/if}
-
-		<!-- Sub-steps Progress -->
-		{#if totalSubSteps > 0}
-			<div class="mt-3">
-				<div class="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-					<span>Sub-steps</span>
-					<span>{completedSubSteps} / {totalSubSteps}</span>
-				</div>
-				<Progress value={subStepsProgress} class="h-1" />
 			</div>
 		{/if}
 	</Card.Content>

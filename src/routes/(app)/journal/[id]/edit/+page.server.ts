@@ -12,8 +12,6 @@ import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	// Auth handled by (app)/+layout.server.ts
-
 	const entry = await getDb().query.journalEntries.findFirst({
 		where: and(eq(journalEntries.id, params.id), eq(journalEntries.userId, locals.user!.id))
 	});

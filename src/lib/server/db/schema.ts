@@ -147,50 +147,21 @@ export const journalEntriesRelations = relations(journalEntries, ({ one }) => ({
 }));
 
 /**
- * Projects
- * Organizational containers for todos
- */
-export const projects = sqliteTable('projects', {
-	id: text('id').primaryKey().$defaultFn(generateId),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	name: text('name').notNull(),
-	color: text('color'), // Optional hex color (e.g., "#3B82F6")
-	createdAt: text('created_at')
-		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
-	updatedAt: text('updated_at')
-		.notNull()
-		.$defaultFn(() => new Date().toISOString())
-});
-
-export const projectsRelations = relations(projects, ({ one, many }) => ({
-	user: one(user, {
-		fields: [projects.userId],
-		references: [user.id]
-	}),
-	todoItems: many(todoItems)
-}));
-
-/**
  * TodoItems
- * Tasks with cadence, project assignment, and rich metadata
+ * Tasks with optional cadence and rich metadata
  */
 export const todoItems = sqliteTable('todo_items', {
 	id: text('id').primaryKey().$defaultFn(generateId),
 	userId: text('user_id')
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
-	projectId: text('project_id').references(() => projects.id, { onDelete: 'set null' }),
 	title: text('title').notNull(),
 	description: text('description'),
-	cadence: text('cadence').notNull(), // 'daily' | 'weekly' | 'monthly'
+	cadence: text('cadence'), // Optional: 'daily' | 'weekly' | 'monthly' | undefined
 	dueDate: text('due_date'), // Optional YYYY-MM-DD
-	state: text('state').notNull().default('new'), // 'new' | 'in_progress' | 'blocked' | 'done'
-	priority: integer('priority').notNull().default(2), // 1-4 (1=highest)
+	state: text('state').notNull().default('new'), // 'new' | 'in_progress' | 'on_hold' | 'blocked' | 'done'
+	priority: integer('priority').notNull(), // 1-4 (1=highest, required)
 	tags: text('tags'), // JSON array of strings
-	subSteps: text('sub_steps'), // JSON array of {title: string, completed: boolean}
 	createdAt: text('created_at')
 		.notNull()
 		.$defaultFn(() => new Date().toISOString()),
@@ -204,10 +175,6 @@ export const todoItemsRelations = relations(todoItems, ({ one }) => ({
 	user: one(user, {
 		fields: [todoItems.userId],
 		references: [user.id]
-	}),
-	project: one(projects, {
-		fields: [todoItems.projectId],
-		references: [projects.id]
 	})
 }));
 
