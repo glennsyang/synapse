@@ -1,7 +1,8 @@
 <script lang="ts">
 	import CalendarIcon from '@lucide/svelte/icons/calendar';
-	import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
+	import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
 	import CircleIcon from '@lucide/svelte/icons/circle';
+	import CircleMinusIcon from '@lucide/svelte/icons/circle-minus';
 	import ClockIcon from '@lucide/svelte/icons/clock';
 	import PauseCircleIcon from '@lucide/svelte/icons/pause-circle';
 
@@ -27,10 +28,10 @@
 
 	// Priority color mapping (larger, more vibrant)
 	const priorityColors = {
-		1: 'bg-orange-500',
+		1: 'bg-red-500',
 		2: 'bg-orange-400',
 		3: 'bg-blue-500',
-		4: 'bg-blue-400'
+		4: 'bg-gray-400'
 	};
 
 	const priorityLabels = {
@@ -41,20 +42,20 @@
 	};
 
 	// State badges
-	const stateBadgeVariant = {
-		new: 'secondary',
-		in_progress: 'default',
-		on_hold: 'outline',
-		blocked: 'destructive',
-		done: 'outline'
+	const stateBadgeColor = {
+		new: 'bg-orange-500',
+		in_progress: 'bg-blue-500',
+		on_hold: 'bg-yellow-500',
+		blocked: 'bg-red-500',
+		done: 'bg-green-500'
 	} as const;
 
 	const stateIcons = {
 		new: CircleIcon,
 		in_progress: ClockIcon,
 		on_hold: PauseCircleIcon,
-		blocked: CircleIcon,
-		done: CheckCircle2Icon
+		blocked: CircleMinusIcon,
+		done: CheckCircleIcon
 	};
 
 	const StateIcon = $derived(stateIcons[todo.state as keyof typeof stateIcons]);
@@ -78,7 +79,6 @@
 					class={`h-4 w-4 rounded-full ${priorityColors[todo.priority as keyof typeof priorityColors]}`}
 					title={`Priority: ${priorityLabels[todo.priority as keyof typeof priorityLabels]}`}
 				></div>
-				<span class="text-xs text-muted-foreground">P{todo.priority}</span>
 			</div>
 		</div>
 	</Card.Header>
@@ -88,15 +88,17 @@
 		<div class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
 			<!-- State Badge -->
 			<Badge
-				variant={stateBadgeVariant[todo.state as keyof typeof stateBadgeVariant]}
-				class="gap-1"
+				variant="default"
+				class={`gap-1 ${stateBadgeColor[todo.state as keyof typeof stateBadgeColor]}`}
 			>
 				<StateIcon class="h-3 w-3" />
 				{todo.state.replace('_', ' ')}
 			</Badge>
 
 			<!-- Cadence -->
-			<Badge variant="outline">{todo.cadence || 'One-time'}</Badge>
+			{#if todo.cadence}
+				<Badge variant="outline">{todo.cadence}</Badge>
+			{/if}
 
 			<!-- Due Date -->
 			{#if todo.dueDate}

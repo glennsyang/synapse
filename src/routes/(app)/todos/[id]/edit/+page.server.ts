@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
-import { updateTodoSchema } from '$lib/schemas/todo';
+import { type Cadence, type TodoState, updateTodoSchema } from '$lib/schemas/todo';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import getDb from '$lib/server/db';
 import { todoItems } from '$lib/server/db/schema';
@@ -30,10 +30,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		{
 			title: todo.title,
 			description: todo.description ?? undefined,
-			cadence: todo.cadence as 'daily' | 'weekly' | 'monthly' | undefined,
+			cadence: (todo.cadence as Cadence) ?? 'none',
 			priority: todo.priority,
 			dueDate: todo.dueDate ?? undefined,
-			state: todo.state as 'new' | 'in_progress' | 'on_hold' | 'blocked' | 'done',
+			state: todo.state as TodoState,
 			tags: tagsString
 		},
 		zod4(updateTodoSchema)
@@ -82,7 +82,11 @@ export const actions: Actions = {
 
 			if (form.data.title !== undefined) updateData.title = form.data.title;
 			if (form.data.description !== undefined) updateData.description = form.data.description;
-			if (form.data.cadence !== undefined) updateData.cadence = form.data.cadence;
+			if (form.data.cadence === undefined) {
+				updateData.cadence = null; // Clear cadence if not provided
+			} else {
+				updateData.cadence = form.data.cadence;
+			}
 			if (form.data.tags !== undefined) updateData.tags = tagsJson;
 			if (form.data.dueDate !== undefined) updateData.dueDate = form.data.dueDate;
 			if (form.data.priority !== undefined) updateData.priority = form.data.priority;

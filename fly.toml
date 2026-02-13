@@ -10,10 +10,12 @@ primary_region = 'yyz'
 
 [processes]
   app = './start.sh'
+  cron = 'supercronic /app/crontab'
 
 [[mounts]]
   source = 'data'
   destination = '/data'
+  processes = ['app', 'cron']
 
 [http_service]
   internal_port = 3000

@@ -99,7 +99,7 @@
 							{$form.cadence || 'Select cadence (e.g., daily, weekly)'}
 						</Select.Trigger>
 						<Select.Content>
-							<Select.Item value="" label="One-time">One-time</Select.Item>
+							<Select.Item value="none" label="None">None</Select.Item>
 							<Select.Item value="daily" label="Daily">Daily</Select.Item>
 							<Select.Item value="weekly" label="Weekly">Weekly</Select.Item>
 							<Select.Item value="monthly" label="Monthly">Monthly</Select.Item>

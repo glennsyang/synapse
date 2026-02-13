@@ -199,10 +199,10 @@
 - [x] T117 [US4] Create calorie target action
 - [x] T118 [P] [US4] Create CalorieProgress component showing progress bar (consumed vs target)
 - [x] T119 [US4] Calculate daily total calories from meal logs
-- [ ] T120 [P] [US4] Create workout reminders page in src/routes/(app)/fitness/reminders/+page.svelte (DEFERRED - email infrastructure needed)
-- [ ] T121 [US4] Create reminder CRUD actions (workout_type, cadence, days_of_week, time, enabled) (DEFERRED - email infrastructure needed)
-- [ ] T122 [US4] Implement workout reminder email worker in src/lib/server/email/workout-reminder.ts using Resend (DEFERRED - email infrastructure needed)
-- [ ] T123 [US4] Create cron/scheduled task to check reminders and send emails (log in email_notifications table) (DEFERRED - email infrastructure needed)
+- [x] T120 [P] [US4] Create workout reminders page in src/routes/(app)/fitness/reminders/+page.svelte
+- [x] T121 [US4] Create reminder CRUD actions (workout_type, cadence, days_of_week, time, enabled)
+- [x] T122 [US4] Implement workout reminder email worker in src/lib/server/email/workout-reminder.ts using Resend
+- [x] T123 [US4] Create cron/scheduled task to check reminders and send emails (log in email_notifications table)
 
 **Checkpoint**: User Story 4 complete - fitness tracking with goals, charts, and reminders
 
@@ -230,8 +230,8 @@
 - [x] T135 [US5] Run seed script to populate predefined routines
 - [x] T136 [P] [US5] Create schedule reminder form in routine detail page (cadence, days_of_week, time, enabled)
 - [x] T137 [US5] Create schedule CRUD actions in src/routes/(app)/meditation/routines/[id]/+page.server.ts
-- [ ] T138 [US5] Implement meditation reminder email worker in src/lib/server/email/meditation-reminder.ts using Resend (DEFERRED - email infrastructure needed)
-- [ ] T139 [US5] Create cron/scheduled task to check meditation schedules and send emails (log in email_notifications table) (DEFERRED - email infrastructure needed)
+- [x] T138 [US5] Implement meditation reminder email worker in src/lib/server/email/meditation-reminder.ts using Resend
+- [x] T139 [US5] Create cron/scheduled task to check meditation schedules and send emails (log in email_notifications table)
 - [x] T140 [P] [US5] Create complete session modal/page (routine selection, completion timestamp, mood_rating 1-5, notes)
 - [x] T141 [US5] Create session completion action saving to meditationSessions table
 - [x] T142 [P] [US5] Create SessionHistory component (integrated in main meditation page)
@@ -264,8 +264,8 @@
 - [x] T156 [P] [US6] Create new visit form (date, time, companions array, notes, follow_up_date)
 - [x] T157 [US6] Create visit CRUD actions in person detail page
 - [x] T158 [P] [US6] Create VisitHistory component in src/lib/components/visits/VisitHistory.svelte showing timeline of visits (integrated inline)
-- [ ] T159 [US6] Implement visit reminder email worker in src/lib/server/email/visit-warning.ts using Resend (DEFERRED - email infrastructure needed)
-- [ ] T160 [US6] Create cron/scheduled task to check people 7 days before status change and send reminders (log in email_notifications table) (DEFERRED - email infrastructure needed)
+- [x] T159 [US6] Implement visit reminder email worker in src/lib/server/email/visit-warning.ts using Resend
+- [x] T160 [US6] Create cron/scheduled task to check people 7 days before status change and send reminders (log in email_notifications table)
 - [x] T161 [US6] Update status indicators when visits are added/edited/deleted
 
 **Checkpoint**: User Story 6 complete - visit tracking with status and reminders

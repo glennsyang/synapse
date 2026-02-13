@@ -7,7 +7,9 @@ import {
 	logWeightSchema,
 	logWorkoutSchema,
 	setCalorieTargetSchema,
-	setGoalWeightSchema
+	setGoalWeightSchema,
+	updateWorkoutReminderSchema,
+	workoutReminderSchema
 } from '$lib/schemas/fitness';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
@@ -16,7 +18,8 @@ import {
 	goalWeights,
 	mealLogs,
 	weightEntries,
-	workoutLogs
+	workoutLogs,
+	workoutReminders
 } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
@@ -30,6 +33,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const goalForm = await superValidate(zod4(setGoalWeightSchema));
 	const workoutForm = await superValidate(zod4(logWorkoutSchema));
 	const mealForm = await superValidate(zod4(logMealSchema));
+	const reminderForm = await superValidate(zod4(workoutReminderSchema));
 
 	const userId = locals.user!.id;
 	const db = getDb();
@@ -68,6 +72,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 			where: eq(dailyCalorieTargets.userId, userId)
 		});
 
+		// Load workout reminders
+		const reminders = await db.query.workoutReminders.findMany({
+			where: eq(workoutReminders.userId, userId),
+			orderBy: [desc(workoutReminders.createdAt)]
+		});
+
 		// Calculate weight stats
 		const currentWeight = weights.length > 0 ? weights[0].weightLbs : null;
 		const startWeight = weights.length > 0 ? weights[weights.length - 1].weightLbs : null;
@@ -83,6 +93,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}
 
 		return {
+			reminders,
 			weightEntries: weights,
 			goalWeight,
 			workouts,
@@ -98,11 +109,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 			weightForm,
 			goalForm,
 			workoutForm,
-			mealForm
+			mealForm,
+			reminderForm
 		};
 	} catch (error) {
-		logger.error('Failed to load fitness data', { error, userId });
+		logger.error('Failed to load fitness data', { error });
 		return {
+			reminders: [],
 			weightEntries: [],
 			goalWeight: null,
 			workouts: [],
@@ -112,13 +125,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 				currentWeight: null,
 				startWeight: null,
 				remainingToGoal: null,
-				trend: 'stable' as const
+				trend: 'stable'
 			},
 			calorieForm,
 			weightForm,
 			goalForm,
 			workoutForm,
-			mealForm
+			mealForm,
+			reminderForm
 		};
 	}
 };
@@ -368,7 +382,130 @@ export const actions: Actions = {
 				{ status: 500 }
 			);
 		}
+	}),
 
-		return message(form, { type: 'success', text: 'Calorie target set successfully!' });
+	createReminder: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(workoutReminderSchema));
+
+		if (!form.valid) {
+			logger.warn('Invalid workout reminder form data', { errors: form.errors });
+			return { form, status: 400 };
+		}
+
+		try {
+			const db = getDb();
+			const reminderId = generateId();
+
+			await db.insert(workoutReminders).values({
+				id: reminderId,
+				userId: user.id,
+				workoutType: form.data.workoutType,
+				cadence: form.data.cadence,
+				daysOfWeek: form.data.daysOfWeek || null,
+				time: form.data.time,
+				enabled: form.data.enabled,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString()
+			});
+
+			logger.info('Workout reminder created', { reminderId, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to create workout reminder', { error });
+			return message(
+				form,
+				{
+					type: 'error',
+					text: 'Failed to create reminder. Please try again.'
+				},
+				{ status: 500 }
+			);
+		}
+
+		return message(form, { type: 'success', text: 'Reminder created successfully!' });
+	}),
+
+	updateReminder: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(updateWorkoutReminderSchema));
+
+		if (!form.valid) {
+			logger.warn('Invalid workout reminder update form data', { errors: form.errors });
+			return { form, status: 400 };
+		}
+
+		try {
+			const db = getDb();
+
+			// Verify ownership
+			const existing = await db.query.workoutReminders.findFirst({
+				where: eq(workoutReminders.id, form.data.id)
+			});
+
+			if (!existing || existing.userId !== user.id) {
+				return message(
+					form,
+					{
+						type: 'error',
+						text: 'Reminder not found or access denied.'
+					},
+					{ status: 404 }
+				);
+			}
+
+			await db
+				.update(workoutReminders)
+				.set({
+					workoutType: form.data.workoutType,
+					cadence: form.data.cadence,
+					daysOfWeek: form.data.daysOfWeek || null,
+					time: form.data.time,
+					enabled: form.data.enabled,
+					updatedAt: new Date().toISOString()
+				})
+				.where(eq(workoutReminders.id, form.data.id));
+
+			logger.info('Workout reminder updated', { reminderId: form.data.id, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to update workout reminder', { error });
+			return message(
+				form,
+				{
+					type: 'error',
+					text: 'Failed to update reminder. Please try again.'
+				},
+				{ status: 500 }
+			);
+		}
+
+		return message(form, { type: 'success', text: 'Reminder updated successfully!' });
+	}),
+
+	deleteReminder: requireAuth(async ({ request }, user) => {
+		const formData = await request.formData();
+		const reminderId = formData.get('id') as string;
+
+		if (!reminderId) {
+			return { success: false, error: 'Reminder ID is required' };
+		}
+
+		try {
+			const db = getDb();
+
+			// Verify ownership
+			const existing = await db.query.workoutReminders.findFirst({
+				where: eq(workoutReminders.id, reminderId)
+			});
+
+			if (!existing || existing.userId !== user.id) {
+				return { success: false, error: 'Reminder not found or access denied' };
+			}
+
+			await db.delete(workoutReminders).where(eq(workoutReminders.id, reminderId));
+
+			logger.info('Workout reminder deleted', { reminderId, userId: user.id });
+			return { success: true };
+		} catch (error) {
+			logger.error('Failed to delete workout reminder', { error });
+			return { success: false, error: 'Failed to delete reminder. Please try again.' };
+		}
 	})
 };

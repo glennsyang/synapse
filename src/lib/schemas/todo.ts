@@ -1,12 +1,17 @@
 import { z } from 'zod';
 
+const CadenceEnum = z.enum(['daily', 'weekly', 'monthly', 'none']);
+const TodoStateEnum = z.enum(['new', 'in_progress', 'on_hold', 'blocked', 'done']);
+
 /**
  * Schema for creating a new todoItem item
  */
 export const createTodoSchema = z.object({
 	title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
 	description: z.string().max(5000, 'Description too long').optional(),
-	cadence: z.enum(['daily', 'weekly', 'monthly']).optional(),
+	cadence: CadenceEnum.default('none')
+		.optional()
+		.transform((val) => (val === 'none' ? undefined : val)),
 	tags: z.string().optional(), // Comma-separated string, parsed in server action
 	dueDate: z
 		.string()
@@ -14,7 +19,7 @@ export const createTodoSchema = z.object({
 		.optional()
 		.nullable(),
 	priority: z.coerce.number().int().min(1, 'Priority is required').max(4),
-	state: z.enum(['new', 'in_progress', 'on_hold', 'blocked', 'done']).default('new')
+	state: TodoStateEnum.default('new')
 });
 
 /**
@@ -23,7 +28,9 @@ export const createTodoSchema = z.object({
 export const updateTodoSchema = z.object({
 	title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
 	description: z.string().max(5000, 'Description too long').optional().nullable(),
-	cadence: z.enum(['daily', 'weekly', 'monthly']).optional(),
+	cadence: CadenceEnum.default('none')
+		.optional()
+		.transform((val) => (val === 'none' ? undefined : val)),
 	tags: z.string().optional().nullable(), // Comma-separated string
 	dueDate: z
 		.string()
@@ -31,7 +38,7 @@ export const updateTodoSchema = z.object({
 		.optional()
 		.nullable(),
 	priority: z.coerce.number().int().min(1, 'Priority is required').max(4).optional(),
-	state: z.enum(['new', 'in_progress', 'on_hold', 'blocked', 'done']).optional()
+	state: TodoStateEnum.optional()
 });
 
 /**
@@ -39,9 +46,11 @@ export const updateTodoSchema = z.object({
  */
 export const updateTodoStateSchema = z.object({
 	id: z.uuid(),
-	state: z.enum(['new', 'in_progress', 'on_hold', 'blocked', 'done'])
+	state: TodoStateEnum
 });
 
+export type Cadence = z.infer<typeof CadenceEnum>;
+export type TodoState = z.infer<typeof TodoStateEnum>;
 export type CreatetodoItemput = z.infer<typeof createTodoSchema>;
 export type UpdatetodoItemput = z.infer<typeof updateTodoSchema>;
 export type UpdateTodoStateInput = z.infer<typeof updateTodoStateSchema>;

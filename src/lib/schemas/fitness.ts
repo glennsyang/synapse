@@ -36,6 +36,10 @@ export const workoutExerciseSchema = z.object({
 
 export type WorkoutExerciseData = z.infer<typeof workoutExerciseSchema>;
 
+const WorkoutTypeEnum = z.enum(['strength', 'cardio', 'running', 'other']);
+
+export type WorkoutType = z.infer<typeof WorkoutTypeEnum>;
+
 /**
  * Schema for logging a workout
  */
@@ -46,7 +50,7 @@ export const logWorkoutSchema = z.object({
 		.regex(/^\d{2}:\d{2}$/, 'Invalid time format (use HH:MM)')
 		.optional()
 		.nullable(),
-	type: z.enum(['strength', 'cardio', 'yoga', 'other']),
+	type: WorkoutTypeEnum,
 	durationMinutes: z.coerce.number().int().positive().optional().nullable(),
 	notes: z.string().optional().nullable(),
 	exercises: z.string().optional().nullable() // JSON string for strength workouts
@@ -63,12 +67,15 @@ export const updateWorkoutSchema = logWorkoutSchema.extend({
 
 export type UpdateWorkoutFormData = z.infer<typeof updateWorkoutSchema>;
 
+const MealTypeEnum = z.enum(['breakfast', 'lunch', 'dinner', 'snack']);
+
+export type MealType = z.infer<typeof MealTypeEnum>;
 /**
  * Schema for logging a meal
  */
 export const logMealSchema = z.object({
 	date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (use YYYY-MM-DD)'),
-	timeOfDay: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
+	timeOfDay: MealTypeEnum,
 	description: z.string().min(1, 'Description is required'),
 	caloriesEstimate: z.coerce.number().int().positive().optional().nullable()
 });
@@ -97,7 +104,7 @@ export type SetCalorieTargetFormData = z.infer<typeof setCalorieTargetSchema>;
  * Schema for creating/updating workout reminder
  */
 export const workoutReminderSchema = z.object({
-	workoutType: z.enum(['strength', 'cardio', 'yoga', 'other']),
+	workoutType: WorkoutTypeEnum,
 	cadence: z.enum(['daily', 'weekly']),
 	daysOfWeek: z.string().optional().nullable(), // JSON array of day numbers (0-6)
 	time: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format (use HH:MM)'),
@@ -119,7 +126,7 @@ export type UpdateWorkoutReminderFormData = z.infer<typeof updateWorkoutReminder
  * Schema for filtering workout list
  */
 export const workoutFilterSchema = z.object({
-	type: z.enum(['strength', 'cardio', 'yoga', 'other']).optional(),
+	type: WorkoutTypeEnum.optional(),
 	startDate: z
 		.string()
 		.regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -140,7 +147,7 @@ export const mealFilterSchema = z.object({
 		.string()
 		.regex(/^\d{4}-\d{2}-\d{2}$/)
 		.optional(),
-	timeOfDay: z.enum(['breakfast', 'lunch', 'dinner', 'snack']).optional()
+	timeOfDay: MealTypeEnum.optional()
 });
 
 export type MealFilterData = z.infer<typeof mealFilterSchema>;

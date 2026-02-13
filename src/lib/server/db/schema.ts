@@ -157,7 +157,7 @@ export const todoItems = sqliteTable('todo_items', {
 		.references(() => user.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
 	description: text('description'),
-	cadence: text('cadence'), // Optional: 'daily' | 'weekly' | 'monthly'
+	cadence: text('cadence'), // Optional: 'daily' | 'weekly' | 'monthly' | undefined
 	dueDate: text('due_date'), // Optional YYYY-MM-DD
 	state: text('state').notNull().default('new'), // 'new' | 'in_progress' | 'on_hold' | 'blocked' | 'done'
 	priority: integer('priority').notNull(), // 1-4 (1=highest, required)

@@ -109,6 +109,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		if (err instanceof Error && 'status' in err) {
 			throw err;
 		}
+		console.log(JSON.stringify(err));
 		logger.error('Failed to load meditation routine', { error: err });
 		throw error(500, 'Failed to load routine');
 	}

@@ -42,7 +42,7 @@
 			key: 'on_hold' as const,
 			label: 'On Hold',
 			count: todosByState.on_hold.length,
-			color: 'border-purple-500'
+			color: 'border-yellow-500'
 		},
 		{
 			key: 'blocked' as const,

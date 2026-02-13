@@ -21,7 +21,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import type { Exercise } from '$lib/types';
-	import { formatDateShort, getTodayString } from '$lib/utils/date';
+	import { daysOfWeek, formatDateShort, getTodayString } from '$lib/utils/date';
 
 	import type { PageData } from './$types.js';
 
@@ -114,6 +114,24 @@
 		}
 	});
 
+	// svelte-ignore state_referenced_locally
+	const {
+		form: reminderForm,
+		errors: reminderErrors,
+		enhance: reminderEnhance,
+		message: reminderMessage
+	} = superForm(data.reminderForm, {
+		resetForm: true,
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				toast.success('Reminder saved successfully!');
+			}
+			if ($reminderMessage?.type === 'error') {
+				toast.error(`Error saving reminder. Reason: ${$reminderMessage.text}`);
+			}
+		}
+	});
+
 	let workoutExercises = $state<Exercise[]>([]);
 
 	// When form is valid, sync to hidden input
@@ -197,6 +215,25 @@
 						<path d="m19 5-7 7" />
 					</svg>
 					<span>Meals</span>
+				</Tabs.Trigger>
+				<Tabs.Trigger
+					value="reminders"
+					class="font-display flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-green-500"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="h-4 w-4"
+					>
+						<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+						<path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+					</svg>
+					<span>Reminders</span>
 				</Tabs.Trigger>
 			</Tabs.List>
 
@@ -716,6 +753,207 @@
 									</div>
 								{/each}
 							</div>
+						</Card.Content>
+					</Card.Root>
+				{/if}
+			</Tabs.Content>
+
+			<Tabs.Content value="reminders" class="mt-6 space-y-6">
+				<!-- Create Reminder Form -->
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Schedule Workout Reminder</Card.Title>
+						<Card.Description>
+							Get email reminders to stay consistent with your workout routine
+						</Card.Description>
+					</Card.Header>
+					<Card.Content>
+						<form method="POST" action="?/createReminder" use:reminderEnhance>
+							<div class="grid gap-4 md:grid-cols-2">
+								<div class="space-y-2">
+									<Label for="workoutType">Workout Type</Label>
+									<Select.Root
+										type="single"
+										name="workoutType"
+										bind:value={$reminderForm.workoutType}
+									>
+										<Select.Trigger id="workoutType">
+											{$reminderForm.workoutType || 'Select workout type'}
+										</Select.Trigger>
+										<Select.Content>
+											<Select.Item value="strength" label="Strength">Strength</Select.Item>
+											<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
+											<Select.Item value="yoga" label="Yoga">Yoga</Select.Item>
+											<Select.Item value="other" label="Other">Other</Select.Item>
+										</Select.Content>
+									</Select.Root>
+									{#if $reminderErrors.workoutType}
+										<p class="text-sm text-destructive">{$reminderErrors.workoutType}</p>
+									{/if}
+								</div>
+
+								<div class="space-y-2">
+									<Label for="reminderTime">Time</Label>
+									<Input
+										id="reminderTime"
+										name="time"
+										type="time"
+										bind:value={$reminderForm.time}
+										placeholder="HH:MM"
+										required
+									/>
+									{#if $reminderErrors.time}
+										<p class="text-sm text-destructive">{$reminderErrors.time}</p>
+									{/if}
+								</div>
+
+								<div class="space-y-2">
+									<Label for="cadence">Frequency</Label>
+									<Select.Root type="single" name="cadence" bind:value={$reminderForm.cadence}>
+										<Select.Trigger id="cadence">
+											{$reminderForm.cadence || 'Select frequency'}
+										</Select.Trigger>
+										<Select.Content>
+											<Select.Item value="daily" label="Daily">Daily</Select.Item>
+											<Select.Item value="weekly" label="Weekly">Weekly</Select.Item>
+										</Select.Content>
+									</Select.Root>
+									{#if $reminderErrors.cadence}
+										<p class="text-sm text-destructive">{$reminderErrors.cadence}</p>
+									{/if}
+								</div>
+
+								{#if $reminderForm.cadence === 'weekly'}
+									<div class="space-y-2">
+										<Label>Days of Week</Label>
+										<div class="flex flex-wrap gap-2">
+											{#each daysOfWeek as day (day.id)}
+												{@const selectedDays = $reminderForm.daysOfWeek
+													? JSON.parse($reminderForm.daysOfWeek)
+													: []}
+												<Button
+													type="button"
+													variant={selectedDays.includes(day.id) ? 'default' : 'outline'}
+													size="sm"
+													onclick={() => {
+														const days = $reminderForm.daysOfWeek
+															? JSON.parse($reminderForm.daysOfWeek)
+															: [];
+														if (days.includes(day.id)) {
+															$reminderForm.daysOfWeek = JSON.stringify(
+																days.filter((d: number) => d !== day.id)
+															);
+														} else {
+															$reminderForm.daysOfWeek = JSON.stringify([...days, day.id].sort());
+														}
+													}}
+												>
+													{day.shortName}
+												</Button>
+											{/each}
+										</div>
+										{#if $reminderErrors.daysOfWeek}
+											<p class="text-sm text-destructive">{$reminderErrors.daysOfWeek}</p>
+										{/if}
+									</div>
+								{/if}
+							</div>
+
+							<div class="mt-4">
+								<Button type="submit">Create Reminder</Button>
+							</div>
+						</form>
+					</Card.Content>
+				</Card.Root>
+
+				<!-- Active Reminders List -->
+				{#if data.reminders.length > 0}
+					<Card.Root>
+						<Card.Header>
+							<Card.Title>Active Reminders</Card.Title>
+						</Card.Header>
+						<Card.Content>
+							<div class="space-y-3">
+								{#each data.reminders as reminder (reminder.id)}
+									<div class="rounded-lg border p-4">
+										<div class="flex items-start justify-between">
+											<div class="flex-1 space-y-1">
+												<div class="flex items-center gap-2">
+													<span
+														class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize"
+														class:bg-purple-100={reminder.workoutType === 'strength'}
+														class:text-purple-800={reminder.workoutType === 'strength'}
+														class:bg-blue-100={reminder.workoutType === 'cardio'}
+														class:text-blue-800={reminder.workoutType === 'cardio'}
+														class:bg-green-100={reminder.workoutType === 'yoga'}
+														class:text-green-800={reminder.workoutType === 'yoga'}
+														class:bg-gray-100={reminder.workoutType === 'other'}
+														class:text-gray-800={reminder.workoutType === 'other'}
+													>
+														{reminder.workoutType}
+													</span>
+													<span class="text-sm font-medium">{reminder.time}</span>
+													{#if !reminder.enabled}
+														<span class="text-xs text-muted-foreground">(Disabled)</span>
+													{/if}
+												</div>
+												<p class="text-sm text-muted-foreground">
+													{reminder.cadence === 'daily'
+														? 'Every day'
+														: `Weekly on ${
+																reminder.daysOfWeek
+																	? JSON.parse(reminder.daysOfWeek)
+																			.map(
+																				(d: string) => daysOfWeek[d as unknown as number].shortName
+																			)
+																			.join(', ')
+																	: 'Not configured'
+															}`}
+												</p>
+											</div>
+											<div class="flex gap-2">
+												<form method="POST" action="?/updateReminder">
+													<input type="hidden" name="id" value={reminder.id} />
+													<input type="hidden" name="workoutType" value={reminder.workoutType} />
+													<input type="hidden" name="cadence" value={reminder.cadence} />
+													<input type="hidden" name="time" value={reminder.time} />
+													<input
+														type="hidden"
+														name="daysOfWeek"
+														value={reminder.daysOfWeek || ''}
+													/>
+													<input type="hidden" name="enabled" value={!reminder.enabled} />
+													<Button type="submit" variant="outline" size="sm">
+														{reminder.enabled ? 'Disable' : 'Enable'}
+													</Button>
+												</form>
+												<form method="POST" action="?/deleteReminder">
+													<input type="hidden" name="id" value={reminder.id} />
+													<Button
+														type="submit"
+														variant="destructive"
+														size="sm"
+														onclick={(e) => {
+															if (!confirm('Are you sure you want to delete this reminder?')) {
+																e.preventDefault();
+															}
+														}}
+													>
+														Delete
+													</Button>
+												</form>
+											</div>
+										</div>
+									</div>
+								{/each}
+							</div>
+						</Card.Content>
+					</Card.Root>
+				{:else}
+					<Card.Root>
+						<Card.Content class="pt-6 text-center text-muted-foreground">
+							<p>No workout reminders scheduled yet.</p>
+							<p class="mt-1 text-sm">Create your first reminder above to get started!</p>
 						</Card.Content>
 					</Card.Root>
 				{/if}
