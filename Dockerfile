@@ -21,7 +21,7 @@ RUN curl -fsSLO "$SUPERCRONIC_URL" \
   && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
 
 # You might need to change this depending on where your crontab is located
-COPY crontab crontab
+COPY crontab /app/crontab
 
 LABEL fly_launch_runtime="SvelteKit"
 
@@ -77,6 +77,10 @@ VOLUME /data
 # Copy and set permissions for startup script
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
+
+# Copy and set permissions for cron job script
+COPY run-cron.sh /app/run-cron.sh
+RUN chmod +x /app/run-cron.sh
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000

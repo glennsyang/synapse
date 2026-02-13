@@ -1,1 +1,1 @@
-0 0,12 * * * /app/run-cron.sh
+*/10 * * * * /app/run-cron.sh
