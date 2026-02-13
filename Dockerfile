@@ -4,6 +4,11 @@
 ARG NODE_VERSION=22.21.1
 FROM node:${NODE_VERSION}-slim AS base
 
+# 1. Install curl and CA certificates (required for HTTPS downloads)
+RUN apt-get update -qq && \
+    apt-get install -y curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
 # Latest releases available at https://github.com/aptible/supercronic/releases
 ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-amd64 \
     SUPERCRONIC=supercronic-linux-amd64 \

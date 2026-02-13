@@ -15,7 +15,7 @@ primary_region = 'yyz'
 [[mounts]]
   source = 'data'
   destination = '/data'
-  processes = ['app', 'cron']
+  processes = ['app']
 
 [http_service]
   internal_port = 3000
