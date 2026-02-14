@@ -169,15 +169,15 @@ export async function sendVisitWarningEmail(
 							</p>
 						</div>
 						<p style="font-size: 16px; margin-bottom: 20px;">
-							${monthsSinceVisit >= 12 ? "It's been over a year! Consider reaching out soon." : 'Consider scheduling a visit to stay connected.'}
+							${monthsSinceVisit >= 12 ? "It's been over a year! Consider reaching out soon." : 'Consider scheduling a visit to encourage and commend.'}
 						</p>
 						<div style="background: #e5e7eb; padding: 20px; border-radius: 8px; margin: 20px 0;">
 							<p style="margin: 0; font-size: 14px; color: #6b7280;">
-								💡 <em>"The greatest gift you can give someone is your time."</em>
+								💡 <em>"You should know well the appearance of your flock. Take good care of your sheep."</em>
 							</p>
 						</div>
 						<p style="font-size: 16px; margin-top: 20px;">
-							Relationships need nurturing. Maybe it's time to reconnect! 💙
+							Relationships need nurturing. Maybe it's time for a visit! 💙
 						</p>
 					</div>
 					<div style="text-align: center; margin-top: 20px; padding: 20px; color: #9ca3af; font-size: 12px;">
