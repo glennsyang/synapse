@@ -14,4 +14,3 @@ jobs:
           curl -X POST https://synapse-dev.fly.dev/api/cron/email-notifications \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json"
-            --fail
