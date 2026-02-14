@@ -1,7 +1,7 @@
 /**
  * Email Notifications Cron Job
  *
- * Runs twice daily (midnight and noon) to send scheduled reminders:
+ * Runs every 10 minutes to send scheduled reminders:
  * - Workout reminders (based on workout_reminders table)
  * - Meditation reminders (based on meditation_schedules table)
  * - Visit warnings (for people not seen in 6+ months)
@@ -11,9 +11,10 @@
 
 import { and, eq, sql } from 'drizzle-orm';
 
+import { logger } from '$lib/utils/logger';
+
 import getDb from '../db';
 
-// Import schemas
 import {
 	emailNotifications,
 	meditationRoutines,
@@ -23,32 +24,18 @@ import {
 	visits,
 	workoutReminders
 } from './../db/schema';
-// Email functions
 import {
 	sendMeditationReminderEmail,
 	sendVisitWarningEmail,
 	sendWorkoutReminderEmail
 } from './index';
 
-// Get database instance
 const db = getDb();
-
-console.log('🚀 Starting email notifications cron job...');
-console.log(`📅 Current time: ${new Date().toISOString()}`);
-
-// Get current time info
-const now = new Date();
-const currentHour = now.getHours().toString().padStart(2, '0');
-const currentMinute = now.getMinutes().toString().padStart(2, '0');
-const currentTime = `${currentHour}:${currentMinute}`;
-const currentDay = now.getDay(); // 0 = Sunday, 6 = Saturday
-
-console.log(`⏰ Current time: ${currentTime}, Day: ${currentDay}`);
 
 /**
  * Check if this reminder should fire today based on cadence and days_of_week
  */
-function shouldFireToday(cadence: string, daysOfWeek: string | null): boolean {
+function shouldFireToday(currentDay: number, cadence: string, daysOfWeek: string | null): boolean {
 	if (cadence === 'daily') {
 		return true;
 	}
@@ -57,7 +44,7 @@ function shouldFireToday(cadence: string, daysOfWeek: string | null): boolean {
 			const days: number[] = JSON.parse(daysOfWeek);
 			return days.includes(currentDay);
 		} catch (e) {
-			console.error('❌ Error parsing days_of_week:', e);
+			logger.error('❌ Error parsing days_of_week:', e);
 			return false;
 		}
 	}
@@ -111,8 +98,8 @@ async function logNotification(
 /**
  * Process workout reminders
  */
-async function processWorkoutReminders(): Promise<void> {
-	console.log('\n💪 Processing workout reminders...');
+async function processWorkoutReminders(currentDay: number, currentHour: string): Promise<void> {
+	logger.debug('\n💪 Processing workout reminders...');
 
 	const reminders = await db
 		.select({
@@ -124,13 +111,13 @@ async function processWorkoutReminders(): Promise<void> {
 		.where(eq(workoutReminders.enabled, true))
 		.all();
 
-	console.log(`   Found ${reminders.length} enabled workout reminders`);
+	logger.debug(`   Found ${reminders.length} enabled workout reminders`);
 
 	let sentCount = 0;
 
 	for (const { reminder, user: userData } of reminders) {
 		// Check if should fire today
-		if (!shouldFireToday(reminder.cadence, reminder.daysOfWeek)) {
+		if (!shouldFireToday(currentDay, reminder.cadence, reminder.daysOfWeek)) {
 			continue;
 		}
 
@@ -145,12 +132,12 @@ async function processWorkoutReminders(): Promise<void> {
 
 		// Check if already sent today
 		if (await alreadySentToday(userData.id, 'workout_reminder', reminder.id)) {
-			console.log(`   ⏭️  Already sent to ${userData.email} today`);
+			logger.debug(`   ⏭️  Already sent to ${userData.email} today`);
 			continue;
 		}
 
 		// Send email
-		console.log(
+		logger.debug(
 			`   📧 Sending workout reminder to ${userData.email} (${reminder.workoutType} at ${reminder.time})`
 		);
 
@@ -170,20 +157,20 @@ async function processWorkoutReminders(): Promise<void> {
 			);
 
 			sentCount++;
-			console.log(`   ✅ Sent successfully`);
+			logger.debug(`   ✅ Sent successfully`);
 		} catch (error) {
-			console.error(`   ❌ Failed to send:`, error);
+			logger.error(`   ❌ Failed to send:`, { error });
 		}
 	}
 
-	console.log(`   📊 Sent ${sentCount} workout reminders`);
+	logger.debug(`   📊 Sent ${sentCount} workout reminders`);
 }
 
 /**
  * Process meditation reminders
  */
-async function processMeditationReminders(): Promise<void> {
-	console.log('\n🧘 Processing meditation reminders...');
+async function processMeditationReminders(currentDay: number, currentHour: string): Promise<void> {
+	logger.debug('\n🧘 Processing meditation reminders...');
 
 	const schedules = await db
 		.select({
@@ -197,13 +184,13 @@ async function processMeditationReminders(): Promise<void> {
 		.where(eq(meditationSchedules.enabled, true))
 		.all();
 
-	console.log(`   Found ${schedules.length} enabled meditation schedules`);
+	logger.debug(`   Found ${schedules.length} enabled meditation schedules`);
 
 	let sentCount = 0;
 
 	for (const { schedule, routine, user: userData } of schedules) {
 		// Check if should fire today
-		if (!shouldFireToday(schedule.cadence, schedule.daysOfWeek)) {
+		if (!shouldFireToday(currentDay, schedule.cadence, schedule.daysOfWeek)) {
 			continue;
 		}
 
@@ -218,12 +205,12 @@ async function processMeditationReminders(): Promise<void> {
 
 		// Check if already sent today
 		if (await alreadySentToday(userData.id, 'meditation_reminder', schedule.id)) {
-			console.log(`   ⏭️  Already sent to ${userData.email} today`);
+			logger.debug(`   ⏭️  Already sent to ${userData.email} today`);
 			continue;
 		}
 
 		// Send email
-		console.log(
+		logger.debug(
 			`   📧 Sending meditation reminder to ${userData.email} (${routine.title} at ${schedule.time})`
 		);
 
@@ -243,20 +230,20 @@ async function processMeditationReminders(): Promise<void> {
 			);
 
 			sentCount++;
-			console.log(`   ✅ Sent successfully`);
+			logger.debug(`   ✅ Sent successfully`);
 		} catch (error) {
-			console.error(`   ❌ Failed to send:`, error);
+			logger.error(`   ❌ Failed to send:`, { error });
 		}
 	}
 
-	console.log(`   📊 Sent ${sentCount} meditation reminders`);
+	logger.debug(`   📊 Sent ${sentCount} meditation reminders`);
 }
 
 /**
  * Process visit warnings (people not seen in 6+ months)
  */
-async function processVisitWarnings(): Promise<void> {
-	console.log('\n👥 Processing visit warnings...');
+async function processVisitWarnings(now: Date): Promise<void> {
+	logger.debug('\n👥 Processing visit warnings...');
 
 	// Get all people with their last visit date
 	const allPeople = await db
@@ -268,7 +255,7 @@ async function processVisitWarnings(): Promise<void> {
 		.innerJoin(user, eq(people.userId, user.id))
 		.all();
 
-	console.log(`   Found ${allPeople.length} people to check`);
+	logger.debug(`   Found ${allPeople.length} people to check`);
 
 	let sentCount = 0;
 	const sixMonthsAgo = new Date();
@@ -317,12 +304,12 @@ async function processVisitWarnings(): Promise<void> {
 			.get();
 
 		if (recentWarning) {
-			console.log(`   ⏭️  Already sent warning for ${person.name} in last 7 days`);
+			logger.debug(`   ⏭️  Already sent warning for ${person.name} in last 7 days`);
 			continue;
 		}
 
 		// Send warning email
-		console.log(
+		logger.debug(
 			`   📧 Sending visit warning to ${userData.email} (${person.name}, ${monthsSinceVisit} months)`
 		);
 
@@ -343,28 +330,40 @@ async function processVisitWarnings(): Promise<void> {
 			);
 
 			sentCount++;
-			console.log(`   ✅ Sent successfully`);
+			logger.debug(`   ✅ Sent successfully`);
 		} catch (error) {
-			console.error(`   ❌ Failed to send:`, error);
+			logger.error(`   ❌ Failed to send:`, { error });
 		}
 	}
 
-	console.log(`   📊 Sent ${sentCount} visit warnings`);
+	logger.debug(`   📊 Sent ${sentCount} visit warnings`);
 }
 
 /**
  * Main execution
  */
 export async function runEmailNotifications() {
-	try {
-		await processWorkoutReminders();
-		await processMeditationReminders();
-		await processVisitWarnings();
+	logger.debug('🚀 Starting email notifications job run...');
+	logger.debug(`📅 Current time: ${new Date().toISOString()}`);
 
-		console.log('\n✅ Email notifications cron job completed successfully!');
+	// Get current time info
+	const now = new Date();
+	const currentHour: string = now.getHours().toString().padStart(2, '0');
+	const currentMinute: string = now.getMinutes().toString().padStart(2, '0');
+	const currentTime: string = `${currentHour}:${currentMinute}`;
+	const currentDay: number = now.getDay(); // 0 = Sunday, 6 = Saturday
+
+	logger.debug(`⏰ Current time: ${currentTime}, Day: ${currentDay}`);
+
+	try {
+		await processWorkoutReminders(currentDay, currentHour);
+		await processMeditationReminders(currentDay, currentHour);
+		await processVisitWarnings(now);
+
+		logger.debug('\n✅ Email notifications cron job completed successfully!');
 		process.exit(0);
 	} catch (error) {
-		console.error('\n❌ Email notifications cron job failed:', error);
+		logger.error('\n❌ Email notifications cron job failed:', { error });
 		process.exit(1);
 	}
 }

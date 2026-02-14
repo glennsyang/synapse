@@ -5,7 +5,6 @@ import { runEmailNotifications } from '$lib/server/email/email-notifications';
 import { logger } from '$lib/utils/logger';
 
 export const POST: RequestHandler = async ({ request }) => {
-	// Verify secret token
 	const authHeader = request.headers.get('authorization');
 	const expectedToken = process.env.CRON_SECRET;
 
@@ -15,9 +14,9 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	try {
-		logger.info('⏰ Starting email notifications job via API');
+		logger.info('⏰ Starting cron job for email notifications!');
 		await runEmailNotifications();
-		logger.info('✅ Email notifications job completed successfully via API');
+		logger.info('✅ Email notifications job completed successfully!');
 		return json({ success: true, timestamp: new Date().toISOString() });
 	} catch (error) {
 		logger.error('❌ Email notifications job failed:', { error });
