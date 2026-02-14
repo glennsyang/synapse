@@ -1,0 +1,17 @@
+name: Email Notifications Job
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # Every 10 minutes
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  trigger-emails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger email notifications
+        run: |
+          curl -X POST https://synapse-dev.fly.dev/api/cron/email-notifications \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+            --fail

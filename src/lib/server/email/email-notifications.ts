@@ -9,9 +9,9 @@
  * Logs all sent emails in email_notifications table to prevent duplicates.
  */
 
-import Database from 'better-sqlite3';
 import { and, eq, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
+
+import getDb from '../db';
 
 // Import schemas
 import {
@@ -22,25 +22,16 @@ import {
 	user,
 	visits,
 	workoutReminders
-} from '../server/db/schema';
-
+} from './../db/schema';
 // Email functions
 import {
 	sendMeditationReminderEmail,
 	sendVisitWarningEmail,
 	sendWorkoutReminderEmail
-} from './email-reminders';
+} from './index';
 
-// Get environment variables
-const DATABASE_URL = process.env.DATABASE_URL;
-
-if (!DATABASE_URL) {
-	throw new Error('DATABASE_URL environment variable is required');
-}
-
-// Initialize database
-const sqlite = new Database(DATABASE_URL);
-const db = drizzle(sqlite);
+// Get database instance
+const db = getDb();
 
 console.log('🚀 Starting email notifications cron job...');
 console.log(`📅 Current time: ${new Date().toISOString()}`);
@@ -364,16 +355,16 @@ async function processVisitWarnings(): Promise<void> {
 /**
  * Main execution
  */
-try {
-	await processWorkoutReminders();
-	await processMeditationReminders();
-	await processVisitWarnings();
+export async function runEmailNotifications() {
+	try {
+		await processWorkoutReminders();
+		await processMeditationReminders();
+		await processVisitWarnings();
 
-	console.log('\n✅ Email notifications cron job completed successfully!');
-	process.exit(0);
-} catch (error) {
-	console.error('\n❌ Email notifications cron job failed:', error);
-	process.exit(1);
-} finally {
-	sqlite.close();
+		console.log('\n✅ Email notifications cron job completed successfully!');
+		process.exit(0);
+	} catch (error) {
+		console.error('\n❌ Email notifications cron job failed:', error);
+		process.exit(1);
+	}
 }
