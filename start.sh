@@ -1,10 +1,16 @@
 #!/bin/sh
 set -e
 
+echo "🚀 Starting Synapse..."
+
 # Run database migrations
-echo "Running database migrations..."
+echo "📦 Running database migrations..."
 npx drizzle-kit migrate
 
-# Start the server
-echo "Starting server..."
-exec node ./build/index.js
+# Start supercronic in the background
+echo "⏰ Starting cron jobs..."
+supercronic /app/crontab &
+
+# Start the SvelteKit app in the foreground
+echo "🚀 Starting SvelteKit server..."
+exec node build/index.js

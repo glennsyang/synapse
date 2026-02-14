@@ -5,7 +5,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "npm run build:app && npm run build:scripts",
+		"build:app": "vite build",
+		"build:scripts": "node scripts.config.js",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -51,6 +53,7 @@
 		"bits-ui": "^2.14.4",
 		"clsx": "^2.1.1",
 		"embla-carousel-svelte": "^8.6.0",
+		"esbuild": "^0.27.3",
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-simple-import-sort": "^12.1.1",

@@ -1,8 +1,19 @@
 #!/bin/bash
 set -e
 
-echo "Starting the twice-daily notifications..."
+# Log with timestamp
+log() {
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+}
 
-node /app/scripts/email-notifications.js
+log "🚀 Starting email notifications cron job..."
 
-echo "Notifications complete!"
+# Run the script and capture exit code
+if node /app/build/scripts/email-notifications.js; then
+  log "✅ Notifications completed successfully"
+  exit 0
+else
+  EXIT_CODE=$?
+  log "❌ Notifications failed with exit code: $EXIT_CODE"
+  exit $EXIT_CODE
+fi

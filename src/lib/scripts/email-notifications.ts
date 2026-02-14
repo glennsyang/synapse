@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * Email Notifications Cron Job
  *
@@ -24,21 +22,20 @@ import {
 	user,
 	visits,
 	workoutReminders
-} from '../src/lib/server/db/schema.ts';
+} from '../server/db/schema';
+
 // Email functions
 import {
 	sendMeditationReminderEmail,
 	sendVisitWarningEmail,
 	sendWorkoutReminderEmail
-} from '../src/lib/server/email/index.ts';
+} from './email-reminders';
 
-// Environment setup
-const DATABASE_URL = process.env.DATABASE_URL || '/data/synapse.db';
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
+// Get environment variables
+const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!RESEND_API_KEY) {
-	console.error('❌ RESEND_API_KEY environment variable is not set');
-	process.exit(1);
+if (!DATABASE_URL) {
+	throw new Error('DATABASE_URL environment variable is required');
 }
 
 // Initialize database
@@ -60,13 +57,13 @@ console.log(`⏰ Current time: ${currentTime}, Day: ${currentDay}`);
 /**
  * Check if this reminder should fire today based on cadence and days_of_week
  */
-function shouldFireToday(cadence, daysOfWeek) {
+function shouldFireToday(cadence: string, daysOfWeek: string | null): boolean {
 	if (cadence === 'daily') {
 		return true;
 	}
 	if (cadence === 'weekly' && daysOfWeek) {
 		try {
-			const days = JSON.parse(daysOfWeek);
+			const days: number[] = JSON.parse(daysOfWeek);
 			return days.includes(currentDay);
 		} catch (e) {
 			console.error('❌ Error parsing days_of_week:', e);
@@ -79,7 +76,11 @@ function shouldFireToday(cadence, daysOfWeek) {
 /**
  * Check if we already sent this notification today
  */
-async function alreadySentToday(userId, notificationType, entityId) {
+async function alreadySentToday(
+	userId: string,
+	notificationType: string,
+	entityId: string
+): Promise<boolean> {
 	const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
 	const existing = await db
@@ -101,7 +102,12 @@ async function alreadySentToday(userId, notificationType, entityId) {
 /**
  * Log sent email notification
  */
-async function logNotification(userId, notificationType, entityId, subject) {
+async function logNotification(
+	userId: string,
+	notificationType: string,
+	entityId: string,
+	subject: string
+): Promise<void> {
 	await db.insert(emailNotifications).values({
 		userId,
 		notificationType,
@@ -114,7 +120,7 @@ async function logNotification(userId, notificationType, entityId, subject) {
 /**
  * Process workout reminders
  */
-async function processWorkoutReminders() {
+async function processWorkoutReminders(): Promise<void> {
 	console.log('\n💪 Processing workout reminders...');
 
 	const reminders = await db
@@ -185,7 +191,7 @@ async function processWorkoutReminders() {
 /**
  * Process meditation reminders
  */
-async function processMeditationReminders() {
+async function processMeditationReminders(): Promise<void> {
 	console.log('\n🧘 Processing meditation reminders...');
 
 	const schedules = await db
@@ -258,7 +264,7 @@ async function processMeditationReminders() {
 /**
  * Process visit warnings (people not seen in 6+ months)
  */
-async function processVisitWarnings() {
+async function processVisitWarnings(): Promise<void> {
 	console.log('\n👥 Processing visit warnings...');
 
 	// Get all people with their last visit date

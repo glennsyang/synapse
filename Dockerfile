@@ -31,7 +31,6 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV="production"
 
-
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
@@ -51,7 +50,6 @@ RUN npm run build
 
 # Remove development dependencies
 RUN npm prune --omit=dev
-
 
 # Final stage for app image
 FROM base
@@ -84,5 +82,5 @@ RUN chmod +x /app/run-cron.sh
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-ENV DATABASE_URL="file:///data/synapse.db"
+ENV DATABASE_URL="/data/synapse.db"
 CMD [ "/app/start.sh" ]
