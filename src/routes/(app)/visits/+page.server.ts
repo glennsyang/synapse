@@ -1,6 +1,5 @@
 import { desc, eq } from 'drizzle-orm';
 
-import { visitFilterSchema } from '$lib/schemas/visits';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -8,18 +7,7 @@ import { calculateVisitStatus, type PersonWithStatus } from '$lib/utils/visit-st
 
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, url }) => {
-	const filters = visitFilterSchema.safeParse({
-		status: url.searchParams.get('status') ?? undefined
-	});
-
-	if (!filters.success) {
-		logger.error('Invalid filter parameters', { error: filters.error });
-		return { people: [] };
-	}
-
-	const { status: statusFilter } = filters.data;
-
+export const load: PageServerLoad = async ({ locals }) => {
 	try {
 		const db = getDb();
 
@@ -56,15 +44,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			})
 		);
 
-		// Apply status filter if provided
-		let filteredPeople = peopleWithStatus;
-		if (statusFilter) {
-			filteredPeople = peopleWithStatus.filter((p) => p.status === statusFilter);
-		}
-
 		// Sort by status priority (red > yellow > green > none), then by days since last visit
 		const statusPriority = { red: 1, yellow: 2, green: 3, none: 4 };
-		filteredPeople.sort((a, b) => {
+		peopleWithStatus.sort((a, b) => {
 			const priorityDiff = statusPriority[a.status] - statusPriority[b.status];
 			if (priorityDiff !== 0) return priorityDiff;
 
@@ -75,7 +57,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			return b.daysSinceLastVisit - a.daysSinceLastVisit;
 		});
 
-		return { people: filteredPeople };
+		return { people: peopleWithStatus };
 	} catch (error) {
 		logger.error('Failed to load people', { error });
 		return { people: [] };

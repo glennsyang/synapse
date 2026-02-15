@@ -34,7 +34,7 @@
 {#if navigating.to?.url.pathname === '/todos'}
 	<PageSkeleton color="orange" />
 {:else}
-	<div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
+	<div class="mobile-container mx-auto w-full max-w-7xl py-4 sm:py-8">
 		<div class="mobile-stack mb-6 justify-between sm:mb-8">
 			<div>
 				<h1 class="font-display text-2xl font-bold sm:text-3xl">Todos</h1>
@@ -50,7 +50,7 @@
 		<Tabs.Root
 			value={selectedCadence}
 			onValueChange={(v) => (selectedCadence = v as typeof selectedCadence)}
-			class="mb-6"
+			class="mb-6 w-full"
 		>
 			<Tabs.List
 				class="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
@@ -112,7 +112,7 @@
 		</div>
 
 		<!-- View Content -->
-		<div class="mt-6">
+		<div class="mt-6 w-full sm:min-h-80">
 			{#if currentView === 'grid'}
 				<TodoGridView todos={filteredTodos} />
 			{:else if currentView === 'kanban'}

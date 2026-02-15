@@ -49,7 +49,7 @@
 {#if navigating.to?.url.pathname === '/meditation'}
 	<PageSkeleton color="purple" />
 {:else}
-	<div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
+	<div class="mobile-container mx-auto w-full max-w-7xl py-4 sm:py-8">
 		<div class="mb-6 flex items-center justify-between">
 			<div>
 				<h1 class="font-display text-3xl font-bold">Meditation</h1>
@@ -78,7 +78,7 @@
 			</Tabs.List>
 
 			<!-- Routines Tab -->
-			<Tabs.Content value="routines" class="space-y-4">
+			<Tabs.Content value="routines" class="w-full space-y-4">
 				<!-- Filters -->
 				<Collapsible.Root bind:open={filtersOpen}>
 					<Collapsible.Trigger>
@@ -141,7 +141,7 @@
 				</Collapsible.Root>
 
 				<!-- Routines List -->
-				<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+				<div class="grid w-full gap-4 sm:min-h-80 md:grid-cols-2 lg:grid-cols-3">
 					{#each data.routines as routine (routine.id)}
 						<Card.Root
 							class="to-lavender-50 border-purple-200 bg-linear-to-br from-purple-50 transition-shadow hover:shadow-lg dark:border-purple-800 dark:from-purple-950/20 dark:to-purple-900/10"
@@ -204,7 +204,7 @@
 			</Tabs.Content>
 
 			<!-- History Tab -->
-			<Tabs.Content value="history" class="space-y-4">
+			<Tabs.Content value="history" class="w-full space-y-4">
 				<Card.Root>
 					<Card.Header>
 						<Card.Title>Session History</Card.Title>

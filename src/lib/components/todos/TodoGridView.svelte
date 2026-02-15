@@ -19,8 +19,12 @@
 </script>
 
 {#if todos.length === 0}
-	<div class="rounded-md border p-8 text-center text-muted-foreground">
-		<p>No todos found. Create your first todo to get started!</p>
+	<div class="w-full">
+		<div
+			class="flex min-h-56 w-full items-center justify-center rounded-md border border-dashed p-8 text-center text-muted-foreground"
+		>
+			<p>No todos found. Create your first todo to get started!</p>
+		</div>
 	</div>
 {:else}
 	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

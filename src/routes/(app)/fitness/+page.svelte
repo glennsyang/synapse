@@ -222,7 +222,7 @@
 {#if navigating.to?.url.pathname === '/fitness'}
 	<PageSkeleton color="green" />
 {:else}
-	<div class="mobile-container mx-auto max-w-7xl py-4 sm:py-8">
+	<div class="mobile-container mx-auto w-full max-w-7xl py-4 sm:py-8">
 		<div class="mb-8">
 			<h1 class="font-display text-3xl font-bold">Fitness & Nutrition</h1>
 			<p class="mt-2 text-muted-foreground">
@@ -307,7 +307,7 @@
 				</Tabs.Trigger>
 			</Tabs.List>
 
-			<Tabs.Content value="weight" class="mt-6 space-y-6">
+			<Tabs.Content value="weight" class="mt-6 w-full space-y-6">
 				<!-- Stats Cards -->
 				<div class="grid gap-4 md:grid-cols-4">
 					<Card.Root>
@@ -528,7 +528,7 @@
 				{/if}
 			</Tabs.Content>
 
-			<Tabs.Content value="workouts" class="mt-6 space-y-6">
+			<Tabs.Content value="workouts" class="mt-6 w-full space-y-6">
 				<!-- Log Workout Form -->
 				<Card.Root>
 					<Card.Header>
@@ -735,7 +735,7 @@
 				{/if}
 			</Tabs.Content>
 
-			<Tabs.Content value="meals" class="mt-6 space-y-6">
+			<Tabs.Content value="meals" class="mt-6 w-full space-y-6">
 				<!-- Calorie Progress -->
 				<CalorieProgress
 					consumed={todayTotalCalories}
@@ -930,7 +930,7 @@
 				{/if}
 			</Tabs.Content>
 
-			<Tabs.Content value="reminders" class="mt-6 space-y-6">
+			<Tabs.Content value="reminders" class="mt-6 w-full space-y-6">
 				<!-- Create Reminder Form -->
 				<Card.Root>
 					<Card.Header>
