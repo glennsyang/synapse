@@ -26,7 +26,16 @@ import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
+	const tab = (() => {
+		const tabParam = url.searchParams.get('tab');
+		if (tabParam === 'workouts' || tabParam === 'meals' || tabParam === 'reminders') {
+			return tabParam;
+		}
+
+		return 'weight';
+	})();
+
 	// Load up all the forms
 	const calorieForm = await superValidate(zod4(setCalorieTargetSchema));
 	const weightForm = await superValidate(zod4(logWeightSchema));
@@ -93,6 +102,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}
 
 		return {
+			tab,
 			reminders,
 			weightEntries: weights,
 			goalWeight,
@@ -115,6 +125,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	} catch (error) {
 		logger.error('Failed to load fitness data', { error });
 		return {
+			tab,
 			reminders: [],
 			weightEntries: [],
 			goalWeight: null,

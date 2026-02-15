@@ -16,6 +16,24 @@ export const logWeightSchema = z.object({
 export type LogWeightFormData = z.infer<typeof logWeightSchema>;
 
 /**
+ * Schema for updating a weight entry
+ */
+export const updateWeightSchema = logWeightSchema.extend({
+	id: z.uuid()
+});
+
+export type UpdateWeightFormData = z.infer<typeof updateWeightSchema>;
+
+/**
+ * Common schema for deleting entries by id
+ */
+export const deleteEntrySchema = z.object({
+	id: z.uuid()
+});
+
+export type DeleteEntryFormData = z.infer<typeof deleteEntrySchema>;
+
+/**
  * Schema for setting goal weight
  */
 export const setGoalWeightSchema = z.object({
@@ -36,7 +54,7 @@ export const workoutExerciseSchema = z.object({
 
 export type WorkoutExerciseData = z.infer<typeof workoutExerciseSchema>;
 
-const WorkoutTypeEnum = z.enum(['strength', 'cardio', 'running', 'other']);
+const WorkoutTypeEnum = z.enum(['strength', 'cardio', 'yoga', 'other']);
 
 export type WorkoutType = z.infer<typeof WorkoutTypeEnum>;
 

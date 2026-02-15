@@ -43,7 +43,7 @@
 				open = false;
 
 				return async ({ result, update }) => {
-					if (result.type === 'success') {
+					if (result.type === 'success' || result.type === 'redirect') {
 						toast.success(`${title} successful!`);
 					} else if (result.type === 'failure' && result.data?.error) {
 						toast.error((result.data.error as string) || `${title} failed!`);

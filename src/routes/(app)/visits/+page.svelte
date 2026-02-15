@@ -38,7 +38,12 @@
 				<h1 class="font-display text-3xl font-bold">Visit Tracking</h1>
 				<p class="mt-1 text-muted-foreground">Track visits made with your group</p>
 			</div>
-			<Button href="/visits/people/new" class="bg-pink-600 hover:bg-pink-700">
+			<Button
+				title="Add Person"
+				aria-label="Add Person"
+				href="/visits/people/new"
+				class="bg-pink-600 hover:bg-pink-700"
+			>
 				<PlusIcon class="mr-2 h-4 w-4" />
 				Add Person
 			</Button>

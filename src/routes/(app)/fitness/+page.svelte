@@ -1,15 +1,20 @@
 <script lang="ts">
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
 	import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
+	import BellIcon from '@lucide/svelte/icons/bell';
+	import BellOffIcon from '@lucide/svelte/icons/bell-off';
 	import MinusIcon from '@lucide/svelte/icons/minus';
+	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import ScaleIcon from '@lucide/svelte/icons/scale';
 	import TargetIcon from '@lucide/svelte/icons/target';
+	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 	import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
 	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { toast } from 'svelte-sonner';
 	import { superForm } from 'sveltekit-superforms';
 
-	import { navigating } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import CalorieProgress from '$lib/components/fitness/CalorieProgress.svelte';
 	import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
 	import WeightChart from '$lib/components/fitness/WeightChart.svelte';
@@ -140,6 +145,12 @@
 	});
 
 	let workoutExercises = $state<Exercise[]>([]);
+	let weightEntryToDelete = $state<string | null>(null);
+	let workoutToDelete = $state<string | null>(null);
+	let mealToDelete = $state<string | null>(null);
+	let showDeleteWeightDialog = $state(false);
+	let showDeleteWorkoutDialog = $state(false);
+	let showDeleteMealDialog = $state(false);
 	let reminderToDelete = $state<string | null>(null);
 	let showDeleteReminderDialog = $state(false);
 	let reminderToToggle = $state<{
@@ -151,6 +162,37 @@
 		enabled: boolean;
 	} | null>(null);
 	let showToggleReminderDialog = $state(false);
+	let activeTab = $state('weight');
+	const handledNotices = new SvelteSet<string>();
+
+	$effect(() => {
+		const tab = page.url.searchParams.get('tab');
+		if (tab === 'workouts' || tab === 'meals' || tab === 'reminders' || tab === 'weight') {
+			activeTab = tab;
+		}
+	});
+
+	$effect(() => {
+		const notice = page.url.searchParams.get('notice');
+		if (!notice || handledNotices.has(notice)) {
+			return;
+		}
+
+		handledNotices.add(notice);
+		if (notice === 'weight-updated') {
+			toast.success('Weight entry updated successfully!');
+		} else if (notice === 'weight-deleted') {
+			toast.success('Weight entry deleted successfully!');
+		} else if (notice === 'workout-updated') {
+			toast.success('Workout updated successfully!');
+		} else if (notice === 'workout-deleted') {
+			toast.success('Workout deleted successfully!');
+		} else if (notice === 'meal-updated') {
+			toast.success('Meal updated successfully!');
+		} else if (notice === 'meal-deleted') {
+			toast.success('Meal deleted successfully!');
+		}
+	});
 
 	// When form is valid, sync to hidden input
 	$effect(() => {
@@ -160,7 +202,7 @@
 	});
 
 	// Calculate today's total calories
-	let todayTotalCalories = $derived(() => {
+	let todayTotalCalories = $derived.by(() => {
 		const today = getTodayString();
 		const todayMeals = data.meals.filter((meal) => meal.date === today);
 		return todayMeals.reduce((sum, meal) => sum + (meal.caloriesEstimate || 0), 0);
@@ -188,7 +230,7 @@
 			</p>
 		</div>
 
-		<Tabs.Root value="weight" class="w-full">
+		<Tabs.Root bind:value={activeTab} class="w-full">
 			<Tabs.List
 				class="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
 			>
@@ -444,9 +486,43 @@
 												{/if}
 											</p>
 										</div>
+										<div class="flex items-center gap-2">
+											<Button
+												variant="outline"
+												size="icon"
+												href="/fitness/weight/{entry.id}/edit"
+												aria-label="Edit weight entry"
+												title="Edit"
+											>
+												<PencilIcon class="h-4 w-4" />
+											</Button>
+											<Button
+												type="button"
+												variant="destructive"
+												size="icon"
+												onclick={() => {
+													weightEntryToDelete = entry.id;
+													showDeleteWeightDialog = true;
+												}}
+												aria-label="Delete weight entry"
+												title="Delete"
+											>
+												<Trash2Icon class="h-4 w-4" />
+											</Button>
+										</div>
 									</div>
 								{/each}
 							</div>
+							{#if weightEntryToDelete}
+								<ConfirmDialog
+									bind:open={showDeleteWeightDialog}
+									title="Delete Weight Entry"
+									message="Are you sure you want to delete this weight entry? This action cannot be undone."
+									confirmButtonText="Delete"
+									actionUrl="/fitness/weight/{weightEntryToDelete}/edit?/delete"
+									id={weightEntryToDelete}
+								/>
+							{/if}
 						</Card.Content>
 					</Card.Root>
 				{/if}
@@ -616,10 +692,44 @@
 													</div>
 												{/if}
 											</div>
+											<div class="mt-3 flex items-center gap-2">
+												<Button
+													variant="outline"
+													size="icon"
+													href="/fitness/workouts/{workout.id}/edit"
+													aria-label="Edit workout"
+													title="Edit"
+												>
+													<PencilIcon class="h-4 w-4" />
+												</Button>
+												<Button
+													type="button"
+													variant="destructive"
+													size="icon"
+													onclick={() => {
+														workoutToDelete = workout.id;
+														showDeleteWorkoutDialog = true;
+													}}
+													aria-label="Delete workout"
+													title="Delete"
+												>
+													<Trash2Icon class="h-4 w-4" />
+												</Button>
+											</div>
 										</div>
 									</div>
 								{/each}
 							</div>
+							{#if workoutToDelete}
+								<ConfirmDialog
+									bind:open={showDeleteWorkoutDialog}
+									title="Delete Workout"
+									message="Are you sure you want to delete this workout? This action cannot be undone."
+									confirmButtonText="Delete"
+									actionUrl="/fitness/workouts/{workoutToDelete}/edit?/delete"
+									id={workoutToDelete}
+								/>
+							{/if}
 						</Card.Content>
 					</Card.Root>
 				{/if}
@@ -628,7 +738,7 @@
 			<Tabs.Content value="meals" class="mt-6 space-y-6">
 				<!-- Calorie Progress -->
 				<CalorieProgress
-					consumed={todayTotalCalories()}
+					consumed={todayTotalCalories}
 					target={data.calorieTarget?.targetCalories || null}
 				/>
 
@@ -777,10 +887,44 @@
 												</p>
 												<p class="mt-2 text-sm">{meal.description}</p>
 											</div>
+											<div class="mt-3 flex items-center gap-2">
+												<Button
+													variant="outline"
+													size="icon"
+													href="/fitness/meals/{meal.id}/edit"
+													aria-label="Edit meal"
+													title="Edit"
+												>
+													<PencilIcon class="h-4 w-4" />
+												</Button>
+												<Button
+													type="button"
+													variant="destructive"
+													size="icon"
+													onclick={() => {
+														mealToDelete = meal.id;
+														showDeleteMealDialog = true;
+													}}
+													aria-label="Delete meal"
+													title="Delete"
+												>
+													<Trash2Icon class="h-4 w-4" />
+												</Button>
+											</div>
 										</div>
 									</div>
 								{/each}
 							</div>
+							{#if mealToDelete}
+								<ConfirmDialog
+									bind:open={showDeleteMealDialog}
+									title="Delete Meal"
+									message="Are you sure you want to delete this meal entry? This action cannot be undone."
+									confirmButtonText="Delete"
+									actionUrl="/fitness/meals/{mealToDelete}/edit?/delete"
+									id={mealToDelete}
+								/>
+							{/if}
 						</Card.Content>
 					</Card.Root>
 				{/if}
@@ -950,7 +1094,7 @@
 												<Button
 													type="button"
 													variant="outline"
-													size="sm"
+													size="icon"
 													onclick={() => {
 														reminderToToggle = {
 															id: reminder.id,
@@ -962,19 +1106,27 @@
 														};
 														showToggleReminderDialog = true;
 													}}
+													aria-label={reminder.enabled ? 'Disable reminder' : 'Enable reminder'}
+													title={reminder.enabled ? 'Disable' : 'Enable'}
 												>
-													{reminder.enabled ? 'Disable' : 'Enable'}
+													{#if reminder.enabled}
+														<BellOffIcon class="h-4 w-4" />
+													{:else}
+														<BellIcon class="h-4 w-4" />
+													{/if}
 												</Button>
 												<Button
 													type="button"
 													variant="destructive"
-													size="sm"
+													size="icon"
 													onclick={() => {
 														reminderToDelete = reminder.id;
 														showDeleteReminderDialog = true;
 													}}
+													aria-label="Delete reminder"
+													title="Delete"
 												>
-													Delete
+													<Trash2Icon class="h-4 w-4" />
 												</Button>
 											</div>
 										</div>

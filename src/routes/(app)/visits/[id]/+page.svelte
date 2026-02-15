@@ -141,17 +141,31 @@
 				</div>
 			</div>
 			<div class="flex gap-2">
-				<Button onclick={() => (showLogVisitDialog = true)}>
-					<CalendarIcon class="mr-2 h-4 w-4" />
-					Log Visit
+				<Button
+					size="icon"
+					aria-label="Log Visit"
+					title="Log Visit"
+					onclick={() => (showLogVisitDialog = true)}
+				>
+					<CalendarIcon class="h-4 w-4" />
 				</Button>
-				<Button variant="outline" onclick={() => (showEditPersonDialog = true)}>
-					<EditIcon class="mr-2 h-4 w-4" />
-					Edit
+				<Button
+					size="icon"
+					variant="outline"
+					aria-label="Edit Person"
+					title="Edit Person"
+					onclick={() => (showEditPersonDialog = true)}
+				>
+					<EditIcon class="h-4 w-4" />
 				</Button>
-				<Button variant="destructive" onclick={() => (showDeletePersonDialog = true)}>
-					<Trash2Icon class="mr-2 h-4 w-4" />
-					Delete
+				<Button
+					size="icon"
+					variant="destructive"
+					aria-label="Delete Person"
+					title="Delete Person"
+					onclick={() => (showDeletePersonDialog = true)}
+				>
+					<Trash2Icon class="h-4 w-4" />
 				</Button>
 			</div>
 		</div>
@@ -204,9 +218,11 @@
 								<form method="POST" action="?/deleteVisit">
 									<Input type="hidden" name="visitId" value={visit.id} />
 									<Button
+										size="icon"
 										type="button"
 										variant="destructive"
-										size="sm"
+										aria-label="Delete Visit"
+										title="Delete Visit"
 										onclick={() => (visitToDelete = visit.id)}
 									>
 										<Trash2Icon class="h-4 w-4" />
