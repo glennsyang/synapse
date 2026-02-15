@@ -18,7 +18,7 @@
 	let openDeleteModal = $state<boolean>(false);
 </script>
 
-<Card.Root class="border-l-4 border-l-teal-500">
+<Card.Root class="border-l-4 border-l-blue-500">
 	<Card.Header>
 		<div class="flex items-start justify-between">
 			<div class="space-y-1">

@@ -1,0 +1,107 @@
+import { logger } from '$lib/utils/logger';
+
+const weatherMap: Record<number, { label: string; icon: string }> = {
+	0: { label: 'Clear sky', icon: '☀️' },
+	1: { label: 'Mainly clear', icon: '🌤️' },
+	2: { label: 'Partly cloudy', icon: '⛅' },
+	3: { label: 'Overcast', icon: '☁️' },
+	45: { label: 'Fog', icon: '🌫️' },
+	48: { label: 'Depositing rime fog', icon: '🌫️' },
+	51: { label: 'Light drizzle', icon: '🌦️' },
+	61: { label: 'Slight rain', icon: '🌧️' },
+	63: { label: 'Moderate rain', icon: '🌧️' },
+	65: { label: 'Heavy rain', icon: '🌧️' },
+	71: { label: 'Slight snow', icon: '❄️' },
+	95: { label: 'Thunderstorm', icon: '⛈️' }
+	// Add more codes as needed from WMO standards
+};
+
+type ReverseGeocodeResponse = {
+	address?: {
+		city?: string;
+		town?: string;
+		village?: string;
+	};
+};
+
+type CurrentWeatherResponse = {
+	current_weather?: {
+		temperature?: number;
+		weathercode?: number;
+	};
+};
+
+export type JournalWeather = {
+	temperature: number;
+	condition: string;
+};
+
+function getCurrentPosition(): Promise<GeolocationPosition> {
+	if (typeof navigator === 'undefined' || !navigator.geolocation) {
+		throw new TypeError('Geolocation is not supported by your browser.');
+	}
+
+	return new Promise((resolve, reject) => {
+		navigator.geolocation.getCurrentPosition(resolve, reject);
+	});
+}
+
+export async function getCurrentLocationCity(): Promise<string> {
+	try {
+		const position = await getCurrentPosition();
+		const { latitude, longitude } = position.coords;
+
+		const response = await fetch(
+			`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+			{
+				headers: {
+					'User-Agent': 'Synapse/1.0'
+				}
+			}
+		);
+
+		if (!response.ok) {
+			throw new TypeError('Unable to process your current location.');
+		}
+
+		const data = (await response.json()) as ReverseGeocodeResponse;
+		return data.address?.city ?? data.address?.town ?? data.address?.village ?? 'Unknown location';
+	} catch (error) {
+		logger.error('Failed to get location and/or city name', { error: JSON.stringify(error) });
+		throw new TypeError('Unable to retrieve your location. You can still enter it manually.');
+	}
+}
+
+export async function getCurrentWeather(): Promise<JournalWeather> {
+	try {
+		const position = await getCurrentPosition();
+		const { latitude, longitude } = position.coords;
+
+		const weatherResponse = await fetch(
+			`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`
+		);
+
+		if (!weatherResponse.ok) {
+			throw new TypeError('Unable to retrieve weather information.');
+		}
+
+		const weatherData = (await weatherResponse.json()) as CurrentWeatherResponse;
+		const temperature = weatherData.current_weather?.temperature;
+		const weatherCode = weatherData.current_weather?.weathercode;
+
+		if (typeof temperature !== 'number' || typeof weatherCode !== 'number') {
+			throw new TypeError('Unable to retrieve weather information.');
+		}
+
+		const weatherEntry = weatherMap[weatherCode];
+		const condition = weatherEntry ? `${weatherEntry.label} ${weatherEntry.icon}` : 'Unknown';
+
+		return {
+			temperature,
+			condition
+		};
+	} catch (error) {
+		logger.error('Failed to get weather', { error: JSON.stringify(error) });
+		throw new TypeError('Unable to retrieve your location for weather information.');
+	}
+}
