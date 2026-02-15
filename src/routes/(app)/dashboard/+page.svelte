@@ -15,7 +15,12 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import * as ScrollArea from '$lib/components/ui/scroll-area/index.js';
-	import { formatTimestampShort } from '$lib/utils/date';
+	import {
+		formatDateMedium,
+		formatTime12Hour,
+		formatTimestampMedium,
+		formatTimestampShort
+	} from '$lib/utils/date';
 
 	import { navItems } from './../sidebar';
 
@@ -244,7 +249,10 @@
 														<span class="text-xs text-muted-foreground">•</span>
 													{/if}
 													<span class="text-xs text-muted-foreground">
-														{formatTimestampShort(workout.createdAt)}
+														{formatDateMedium(workout.date)}
+														{#if workout.time}
+															@ {formatTime12Hour(workout.time)}
+														{/if}
 													</span>
 												</div>
 											</div>
@@ -285,7 +293,7 @@
 													>
 													<span class="text-xs text-muted-foreground">•</span>
 													<span class="text-xs text-muted-foreground">
-														{formatTimestampShort(session.createdAt)}
+														{formatTimestampMedium(session.completedAt)}
 													</span>
 												</div>
 											</div>

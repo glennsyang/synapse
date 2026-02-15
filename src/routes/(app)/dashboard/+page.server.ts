@@ -58,8 +58,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.where(
 				and(
 					eq(journalEntries.userId, user.id),
-					gte(journalEntries.createdAt, startOfThisWeek.toISOString()),
-					sql`${journalEntries.createdAt} < ${endOfThisWeek.toISOString()}`
+					gte(journalEntries.date, startOfThisWeek.toISOString().split('T')[0]),
+					sql`${journalEntries.date} < ${endOfThisWeek.toISOString().split('T')[0]}`
 				)
 			);
 
@@ -69,8 +69,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.where(
 				and(
 					eq(workoutLogs.userId, user.id),
-					gte(workoutLogs.createdAt, startOfThisWeek.toISOString()),
-					sql`${workoutLogs.createdAt} < ${endOfThisWeek.toISOString()}`
+					gte(workoutLogs.date, startOfThisWeek.toISOString().split('T')[0]),
+					sql`${workoutLogs.date} < ${endOfThisWeek.toISOString().split('T')[0]}`
 				)
 			);
 
@@ -80,8 +80,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.where(
 				and(
 					eq(meditationSessions.userId, user.id),
-					gte(meditationSessions.createdAt, startOfThisWeek.toISOString()),
-					sql`${meditationSessions.createdAt} < ${endOfThisWeek.toISOString()}`
+					gte(meditationSessions.completedAt, startOfThisWeek.toISOString()),
+					sql`${meditationSessions.completedAt} < ${endOfThisWeek.toISOString()}`
 				)
 			);
 
@@ -92,8 +92,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.where(
 				and(
 					eq(journalEntries.userId, user.id),
-					gte(journalEntries.createdAt, startOfLastWeek.toISOString()),
-					sql`${journalEntries.createdAt} < ${endOfLastWeek.toISOString()}`
+					gte(journalEntries.date, startOfLastWeek.toISOString().split('T')[0]),
+					sql`${journalEntries.date} < ${endOfLastWeek.toISOString().split('T')[0]}`
 				)
 			);
 
@@ -103,8 +103,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.where(
 				and(
 					eq(workoutLogs.userId, user.id),
-					gte(workoutLogs.createdAt, startOfLastWeek.toISOString()),
-					sql`${workoutLogs.createdAt} < ${endOfLastWeek.toISOString()}`
+					gte(workoutLogs.date, startOfLastWeek.toISOString().split('T')[0]),
+					sql`${workoutLogs.date} < ${endOfLastWeek.toISOString().split('T')[0]}`
 				)
 			);
 
@@ -114,8 +114,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.where(
 				and(
 					eq(meditationSessions.userId, user.id),
-					gte(meditationSessions.createdAt, startOfLastWeek.toISOString()),
-					sql`${meditationSessions.createdAt} < ${endOfLastWeek.toISOString()}`
+					gte(meditationSessions.completedAt, startOfLastWeek.toISOString()),
+					sql`${meditationSessions.completedAt} < ${endOfLastWeek.toISOString()}`
 				)
 			);
 
@@ -123,7 +123,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.select({ count: sql<number>`count(*)` })
 			.from(workoutLogs)
 			.where(
-				and(eq(workoutLogs.userId, user.id), gte(workoutLogs.createdAt, startOfMonth.toISOString()))
+				and(
+					eq(workoutLogs.userId, user.id),
+					gte(workoutLogs.date, startOfMonth.toISOString().split('T')[0])
+				)
 			);
 
 		const weeklyActivity = [];
@@ -140,8 +143,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				.where(
 					and(
 						eq(journalEntries.userId, user.id),
-						gte(journalEntries.createdAt, date.toISOString()),
-						sql`${journalEntries.createdAt} < ${nextDate.toISOString()}`
+						eq(journalEntries.date, date.toISOString().split('T')[0])
 					)
 				);
 
@@ -151,8 +153,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 				.where(
 					and(
 						eq(meditationSessions.userId, user.id),
-						gte(meditationSessions.createdAt, date.toISOString()),
-						sql`${meditationSessions.createdAt} < ${nextDate.toISOString()}`
+						gte(meditationSessions.completedAt, date.toISOString()),
+						sql`${meditationSessions.completedAt} < ${nextDate.toISOString()}`
 					)
 				);
 
@@ -162,8 +164,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				.where(
 					and(
 						eq(workoutLogs.userId, user.id),
-						gte(workoutLogs.createdAt, date.toISOString()),
-						sql`${workoutLogs.createdAt} < ${nextDate.toISOString()}`
+						eq(workoutLogs.date, date.toISOString().split('T')[0])
 					)
 				);
 

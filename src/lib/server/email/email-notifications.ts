@@ -98,7 +98,11 @@ async function logNotification(
 /**
  * Process workout reminders
  */
-async function processWorkoutReminders(currentDay: number, currentHour: string): Promise<void> {
+async function processWorkoutReminders(
+	currentDay: number,
+	currentHour: string,
+	currentMinute: string
+): Promise<void> {
 	logger.debug('\n💪 Processing workout reminders...');
 
 	const reminders = await db
@@ -121,12 +125,16 @@ async function processWorkoutReminders(currentDay: number, currentHour: string):
 			continue;
 		}
 
-		// Check if time matches (within 30 minute window to account for cron timing)
-		const [reminderHour] = reminder.time.split(':');
-		const hourDiff = Math.abs(Number.parseInt(currentHour) - Number.parseInt(reminderHour));
+		// Check if time matches within a 10-minute window
+		// Since cron runs every 10 minutes, this ensures we catch the reminder
+		const [reminderHour, reminderMinute] = reminder.time.split(':');
+		const reminderTimeInMinutes =
+			Number.parseInt(reminderHour) * 60 + Number.parseInt(reminderMinute || '0');
+		const currentTimeInMinutes = Number.parseInt(currentHour) * 60 + Number.parseInt(currentMinute);
 
-		// Only send if we're within the same hour window
-		if (hourDiff !== 0) {
+		// Send if within 10 minutes of reminder time
+		const timeDiff = Math.abs(currentTimeInMinutes - reminderTimeInMinutes);
+		if (timeDiff > 10) {
 			continue;
 		}
 
@@ -169,7 +177,11 @@ async function processWorkoutReminders(currentDay: number, currentHour: string):
 /**
  * Process meditation reminders
  */
-async function processMeditationReminders(currentDay: number, currentHour: string): Promise<void> {
+async function processMeditationReminders(
+	currentDay: number,
+	currentHour: string,
+	currentMinute: string
+): Promise<void> {
 	logger.debug('\n🧘 Processing meditation reminders...');
 
 	const schedules = await db
@@ -194,12 +206,16 @@ async function processMeditationReminders(currentDay: number, currentHour: strin
 			continue;
 		}
 
-		// Check if time matches (within 30 minute window)
-		const [scheduleHour] = schedule.time.split(':');
-		const hourDiff = Math.abs(Number.parseInt(currentHour) - Number.parseInt(scheduleHour));
+		// Check if time matches within a 10-minute window
+		// Since cron runs every 10 minutes, this ensures we catch the reminder
+		const [scheduleHour, scheduleMinute] = schedule.time.split(':');
+		const scheduleTimeInMinutes =
+			Number.parseInt(scheduleHour) * 60 + Number.parseInt(scheduleMinute || '0');
+		const currentTimeInMinutes = Number.parseInt(currentHour) * 60 + Number.parseInt(currentMinute);
 
-		// Only send if we're within the same hour window
-		if (hourDiff !== 0) {
+		// Send if within 10 minutes of reminder time
+		const timeDiff = Math.abs(currentTimeInMinutes - scheduleTimeInMinutes);
+		if (timeDiff > 10) {
 			continue;
 		}
 
@@ -344,20 +360,45 @@ async function processVisitWarnings(now: Date): Promise<void> {
  */
 export async function runEmailNotifications() {
 	logger.debug('🚀 Starting email notifications job run...');
-	logger.debug(`📅 Current time: ${new Date().toISOString()}`);
+	logger.debug(`📅 Current time (UTC): ${new Date().toISOString()}`);
 
 	// Get current time info
 	const now = new Date();
-	const currentHour: string = now.getHours().toString().padStart(2, '0');
-	const currentMinute: string = now.getMinutes().toString().padStart(2, '0');
-	const currentTime: string = `${currentHour}:${currentMinute}`;
-	const currentDay: number = now.getDay(); // 0 = Sunday, 6 = Saturday
 
-	logger.debug(`⏰ Current time: ${currentTime}, Day: ${currentDay}`);
+	// Convert UTC time to PST/PDT (automatically handles DST)
+	const pstFormatter = new Intl.DateTimeFormat('en-US', {
+		timeZone: 'America/Los_Angeles',
+		hour: '2-digit',
+		hour12: false,
+		minute: '2-digit'
+	});
+
+	const pstTime = pstFormatter.format(now); // e.g., "07:30"
+	const [currentHour, currentMinute] = pstTime.split(':');
+	const currentTime = `${currentHour}:${currentMinute}`;
+
+	// Get day of week in PST (important for weekly reminders)
+	const pstDayFormatter = new Intl.DateTimeFormat('en-US', {
+		timeZone: 'America/Los_Angeles',
+		weekday: 'short'
+	});
+	const pstDayStr = pstDayFormatter.format(now);
+	const dayMap: Record<string, number> = {
+		Sun: 0,
+		Mon: 1,
+		Tue: 2,
+		Wed: 3,
+		Thu: 4,
+		Fri: 5,
+		Sat: 6
+	};
+	const currentDay: number = dayMap[pstDayStr] || 0;
+
+	logger.debug(`⏰ Current time (PST/PDT): ${currentTime}, Day: ${currentDay}`);
 
 	try {
-		await processWorkoutReminders(currentDay, currentHour);
-		await processMeditationReminders(currentDay, currentHour);
+		await processWorkoutReminders(currentDay, currentHour, currentMinute);
+		await processMeditationReminders(currentDay, currentHour, currentMinute);
 		await processVisitWarnings(now);
 
 		logger.debug('\n✅ Email notifications cron job completed successfully!');

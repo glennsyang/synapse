@@ -14,9 +14,18 @@
 		confirmButtonText: string;
 		id?: string;
 		actionUrl?: string;
+		hiddenFields?: Record<string, string | number | boolean>;
 	}
 
-	let { open = $bindable(), title, message, id, confirmButtonText, actionUrl }: Props = $props();
+	let {
+		open = $bindable(),
+		title,
+		message,
+		id,
+		confirmButtonText,
+		actionUrl,
+		hiddenFields
+	}: Props = $props();
 </script>
 
 <Dialog.Root bind:open>
@@ -47,6 +56,11 @@
 			}}
 		>
 			<Input type="hidden" name="id" value={id} />
+			{#if hiddenFields}
+				{#each Object.entries(hiddenFields) as [name, value] (name)}
+					<Input type="hidden" {name} value={String(value)} />
+				{/each}
+			{/if}
 			<Dialog.Footer>
 				<Dialog.Close><Button type="reset" variant="outline">Cancel</Button></Dialog.Close>
 				<Button type="submit">{confirmButtonText}</Button>

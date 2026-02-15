@@ -43,6 +43,24 @@ export function formatDateLong(dateString: string): string {
 }
 
 /**
+ * Format a YYYY-MM-DD date string for medium display.
+ *
+ * @param dateString - Date in YYYY-MM-DD format
+ * @returns Formatted date string (e.g., "Sat, Feb 9")
+ *
+ * @example
+ * formatDateMedium('2026-02-09') // "Sat, Feb 9"
+ */
+export function formatDateMedium(dateString: string): string {
+	const date = parseLocalDate(dateString);
+	return date.toLocaleDateString('en-US', {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric'
+	});
+}
+
+/**
  * Format a YYYY-MM-DD date string for short display.
  *
  * @param dateString - Date in YYYY-MM-DD format
@@ -93,6 +111,26 @@ export function formatTimestampLong(timestamp: string): string {
 }
 
 /**
+ * Format an ISO timestamp for display with date and time.
+ *
+ * @param timestamp - ISO timestamp string
+ * @returns Formatted timestamp (e.g., "Sat, Feb 9, 2:30 PM")
+ *
+ * @example
+ * formatTimestampMedium('2026-02-09T14:30:00.000Z') // "Sat, Feb 9, 2:30 PM"
+ */
+export function formatTimestampMedium(timestamp: string): string {
+	const date = new Date(timestamp);
+	return date.toLocaleString('en-US', {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit'
+	});
+}
+
+/**
  * Format an ISO timestamp for short display with date only.
  *
  * @param timestamp - ISO timestamp string
@@ -121,6 +159,25 @@ export function formatTimestampShort(timestamp: string): string {
  */
 export function formatTimeFromTimestamp(timestamp: string): string {
 	const date = new Date(timestamp);
+	return date.toLocaleTimeString('en-US', {
+		hour: 'numeric',
+		minute: '2-digit'
+	});
+}
+
+/**
+ * Format a time for display as 12-hour time with AM/PM.
+ *
+ * @param timeString - Time in HH:mm format (24-hour)
+ * @returns Formatted time (e.g., "2:30 PM")
+ *
+ * @example
+ * formatTime12Hour('14:30') // "2:30 PM"
+ */
+export function formatTime12Hour(timeString: string): string {
+	const [hour, minute] = timeString.split(':').map(Number);
+	const date = new Date();
+	date.setHours(hour, minute);
 	return date.toLocaleTimeString('en-US', {
 		hour: 'numeric',
 		minute: '2-digit'

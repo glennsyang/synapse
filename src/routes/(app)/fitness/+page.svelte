@@ -13,6 +13,7 @@
 	import CalorieProgress from '$lib/components/fitness/CalorieProgress.svelte';
 	import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
 	import WeightChart from '$lib/components/fitness/WeightChart.svelte';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
@@ -21,7 +22,13 @@
 	import * as Select from '$lib/components/ui/select';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import type { Exercise } from '$lib/types';
-	import { daysOfWeek, formatDateShort, getTodayString } from '$lib/utils/date';
+	import {
+		daysOfWeek,
+		formatDateMedium,
+		formatDateShort,
+		formatTime12Hour,
+		getTodayString
+	} from '$lib/utils/date';
 
 	import type { PageData } from './$types.js';
 
@@ -133,6 +140,17 @@
 	});
 
 	let workoutExercises = $state<Exercise[]>([]);
+	let reminderToDelete = $state<string | null>(null);
+	let showDeleteReminderDialog = $state(false);
+	let reminderToToggle = $state<{
+		id: string;
+		workoutType: string;
+		cadence: string;
+		time: string;
+		daysOfWeek: string;
+		enabled: boolean;
+	} | null>(null);
+	let showToggleReminderDialog = $state(false);
 
 	// When form is valid, sync to hidden input
 	$effect(() => {
@@ -147,6 +165,16 @@
 		const todayMeals = data.meals.filter((meal) => meal.date === today);
 		return todayMeals.reduce((sum, meal) => sum + (meal.caloriesEstimate || 0), 0);
 	});
+
+	let toggleReminderDialogTitle = $derived(
+		reminderToToggle?.enabled ? 'Enable Reminder' : 'Disable Reminder'
+	);
+	let toggleReminderDialogMessage = $derived(
+		reminderToToggle?.enabled
+			? 'Are you sure you want to enable this reminder?'
+			: 'Are you sure you want to disable this reminder?'
+	);
+	let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enable' : 'Disable');
 </script>
 
 {#if navigating.to?.url.pathname === '/fitness'}
@@ -412,7 +440,7 @@
 											<p class="text-sm text-muted-foreground">
 												{formatDateShort(entry.date)}
 												{#if entry.time}
-													at {entry.time}
+													@ {formatTime12Hour(entry.time)}
 												{/if}
 											</p>
 										</div>
@@ -556,9 +584,9 @@
 													{/if}
 												</div>
 												<p class="text-sm text-muted-foreground">
-													{formatDateShort(workout.date)}
+													{formatDateMedium(workout.date)}
 													{#if workout.time}
-														at {workout.time}
+														@ {formatTime12Hour(workout.time)}
 													{/if}
 												</p>
 												{#if workout.notes}
@@ -826,6 +854,13 @@
 								{#if $reminderForm.cadence === 'weekly'}
 									<div class="space-y-2">
 										<Label>Days of Week</Label>
+										<Input
+											id="daysOfWeek"
+											name="daysOfWeek"
+											type="text"
+											bind:value={$reminderForm.daysOfWeek}
+											hidden
+										/>
 										<div class="flex flex-wrap gap-2">
 											{#each daysOfWeek as day (day.id)}
 												{@const selectedDays = $reminderForm.daysOfWeek
@@ -892,7 +927,7 @@
 													>
 														{reminder.workoutType}
 													</span>
-													<span class="text-sm font-medium">{reminder.time}</span>
+													<span class="text-sm font-medium">{formatTime12Hour(reminder.time)}</span>
 													{#if !reminder.enabled}
 														<span class="text-xs text-muted-foreground">(Disabled)</span>
 													{/if}
@@ -912,41 +947,68 @@
 												</p>
 											</div>
 											<div class="flex gap-2">
-												<form method="POST" action="?/updateReminder">
-													<input type="hidden" name="id" value={reminder.id} />
-													<input type="hidden" name="workoutType" value={reminder.workoutType} />
-													<input type="hidden" name="cadence" value={reminder.cadence} />
-													<input type="hidden" name="time" value={reminder.time} />
-													<input
-														type="hidden"
-														name="daysOfWeek"
-														value={reminder.daysOfWeek || ''}
-													/>
-													<input type="hidden" name="enabled" value={!reminder.enabled} />
-													<Button type="submit" variant="outline" size="sm">
-														{reminder.enabled ? 'Disable' : 'Enable'}
-													</Button>
-												</form>
-												<form method="POST" action="?/deleteReminder">
-													<input type="hidden" name="id" value={reminder.id} />
-													<Button
-														type="submit"
-														variant="destructive"
-														size="sm"
-														onclick={(e) => {
-															if (!confirm('Are you sure you want to delete this reminder?')) {
-																e.preventDefault();
-															}
-														}}
-													>
-														Delete
-													</Button>
-												</form>
+												<Button
+													type="button"
+													variant="outline"
+													size="sm"
+													onclick={() => {
+														reminderToToggle = {
+															id: reminder.id,
+															workoutType: reminder.workoutType,
+															cadence: reminder.cadence,
+															time: reminder.time,
+															daysOfWeek: reminder.daysOfWeek || '',
+															enabled: !reminder.enabled
+														};
+														showToggleReminderDialog = true;
+													}}
+												>
+													{reminder.enabled ? 'Disable' : 'Enable'}
+												</Button>
+												<Button
+													type="button"
+													variant="destructive"
+													size="sm"
+													onclick={() => {
+														reminderToDelete = reminder.id;
+														showDeleteReminderDialog = true;
+													}}
+												>
+													Delete
+												</Button>
 											</div>
 										</div>
 									</div>
 								{/each}
 							</div>
+							{#if reminderToToggle}
+								<ConfirmDialog
+									bind:open={showToggleReminderDialog}
+									title={toggleReminderDialogTitle || 'Update Reminder'}
+									message={toggleReminderDialogMessage ||
+										'Are you sure you want to update this reminder?'}
+									confirmButtonText={toggleReminderDialogButtonText || 'Confirm'}
+									actionUrl="?/updateReminder"
+									id={reminderToToggle.id}
+									hiddenFields={{
+										workoutType: reminderToToggle.workoutType,
+										cadence: reminderToToggle.cadence,
+										time: reminderToToggle.time,
+										daysOfWeek: reminderToToggle.daysOfWeek,
+										enabled: reminderToToggle.enabled
+									}}
+								/>
+							{/if}
+							{#if reminderToDelete}
+								<ConfirmDialog
+									bind:open={showDeleteReminderDialog}
+									title="Delete Reminder"
+									message="Are you sure you want to delete this reminder? This action cannot be undone."
+									confirmButtonText="Delete"
+									actionUrl="?/deleteReminder"
+									id={reminderToDelete}
+								/>
+							{/if}
 						</Card.Content>
 					</Card.Root>
 				{:else}
