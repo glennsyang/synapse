@@ -4,7 +4,7 @@
  * Runs every 10 minutes to send scheduled reminders:
  * - Workout reminders (based on workout_reminders table)
  * - Meditation reminders (based on meditation_schedules table)
- * - Visit warnings (for people not seen in 6+ months)
+ * - Visit warnings (for people in yellow/red visit status)
  *
  * Logs all sent emails in email_notifications table to prevent duplicates.
  */
@@ -29,6 +29,12 @@ import {
 	sendVisitWarningEmail,
 	sendWorkoutReminderEmail
 } from './index';
+import {
+	buildVisitWarningEntityId,
+	buildVisitWarningSubject,
+	formatVisitWarningDate,
+	getVisitWarningStatus
+} from './visit-warning-utils';
 
 const db = getDb();
 
@@ -256,9 +262,9 @@ async function processMeditationReminders(
 }
 
 /**
- * Process visit warnings (people not seen in 6+ months)
+ * Process visit warnings (people in yellow/red visit status)
  */
-async function processVisitWarnings(now: Date): Promise<void> {
+async function processVisitWarnings(): Promise<void> {
 	logger.debug('\n👥 Processing visit warnings...');
 
 	// Get all people with their last visit date
@@ -274,10 +280,13 @@ async function processVisitWarnings(now: Date): Promise<void> {
 	logger.debug(`   Found ${allPeople.length} people to check`);
 
 	let sentCount = 0;
-	const sixMonthsAgo = new Date();
-	sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
 	for (const { person, user: userData } of allPeople) {
+		if (person.isExempt) {
+			logger.debug(`   ⏭️  Skipping exempt person ${person.name}`);
+			continue;
+		}
+
 		// Get last visit for this person
 		const lastVisit = await db
 			.select()
@@ -292,15 +301,13 @@ async function processVisitWarnings(now: Date): Promise<void> {
 			continue;
 		}
 
-		const lastVisitDate = new Date(lastVisit.date);
-		const monthsSinceVisit = Math.floor(
-			(now.getTime() - lastVisitDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
-		);
-
-		// Only send warnings for 6+ months
-		if (monthsSinceVisit < 6) {
+		const warningStatus = getVisitWarningStatus(lastVisit.date);
+		if (!warningStatus) {
 			continue;
 		}
+
+		const formattedLastVisitDate = formatVisitWarningDate(lastVisit.date);
+		const warningEntityId = buildVisitWarningEntityId(person.id, warningStatus);
 
 		// Check if already sent a warning in the last 7 days
 		const sevenDaysAgo = new Date();
@@ -313,20 +320,22 @@ async function processVisitWarnings(now: Date): Promise<void> {
 				and(
 					eq(emailNotifications.userId, userData.id),
 					eq(emailNotifications.notificationType, 'visit_warning'),
-					eq(emailNotifications.entityId, person.id),
+					eq(emailNotifications.entityId, warningEntityId),
 					sql`${emailNotifications.sentAt} >= ${sevenDaysAgo.toISOString()}`
 				)
 			)
 			.get();
 
 		if (recentWarning) {
-			logger.debug(`   ⏭️  Already sent warning for ${person.name} in last 7 days`);
+			logger.debug(
+				`   ⏭️  Already sent ${warningStatus} warning for ${person.name} in last 7 days`
+			);
 			continue;
 		}
 
 		// Send warning email
 		logger.debug(
-			`   📧 Sending visit warning to ${userData.email} (${person.name}, ${monthsSinceVisit} months)`
+			`   📧 Sending ${warningStatus} visit warning to ${userData.email} (${person.name})`
 		);
 
 		try {
@@ -334,15 +343,15 @@ async function processVisitWarnings(now: Date): Promise<void> {
 				userData.email,
 				userData.name,
 				person.name,
-				lastVisit.date,
-				monthsSinceVisit
+				formattedLastVisitDate,
+				warningStatus
 			);
 
 			await logNotification(
 				userData.id,
 				'visit_warning',
-				person.id,
-				`It's been a while since you saw ${person.name}`
+				warningEntityId,
+				buildVisitWarningSubject(person.name, warningStatus)
 			);
 
 			sentCount++;
@@ -399,7 +408,7 @@ export async function runEmailNotifications() {
 	try {
 		await processWorkoutReminders(currentDay, currentHour, currentMinute);
 		await processMeditationReminders(currentDay, currentHour, currentMinute);
-		await processVisitWarnings(now);
+		await processVisitWarnings();
 
 		logger.debug('\n✅ Email notifications cron job completed successfully!');
 		process.exit(0);

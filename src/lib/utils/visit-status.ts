@@ -1,7 +1,9 @@
 /**
  * Visit status types
  */
-export type VisitStatus = 'green' | 'yellow' | 'red' | 'none';
+export type VisitStatus = 'green' | 'yellow' | 'red' | 'none' | 'exempt';
+
+export const VISIT_STATUS_ORDER: VisitStatus[] = ['red', 'yellow', 'green', 'none', 'exempt'];
 
 /**
  * Person with visit status information
@@ -9,6 +11,7 @@ export type VisitStatus = 'green' | 'yellow' | 'red' | 'none';
 export interface PersonWithStatus {
 	id: string;
 	name: string;
+	isExempt: boolean;
 	lastVisit: {
 		date: string;
 		companions: string[] | null;
@@ -77,6 +80,31 @@ export function calculateVisitStatus(lastVisitDate: string | null): {
 	};
 }
 
+export function calculatePersonVisitStatus(
+	lastVisitDate: string | null,
+	isExempt: boolean
+): {
+	status: VisitStatus;
+	daysSinceLastVisit: number | null;
+	daysUntilStatusChange: number | null;
+} {
+	const baseStatus = calculateVisitStatus(lastVisitDate);
+
+	if (!isExempt) {
+		return baseStatus;
+	}
+
+	return {
+		status: 'exempt',
+		daysSinceLastVisit: baseStatus.daysSinceLastVisit,
+		daysUntilStatusChange: null
+	};
+}
+
+export function getStatusPriority(status: VisitStatus): number {
+	return VISIT_STATUS_ORDER.indexOf(status) + 1;
+}
+
 /**
  * Get status badge color class for Tailwind
  */
@@ -90,6 +118,8 @@ export function getStatusColor(status: VisitStatus): string {
 			return 'bg-red-500';
 		case 'none':
 			return 'bg-gray-400';
+		case 'exempt':
+			return 'bg-gray-500';
 	}
 }
 
@@ -106,5 +136,7 @@ export function getStatusLabel(status: VisitStatus): string {
 			return 'Critical';
 		case 'none':
 			return 'No Visits';
+		case 'exempt':
+			return 'Exempt';
 	}
 }

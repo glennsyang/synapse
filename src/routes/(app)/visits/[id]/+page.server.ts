@@ -10,7 +10,7 @@ import { people, visits } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
-import { calculateVisitStatus } from '$lib/utils/visit-status';
+import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
 
 import type { Actions, PageServerLoad } from './$types';
 
@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	// Calculate status
 	const latestVisit = personVisits[0];
-	const statusInfo = calculateVisitStatus(latestVisit?.date ?? null);
+	const statusInfo = calculatePersonVisitStatus(latestVisit?.date ?? null, person.isExempt);
 
 	// Initialize forms
 	const visitForm = await superValidate(zod4(visitSchema));
@@ -159,6 +159,7 @@ export const actions: Actions = {
 				.update(people)
 				.set({
 					name: form.data.name,
+					isExempt: form.data.isExempt,
 					updatedAt: new Date().toISOString()
 				})
 				.where(eq(people.id, params.id));

@@ -8,7 +8,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { formatDateShort } from '$lib/utils/date';
-	import type { VisitStatus } from '$lib/utils/visit-status';
+	import { getStatusLabel, type VisitStatus } from '$lib/utils/visit-status';
 
 	import type { PageData } from './$types';
 
@@ -16,7 +16,7 @@
 
 	type VisitTab = 'all' | VisitStatus;
 
-	const allowedStatuses = new Set<VisitStatus>(['green', 'yellow', 'red', 'none']);
+	const allowedStatuses = new Set<VisitStatus>(['green', 'yellow', 'red', 'none', 'exempt']);
 
 	function getInitialTab(): VisitTab {
 		const status = page.url.searchParams.get('status');
@@ -137,10 +137,17 @@
 						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-gray-400"></span>
 						No Visits
 					</Tabs.Trigger>
+					<Tabs.Trigger
+						value="exempt"
+						class="border-b-2 border-transparent data-[state=active]:border-gray-600"
+					>
+						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-gray-500"></span>
+						Exempt
+					</Tabs.Trigger>
 				</Tabs.List>
 			</div>
 
-			{#each ['all', 'red', 'yellow', 'green', 'none'] as tab (tab)}
+			{#each ['all', 'red', 'yellow', 'green', 'none', 'exempt'] as tab (tab)}
 				<Tabs.Content value={tab} class="w-full">
 					{@const peopleInTab = peopleForTab(tab as VisitTab)}
 					<div class="grid w-full gap-4 sm:min-h-80 md:grid-cols-2 lg:grid-cols-3">
@@ -164,7 +171,9 @@
 											? 'border-l-yellow-500'
 											: person.status === 'red'
 												? 'border-l-red-500'
-												: 'border-l-gray-400'}
+												: person.status === 'exempt'
+													? 'border-l-gray-500'
+													: 'border-l-gray-400'}
 								<a href="/visits/{person.id}">
 									<Card.Root class="border-l-4 transition-shadow hover:shadow-md {borderColor}">
 										<Card.Header>
@@ -186,13 +195,7 @@
 																? 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900 dark:text-red-200'
 																: ''}
 												>
-													{person.status === 'green'
-														? 'Recent'
-														: person.status === 'yellow'
-															? 'Overdue'
-															: person.status === 'red'
-																? 'Critical'
-																: 'No Visits'}
+													{getStatusLabel(person.status)}
 												</Badge>
 											</div>
 										</Card.Header>

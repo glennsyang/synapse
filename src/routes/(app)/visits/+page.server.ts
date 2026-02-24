@@ -3,7 +3,11 @@ import { desc, eq } from 'drizzle-orm';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
-import { calculateVisitStatus, type PersonWithStatus } from '$lib/utils/visit-status';
+import {
+	calculatePersonVisitStatus,
+	getStatusPriority,
+	type PersonWithStatus
+} from '$lib/utils/visit-status';
 
 import type { PageServerLoad } from './$types';
 
@@ -25,11 +29,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 					orderBy: [desc(visits.date)]
 				});
 
-				const statusInfo = calculateVisitStatus(latestVisit?.date ?? null);
+				const statusInfo = calculatePersonVisitStatus(latestVisit?.date ?? null, person.isExempt);
 
 				return {
 					id: person.id,
 					name: person.name,
+					isExempt: person.isExempt,
 					lastVisit: latestVisit
 						? {
 								date: latestVisit.date,
@@ -44,10 +49,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 			})
 		);
 
-		// Sort by status priority (red > yellow > green > none), then by days since last visit
-		const statusPriority = { red: 1, yellow: 2, green: 3, none: 4 };
+		// Sort by status priority, then by days since last visit
 		peopleWithStatus.sort((a, b) => {
-			const priorityDiff = statusPriority[a.status] - statusPriority[b.status];
+			const priorityDiff = getStatusPriority(a.status) - getStatusPriority(b.status);
 			if (priorityDiff !== 0) return priorityDiff;
 
 			// If same status, sort by days since last visit (descending)
