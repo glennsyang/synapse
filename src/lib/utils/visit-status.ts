@@ -12,6 +12,7 @@ export interface PersonWithStatus {
 	id: string;
 	name: string;
 	isExempt: boolean;
+	nextFollowUpDate: string | null;
 	lastVisit: {
 		date: string;
 		companions: string[] | null;

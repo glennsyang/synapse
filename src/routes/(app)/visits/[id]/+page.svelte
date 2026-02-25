@@ -27,6 +27,7 @@
 	let showEditPersonDialog = $state(false);
 	let showArchivePersonDialog = $state(false);
 	let showDeletePersonDialog = $state(false);
+	let editingVisitId = $state<string | null>(null);
 	let visitToDelete = $state<string | null>(null);
 
 	let visitFormState = $derived(
@@ -38,6 +39,7 @@
 					if (form.message.type === 'success') {
 						toast.success(form.message.text);
 						showLogVisitDialog = false;
+						editingVisitId = null;
 					} else if (form.message.type === 'error') {
 						toast.error(form.message.text);
 					}
@@ -75,6 +77,33 @@
 		enhance: editEnhance,
 		submitting: editSubmitting
 	} = $derived(editFormState);
+
+	const isEditingVisit = $derived(editingVisitId !== null);
+
+	function openLogVisitDialogForCreate() {
+		editingVisitId = null;
+		$visitForm.date = data.visitForm.data.date ?? '';
+		$visitForm.time = '';
+		$visitForm.companions = '';
+		$visitForm.notes = '';
+		$visitForm.followUpDate = '';
+		showLogVisitDialog = true;
+	}
+
+	function openLogVisitDialogForEdit(visit: PageData['visits'][number]) {
+		editingVisitId = visit.id;
+		$visitForm.date = visit.date;
+		$visitForm.time = visit.time ?? '';
+		$visitForm.companions = visit.companions?.join(', ') ?? '';
+		$visitForm.notes = visit.notes ?? '';
+		$visitForm.followUpDate = visit.followUpDate ?? '';
+		showLogVisitDialog = true;
+	}
+
+	function closeLogVisitDialog() {
+		showLogVisitDialog = false;
+		editingVisitId = null;
+	}
 
 	function getStatusBadge(status: string) {
 		switch (status) {
@@ -143,18 +172,9 @@
 					size="icon"
 					aria-label="Log Visit"
 					title="Log Visit"
-					onclick={() => (showLogVisitDialog = true)}
+					onclick={openLogVisitDialogForCreate}
 				>
 					<CalendarIcon class="h-4 w-4" />
-				</Button>
-				<Button
-					size="icon"
-					variant="outline"
-					aria-label="Archive Person"
-					title="Archive Person"
-					onclick={() => (showArchivePersonDialog = true)}
-				>
-					<ArchiveIcon class="h-4 w-4" />
 				</Button>
 				<Button
 					size="icon"
@@ -164,6 +184,15 @@
 					onclick={() => (showEditPersonDialog = true)}
 				>
 					<EditIcon class="h-4 w-4" />
+				</Button>
+				<Button
+					size="icon"
+					variant="secondary"
+					aria-label="Archive Person"
+					title="Archive Person"
+					onclick={() => (showArchivePersonDialog = true)}
+				>
+					<ArchiveIcon class="h-4 w-4" />
 				</Button>
 				<Button
 					size="icon"
@@ -186,7 +215,7 @@
 			<Card.Root>
 				<Card.Content class="py-12 text-center">
 					<p class="mb-4 text-muted-foreground">No visits logged yet.</p>
-					<Button onclick={() => (showLogVisitDialog = true)}>Log First Visit</Button>
+					<Button onclick={openLogVisitDialogForCreate}>Log First Visit</Button>
 				</Card.Content>
 			</Card.Root>
 		{:else}
@@ -222,19 +251,30 @@
 									{/if}
 								</div>
 
-								<form method="POST" action="?/deleteVisit">
-									<Input type="hidden" name="visitId" value={visit.id} />
+								<div class="flex items-center gap-2">
 									<Button
 										size="icon"
-										type="button"
-										variant="destructive"
-										aria-label="Delete Visit"
-										title="Delete Visit"
-										onclick={() => (visitToDelete = visit.id)}
+										variant="outline"
+										aria-label="Edit Visit"
+										title="Edit Visit"
+										onclick={() => openLogVisitDialogForEdit(visit)}
 									>
-										<Trash2Icon class="h-4 w-4" />
+										<EditIcon class="h-4 w-4" />
 									</Button>
-								</form>
+									<form method="POST" action="?/deleteVisit">
+										<Input type="hidden" name="visitId" value={visit.id} />
+										<Button
+											size="icon"
+											type="button"
+											variant="destructive"
+											aria-label="Delete Visit"
+											title="Delete Visit"
+											onclick={() => (visitToDelete = visit.id)}
+										>
+											<Trash2Icon class="h-4 w-4" />
+										</Button>
+									</form>
+								</div>
 							</div>
 						</Card.Content>
 					</Card.Root>
@@ -248,11 +288,18 @@
 <Dialog.Root bind:open={showLogVisitDialog}>
 	<Dialog.Content>
 		<Dialog.Header>
-			<Dialog.Title>Log Visit</Dialog.Title>
-			<Dialog.Description>Record a visit with {data.person.name}</Dialog.Description>
+			<Dialog.Title>{isEditingVisit ? 'Edit Visit' : 'Log Visit'}</Dialog.Title>
+			<Dialog.Description>
+				{isEditingVisit
+					? `Update visit details with ${data.person.name}`
+					: `Record a visit with ${data.person.name}`}
+			</Dialog.Description>
 		</Dialog.Header>
 
-		<form method="POST" action="?/logVisit" use:visitEnhance>
+		<form method="POST" action={isEditingVisit ? '?/updateVisit' : '?/logVisit'} use:visitEnhance>
+			{#if editingVisitId}
+				<Input type="hidden" name="visitId" value={editingVisitId} />
+			{/if}
 			<div class="space-y-4">
 				<div class="space-y-2">
 					<Label for="date">Date*</Label>
@@ -324,11 +371,15 @@
 				</div>
 
 				<div class="flex justify-end gap-2">
-					<Button type="button" variant="outline" onclick={() => (showLogVisitDialog = false)}>
-						Cancel
-					</Button>
+					<Button type="button" variant="outline" onclick={closeLogVisitDialog}>Cancel</Button>
 					<Button type="submit" disabled={$visitSubmitting}>
-						{$visitSubmitting ? 'Logging...' : 'Log Visit'}
+						{$visitSubmitting
+							? isEditingVisit
+								? 'Saving...'
+								: 'Logging...'
+							: isEditingVisit
+								? 'Save Changes'
+								: 'Log Visit'}
 					</Button>
 				</div>
 			</div>
