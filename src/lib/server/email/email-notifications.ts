@@ -275,6 +275,7 @@ async function processVisitWarnings(): Promise<void> {
 		})
 		.from(people)
 		.innerJoin(user, eq(people.userId, user.id))
+		.where(eq(people.isArchived, false))
 		.all();
 
 	logger.debug(`   Found ${allPeople.length} people to check`);

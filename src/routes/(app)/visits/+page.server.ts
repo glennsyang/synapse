@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 		// Load all people for the user
 		const userPeople = await db.query.people.findMany({
-			where: eq(people.userId, locals.user!.id),
+			where: and(eq(people.userId, locals.user!.id), eq(people.isArchived, false)),
 			orderBy: [desc(people.createdAt)]
 		});
 

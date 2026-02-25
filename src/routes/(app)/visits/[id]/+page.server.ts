@@ -30,6 +30,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		throw error(404, 'Person not found');
 	}
 
+	if (person.isArchived) {
+		throw redirect(303, '/visits');
+	}
+
 	// Load all visits for this person
 	const personVisits = await db.query.visits.findMany({
 		where: eq(visits.personId, params.id),
@@ -181,6 +185,40 @@ export const actions: Actions = {
 				{ status: 500 }
 			);
 		}
+	}),
+
+	archivePerson: requireAuth(async ({ params }, user) => {
+		if (!params.id) {
+			throw error(400, 'Person ID is required');
+		}
+
+		try {
+			const db = getDb();
+
+			// Verify person belongs to user
+			const person = await db.query.people.findFirst({
+				where: and(eq(people.id, params.id), eq(people.userId, user.id))
+			});
+
+			if (!person) {
+				throw error(404, 'Person not found');
+			}
+
+			await db
+				.update(people)
+				.set({
+					isArchived: true,
+					updatedAt: new Date().toISOString()
+				})
+				.where(eq(people.id, params.id));
+
+			logger.info('Person archived', { personId: params.id, userId: user.id });
+		} catch (err) {
+			logger.error('Failed to archive person', { error: err });
+			throw error(500, 'Failed to archive person');
+		}
+
+		throw redirect(303, '/visits');
 	}),
 
 	deletePerson: requireAuth(async ({ params }, user) => {

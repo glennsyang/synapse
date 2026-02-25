@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ArchiveIcon from '@lucide/svelte/icons/archive';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import CalendarIcon from '@lucide/svelte/icons/calendar';
 	import EditIcon from '@lucide/svelte/icons/edit';
@@ -24,6 +25,7 @@
 
 	let showLogVisitDialog = $state(false);
 	let showEditPersonDialog = $state(false);
+	let showArchivePersonDialog = $state(false);
 	let showDeletePersonDialog = $state(false);
 	let visitToDelete = $state<string | null>(null);
 
@@ -144,6 +146,15 @@
 					onclick={() => (showLogVisitDialog = true)}
 				>
 					<CalendarIcon class="h-4 w-4" />
+				</Button>
+				<Button
+					size="icon"
+					variant="outline"
+					aria-label="Archive Person"
+					title="Archive Person"
+					onclick={() => (showArchivePersonDialog = true)}
+				>
+					<ArchiveIcon class="h-4 w-4" />
 				</Button>
 				<Button
 					size="icon"
@@ -378,6 +389,16 @@
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
+
+<!-- Archive Person Confirmation -->
+<ConfirmDialog
+	bind:open={showArchivePersonDialog}
+	title="Archive Person"
+	message="Are you sure you want to archive {data.person
+		.name}? Archived people no longer appear in visits views and tabs."
+	confirmButtonText="Archive"
+	actionUrl="?/archivePerson"
+/>
 
 <!-- Delete Person Confirmation -->
 <ConfirmDialog

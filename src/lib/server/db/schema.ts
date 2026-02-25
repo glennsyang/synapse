@@ -488,6 +488,7 @@ export const people = sqliteTable('people', {
 		.references(() => user.id, { onDelete: 'cascade' }),
 	name: text('name').notNull(),
 	isExempt: integer('is_exempt', { mode: 'boolean' }).notNull().default(false),
+	isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
 	createdAt: text('created_at')
 		.notNull()
 		.$defaultFn(() => new Date().toISOString()),
