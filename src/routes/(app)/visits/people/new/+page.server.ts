@@ -32,6 +32,8 @@ export const actions: Actions = {
 				id: personId,
 				userId: user.id,
 				name: form.data.name,
+				isExempt: false,
+				isArchived: false,
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString()
 			});

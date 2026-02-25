@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ArchiveIcon from '@lucide/svelte/icons/archive';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import CalendarIcon from '@lucide/svelte/icons/calendar';
 	import EditIcon from '@lucide/svelte/icons/edit';
@@ -16,6 +17,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { personSchema, visitSchema } from '$lib/schemas/visits';
 	import { formatDateLong, formatDateShort } from '$lib/utils/date';
+	import { getStatusLabel } from '$lib/utils/visit-status';
 
 	import type { PageData } from './$types';
 
@@ -23,6 +25,7 @@
 
 	let showLogVisitDialog = $state(false);
 	let showEditPersonDialog = $state(false);
+	let showArchivePersonDialog = $state(false);
 	let showDeletePersonDialog = $state(false);
 	let visitToDelete = $state<string | null>(null);
 
@@ -81,21 +84,10 @@
 				return 'bg-yellow-100 text-yellow-800';
 			case 'red':
 				return 'bg-red-100 text-red-800';
+			case 'exempt':
+				return 'bg-gray-100 text-gray-800';
 			default:
 				return 'bg-gray-100 text-gray-800';
-		}
-	}
-
-	function getStatusLabel(status: string) {
-		switch (status) {
-			case 'green':
-				return 'Recent';
-			case 'yellow':
-				return 'Overdue';
-			case 'red':
-				return 'Critical';
-			default:
-				return 'No Visits';
 		}
 	}
 
@@ -112,6 +104,12 @@
 		}
 		const months = Math.floor(days / 30);
 		return `${months} month${months !== 1 ? 's' : ''} ago`;
+	}
+
+	function getEditStatusDescription(isExempt: boolean): string {
+		return isExempt
+			? 'This person is exempt from yellow/critical visit warnings and appears in the Exempt tab.'
+			: 'This person will follow normal yellow/critical visit warning rules.';
 	}
 </script>
 
@@ -148,6 +146,15 @@
 					onclick={() => (showLogVisitDialog = true)}
 				>
 					<CalendarIcon class="h-4 w-4" />
+				</Button>
+				<Button
+					size="icon"
+					variant="outline"
+					aria-label="Archive Person"
+					title="Archive Person"
+					onclick={() => (showArchivePersonDialog = true)}
+				>
+					<ArchiveIcon class="h-4 w-4" />
 				</Button>
 				<Button
 					size="icon"
@@ -354,6 +361,22 @@
 					{/if}
 				</div>
 
+				<div class="space-y-2">
+					<div class="flex items-center gap-2">
+						<input
+							id="edit-isExempt"
+							name="isExempt"
+							type="checkbox"
+							class="h-4 w-4 rounded border-input"
+							bind:checked={$editForm.isExempt}
+						/>
+						<Label for="edit-isExempt">Exempt from visit warning rules</Label>
+					</div>
+					<p class="text-xs text-muted-foreground">
+						{getEditStatusDescription($editForm.isExempt ?? false)}
+					</p>
+				</div>
+
 				<div class="flex justify-end gap-2">
 					<Button type="button" variant="outline" onclick={() => (showEditPersonDialog = false)}>
 						Cancel
@@ -366,6 +389,16 @@
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
+
+<!-- Archive Person Confirmation -->
+<ConfirmDialog
+	bind:open={showArchivePersonDialog}
+	title="Archive Person"
+	message="Are you sure you want to archive {data.person
+		.name}? Archived people no longer appear in visits views and tabs."
+	confirmButtonText="Archive"
+	actionUrl="?/archivePerson"
+/>
 
 <!-- Delete Person Confirmation -->
 <ConfirmDialog

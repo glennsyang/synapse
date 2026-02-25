@@ -251,20 +251,16 @@ export async function sendVisitWarningEmail(
 	name: string,
 	personName: string,
 	lastVisitDate: string,
-	monthsSinceVisit: number
+	warningStatus: 'yellow' | 'critical'
 ) {
 	logger.debug('📧 Sending Visit Warning Email to:', { to });
 
-	let statusColor = '#10b981';
-	let statusText = 'Green Status';
-
-	if (monthsSinceVisit >= 12) {
-		statusColor = '#ef4444';
-		statusText = 'Red Alert';
-	} else if (monthsSinceVisit >= 6) {
-		statusColor = '#f59e0b';
-		statusText = 'Yellow Warning';
-	}
+	const statusColor = warningStatus === 'critical' ? '#ef4444' : '#f59e0b';
+	const statusText = warningStatus === 'critical' ? 'Critical Warning' : 'Yellow Warning';
+	const reminderText =
+		warningStatus === 'critical'
+			? "It's been over a year! Consider scheduling a visit soon."
+			: 'Consider scheduling a visit to encourage and commend.';
 
 	try {
 		await resend.emails.send({
@@ -286,7 +282,7 @@ export async function sendVisitWarningEmail(
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
 						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
-							It's been <strong>${monthsSinceVisit} months</strong> since you last saw <strong>${personName}</strong> (last visit: ${lastVisitDate}).
+							It's been a while since you last saw <strong>${personName}</strong> (last visit: ${lastVisitDate}).
 						</p>
 						<div style="background: ${statusColor}; color: white; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;">
 							<p style="margin: 0; font-size: 16px; font-weight: 600;">
@@ -294,7 +290,7 @@ export async function sendVisitWarningEmail(
 							</p>
 						</div>
 						<p style="font-size: 16px; margin-bottom: 20px;">
-							${monthsSinceVisit >= 12 ? "It's been over a year! Consider reaching out soon." : 'Consider scheduling a visit to encourage and commend.'}
+							${reminderText}
 						</p>
 						<div style="background: #e5e7eb; padding: 20px; border-radius: 8px; margin: 20px 0;">
 							<p style="margin: 0; font-size: 14px; color: #6b7280;">
