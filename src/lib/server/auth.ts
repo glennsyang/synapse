@@ -56,14 +56,14 @@ export const auth = betterAuth({
 			void sendPasswordResetEmail(user.email, user.name, resetUrl);
 		},
 		onPasswordReset: async ({ user }) => {
-			logger.debug('🔐 Password reset completed for user:', { user: user.email });
+			logger.debug('🔐 Password reset completed', { userId: user.id });
 		}
 	},
 	emailVerification: {
 		sendOnSignUp: true,
 		autoSignInAfterVerification: true,
 		sendVerificationEmail: async ({ user, url, token }) => {
-			logger.debug('✉️ Sending verification email to:', { user: user.email });
+			logger.debug('✉️ Sending verification email', { userId: user.id });
 			const verifyUrl = `${url}&token=${token}`;
 			await sendVerificationEmail(user.email, user.name, verifyUrl);
 		}
@@ -82,9 +82,10 @@ export const auth = betterAuth({
 			}
 			// Audit logging
 			if (ctx.path.includes('/sign-in')) {
-				logger.debug(
-					`✅ Sign-in successful: ${ctx.context.session?.user.email} from IP: ${ctx.request?.headers.get('x-forwarded-for')}`
-				);
+				logger.debug('✅ Sign-in successful', {
+					userId: ctx.context.session?.user.id,
+					path: ctx.path
+				});
 			}
 			if (ctx.path.includes('/reset-password')) {
 				logger.info('🔑 Password reset requested');

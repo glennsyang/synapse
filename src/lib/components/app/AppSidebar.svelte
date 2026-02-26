@@ -2,8 +2,7 @@
 	import BrainIcon from '@lucide/svelte/icons/brain';
 
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import type { User } from '$lib/server/db/types';
-	import type { SidebarNav } from '$lib/types';
+	import type { SidebarNav, User } from '$lib/types';
 
 	import NavMain from './NavMain.svelte';
 	import NavUser from './NavUser.svelte';

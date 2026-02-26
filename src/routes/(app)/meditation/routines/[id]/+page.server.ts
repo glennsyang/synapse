@@ -8,6 +8,7 @@ import {
 	scheduleSchema,
 	updateRoutineSchema
 } from '$lib/schemas/meditation';
+import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
@@ -109,7 +110,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		if (err instanceof Error && 'status' in err) {
 			throw err;
 		}
-		console.log(JSON.stringify(err));
 		logger.error('Failed to load meditation routine', { error: err });
 		throw error(500, 'Failed to load routine');
 	}
@@ -134,8 +134,7 @@ export const actions: Actions = {
 			// Parse days_of_week if provided
 			const daysOfWeekJson = form.data.days_of_week
 				? JSON.stringify(
-						form.data.days_of_week
-							.split(',')
+						splitCommaSeparated(form.data.days_of_week)
 							.map((d) => Number.parseInt(d.trim()))
 							.filter((d) => !Number.isNaN(d) && d >= 0 && d <= 6)
 					)
@@ -299,12 +298,7 @@ export const actions: Actions = {
 			}
 
 			// Parse mood tags
-			const moodTagsArray = form.data.mood_tags
-				.split(',')
-				.map((tag) => tag.trim())
-				.filter((tag) => tag.length > 0);
-
-			const moodTagsJson = JSON.stringify(moodTagsArray);
+			const moodTagsJson = JSON.stringify(splitCommaSeparated(form.data.mood_tags));
 
 			await db
 				.update(meditationRoutines)

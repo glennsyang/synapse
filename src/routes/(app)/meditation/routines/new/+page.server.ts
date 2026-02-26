@@ -3,6 +3,7 @@ import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { createRoutineSchema, MOOD_TAGS, type MoodTag } from '$lib/schemas/meditation';
+import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
@@ -36,10 +37,7 @@ export const actions: Actions = {
 
 		try {
 			// Parse and validate mood tags
-			const moodTagsArray = form.data.mood_tags
-				.split(',')
-				.map((tag) => tag.trim())
-				.filter((tag) => tag.length > 0);
+			const moodTagsArray = splitCommaSeparated(form.data.mood_tags);
 
 			// Validate each mood tag
 			const invalidTags = moodTagsArray.filter((tag) => !MOOD_TAGS.includes(tag as MoodTag));

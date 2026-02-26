@@ -1,5 +1,9 @@
 import type { Component } from 'svelte';
 
+import type { user } from './server/db/schema';
+
+export type User = typeof user.$inferSelect;
+
 export type SidebarNav = {
 	navMain: {
 		title: string;

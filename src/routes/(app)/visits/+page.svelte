@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PlusIcon from '@lucide/svelte/icons/plus';
 
+	import { replaceState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 	import { Badge } from '$lib/components/ui/badge';
@@ -55,7 +56,7 @@
 			nextUrl.searchParams.set('status', nextTab);
 		}
 
-		window.history.replaceState(window.history.state, '', nextUrl);
+		replaceState(nextUrl, page.state);
 	}
 
 	function peopleForTab(tab: VisitTab) {

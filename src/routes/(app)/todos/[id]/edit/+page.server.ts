@@ -1,10 +1,11 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { type Cadence, type TodoState, updateTodoSchema } from '$lib/schemas/todo';
 import { requireAuth } from '$lib/server/actions/auth-guard';
+import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import getDb from '$lib/server/db';
 import { todoItems } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -18,7 +19,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	});
 
 	if (!todo) {
-		redirect(303, '/todos');
+		throw redirect(303, '/todos');
 	}
 
 	// Parse JSON fields for form
@@ -52,7 +53,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(updateTodoSchema));
 
 		if (!form.valid) {
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -62,18 +63,10 @@ export const actions: Actions = {
 			});
 
 			if (!existing) {
-				return { form, error: 'Todo not found', status: 404 };
+				return fail(404, { form, error: 'Todo not found' });
 			}
 
-			// Parse tags from comma-separated string to JSON array
-			let tagsJson: string | null = null;
-			if (form.data.tags) {
-				const tagsArray = form.data.tags
-					.split(',')
-					.map((t) => t.trim())
-					.filter((t) => t.length > 0);
-				tagsJson = JSON.stringify(tagsArray);
-			}
+			const tagsJson = toCommaSeparatedJson(form.data.tags);
 
 			// Build update data
 			const updateData: Record<string, unknown> = {
@@ -107,7 +100,7 @@ export const actions: Actions = {
 			logger.info('Todo updated', { todoId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to update todo', { error, todoId });
-			return { form, error: 'Failed to update todo', status: 500 };
+			return fail(500, { form, error: 'Failed to update todo' });
 		}
 
 		throw redirect(303, `/todos`);
@@ -123,7 +116,7 @@ export const actions: Actions = {
 			});
 
 			if (!existing) {
-				return { error: 'Todo not found', status: 404 };
+				return fail(404, { error: 'Todo not found' });
 			}
 
 			// Delete todoItem
@@ -132,7 +125,7 @@ export const actions: Actions = {
 			logger.info('Todo deleted', { todoId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to delete todo', { error, todoId });
-			return { error: 'Failed to delete todo', status: 500 };
+			return fail(500, { error: 'Failed to delete todo' });
 		}
 
 		throw redirect(303, '/todos');
