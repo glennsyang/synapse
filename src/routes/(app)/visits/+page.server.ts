@@ -2,6 +2,7 @@ import { and, desc, eq } from 'drizzle-orm';
 
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
+import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import {
 	calculatePersonVisitStatus,
@@ -14,6 +15,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals }) => {
 	try {
 		const db = getDb();
+		const today = getTodayString();
 
 		// Load all people for the user
 		const userPeople = await db.query.people.findMany({
@@ -24,10 +26,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 		// For each person, get the latest visit and calculate status
 		const peopleWithStatus: PersonWithStatus[] = await Promise.all(
 			userPeople.map(async (person) => {
-				const latestVisit = await db.query.visits.findFirst({
+				const personVisits = await db.query.visits.findMany({
 					where: eq(visits.personId, person.id),
 					orderBy: [desc(visits.date)]
 				});
+
+				const latestVisit = personVisits[0];
+				const upcomingFollowUps = personVisits
+					.map((visit) => visit.followUpDate)
+					.filter((followUpDate): followUpDate is string => {
+						return !!followUpDate && followUpDate >= today;
+					})
+					.sort((a, b) => a.localeCompare(b));
+
+				const nextFollowUpDate = upcomingFollowUps[0] ?? null;
 
 				const statusInfo = calculatePersonVisitStatus(latestVisit?.date ?? null, person.isExempt);
 
@@ -35,6 +47,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 					id: person.id,
 					name: person.name,
 					isExempt: person.isExempt,
+					nextFollowUpDate,
 					lastVisit: latestVisit
 						? {
 								date: latestVisit.date,

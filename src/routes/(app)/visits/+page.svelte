@@ -1,8 +1,10 @@
 <script lang="ts">
+	import CalendarCheckIcon from '@lucide/svelte/icons/calendar-check';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 
 	import { navigating, page } from '$app/state';
 	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+	import * as Alert from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
@@ -14,14 +16,22 @@
 
 	let { data }: { data: PageData } = $props();
 
-	type VisitTab = 'all' | VisitStatus;
+	type VisitTab = 'all' | VisitStatus | 'scheduled';
 
-	const allowedStatuses = new Set<VisitStatus>(['green', 'yellow', 'red', 'none', 'exempt']);
+	const allowedTabs = new Set<VisitTab>([
+		'all',
+		'green',
+		'yellow',
+		'red',
+		'none',
+		'exempt',
+		'scheduled'
+	]);
 
 	function getInitialTab(): VisitTab {
 		const status = page.url.searchParams.get('status');
-		if (status && allowedStatuses.has(status as VisitStatus)) {
-			return status as VisitStatus;
+		if (status && allowedTabs.has(status as VisitTab)) {
+			return status as VisitTab;
 		}
 		return 'all';
 	}
@@ -33,8 +43,8 @@
 			return 'all';
 		}
 
-		if (allowedStatuses.has(value as VisitStatus)) {
-			return value as VisitStatus;
+		if (allowedTabs.has(value as VisitTab)) {
+			return value as VisitTab;
 		}
 
 		return 'all';
@@ -63,10 +73,27 @@
 			return data.people;
 		}
 
+		if (tab === 'scheduled') {
+			return data.people
+				.filter((person) => person.nextFollowUpDate !== null)
+				.sort((a, b) => {
+					if (!a.nextFollowUpDate || !b.nextFollowUpDate) {
+						return 0;
+					}
+					return a.nextFollowUpDate.localeCompare(b.nextFollowUpDate);
+				});
+		}
+
 		return data.people.filter((person) => person.status === tab);
 	}
 
 	const allPeopleCount = $derived(data.people.length);
+	const criticalCount = $derived(peopleForTab('red').length);
+	const overdueCount = $derived(peopleForTab('yellow').length);
+	const recentCount = $derived(peopleForTab('green').length);
+	const noVisitsCount = $derived(peopleForTab('none').length);
+	const exemptCount = $derived(peopleForTab('exempt').length);
+	const scheduledCount = $derived(peopleForTab('scheduled').length);
 
 	function formatTimeSince(days: number): string {
 		if (days < 30) {
@@ -114,41 +141,48 @@
 						class="border-b-2 border-transparent data-[state=active]:border-red-500"
 					>
 						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-red-500"></span>
-						Critical
+						Critical ({criticalCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="yellow"
 						class="border-b-2 border-transparent data-[state=active]:border-yellow-500"
 					>
 						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-yellow-500"></span>
-						Overdue
+						Overdue ({overdueCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="green"
 						class="border-b-2 border-transparent data-[state=active]:border-green-500"
 					>
 						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-green-500"></span>
-						Recent
+						Recent ({recentCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="none"
 						class="border-b-2 border-transparent data-[state=active]:border-gray-500"
 					>
 						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-gray-400"></span>
-						No Visits
+						No Visits ({noVisitsCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="exempt"
 						class="border-b-2 border-transparent data-[state=active]:border-gray-600"
 					>
 						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-gray-500"></span>
-						Exempt
+						Exempt ({exemptCount})
+					</Tabs.Trigger>
+					<Tabs.Trigger
+						value="scheduled"
+						class="border-b-2 border-transparent data-[state=active]:border-purple-500"
+					>
+						Scheduled ({scheduledCount})
 					</Tabs.Trigger>
 				</Tabs.List>
 			</div>
 
-			{#each ['all', 'red', 'yellow', 'green', 'none', 'exempt'] as tab (tab)}
+			{#each ['all', 'scheduled', 'red', 'yellow', 'green', 'none', 'exempt'] as tab (tab)}
 				<Tabs.Content value={tab} class="w-full">
+					{@const isScheduledTab = tab === 'scheduled'}
 					{@const peopleInTab = peopleForTab(tab as VisitTab)}
 					<div class="grid w-full gap-4 sm:min-h-80 md:grid-cols-2 lg:grid-cols-3">
 						{#if peopleInTab.length === 0}
@@ -157,7 +191,9 @@
 									<Card.Content
 										class="flex min-h-56 flex-col items-center justify-center py-12 text-center"
 									>
-										<p class="mb-4 text-muted-foreground">No people found.</p>
+										<p class="mb-4 text-muted-foreground">
+											{isScheduledTab ? 'No scheduled follow-up visits found.' : 'No people found.'}
+										</p>
 										<Button href="/visits/people/new">Add Your First Person</Button>
 									</Card.Content>
 								</Card.Root>
@@ -179,29 +215,40 @@
 										<Card.Header>
 											<div class="flex items-start justify-between">
 												<Card.Title class="font-display">{person.name}</Card.Title>
-												<Badge
-													variant={person.status === 'green'
-														? 'default'
-														: person.status === 'yellow'
-															? 'secondary'
-															: person.status === 'red'
-																? 'destructive'
-																: 'outline'}
-													class={person.status === 'green'
-														? 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-200'
-														: person.status === 'yellow'
-															? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-200'
-															: person.status === 'red'
-																? 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900 dark:text-red-200'
-																: ''}
-												>
-													{getStatusLabel(person.status)}
-												</Badge>
+												<div class="flex flex-col items-end gap-2">
+													<Badge
+														variant={person.status === 'green'
+															? 'default'
+															: person.status === 'yellow'
+																? 'secondary'
+																: person.status === 'red'
+																	? 'destructive'
+																	: 'outline'}
+														class={person.status === 'green'
+															? 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-200'
+															: person.status === 'yellow'
+																? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-200'
+																: person.status === 'red'
+																	? 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900 dark:text-red-200'
+																	: ''}
+													>
+														{getStatusLabel(person.status)}
+													</Badge>
+												</div>
 											</div>
 										</Card.Header>
 										<Card.Content>
 											{#if person.lastVisit}
 												<div class="text-sm text-muted-foreground">
+													{#if isScheduledTab && person.nextFollowUpDate}
+														<Alert.Root variant="destructive" class="mb-2">
+															<CalendarCheckIcon class="h-4 w-4" />
+															<Alert.Title>Follow-up scheduled:</Alert.Title>
+															<Alert.Description>
+																{formatDateShort(person.nextFollowUpDate)}
+															</Alert.Description>
+														</Alert.Root>
+													{/if}
 													<p>
 														Last visit: {formatDateShort(person.lastVisit.date)}
 														{#if person.daysSinceLastVisit !== null}

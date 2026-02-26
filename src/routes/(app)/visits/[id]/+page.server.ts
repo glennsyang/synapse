@@ -135,6 +135,79 @@ export const actions: Actions = {
 		}
 	}),
 
+	updateVisit: requireAuth(async ({ request, params }, user) => {
+		if (!params.id) {
+			throw error(400, 'Person ID is required');
+		}
+
+		const formData = await request.formData();
+		const visitId = formData.get('visitId');
+		const form = await superValidate(formData, zod4(visitSchema));
+
+		if (!form.valid) {
+			logger.warn('Invalid visit update form data', { errors: form.errors });
+			return { form, status: 400 };
+		}
+
+		if (typeof visitId !== 'string' || !visitId) {
+			throw error(400, 'Visit ID is required');
+		}
+
+		try {
+			const db = getDb();
+
+			const visit = await db.query.visits.findFirst({
+				where: and(
+					eq(visits.id, visitId),
+					eq(visits.userId, user.id),
+					eq(visits.personId, params.id)
+				)
+			});
+
+			if (!visit) {
+				throw error(404, 'Visit not found');
+			}
+
+			const companions = form.data.companions
+				? JSON.stringify(
+						(form.data.companions as string)
+							.split(',')
+							.map((c: string) => c.trim())
+							.filter((c: string) => c.length > 0)
+					)
+				: null;
+
+			await db
+				.update(visits)
+				.set({
+					date: form.data.date,
+					time: form.data.time || null,
+					companions,
+					notes: form.data.notes || null,
+					followUpDate: form.data.followUpDate || null,
+					updatedAt: new Date().toISOString()
+				})
+				.where(eq(visits.id, visitId));
+
+			logger.info('Visit updated', { visitId, personId: params.id, userId: user.id });
+
+			return message(form, {
+				type: 'success',
+				text: 'Visit updated successfully!'
+			});
+		} catch (err) {
+			logger.error('Failed to update visit', { error: err });
+			return message(
+				form,
+				{
+					type: 'error',
+					text: 'An error occurred while updating the visit. Please try again.'
+				},
+				{ status: 500 }
+			);
+		}
+	}),
+
 	updatePerson: requireAuth(async ({ request, params }, user) => {
 		if (!params.id) {
 			throw error(400, 'Person ID is required');

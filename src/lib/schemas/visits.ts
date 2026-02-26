@@ -41,10 +41,13 @@ export const visitSchema = z.object({
 		.optional(),
 	companions: z.string().optional(),
 	notes: z.string().optional(),
-	followUpDate: z
-		.string()
-		.regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (use YYYY-MM-DD)')
-		.optional()
+	followUpDate: z.preprocess(
+		(value) => (value === '' ? undefined : value),
+		z
+			.string()
+			.regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (use YYYY-MM-DD)')
+			.optional()
+	)
 });
 
 export type VisitFormData = z.infer<typeof visitSchema>;
