@@ -8,7 +8,7 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import type { User } from '$lib/server/db/types';
+	import type { User } from '$lib/types';
 
 	interface Props {
 		user: User;

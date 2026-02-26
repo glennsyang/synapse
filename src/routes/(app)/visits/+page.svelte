@@ -2,6 +2,7 @@
 	import CalendarCheckIcon from '@lucide/svelte/icons/calendar-check';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 
+	import { replaceState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 	import * as Alert from '$lib/components/ui/alert';
@@ -65,7 +66,7 @@
 			nextUrl.searchParams.set('status', nextTab);
 		}
 
-		window.history.replaceState(window.history.state, '', nextUrl);
+		replaceState(nextUrl, page.state);
 	}
 
 	function peopleForTab(tab: VisitTab) {

@@ -1,3 +1,4 @@
+import { fail } from '@sveltejs/kit';
 import { desc, eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -154,7 +155,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid weight log form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -192,7 +193,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid goal weight form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -244,7 +245,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid workout log form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -311,7 +312,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid meal log form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -350,7 +351,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid calorie target form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -400,7 +401,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid workout reminder form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -440,7 +441,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid workout reminder update form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {

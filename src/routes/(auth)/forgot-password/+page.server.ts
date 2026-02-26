@@ -1,4 +1,4 @@
-import { fail, isRedirect, redirect } from '@sveltejs/kit';
+import { isRedirect, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
@@ -31,9 +31,11 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(forgotPasswordSchema));
 
 		if (!form.valid) {
-			return fail(400, {
-				form
-			});
+			return message(
+				form,
+				{ type: 'error', text: 'Please correct the errors in the form.' },
+				{ status: 400 }
+			);
 		}
 
 		try {

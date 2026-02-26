@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	});
 
 	if (!entry) {
-		redirect(303, '/fitness?tab=weight');
+		throw redirect(303, '/fitness?tab=weight');
 	}
 
 	const form = await superValidate(
@@ -42,7 +42,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(updateWeightSchema));
 
 		if (!form.valid) {
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -53,7 +53,7 @@ export const actions: Actions = {
 			});
 
 			if (!existing) {
-				return { form, error: 'Weight entry not found', status: 404 };
+				return fail(404, { form, error: 'Weight entry not found' });
 			}
 
 			await db
@@ -69,7 +69,7 @@ export const actions: Actions = {
 			logger.info('Weight entry updated', { entryId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to update weight entry', { error, entryId });
-			return { form, error: 'Failed to update weight entry', status: 500 };
+			return fail(500, { form, error: 'Failed to update weight entry' });
 		}
 
 		throw redirect(303, '/fitness?tab=weight&notice=weight-updated');
@@ -80,7 +80,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(deleteEntrySchema));
 
 		if (!form.valid || form.data.id !== entryId) {
-			return { error: 'Invalid weight entry id', status: 400 };
+			return fail(400, { error: 'Invalid weight entry id' });
 		}
 
 		try {
@@ -91,7 +91,7 @@ export const actions: Actions = {
 			});
 
 			if (!existing) {
-				return { error: 'Weight entry not found', status: 404 };
+				return fail(404, { error: 'Weight entry not found' });
 			}
 
 			await db.delete(weightEntries).where(eq(weightEntries.id, entryId));
@@ -99,7 +99,7 @@ export const actions: Actions = {
 			logger.info('Weight entry deleted', { entryId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to delete weight entry', { error, entryId });
-			return { error: 'Failed to delete weight entry', status: 500 };
+			return fail(500, { error: 'Failed to delete weight entry' });
 		}
 
 		throw redirect(303, '/fitness?tab=weight&notice=weight-deleted');

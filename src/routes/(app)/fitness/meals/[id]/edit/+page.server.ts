@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	});
 
 	if (!meal) {
-		redirect(303, '/fitness?tab=meals');
+		throw redirect(303, '/fitness?tab=meals');
 	}
 
 	const form = await superValidate(
@@ -43,7 +43,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(updateMealSchema));
 
 		if (!form.valid) {
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -53,7 +53,7 @@ export const actions: Actions = {
 			});
 
 			if (!existing) {
-				return { form, error: 'Meal not found', status: 404 };
+				return fail(404, { form, error: 'Meal not found' });
 			}
 
 			await db
@@ -70,7 +70,7 @@ export const actions: Actions = {
 			logger.info('Meal updated', { mealId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to update meal', { error, mealId });
-			return { form, error: 'Failed to update meal', status: 500 };
+			return fail(500, { form, error: 'Failed to update meal' });
 		}
 
 		throw redirect(303, '/fitness?tab=meals&notice=meal-updated');
@@ -81,7 +81,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(deleteEntrySchema));
 
 		if (!form.valid || form.data.id !== mealId) {
-			return { error: 'Invalid meal id', status: 400 };
+			return fail(400, { error: 'Invalid meal id' });
 		}
 
 		try {
@@ -91,14 +91,14 @@ export const actions: Actions = {
 			});
 
 			if (!existing) {
-				return { error: 'Meal not found', status: 404 };
+				return fail(404, { error: 'Meal not found' });
 			}
 
 			await db.delete(mealLogs).where(eq(mealLogs.id, mealId));
 			logger.info('Meal deleted', { mealId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to delete meal', { error, mealId });
-			return { error: 'Failed to delete meal', status: 500 };
+			return fail(500, { error: 'Failed to delete meal' });
 		}
 
 		throw redirect(303, '/fitness?tab=meals&notice=meal-deleted');

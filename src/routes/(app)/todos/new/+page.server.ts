@@ -1,9 +1,10 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { createTodoSchema } from '$lib/schemas/todo';
 import { requireAuth } from '$lib/server/actions/auth-guard';
+import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import getDb from '$lib/server/db';
 import { todoItems } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -23,19 +24,11 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(createTodoSchema));
 
 		if (!form.valid) {
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
-			// Parse tags from comma-separated string to JSON array
-			let tagsJson: string | null = null;
-			if (form.data.tags) {
-				const tagsArray = form.data.tags
-					.split(',')
-					.map((t) => t.trim())
-					.filter((t) => t.length > 0);
-				tagsJson = JSON.stringify(tagsArray);
-			}
+			const tagsJson = toCommaSeparatedJson(form.data.tags);
 
 			// Insert new todoItem
 			const [newTodo] = await getDb()
@@ -57,7 +50,7 @@ export const actions: Actions = {
 			logger.info('Todo created', { todoId: newTodo.id, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to create todo', { error, userId: user.id });
-			return { form, error: 'Failed to create todo', status: 500 };
+			return fail(500, { form, error: 'Failed to create todo' });
 		}
 
 		throw redirect(303, '/todos');

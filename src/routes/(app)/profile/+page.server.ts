@@ -85,7 +85,7 @@ export const actions: Actions = {
 				body: {
 					currentPassword: form.data.currentPassword,
 					newPassword: form.data.newPassword,
-					revokeOtherSessions: false
+					revokeOtherSessions: true
 				},
 				headers: request.headers
 			});

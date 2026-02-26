@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
@@ -22,7 +22,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid person form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {

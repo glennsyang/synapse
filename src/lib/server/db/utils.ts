@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import type { User } from './types';
+import type { User } from '$lib/types';
 
 // Helper function to generate a UUID for new records
 export const generateId = () => randomUUID();

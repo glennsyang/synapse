@@ -76,17 +76,26 @@ class Logger {
 	}
 
 	error(message: string, error?: unknown, meta?: Record<string, unknown>) {
+		const isDevelopment = process.env.NODE_ENV === 'development';
+		const errorPayload: Record<string, unknown> = {};
+
+		if (error instanceof Error) {
+			errorPayload.error = {
+				name: error.name,
+				message: error.message,
+				...(isDevelopment && error.stack ? { stack: error.stack } : {})
+			};
+		} else if (error === undefined) {
+			// No error payload
+		} else if (typeof error === 'string') {
+			errorPayload.error = error;
+		} else {
+			errorPayload.error = 'Non-Error thrown (details suppressed)';
+		}
+
 		const errorMeta = {
 			...meta,
-			...(error instanceof Error
-				? {
-						error: {
-							name: error.name,
-							message: error.message,
-							stack: error.stack
-						}
-					}
-				: { error: String(error) })
+			...errorPayload
 		};
 		this.log('error', message, errorMeta);
 	}

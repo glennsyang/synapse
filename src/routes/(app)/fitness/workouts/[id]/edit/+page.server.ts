@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	});
 
 	if (!workout) {
-		redirect(303, '/fitness?tab=workouts');
+		throw redirect(303, '/fitness?tab=workouts');
 	}
 
 	const form = await superValidate(
@@ -67,7 +67,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(updateWorkoutSchema));
 
 		if (!form.valid) {
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -77,7 +77,7 @@ export const actions: Actions = {
 			});
 
 			if (!existing) {
-				return { form, error: 'Workout not found', status: 404 };
+				return fail(404, { form, error: 'Workout not found' });
 			}
 
 			let parsedExercises: Array<z.infer<typeof workoutExerciseSchema>> = [];
@@ -88,12 +88,12 @@ export const actions: Actions = {
 						exercisesInput = JSON.parse(form.data.exercises);
 					} catch (error) {
 						logger.warn('Invalid exercises JSON during workout update', { error, workoutId });
-						return { form, error: 'Invalid exercises data', status: 400 };
+						return fail(400, { form, error: 'Invalid exercises data' });
 					}
 
 					const parsed = exercisesArraySchema.safeParse(exercisesInput);
 					if (!parsed.success) {
-						return { form, error: 'Invalid exercises data', status: 400 };
+						return fail(400, { form, error: 'Invalid exercises data' });
 					}
 
 					parsedExercises = parsed.data.filter(
@@ -136,7 +136,7 @@ export const actions: Actions = {
 			logger.info('Workout updated', { workoutId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to update workout', { error, workoutId });
-			return { form, error: 'Failed to update workout', status: 500 };
+			return fail(500, { form, error: 'Failed to update workout' });
 		}
 
 		throw redirect(303, '/fitness?tab=workouts&notice=workout-updated');
@@ -147,7 +147,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(deleteEntrySchema));
 
 		if (!form.valid || form.data.id !== workoutId) {
-			return { error: 'Invalid workout id', status: 400 };
+			return fail(400, { error: 'Invalid workout id' });
 		}
 
 		try {
@@ -157,14 +157,14 @@ export const actions: Actions = {
 			});
 
 			if (!existing) {
-				return { error: 'Workout not found', status: 404 };
+				return fail(404, { error: 'Workout not found' });
 			}
 
 			await db.delete(workoutLogs).where(eq(workoutLogs.id, workoutId));
 			logger.info('Workout deleted', { workoutId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to delete workout', { error, workoutId });
-			return { error: 'Failed to delete workout', status: 500 };
+			return fail(500, { error: 'Failed to delete workout' });
 		}
 
 		throw redirect(303, '/fitness?tab=workouts&notice=workout-deleted');

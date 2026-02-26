@@ -2,18 +2,9 @@
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import { toggleMode } from 'mode-watcher';
-	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button';
-
-	// If user is authenticated, redirect to dashboard
-	onMount(() => {
-		if (page.data.user) {
-			goto('/dashboard');
-		}
-	});
 
 	const handleSignIn = () => goto('/sign-in');
 	const handleRegister = () => goto('/register');

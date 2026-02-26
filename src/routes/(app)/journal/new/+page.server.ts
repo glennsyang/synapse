@@ -1,9 +1,10 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { journalEntrySchema } from '$lib/schemas/journal';
 import { requireAuth } from '$lib/server/actions/auth-guard';
+import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
@@ -27,18 +28,11 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid journal entry form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
-			const tags = form.data.tags
-				? JSON.stringify(
-						(form.data.tags as string)
-							.split(',')
-							.map((t: string) => t.trim())
-							.filter((t: string) => t.length > 0)
-					)
-				: null;
+			const tags = toCommaSeparatedJson(form.data.tags);
 
 			const weather =
 				form.data.weatherTemp || form.data.weatherCondition

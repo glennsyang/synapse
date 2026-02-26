@@ -8,6 +8,11 @@ export const POST: RequestHandler = async ({ request }) => {
 	const authHeader = request.headers.get('authorization');
 	const expectedToken = process.env.CRON_SECRET;
 
+	if (!expectedToken || expectedToken.trim().length === 0) {
+		logger.error('❌ CRON_SECRET is missing; rejecting cron execution');
+		return json({ error: 'Service unavailable' }, { status: 503 });
+	}
+
 	if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
 		logger.warn('⚠️ Unauthorized cron job attempt');
 		return json({ error: 'Unauthorized' }, { status: 401 });

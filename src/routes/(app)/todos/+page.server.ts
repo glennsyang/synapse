@@ -1,3 +1,4 @@
+import { fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -108,7 +109,7 @@ export const actions: Actions = {
 	 */
 	updateState: requireAuth(async ({ request }, user) => {
 		const form = await superValidate(request, zod4(updateTodoStateSchema));
-		if (!form.valid) return { form, status: 400 };
+		if (!form.valid) return fail(400, { form });
 
 		try {
 			// Verify todoItem belongs to user
@@ -117,7 +118,7 @@ export const actions: Actions = {
 			});
 
 			if (!existing) {
-				return { form, error: 'Todo not found', status: 404 };
+				return fail(404, { form, error: 'Todo not found' });
 			}
 
 			// Update state and completedAt if changing to done
@@ -137,7 +138,7 @@ export const actions: Actions = {
 			return { form };
 		} catch (error) {
 			logger.error('Failed to update todo state', { error, form });
-			return { form, error: 'Failed to update todo state', status: 500 };
+			return fail(500, { form, error: 'Failed to update todo state' });
 		}
 	})
 };

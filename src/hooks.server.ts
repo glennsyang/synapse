@@ -77,7 +77,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 		"img-src 'self' data: https:",
 		"font-src 'self' https://fonts.gstatic.com", // Google Fonts
 		"connect-src 'self' https://nominatim.openstreetmap.org https://api.open-meteo.com",
-		"frame-ancestors 'none'"
+		"frame-ancestors 'none'",
+		"frame-src 'none'",
+		"object-src 'none'",
+		"base-uri 'self'",
+		"form-action 'self'"
 	].join('; ');
 
 	response.headers.set('Content-Security-Policy', csp);
@@ -92,24 +96,16 @@ export const handleError: HandleServerError = ({ error, event, status, message }
 	const requestId = event.locals.requestId || 'unknown';
 	const userId = event.locals.user?.id || 'anonymous';
 
-	// Log error with full context and stack trace
-	logger.error(
-		'Unhandled server error',
-		{
-			requestId,
-			userId,
-			url: event.url.pathname,
-			method: event.request.method,
-			status,
-			message,
-			userAgent: event.request.headers.get('user-agent')
-		},
-		{
-			stack: error instanceof Error ? error.stack : undefined,
-			name: error instanceof Error ? error.name : 'Unknown',
-			cause: error instanceof Error ? JSON.stringify(error.cause) : undefined
-		}
-	);
+	// Log error with sanitized context
+	logger.error('Unhandled server error', error, {
+		requestId,
+		userId,
+		url: event.url.pathname,
+		method: event.request.method,
+		status,
+		message,
+		userAgent: event.request.headers.get('user-agent')
+	});
 
 	// Return safe error message to client (hide internals in production)
 	return {

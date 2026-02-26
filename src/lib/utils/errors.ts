@@ -2,6 +2,8 @@
  * Error handling utilities for consistent error responses
  */
 
+import { logger } from './logger';
+
 export class AppError extends Error {
 	constructor(
 		message: string,
@@ -88,7 +90,7 @@ export function logError(error: unknown, context?: Record<string, unknown>) {
 		...context
 	};
 
-	console.error('[ERROR]', JSON.stringify(errorInfo));
+	logger.error('[ERROR]', JSON.stringify(errorInfo));
 }
 
 /**

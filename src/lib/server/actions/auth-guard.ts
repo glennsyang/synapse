@@ -1,7 +1,7 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
 
-import type { User } from '../db/types';
+import type { User } from '$lib/types';
 
 /**
  * Authorization wrapper for SvelteKit actions.

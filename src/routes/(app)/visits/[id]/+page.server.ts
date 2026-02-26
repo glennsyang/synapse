@@ -1,10 +1,11 @@
-import { error, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { personSchema, visitSchema } from '$lib/schemas/visits';
 import { requireAuth } from '$lib/server/actions/auth-guard';
+import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
@@ -77,7 +78,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid visit form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
@@ -92,14 +93,7 @@ export const actions: Actions = {
 				throw error(404, 'Person not found');
 			}
 
-			const companions = form.data.companions
-				? JSON.stringify(
-						(form.data.companions as string)
-							.split(',')
-							.map((c: string) => c.trim())
-							.filter((c: string) => c.length > 0)
-					)
-				: null;
+			const companions = toCommaSeparatedJson(form.data.companions);
 
 			const visitId = generateId();
 
@@ -217,7 +211,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid person form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		try {
