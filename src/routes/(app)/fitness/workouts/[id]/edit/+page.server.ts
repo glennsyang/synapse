@@ -22,7 +22,7 @@ const exercisesArraySchema = z.array(workoutExerciseSchema);
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const workout = await getDb().query.workoutLogs.findFirst({
-		where: and(eq(workoutLogs.id, params.id), eq(workoutLogs.userId, locals.user!.id)),
+		where: and(eq(workoutLogs.id, params.id), eq(workoutLogs.userId, locals.user?.id)),
 		with: {
 			exercises: true
 		}
@@ -87,7 +87,10 @@ export const actions: Actions = {
 					try {
 						exercisesInput = JSON.parse(form.data.exercises);
 					} catch (error) {
-						logger.warn('Invalid exercises JSON during workout update', { error, workoutId });
+						logger.warn('Invalid exercises JSON during workout update', {
+							error,
+							workoutId
+						});
 						return fail(400, { form, error: 'Invalid exercises data' });
 					}
 

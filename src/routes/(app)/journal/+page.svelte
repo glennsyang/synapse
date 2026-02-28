@@ -30,7 +30,7 @@ async function applyFilters() {
 
 	const queryParams = new URLSearchParams(params);
 	const queryString = queryParams.toString();
-	await goto(`/journal${queryString ? '?' + queryString : ''}`);
+	await goto(`/journal${queryString ? `?${queryString}` : ''}`);
 }
 
 async function clearFilters() {

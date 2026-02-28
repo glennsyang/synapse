@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 		// Load all people for the user
 		const userPeople = await db.query.people.findMany({
-			where: and(eq(people.userId, locals.user!.id), eq(people.isArchived, false)),
+			where: and(eq(people.userId, locals.user?.id), eq(people.isArchived, false)),
 			orderBy: [desc(people.createdAt)]
 		});
 

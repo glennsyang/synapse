@@ -13,7 +13,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const meal = await getDb().query.mealLogs.findFirst({
-		where: and(eq(mealLogs.id, params.id), eq(mealLogs.userId, locals.user!.id))
+		where: and(eq(mealLogs.id, params.id), eq(mealLogs.userId, locals.user?.id))
 	});
 
 	if (!meal) {

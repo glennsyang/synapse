@@ -56,7 +56,7 @@ const chartData = $derived(
 // Truncate text
 function truncate(text: string | null | undefined, length: number) {
 	if (!text) return '';
-	return text.length > length ? text.substring(0, length) + '...' : text;
+	return text.length > length ? `${text.substring(0, length)}...` : text;
 }
 </script>
 

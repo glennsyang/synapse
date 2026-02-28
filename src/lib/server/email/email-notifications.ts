@@ -135,8 +135,9 @@ async function processWorkoutReminders(
 		// Since cron runs every 10 minutes, this ensures we catch the reminder
 		const [reminderHour, reminderMinute] = reminder.time.split(':');
 		const reminderTimeInMinutes =
-			Number.parseInt(reminderHour) * 60 + Number.parseInt(reminderMinute || '0');
-		const currentTimeInMinutes = Number.parseInt(currentHour) * 60 + Number.parseInt(currentMinute);
+			Number.parseInt(reminderHour, 10) * 60 + Number.parseInt(reminderMinute || '0', 10);
+		const currentTimeInMinutes =
+			Number.parseInt(currentHour, 10) * 60 + Number.parseInt(currentMinute, 10);
 
 		// Send if within 10 minutes of reminder time
 		const timeDiff = Math.abs(currentTimeInMinutes - reminderTimeInMinutes);
@@ -216,8 +217,9 @@ async function processMeditationReminders(
 		// Since cron runs every 10 minutes, this ensures we catch the reminder
 		const [scheduleHour, scheduleMinute] = schedule.time.split(':');
 		const scheduleTimeInMinutes =
-			Number.parseInt(scheduleHour) * 60 + Number.parseInt(scheduleMinute || '0');
-		const currentTimeInMinutes = Number.parseInt(currentHour) * 60 + Number.parseInt(currentMinute);
+			Number.parseInt(scheduleHour, 10) * 60 + Number.parseInt(scheduleMinute || '0', 10);
+		const currentTimeInMinutes =
+			Number.parseInt(currentHour, 10) * 60 + Number.parseInt(currentMinute, 10);
 
 		// Send if within 10 minutes of reminder time
 		const timeDiff = Math.abs(currentTimeInMinutes - scheduleTimeInMinutes);

@@ -40,7 +40,7 @@ async function getAllTags(userId: string): Promise<string[]> {
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	const userId = locals.user!.id;
+	const userId = locals.user?.id;
 
 	// Parse query parameters for filtering
 	const cadence = url.searchParams.get('cadence');
