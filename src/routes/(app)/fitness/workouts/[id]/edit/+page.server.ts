@@ -7,8 +7,8 @@ import { z } from 'zod';
 import {
 	deleteEntrySchema,
 	updateWorkoutSchema,
-	workoutExerciseSchema,
-	type WorkoutType
+	type WorkoutType,
+	workoutExerciseSchema
 } from '$lib/schemas/fitness';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
