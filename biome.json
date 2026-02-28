@@ -69,12 +69,9 @@
 	},
 	"overrides": [
 		{
-			"includes": ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
+			"includes": ["**/*.svelte"],
 			"linter": {
 				"rules": {
-					"a11y": {
-						"noSvgWithoutTitle": "off"
-					},
 					"correctness": {
 						"noUnusedImports": "off",
 						"noUnusedVariables": "off"

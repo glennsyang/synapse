@@ -10,5 +10,19 @@
 		".specify/scripts/bash/": true,
 		".specify/scripts/powershell/": true
 	},
-	"chat.useAgentSkills": true
+	"chat.useAgentSkills": true,
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.organizeImports.biome": "explicit"
+	},
+	"editor.defaultFormatter": "biomejs.biome",
+	"[svelte]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	}
 }
