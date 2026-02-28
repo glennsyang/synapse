@@ -21,7 +21,7 @@
 	},
 	"lint-staged": {
 		"*.{js,ts,svelte,json,css,md}": [
-			"biome check --write"
+			"biome check --write ."
 		],
 		"*.svelte": [
 			"svelte-check --tsconfig ./tsconfig.json --threshold error"
