@@ -255,6 +255,7 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 						stroke-linejoin="round"
 						class="h-4 w-4"
 					>
+						<title>Workouts</title>
 						<path d="m6.5 6.5 11 11" />
 						<path d="m21 21-1-1" />
 						<path d="m3 3 1 1" />
@@ -279,6 +280,7 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 						stroke-linejoin="round"
 						class="h-4 w-4"
 					>
+						<title>Meals</title>
 						<path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8" />
 						<path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7" />
 						<path d="m2.1 21.8 6.4-6.3" />
@@ -300,6 +302,7 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 						stroke-linejoin="round"
 						class="h-4 w-4"
 					>
+						<title>Reminders</title>
 						<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
 						<path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
 					</svg>

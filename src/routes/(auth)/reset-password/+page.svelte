@@ -37,6 +37,7 @@ const hasToken = $derived(() => !!token);
 				stroke="currentColor"
 				viewBox="0 0 24 24"
 			>
+				<title>Invalid reset link</title>
 				<path
 					stroke-linecap="round"
 					stroke-linejoin="round"
