@@ -1,81 +1,138 @@
-# synapse Development Guidelines
+# Synapse Copilot Instructions
 
-Auto-generated from all feature plans. Last updated: 2026-02-02
+Last updated: 2026-02-27
 
 ## Active Technologies
 
-- TypeScript (latest stable) + SvelteKit (full-stack framework), Drizzle ORM (database), Superforms + Zod (form handling/validation), Shadcn-svelte (UI components), Tailwind CSS (styling), TanStack Table (data tables) (001-synapse-second-brain)
+- TypeScript + SvelteKit 2 + Svelte 5 (runes mode)
+- Drizzle ORM + SQLite (`better-sqlite3`)
+- Better Auth (`better-auth`) with Drizzle adapter
+- Superforms + Zod (`zod4` adapter)
+- Tailwind CSS v4 + shadcn-svelte UI components
+- LayerChart + D3 for charts
 
 ## Project Structure
 
 ```text
 src/
-tests/
+	routes/                 # SvelteKit pages and API routes
+		(app)/                # Authenticated app routes
+		(auth)/               # Sign-in/register/reset flows
+		(splash)/             # Landing route group
+		api/                  # API endpoints (auth/healthz/cron)
+	lib/
+		components/
+			ui/                 # shadcn-svelte primitives
+			app/                # App-shell/business components
+			shared/             # Reusable shared components
+		server/
+			db/                 # Drizzle schema, migrations, DB setup
+			actions/            # Server-side action helpers (auth-guard)
+			email/              # Email templates + notification jobs
+		schemas/              # Zod schemas for server validation
 ```
 
 ## Commands
 
-npm test && npm run lint
+- `npm run dev`
+- `npm run build`
+- `npm run preview`
+- `npm run check`
+- `npm run lint`
+- `npm run lint:fix`
+- `npm run test`
+- `npm run test:unit`
+- `npm run db:generate`
+- `npm run db:migrate`
 
 ## Code Style
 
-TypeScript (latest stable): Follow standard conventions
+- Use semicolons and single quotes.
+- Never use `any`; prefer strict typing or `unknown`.
+- Use `type` imports where applicable.
+- Use `snake_case` for DB columns and `camelCase` for TypeScript.
+- Use logger utility in `src/lib/utils/logger.ts`; avoid direct `console.log()` in app code.
 
 ## Recent Changes
 
-- 001-synapse-second-brain: Added TypeScript (latest stable) + SvelteKit (full-stack framework), Drizzle ORM (database), Superforms + Zod (form handling/validation), Shadcn-svelte (UI components), Tailwind CSS (styling), TanStack Table (data tables)
+- Updated to Better Auth session flow through `hooks.server.ts` + `svelteKitHandler(...)`.
+- Standardized action auth with `requireAuth(...)` in `src/lib/server/actions/auth-guard.ts`.
+- Added operational endpoints: `/api/healthz` and `/api/cron/email-notifications`.
+- Expanded runtime env requirements for email notifications and cron security.
 
 <!-- MANUAL ADDITIONS START -->
+
+## Svelte/SvelteKit Reactive Patterns
+
+### ❌ AVOID: EventListener and onMount Anti-Patterns
+
+**NEVER** use global `window.addEventListener()` / DOM listeners for form revalidation flows.
+
+**Minimize `onMount()`** usage unless truly needed for browser-only integrations.
+
+### ✅ CORRECT: SvelteKit Form + Runes Patterns
+
+1. Use `use:enhance` on forms.
+2. Use `$state`, `$derived`, `$effect` for reactivity.
+3. Use element-scoped event handlers (e.g. `onclick={...}`).
 
 ## Critical Architecture Patterns
 
 ### Authentication Flow
 
-- Session stored in cookies (`event.cookies.get('session')`) with JSON-serialized user data
-- `hooks.server.ts` populates `event.locals.user` on every request
-- Route protection in `(app)/+layout.server.ts` redirects unauthenticated users to `/(auth)/sign-in`
+- Sessions are resolved via `auth.api.getSession(...)` and request handling is routed through `svelteKitHandler(...)` in `hooks.server.ts`.
+- `hooks.server.ts` populates `event.locals.session`, `event.locals.user`, and `event.locals.requestId`.
+- `(app)/+layout.server.ts` redirects unauthenticated users to `/sign-in`.
+- Auth API passthrough is in `src/routes/api/auth/[...all]/+server.ts`.
 
 ### Database Patterns
 
-- **Audit fields**: All tables have `createdBy`, `updatedBy`, `createdAt`, `updatedAt`
-- Use `withAuditFieldsForCreate(data, user)` and `withAuditFieldsForUpdate(data, user)` from `$lib/server/db/utils.ts`
-- Foreign keys reference `user.id` for audit fields
-- Schema defined in `/src/lib/server/db/schema`
-- Use Drizzle's relational query API: `db.query.journalEntries.findMany({ with: { user: true } })`
+- Use `userId`/`user_id` foreign keys to `user.id` for record ownership.
+- Timestamps vary by table: `createdAt`/`updatedAt` and `created_at`/`updated_at`.
+- `withAuditFieldsForCreate(...)` and `withAuditFieldsForUpdate(...)` exist for explicit audit metadata usage.
+- Source of truth schema: `src/lib/server/db/schema.ts`.
+- Prefer Drizzle relational query API (`db.query.<table>.findMany(...)`).
 
 ### Form Actions (SvelteKit Pattern)
 
-- Use `export const actions = { create, update, delete }` in `+page.server.ts`
-- Check `locals.user` before processing: `if (!locals.user) return fail(401, { error: 'Unauthorized' })`
-- For all forms: use superforms + zod validation (see `(auth)/sign-in/+page.server.ts`)
-- Always perform server-side validation with Zod schemas in `/src/lib/schemas/`. Avoid client-side validation.
+- Use `export const actions = { ... }` in `+page.server.ts`.
+- Prefer `requireAuth(...)` wrapper from `src/lib/server/actions/auth-guard.ts`; otherwise explicitly guard `locals.user`.
+- Use Superforms + `zod4(...)` for validation in server actions.
+- Keep validation in `src/lib/schemas/*` and always validate server-side.
+
+### API/Operations Patterns
+
+- Health endpoint: `src/routes/api/healthz/+server.ts`.
+- Cron endpoint: `src/routes/api/cron/email-notifications/+server.ts`.
+- Cron route requires `Authorization: Bearer ${CRON_SECRET}`.
+- `hooks.server.ts` sets request/security headers and request ID tracing.
 
 ### Component Structure
 
-- UI primitives in `/src/lib/components/ui/` (shadcn-svelte based): Button, Dialog, Table, Select, etc.
-- Business components in `/src/lib/components/app`: Header, Sidebar, etc.
-- Use `$bindable()` for two-way binding (Svelte 5 runes): `open = $bindable()`
-- Toast notifications via `svelte-sonner`: `import { toast } from 'svelte-sonner'`
+- Always check `src/lib/components/ui/` before creating new primitives.
+- Reuse app-level components from `src/lib/components/app` and shared helpers from `src/lib/components/shared`.
+- Use `$bindable()` for two-way Svelte 5 bindings.
+- Toasts are via `svelte-sonner`.
 
 ## Code Conventions
 
-- **TypeScript**: Use for all new files with semicolons and single quotes
-- **No 'any' types**: Avoid using `any` type entirely - use proper typing, generics, or `unknown` instead
-- **Naming**: `snake_case` for DB columns, `camelCase` for TypeScript
-- **Styling**: Tailwind classes via `cn()` utility from `$lib/utils.ts`
-- **Type imports**: Use `type` keyword: `import type { PageServerLoad } from './$types'`
-- **Database types**: Defined in `$lib/server/db/types.ts`
+- Use TypeScript for new files with semicolons and single quotes.
+- Avoid `any`.
+- Use `cn()` utility from `$lib/utils.ts` for class composition.
+- Keep database types in `src/lib/server/db/types.ts` and app/domain types in `src/lib/types.ts`.
 
-**For reactivity:** Use Svelte 5 runes:
+**For reactivity:** Use Svelte 5 runes exclusively:
 
 - `$state()` for reactive state
 - `$derived()` for computed values
 - `$effect()` for side effects (replaces most onMount use cases)
+- Do not use Svelte options-style reactive statements (`$:`)
 
 ## Environment & Config
 
-- Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`
-- Validated in `src/env.ts` using Zod schema
+- Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`, `RESEND_NEW_USER_ADDRESS`
+- Runtime/ops env var: `CRON_SECRET` (for `/api/cron/email-notifications`)
+- Validated in `src/env.ts` (production fail-fast + build/dev fallbacks)
 - Node.js version: **22.21.1** (required for better-sqlite3 compatibility)
 
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:

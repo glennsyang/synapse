@@ -30,14 +30,18 @@ Synapse is a modern second-brain application providing journaling, todo manageme
 - Common scripts (run with `npm run <script>`):
   - `dev` – Start the dev server
   - `build` – Build the app
+  - `preview` – Preview the production build locally
   - `check`, `check:watch` – Type/lint/check project
+  - `format` – Run Prettier write mode
   - `lint` – Run Prettier and ESLint
+  - `lint:fix` – Run Prettier and ESLint with auto-fix
   - `test`, `test:unit` – Vitest unit tests
-  - `db:migrate`, `db:generate`, `db:studio` – Drizzle database actions
+  - `db:migrate`, `db:generate` – Drizzle database actions
 
 ## Environment & Config
 
-- Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`
+- Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`, `RESEND_NEW_USER_ADDRESS`
+- Runtime/ops env var: `CRON_SECRET` (required for `/api/cron/email-notifications`)
 - Validated in `src/env.ts` using Zod schema
 - Node.js version: **22.21.1** (required for better-sqlite3 compatibility)
 
@@ -88,11 +92,11 @@ let data = $state(initialData);
 
 $effect(() => {
   // Runs when dependencies change
-  console.log('Data updated:', data);
+  void data;
 });
 ```
 
-4. **Event handlers on specific elements**:
+3. **Event handlers on specific elements**:
 
 ```svelte
 <button onclick={handleClick}>Submit</button>
@@ -102,24 +106,30 @@ $effect(() => {
 
 ### Authentication Flow
 
-- Session stored in cookies (`event.cookies.get('session')`) with JSON-serialized user data
-- `hooks.server.ts` populates `event.locals.user` on every request
-- Route protection in `(app)/+layout.server.ts` redirects unauthenticated users to `/(auth)/sign-in`
+- Sessions are managed by Better Auth (`auth.api.getSession`) and requests are handled through `svelteKitHandler(...)` in `hooks.server.ts`
+- `hooks.server.ts` populates `event.locals.session` and `event.locals.user` on every request
+- Route protection in `(app)/+layout.server.ts` redirects unauthenticated users to `/sign-in`
+- API auth passthrough is handled in `/src/routes/api/auth/[...all]/+server.ts`
 
 ### Database Patterns
 
-- **Audit fields**: All tables have `createdBy`, `updatedBy`, `createdAt`, `updatedAt`
-- Use `withAuditFieldsForCreate(data, user)` and `withAuditFieldsForUpdate(data, user)` from `$lib/server/db/utils.ts`
-- Foreign keys reference `user.id` for audit fields
-- Schema defined in `/src/lib/server/db/schema`
+- Primary ownership pattern is `userId`/`user_id` foreign keys to `user.id`; timestamp fields are `createdAt`/`updatedAt` or `created_at`/`updated_at` depending on table
+- Helper utilities `withAuditFieldsForCreate(...)` and `withAuditFieldsForUpdate(...)` exist in `$lib/server/db/utils.ts` for explicit audit metadata patterns
+- Schema is defined in `/src/lib/server/db/schema.ts`
 - Use Drizzle's relational query API: `db.query.journalEntries.findMany({ with: { user: true } })`
+- Migrations are generated to `/src/lib/server/db/migrations/` via `drizzle.config.ts`
 
 ### Form Actions (SvelteKit Pattern)
 
 - Use `export const actions = { create, update, delete }` in `+page.server.ts`
-- Check `locals.user` before processing: `if (!locals.user) return fail(401, { error: 'Unauthorized' })`
+- Prefer `requireAuth(...)` from `$lib/server/actions/auth-guard` for authenticated action handlers; otherwise check `locals.user` before processing
 - For all forms: use superforms + zod validation (see `(auth)/sign-in/+page.server.ts`)
 - Always perform server-side validation with Zod schemas in `/src/lib/schemas/`. Avoid client-side validation.
+
+### API/Operations Patterns
+
+- Health checks are served from `/src/routes/api/healthz/+server.ts` and validated against DB responsiveness
+- Scheduled email notifications run via `/src/routes/api/cron/email-notifications/+server.ts` and require `Authorization: Bearer ${CRON_SECRET}`
 
 ### Component Structure
 

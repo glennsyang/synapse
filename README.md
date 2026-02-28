@@ -4,7 +4,7 @@ A modern second-brain application for personal knowledge management and producti
 
 ## Overview
 
-Synapse is a comprehensive personal productivity app that helps you capture and organize your life in one place. Built with modern web technologies, it features secure authentication, offline-first architecture with cloud sync, and a sleek responsive interface optimized for both desktop and mobile.
+Synapse is a comprehensive personal productivity app that helps you capture and organize your life in one place. Built with modern web technologies, it features secure authentication, journaling, task management, health tracking, meditation routines, and a sleek responsive interface optimized for both desktop and mobile.
 
 ## Features
 
@@ -14,7 +14,6 @@ Synapse is a comprehensive personal productivity app that helps you capture and 
 - 💪 **Fitness & Nutrition** - Track weight with goal tracking, log workouts with exercises (sets/reps/weight), meal logging with calorie tracking, and progress charts
 - 🧘 **Meditation Routines** - Predefined and custom meditation routines with scheduling, mood tracking, and session history
 - 👥 **Visit Tracking** - Log visits to people with status indicators (green/yellow/red based on recency), companions, notes, and follow-up reminders
-- ☁️ **Cloud Sync** - Offline-first architecture with automatic sync and last-write-wins conflict resolution
 - 📱 **Responsive Design** - Mobile-optimized with touch-friendly controls and adaptive layouts
 
 ## Tech Stack
@@ -27,7 +26,7 @@ Synapse is a comprehensive personal productivity app that helps you capture and 
 - [shadcn-svelte](https://www.shadcn-svelte.com/) - Comprehensive UI component library
 - [Superforms](https://superforms.rocks/) + [Zod](https://zod.dev/) - Type-safe form handling and validation
 - [TanStack Table](https://tanstack.com/table) - Powerful data tables
-- [Chart.js](https://www.chartjs.org/) - Data visualization
+- [LayerChart](https://layerchart.com/) + [D3](https://d3js.org/) - Data visualization
 - [Lucide](https://lucide.dev/) - Icon library
 
 ### Backend
@@ -36,7 +35,6 @@ Synapse is a comprehensive personal productivity app that helps you capture and 
 - [Drizzle ORM](https://orm.drizzle.team/) - Type-safe SQL queries and migrations
 - [SQLite](https://www.sqlite.org/) with [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) - Local database
 - [Resend](https://resend.com/) - Transactional email delivery
-- [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) - Client-side offline storage
 
 ### Development Tools
 
@@ -91,6 +89,13 @@ NODE_ENV=development
 
 # Better-auth base URL (for email links)
 BETTER_AUTH_BASE_URL=http://localhost:5173
+
+# Email sender and recipient configuration
+RESEND_FROM_ADDRESS=noreply@example.com
+RESEND_NEW_USER_ADDRESS=admin@example.com
+
+# Cron authentication (required for /api/cron/email-notifications)
+CRON_SECRET=your_cron_secret_here
 ```
 
 ### 4. Generate and apply database migrations
@@ -131,13 +136,13 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 - `npm run db:generate` - Generate migrations from schema changes
 - `npm run db:migrate` - Apply pending migrations
-- `npm run db:push` - Push schema changes directly (dev only)
-- `npm run db:studio` - Open Drizzle Studio (database GUI)
 
 ### Code Quality
 
 - `npm run lint` - Run ESLint and Prettier
+- `npm run lint:fix` - Run ESLint and Prettier with auto-fixes
 - `npm run format` - Format code with Prettier
+- `npm run update-deps` - Check outdated packages and update
 
 ### Testing
 
@@ -157,16 +162,13 @@ synapse/
 │   │   │   ├── journal/      # Journal-specific components
 │   │   │   ├── todos/        # Todo-specific components
 │   │   │   ├── fitness/      # Fitness-specific components
-│   │   │   └── visits/       # Visit tracking components
+│   │   │   └── skeletons/     # Loading and placeholder components
 │   │   ├── server/
 │   │   │   ├── db/           # Database schema, migrations, and utils
 │   │   │   ├── auth.ts       # Better-auth configuration
 │   │   │   ├── actions/      # Server actions
-│   │   │   ├── email/        # Email templates
-│   │   │   └── sync/         # Sync service
-│   │   ├── client/
-│   │   │   ├── auth.ts       # Client-side auth
-│   │   │   └── offline-db.ts # IndexedDB wrapper
+│   │   │   └── email/        # Email sending + notification jobs
+│   │   ├── hooks/            # Shared Svelte hooks
 │   │   ├── schemas/          # Zod validation schemas
 │   │   ├── utils/            # Utility functions
 │   │   └── types.ts          # TypeScript types
@@ -190,7 +192,7 @@ synapse/
 
 ## Deployment
 
-Synapse is designed to be deployed on [fly.io](https://fly.io) with persistent SQLite storage. See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed deployment instructions.
+Synapse is designed to be deployed on [fly.io](https://fly.io) with persistent SQLite storage. Use [fly.toml](./fly.toml) as the source of truth for app/runtime configuration.
 
 ### Quick Deploy
 
@@ -202,16 +204,19 @@ curl -L https://fly.io/install.sh | sh
 fly auth login
 
 # Create app
-fly apps create synapse-second-brain
+fly apps create synapse-dev
 
 # Create persistent volume
-fly volumes create synapse_data --region sjc --size 1
+fly volumes create data --region yyz --size 1
 
 # Set secrets
 fly secrets set BETTER_AUTH_SECRET=$(openssl rand -base64 32)
 fly secrets set RESEND_API_KEY=re_your_key
-fly secrets set BETTER_AUTH_BASE_URL=https://synapse-second-brain.fly.dev
+fly secrets set BETTER_AUTH_BASE_URL=https://synapse-dev.fly.dev
 fly secrets set DATABASE_URL=/data/synapse.db
+fly secrets set RESEND_FROM_ADDRESS=noreply@example.com
+fly secrets set RESEND_NEW_USER_ADDRESS=admin@example.com
+fly secrets set CRON_SECRET=$(openssl rand -base64 32)
 
 # Deploy
 fly deploy
@@ -229,15 +234,15 @@ fly deploy
 
 - **SQLite** with better-sqlite3 for simple, file-based persistence
 - **UUIDs** for all primary keys to avoid conflicts in offline scenarios
-- **Audit fields** on all tables: `createdBy`, `updatedBy`, `createdAt`, `updatedAt`
+- **Ownership fields** use `userId`/`user_id` foreign keys to `user.id`
+- **Timestamp fields** use a mix of `createdAt`/`updatedAt` and `created_at`/`updated_at` by table
 - **Drizzle ORM** for type-safe queries and migrations
 
-### Sync & Offline Support
+### Operations & Observability
 
-- **Offline-first**: Changes saved to IndexedDB when offline
-- **Automatic sync**: Syncs when coming back online
-- **Last-write-wins**: Conflict resolution based on timestamps
-- **Request IDs**: All requests tracked for debugging
+- **Health check endpoint** at `/api/healthz` validates DB responsiveness
+- **Request IDs** are generated in `hooks.server.ts` and included via `X-Request-ID`
+- **Scheduled notifications** run via `/api/cron/email-notifications` with `Authorization: Bearer ${CRON_SECRET}`
 
 ### Security
 
@@ -261,4 +266,4 @@ MIT
 
 ## Support
 
-For issues and questions, please [open an issue](https://github.com/yourusername/synapse/issues).
+For issues and questions, please [open an issue](https://github.com/glennsyang/synapse/issues).
