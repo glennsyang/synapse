@@ -8,6 +8,7 @@ import SparklesIcon from '@lucide/svelte/icons/sparkles';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 import { navigating, page } from '$app/state';
+import PageShell from '$lib/components/app/PageShell.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
@@ -49,7 +50,7 @@ function applyFilters() {
 {#if navigating.to?.url.pathname === '/meditation'}
 	<PageSkeleton color="purple" />
 {:else}
-	<div class="mobile-container mx-auto w-full max-w-7xl py-4 sm:py-8">
+	<PageShell>
 		<div class="mb-6 flex items-center justify-between">
 			<div>
 				<h1 class="font-display text-3xl font-bold">Meditation</h1>
@@ -249,5 +250,5 @@ function applyFilters() {
 				</Card.Root>
 			</Tabs.Content>
 		</Tabs.Root>
-	</div>
+	</PageShell>
 {/if}

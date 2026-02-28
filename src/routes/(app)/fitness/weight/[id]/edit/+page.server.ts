@@ -5,6 +5,10 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { deleteEntrySchema, updateWeightSchema } from '$lib/schemas/fitness';
 import { requireAuth } from '$lib/server/actions/auth-guard';
+import {
+	getOwnedEntityOrNull,
+	getOwnedEntityOrThrow
+} from '$lib/server/actions/edit-route-helpers';
 import { getDb } from '$lib/server/db';
 import { weightEntries } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -12,13 +16,13 @@ import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const entry = await getDb().query.weightEntries.findFirst({
-		where: and(eq(weightEntries.id, params.id), eq(weightEntries.userId, locals.user?.id))
-	});
-
-	if (!entry) {
-		throw redirect(303, '/fitness?tab=weight');
-	}
+	const entry = await getOwnedEntityOrThrow(
+		() =>
+			getDb().query.weightEntries.findFirst({
+				where: and(eq(weightEntries.id, params.id), eq(weightEntries.userId, locals.user?.id))
+			}),
+		{ type: 'redirect', to: '/fitness?tab=weight' }
+	);
 
 	const form = await superValidate(
 		{
@@ -48,9 +52,11 @@ export const actions: Actions = {
 		try {
 			const db = getDb();
 
-			const existing = await db.query.weightEntries.findFirst({
-				where: and(eq(weightEntries.id, entryId), eq(weightEntries.userId, user.id))
-			});
+			const existing = await getOwnedEntityOrNull(() =>
+				db.query.weightEntries.findFirst({
+					where: and(eq(weightEntries.id, entryId), eq(weightEntries.userId, user.id))
+				})
+			);
 
 			if (!existing) {
 				return fail(404, { form, error: 'Weight entry not found' });
@@ -86,9 +92,11 @@ export const actions: Actions = {
 		try {
 			const db = getDb();
 
-			const existing = await db.query.weightEntries.findFirst({
-				where: and(eq(weightEntries.id, entryId), eq(weightEntries.userId, user.id))
-			});
+			const existing = await getOwnedEntityOrNull(() =>
+				db.query.weightEntries.findFirst({
+					where: and(eq(weightEntries.id, entryId), eq(weightEntries.userId, user.id))
+				})
+			);
 
 			if (!existing) {
 				return fail(404, { error: 'Weight entry not found' });

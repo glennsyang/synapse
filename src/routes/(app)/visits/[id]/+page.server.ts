@@ -144,7 +144,7 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			logger.warn('Invalid visit update form data', { errors: form.errors });
-			return { form, status: 400 };
+			return fail(400, { form });
 		}
 
 		if (typeof visitId !== 'string' || !visitId) {
@@ -166,14 +166,7 @@ export const actions: Actions = {
 				throw error(404, 'Visit not found');
 			}
 
-			const companions = form.data.companions
-				? JSON.stringify(
-						(form.data.companions as string)
-							.split(',')
-							.map((c: string) => c.trim())
-							.filter((c: string) => c.length > 0)
-					)
-				: null;
+			const companions = toCommaSeparatedJson(form.data.companions);
 
 			await db
 				.update(visits)

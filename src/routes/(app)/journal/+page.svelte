@@ -6,6 +6,7 @@ import Plus from '@lucide/svelte/icons/plus';
 
 import { goto } from '$app/navigation';
 import { navigating } from '$app/state';
+import PageShell from '$lib/components/app/PageShell.svelte';
 import JournalEntryCard from '$lib/components/journal/JournalEntryCard.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 import { Button } from '$lib/components/ui/button';
@@ -44,7 +45,7 @@ async function clearFilters() {
 {#if navigating.to?.url.pathname === '/journal'}
 	<PageSkeleton color="blue" />
 {:else}
-	<div class="mobile-container mx-auto max-w-7xl space-y-6 py-4 sm:py-6">
+	<PageShell class="space-y-6 sm:py-6">
 		<div class="mobile-stack justify-between">
 			<h1 class="font-display text-2xl font-bold sm:text-3xl">Journal</h1>
 			<Button href="/journal/new" class="w-full bg-blue-600 hover:bg-blue-700 sm:w-auto">
@@ -105,5 +106,5 @@ async function clearFilters() {
 				{/each}
 			{/if}
 		</div>
-	</div>
+	</PageShell>
 {/if}

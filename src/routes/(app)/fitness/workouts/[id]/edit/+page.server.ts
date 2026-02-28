@@ -11,6 +11,10 @@ import {
 	workoutExerciseSchema
 } from '$lib/schemas/fitness';
 import { requireAuth } from '$lib/server/actions/auth-guard';
+import {
+	getOwnedEntityOrNull,
+	getOwnedEntityOrThrow
+} from '$lib/server/actions/edit-route-helpers';
 import { getDb } from '$lib/server/db';
 import { workoutExercises, workoutLogs } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
@@ -21,16 +25,16 @@ import type { Actions, PageServerLoad } from './$types';
 const exercisesArraySchema = z.array(workoutExerciseSchema);
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const workout = await getDb().query.workoutLogs.findFirst({
-		where: and(eq(workoutLogs.id, params.id), eq(workoutLogs.userId, locals.user?.id)),
-		with: {
-			exercises: true
-		}
-	});
-
-	if (!workout) {
-		throw redirect(303, '/fitness?tab=workouts');
-	}
+	const workout = await getOwnedEntityOrThrow(
+		() =>
+			getDb().query.workoutLogs.findFirst({
+				where: and(eq(workoutLogs.id, params.id), eq(workoutLogs.userId, locals.user?.id)),
+				with: {
+					exercises: true
+				}
+			}),
+		{ type: 'redirect', to: '/fitness?tab=workouts' }
+	);
 
 	const form = await superValidate(
 		{
@@ -72,9 +76,11 @@ export const actions: Actions = {
 
 		try {
 			const db = getDb();
-			const existing = await db.query.workoutLogs.findFirst({
-				where: and(eq(workoutLogs.id, workoutId), eq(workoutLogs.userId, user.id))
-			});
+			const existing = await getOwnedEntityOrNull(() =>
+				db.query.workoutLogs.findFirst({
+					where: and(eq(workoutLogs.id, workoutId), eq(workoutLogs.userId, user.id))
+				})
+			);
 
 			if (!existing) {
 				return fail(404, { form, error: 'Workout not found' });
@@ -155,9 +161,11 @@ export const actions: Actions = {
 
 		try {
 			const db = getDb();
-			const existing = await db.query.workoutLogs.findFirst({
-				where: and(eq(workoutLogs.id, workoutId), eq(workoutLogs.userId, user.id))
-			});
+			const existing = await getOwnedEntityOrNull(() =>
+				db.query.workoutLogs.findFirst({
+					where: and(eq(workoutLogs.id, workoutId), eq(workoutLogs.userId, user.id))
+				})
+			);
 
 			if (!existing) {
 				return fail(404, { error: 'Workout not found' });
