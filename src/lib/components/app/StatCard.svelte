@@ -1,52 +1,52 @@
 <script lang="ts">
-	import TrendingDown from '@lucide/svelte/icons/trending-down';
-	import TrendingUp from '@lucide/svelte/icons/trending-up';
-	import type { Component } from 'svelte';
+import TrendingDown from '@lucide/svelte/icons/trending-down';
+import TrendingUp from '@lucide/svelte/icons/trending-up';
+import type { Component } from 'svelte';
 
-	import { cn } from '$lib/utils.js';
+import { cn } from '$lib/utils.js';
 
-	type SectionColor = 'teal' | 'blue' | 'green' | 'orange' | 'purple' | 'pink';
-	type TrendDirection = 'up' | 'down' | 'neutral';
+type SectionColor = 'teal' | 'blue' | 'green' | 'orange' | 'purple' | 'pink';
+type TrendDirection = 'up' | 'down' | 'neutral';
 
-	let {
-		label,
-		value,
-		icon,
-		color = 'teal',
-		trend,
-		trendValue,
-		trendDirection = 'neutral',
-		class: className,
-		...restProps
-	}: {
-		label: string;
-		value: string | number;
-		icon?: Component;
-		color?: SectionColor;
-		trend?: string;
-		trendValue?: string;
-		trendDirection?: TrendDirection;
-		class?: string;
-	} = $props();
+let {
+	label,
+	value,
+	icon,
+	color = 'teal',
+	trend,
+	trendValue,
+	trendDirection = 'neutral',
+	class: className,
+	...restProps
+}: {
+	label: string;
+	value: string | number;
+	icon?: Component;
+	color?: SectionColor;
+	trend?: string;
+	trendValue?: string;
+	trendDirection?: TrendDirection;
+	class?: string;
+} = $props();
 
-	const iconBgClasses = {
-		teal: 'bg-[oklch(var(--color-teal)/0.15)] text-[oklch(var(--color-teal))]',
-		blue: 'bg-[oklch(var(--color-blue)/0.15)] text-[oklch(var(--color-blue))]',
-		green: 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]',
-		orange: 'bg-[oklch(var(--color-orange)/0.15)] text-[oklch(var(--color-orange))]',
-		purple: 'bg-[oklch(var(--color-purple)/0.15)] text-[oklch(var(--color-purple))]',
-		pink: 'bg-[oklch(var(--color-pink)/0.15)] text-[oklch(var(--color-pink))]'
-	};
+const iconBgClasses = {
+	teal: 'bg-[oklch(var(--color-teal)/0.15)] text-[oklch(var(--color-teal))]',
+	blue: 'bg-[oklch(var(--color-blue)/0.15)] text-[oklch(var(--color-blue))]',
+	green: 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]',
+	orange: 'bg-[oklch(var(--color-orange)/0.15)] text-[oklch(var(--color-orange))]',
+	purple: 'bg-[oklch(var(--color-purple)/0.15)] text-[oklch(var(--color-purple))]',
+	pink: 'bg-[oklch(var(--color-pink)/0.15)] text-[oklch(var(--color-pink))]'
+};
 
-	const trendColorClasses = {
-		up: 'text-[oklch(var(--color-green))]',
-		down: 'text-destructive',
-		neutral: 'text-muted-foreground'
-	};
+const trendColorClasses = {
+	up: 'text-[oklch(var(--color-green))]',
+	down: 'text-destructive',
+	neutral: 'text-muted-foreground'
+};
 
-	const TrendIcon = $derived(
-		trendDirection === 'up' ? TrendingUp : trendDirection === 'down' ? TrendingDown : null
-	);
+const TrendIcon = $derived(
+	trendDirection === 'up' ? TrendingUp : trendDirection === 'down' ? TrendingDown : null
+);
 </script>
 
 <div

@@ -1,21 +1,21 @@
 <script lang="ts">
-	import TodoCard from './TodoCard.svelte';
+import TodoCard from './TodoCard.svelte';
 
-	interface Props {
-		todos: Array<{
-			id: string;
-			title: string;
-			description: string | null;
-			state: string;
-			cadence: string | null;
-			dueDate: string | null;
-			priority: number;
-			tags: string[] | null;
-		}>;
-		onStateChange?: (todoId: string, newState: string) => void;
-	}
+interface Props {
+	todos: Array<{
+		id: string;
+		title: string;
+		description: string | null;
+		state: string;
+		cadence: string | null;
+		dueDate: string | null;
+		priority: number;
+		tags: string[] | null;
+	}>;
+	onStateChange?: (todoId: string, newState: string) => void;
+}
 
-	let { todos, onStateChange }: Props = $props();
+let { todos, onStateChange }: Props = $props();
 </script>
 
 {#if todos.length === 0}

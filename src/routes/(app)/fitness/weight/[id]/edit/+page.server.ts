@@ -13,7 +13,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const entry = await getDb().query.weightEntries.findFirst({
-		where: and(eq(weightEntries.id, params.id), eq(weightEntries.userId, locals.user!.id))
+		where: and(eq(weightEntries.id, params.id), eq(weightEntries.userId, locals.user?.id))
 	});
 
 	if (!entry) {

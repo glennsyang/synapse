@@ -30,16 +30,16 @@ jobs:
         run: cp .env.example .env
 
       # Run linting
-      - name: Run lint
+      - name: Run Biome lint
         run: npm run lint
 
       # Run type checking
       - name: Run check
         run: npm run check
 
-      # # Run tests
-      # - name: Run tests
-      #   run: npm test
+      # Run tests
+      - name: Run tests
+        run: npm test
 
       # Deploy only if all checks pass
       - uses: superfly/flyctl-actions/setup-flyctl@master

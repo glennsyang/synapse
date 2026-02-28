@@ -1,44 +1,44 @@
 <script lang="ts">
-	import CalendarIcon from '@lucide/svelte/icons/calendar';
-	import ChevronDown from '@lucide/svelte/icons/chevron-down';
-	import FilterIcon from '@lucide/svelte/icons/filter';
-	import Plus from '@lucide/svelte/icons/plus';
+import CalendarIcon from '@lucide/svelte/icons/calendar';
+import ChevronDown from '@lucide/svelte/icons/chevron-down';
+import FilterIcon from '@lucide/svelte/icons/filter';
+import Plus from '@lucide/svelte/icons/plus';
 
-	import { goto } from '$app/navigation';
-	import { navigating } from '$app/state';
-	import JournalEntryCard from '$lib/components/journal/JournalEntryCard.svelte';
-	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import * as Collapsible from '$lib/components/ui/collapsible';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
+import { goto } from '$app/navigation';
+import { navigating } from '$app/state';
+import JournalEntryCard from '$lib/components/journal/JournalEntryCard.svelte';
+import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+import { Button } from '$lib/components/ui/button';
+import * as Collapsible from '$lib/components/ui/collapsible';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	let tagFilter = $state('');
-	let startDateFilter = $state('');
-	let endDateFilter = $state('');
-	let filtersOpen = $state(false);
+let tagFilter = $state('');
+let startDateFilter = $state('');
+let endDateFilter = $state('');
+let filtersOpen = $state(false);
 
-	async function applyFilters() {
-		const params: Record<string, string> = {};
-		if (tagFilter) params.tag = tagFilter;
-		if (startDateFilter) params.startDate = startDateFilter;
-		if (endDateFilter) params.endDate = endDateFilter;
+async function applyFilters() {
+	const params: Record<string, string> = {};
+	if (tagFilter) params.tag = tagFilter;
+	if (startDateFilter) params.startDate = startDateFilter;
+	if (endDateFilter) params.endDate = endDateFilter;
 
-		const queryParams = new URLSearchParams(params);
-		const queryString = queryParams.toString();
-		await goto(`/journal${queryString ? '?' + queryString : ''}`);
-	}
+	const queryParams = new URLSearchParams(params);
+	const queryString = queryParams.toString();
+	await goto(`/journal${queryString ? `?${queryString}` : ''}`);
+}
 
-	async function clearFilters() {
-		tagFilter = '';
-		startDateFilter = '';
-		endDateFilter = '';
-		await goto('/journal');
-	}
+async function clearFilters() {
+	tagFilter = '';
+	startDateFilter = '';
+	endDateFilter = '';
+	await goto('/journal');
+}
 </script>
 
 {#if navigating.to?.url.pathname === '/journal'}

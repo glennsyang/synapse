@@ -42,8 +42,7 @@ Synapse is a comprehensive personal productivity app that helps you capture and 
 - **Vitest** - Unit and integration testing
 - **Lefthook** - Fast git hooks
 - **lint-staged** - Pre-commit linting
-- **ESLint** - Code linting
-- **Prettier** - Code formatting
+- **Biome** - Code linting and formatting
 
 ## Prerequisites
 
@@ -139,9 +138,9 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ### Code Quality
 
-- `npm run lint` - Run ESLint and Prettier
-- `npm run lint:fix` - Run ESLint and Prettier with auto-fixes
-- `npm run format` - Format code with Prettier
+- `npm run lint` - Run Biome CI checks
+- `npm run lint:fix` - Run Biome checks with auto-fixes
+- `npm run format` - Format code with Biome
 - `npm run update-deps` - Check outdated packages and update
 
 ### Testing

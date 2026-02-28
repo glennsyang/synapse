@@ -1,108 +1,108 @@
 <script lang="ts">
-	import CalendarCheckIcon from '@lucide/svelte/icons/calendar-check';
-	import PlusIcon from '@lucide/svelte/icons/plus';
+import CalendarCheckIcon from '@lucide/svelte/icons/calendar-check';
+import PlusIcon from '@lucide/svelte/icons/plus';
 
-	import { replaceState } from '$app/navigation';
-	import { navigating, page } from '$app/state';
-	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-	import * as Alert from '$lib/components/ui/alert';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import * as Tabs from '$lib/components/ui/tabs';
-	import { formatDateShort } from '$lib/utils/date';
-	import { getStatusLabel, type VisitStatus } from '$lib/utils/visit-status';
+import { replaceState } from '$app/navigation';
+import { navigating, page } from '$app/state';
+import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+import * as Alert from '$lib/components/ui/alert';
+import { Badge } from '$lib/components/ui/badge';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import * as Tabs from '$lib/components/ui/tabs';
+import { formatDateShort } from '$lib/utils/date';
+import { getStatusLabel, type VisitStatus } from '$lib/utils/visit-status';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	type VisitTab = 'all' | VisitStatus | 'scheduled';
+type VisitTab = 'all' | VisitStatus | 'scheduled';
 
-	const allowedTabs = new Set<VisitTab>([
-		'all',
-		'green',
-		'yellow',
-		'red',
-		'none',
-		'exempt',
-		'scheduled'
-	]);
+const allowedTabs = new Set<VisitTab>([
+	'all',
+	'green',
+	'yellow',
+	'red',
+	'none',
+	'exempt',
+	'scheduled'
+]);
 
-	function getInitialTab(): VisitTab {
-		const status = page.url.searchParams.get('status');
-		if (status && allowedTabs.has(status as VisitTab)) {
-			return status as VisitTab;
-		}
+function getInitialTab(): VisitTab {
+	const status = page.url.searchParams.get('status');
+	if (status && allowedTabs.has(status as VisitTab)) {
+		return status as VisitTab;
+	}
+	return 'all';
+}
+
+let activeTab = $state<VisitTab>(getInitialTab());
+
+function getValidTab(value: string): VisitTab {
+	if (value === 'all') {
 		return 'all';
 	}
 
-	let activeTab = $state<VisitTab>(getInitialTab());
-
-	function getValidTab(value: string): VisitTab {
-		if (value === 'all') {
-			return 'all';
-		}
-
-		if (allowedTabs.has(value as VisitTab)) {
-			return value as VisitTab;
-		}
-
-		return 'all';
+	if (allowedTabs.has(value as VisitTab)) {
+		return value as VisitTab;
 	}
 
-	function handleTabChange(value: string) {
-		const nextTab = getValidTab(value);
-		activeTab = nextTab;
+	return 'all';
+}
 
-		if (typeof window === 'undefined') {
-			return;
-		}
+function handleTabChange(value: string) {
+	const nextTab = getValidTab(value);
+	activeTab = nextTab;
 
-		const nextUrl = new URL(window.location.href);
-		if (nextTab === 'all') {
-			nextUrl.searchParams.delete('status');
-		} else {
-			nextUrl.searchParams.set('status', nextTab);
-		}
-
-		replaceState(nextUrl, page.state);
+	if (typeof window === 'undefined') {
+		return;
 	}
 
-	function peopleForTab(tab: VisitTab) {
-		if (tab === 'all') {
-			return data.people;
-		}
-
-		if (tab === 'scheduled') {
-			return data.people
-				.filter((person) => person.nextFollowUpDate !== null)
-				.sort((a, b) => {
-					if (!a.nextFollowUpDate || !b.nextFollowUpDate) {
-						return 0;
-					}
-					return a.nextFollowUpDate.localeCompare(b.nextFollowUpDate);
-				});
-		}
-
-		return data.people.filter((person) => person.status === tab);
+	const nextUrl = new URL(window.location.href);
+	if (nextTab === 'all') {
+		nextUrl.searchParams.delete('status');
+	} else {
+		nextUrl.searchParams.set('status', nextTab);
 	}
 
-	const allPeopleCount = $derived(data.people.length);
-	const criticalCount = $derived(peopleForTab('red').length);
-	const overdueCount = $derived(peopleForTab('yellow').length);
-	const recentCount = $derived(peopleForTab('green').length);
-	const noVisitsCount = $derived(peopleForTab('none').length);
-	const exemptCount = $derived(peopleForTab('exempt').length);
-	const scheduledCount = $derived(peopleForTab('scheduled').length);
+	replaceState(nextUrl, page.state);
+}
 
-	function formatTimeSince(days: number): string {
-		if (days < 30) {
-			return `${days} day${days !== 1 ? 's' : ''} ago`;
-		}
-		const months = Math.floor(days / 30);
-		return `${months} month${months !== 1 ? 's' : ''} ago`;
+function peopleForTab(tab: VisitTab) {
+	if (tab === 'all') {
+		return data.people;
 	}
+
+	if (tab === 'scheduled') {
+		return data.people
+			.filter((person) => person.nextFollowUpDate !== null)
+			.sort((a, b) => {
+				if (!a.nextFollowUpDate || !b.nextFollowUpDate) {
+					return 0;
+				}
+				return a.nextFollowUpDate.localeCompare(b.nextFollowUpDate);
+			});
+	}
+
+	return data.people.filter((person) => person.status === tab);
+}
+
+const allPeopleCount = $derived(data.people.length);
+const criticalCount = $derived(peopleForTab('red').length);
+const overdueCount = $derived(peopleForTab('yellow').length);
+const recentCount = $derived(peopleForTab('green').length);
+const noVisitsCount = $derived(peopleForTab('none').length);
+const exemptCount = $derived(peopleForTab('exempt').length);
+const scheduledCount = $derived(peopleForTab('scheduled').length);
+
+function formatTimeSince(days: number): string {
+	if (days < 30) {
+		return `${days} day${days !== 1 ? 's' : ''} ago`;
+	}
+	const months = Math.floor(days / 30);
+	return `${months} month${months !== 1 ? 's' : ''} ago`;
+}
 </script>
 
 {#if navigating.to?.url.pathname === '/visits'}
@@ -257,15 +257,15 @@
 														{/if}
 													</p>
 													{#if person.lastVisit.companions && person.lastVisit.companions.length > 0}
-														<p class="mt-1">
-															With: {person.lastVisit.companions.join(', ')}
-														</p>
+														<p class="mt-1">With: {person.lastVisit.companions.join(', ')}</p>
 													{/if}
 													{#if person.daysUntilStatusChange !== null}
 														<p class="mt-1 text-xs">
-															{person.daysUntilStatusChange} day{person.daysUntilStatusChange !== 1
+															{person.daysUntilStatusChange}
+															day{person.daysUntilStatusChange !== 1
 																? 's'
-																: ''} until
+																: ''}
+															until
 															{person.status === 'green' ? 'overdue' : 'critical'}
 														</p>
 													{/if}

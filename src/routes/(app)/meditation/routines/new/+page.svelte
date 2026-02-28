@@ -1,30 +1,30 @@
 <script lang="ts">
-	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
+import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+import { toast } from 'svelte-sonner';
+import { superForm } from 'sveltekit-superforms';
 
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { MOOD_TAGS } from '$lib/schemas/meditation';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
+import { Textarea } from '$lib/components/ui/textarea';
+import { MOOD_TAGS } from '$lib/schemas/meditation';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, message } = superForm(data.form, {
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				toast.success('Routine created successfully!');
-			}
-			if ($message?.type === 'error') {
-				toast.error(`Error creating routine. Reason: ${$message.text}`);
-			}
+// svelte-ignore state_referenced_locally
+const { form, errors, enhance, message } = superForm(data.form, {
+	onUpdate: ({ form }) => {
+		if (form.valid) {
+			toast.success('Routine created successfully!');
 		}
-	});
+		if ($message?.type === 'error') {
+			toast.error(`Error creating routine. Reason: ${$message.text}`);
+		}
+	}
+});
 </script>
 
 <div class="container mx-auto max-w-2xl py-8">

@@ -1,84 +1,84 @@
 <script lang="ts">
-	import TodoCard from './TodoCard.svelte';
+import TodoCard from './TodoCard.svelte';
 
-	interface Props {
-		todos: Array<{
-			id: string;
-			title: string;
-			description: string | null;
-			state: string;
-			cadence: string | null;
-			dueDate: string | null;
-			priority: number;
-			tags: string[] | null;
-		}>;
+interface Props {
+	todos: Array<{
+		id: string;
+		title: string;
+		description: string | null;
+		state: string;
+		cadence: string | null;
+		dueDate: string | null;
+		priority: number;
+		tags: string[] | null;
+	}>;
+}
+
+let { todos }: Props = $props();
+
+// Group todos by state
+let todosByState = $derived({
+	new: todos.filter((t) => t.state === 'new'),
+	in_progress: todos.filter((t) => t.state === 'in_progress'),
+	on_hold: todos.filter((t) => t.state === 'on_hold'),
+	blocked: todos.filter((t) => t.state === 'blocked'),
+	done: todos.filter((t) => t.state === 'done')
+});
+
+let columns = $derived([
+	{
+		key: 'new' as const,
+		label: 'New',
+		count: todosByState.new.length,
+		color: 'border-orange-500'
+	},
+	{
+		key: 'in_progress' as const,
+		label: 'In Progress',
+		count: todosByState.in_progress.length,
+		color: 'border-blue-500'
+	},
+	{
+		key: 'on_hold' as const,
+		label: 'On Hold',
+		count: todosByState.on_hold.length,
+		color: 'border-yellow-500'
+	},
+	{
+		key: 'blocked' as const,
+		label: 'Blocked',
+		count: todosByState.blocked.length,
+		color: 'border-red-500'
+	},
+	{
+		key: 'done' as const,
+		label: 'Done',
+		count: todosByState.done.length,
+		color: 'border-green-500'
 	}
+]);
 
-	let { todos }: Props = $props();
+// Handle state change via form submission
+const handleStateChange = (todoId: string, newState: string) => {
+	const form = document.createElement('form');
+	form.method = 'POST';
+	form.action = '?/updateState';
 
-	// Group todos by state
-	let todosByState = $derived({
-		new: todos.filter((t) => t.state === 'new'),
-		in_progress: todos.filter((t) => t.state === 'in_progress'),
-		on_hold: todos.filter((t) => t.state === 'on_hold'),
-		blocked: todos.filter((t) => t.state === 'blocked'),
-		done: todos.filter((t) => t.state === 'done')
-	});
+	const idInput = document.createElement('input');
+	idInput.type = 'hidden';
+	idInput.name = 'id';
+	idInput.value = todoId;
 
-	let columns = $derived([
-		{
-			key: 'new' as const,
-			label: 'New',
-			count: todosByState.new.length,
-			color: 'border-orange-500'
-		},
-		{
-			key: 'in_progress' as const,
-			label: 'In Progress',
-			count: todosByState.in_progress.length,
-			color: 'border-blue-500'
-		},
-		{
-			key: 'on_hold' as const,
-			label: 'On Hold',
-			count: todosByState.on_hold.length,
-			color: 'border-yellow-500'
-		},
-		{
-			key: 'blocked' as const,
-			label: 'Blocked',
-			count: todosByState.blocked.length,
-			color: 'border-red-500'
-		},
-		{
-			key: 'done' as const,
-			label: 'Done',
-			count: todosByState.done.length,
-			color: 'border-green-500'
-		}
-	]);
+	const stateInput = document.createElement('input');
+	stateInput.type = 'hidden';
+	stateInput.name = 'state';
+	stateInput.value = newState;
 
-	// Handle state change via form submission
-	const handleStateChange = (todoId: string, newState: string) => {
-		const form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '?/updateState';
-
-		const idInput = document.createElement('input');
-		idInput.type = 'hidden';
-		idInput.name = 'id';
-		idInput.value = todoId;
-
-		const stateInput = document.createElement('input');
-		stateInput.type = 'hidden';
-		stateInput.name = 'state';
-		stateInput.value = newState;
-
-		form.appendChild(idInput);
-		form.appendChild(stateInput);
-		document.body.appendChild(form);
-		form.submit();
-	};
+	form.appendChild(idInput);
+	form.appendChild(stateInput);
+	document.body.appendChild(form);
+	form.submit();
+};
 </script>
 
 <div class="grid gap-4 md:grid-cols-5">

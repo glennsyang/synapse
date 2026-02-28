@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import { Button } from '$lib/components/ui/button';
+import { enhance } from '$app/forms';
+import { Button } from '$lib/components/ui/button';
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-gray-100">
@@ -10,12 +10,8 @@
 			<p class="mt-2 text-gray-600">Are you sure you want to sign out?</p>
 		</div>
 
-		<form method="POST" use:enhance>
-			<Button type="submit" class="w-full">Sign Out</Button>
-		</form>
+		<form method="POST" use:enhance><Button type="submit" class="w-full">Sign Out</Button></form>
 
-		<div class="text-center">
-			<a href="/dashboard" class="text-sm"> Cancel </a>
-		</div>
+		<div class="text-center"><a href="/dashboard" class="text-sm"> Cancel </a></div>
 	</div>
 </div>

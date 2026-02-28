@@ -1,222 +1,222 @@
 <script lang="ts">
-	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
-	import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
-	import BellIcon from '@lucide/svelte/icons/bell';
-	import BellOffIcon from '@lucide/svelte/icons/bell-off';
-	import MinusIcon from '@lucide/svelte/icons/minus';
-	import PencilIcon from '@lucide/svelte/icons/pencil';
-	import ScaleIcon from '@lucide/svelte/icons/scale';
-	import TargetIcon from '@lucide/svelte/icons/target';
-	import Trash2Icon from '@lucide/svelte/icons/trash-2';
-	import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
-	import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
-	import { SvelteSet } from 'svelte/reactivity';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
+import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
+import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
+import BellIcon from '@lucide/svelte/icons/bell';
+import BellOffIcon from '@lucide/svelte/icons/bell-off';
+import MinusIcon from '@lucide/svelte/icons/minus';
+import PencilIcon from '@lucide/svelte/icons/pencil';
+import ScaleIcon from '@lucide/svelte/icons/scale';
+import TargetIcon from '@lucide/svelte/icons/target';
+import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
+import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+import { SvelteSet } from 'svelte/reactivity';
+import { toast } from 'svelte-sonner';
+import { superForm } from 'sveltekit-superforms';
 
-	import { navigating, page } from '$app/state';
-	import CalorieProgress from '$lib/components/fitness/CalorieProgress.svelte';
-	import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
-	import WeightChart from '$lib/components/fitness/WeightChart.svelte';
-	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import * as Tabs from '$lib/components/ui/tabs';
-	import type { Exercise } from '$lib/types';
-	import {
-		daysOfWeek,
-		formatDateMedium,
-		formatDateShort,
-		formatTime12Hour,
-		getTodayString
-	} from '$lib/utils/date';
+import { navigating, page } from '$app/state';
+import CalorieProgress from '$lib/components/fitness/CalorieProgress.svelte';
+import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
+import WeightChart from '$lib/components/fitness/WeightChart.svelte';
+import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
+import * as Select from '$lib/components/ui/select';
+import * as Tabs from '$lib/components/ui/tabs';
+import type { Exercise } from '$lib/types';
+import {
+	daysOfWeek,
+	formatDateMedium,
+	formatDateShort,
+	formatTime12Hour,
+	getTodayString
+} from '$lib/utils/date';
 
-	import type { PageData } from './$types.js';
+import type { PageData } from './$types.js';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	// svelte-ignore state_referenced_locally
-	const {
-		form: weightForm,
-		errors: weightErrors,
-		enhance: weightEnhance,
-		message: weightMessage
-	} = superForm(data.weightForm, {
-		resetForm: true,
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				toast.success('Weight logged successfully!');
-			}
-			if ($weightMessage?.type === 'error') {
-				toast.error(`Error logging weight. Reason: ${$weightMessage.text}`);
-			}
+// svelte-ignore state_referenced_locally
+const {
+	form: weightForm,
+	errors: weightErrors,
+	enhance: weightEnhance,
+	message: weightMessage
+} = superForm(data.weightForm, {
+	resetForm: true,
+	onUpdate: ({ form }) => {
+		if (form.valid) {
+			toast.success('Weight logged successfully!');
 		}
-	});
-
-	// svelte-ignore state_referenced_locally
-	const {
-		form: workoutForm,
-		errors: workoutErrors,
-		enhance: workoutEnhance,
-		message: workoutMessage
-	} = superForm(data.workoutForm, {
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				toast.success('Workout logged successfully!');
-			}
-			if ($workoutMessage?.type === 'error') {
-				toast.error(`Error logging workout. Reason: ${$workoutMessage.text}`);
-			}
+		if ($weightMessage?.type === 'error') {
+			toast.error(`Error logging weight. Reason: ${$weightMessage.text}`);
 		}
-	});
+	}
+});
 
-	// svelte-ignore state_referenced_locally
-	const {
-		form: goalForm,
-		errors: goalErrors,
-		enhance: goalEnhance,
-		message: goalMessage
-	} = superForm(data.goalForm, {
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				toast.success('Goal weight set successfully!');
-			}
-			if ($goalMessage?.type === 'error') {
-				toast.error(`Error setting goal weight. Reason: ${$goalMessage.text}`);
-			}
+// svelte-ignore state_referenced_locally
+const {
+	form: workoutForm,
+	errors: workoutErrors,
+	enhance: workoutEnhance,
+	message: workoutMessage
+} = superForm(data.workoutForm, {
+	onUpdate: ({ form }) => {
+		if (form.valid) {
+			toast.success('Workout logged successfully!');
 		}
-	});
-
-	// svelte-ignore state_referenced_locally
-	const {
-		form: mealForm,
-		errors: mealErrors,
-		enhance: mealEnhance,
-		message: mealMessage
-	} = superForm(data.mealForm, {
-		resetForm: true,
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				toast.success('Meal logged successfully!');
-			}
-			if ($mealMessage?.type === 'error') {
-				toast.error(`Error logging meal. Reason: ${$mealMessage.text}`);
-			}
+		if ($workoutMessage?.type === 'error') {
+			toast.error(`Error logging workout. Reason: ${$workoutMessage.text}`);
 		}
-	});
+	}
+});
 
-	// svelte-ignore state_referenced_locally
-	const {
-		form: calorieForm,
-		errors: calorieErrors,
-		enhance: calorieEnhance,
-		message: calorieMessage
-	} = superForm(data.calorieForm, {
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				toast.success('Calorie target set successfully!');
-			}
-			if ($calorieMessage?.type === 'error') {
-				toast.error(`Error setting calorie target. Reason: ${$calorieMessage.text}`);
-			}
+// svelte-ignore state_referenced_locally
+const {
+	form: goalForm,
+	errors: goalErrors,
+	enhance: goalEnhance,
+	message: goalMessage
+} = superForm(data.goalForm, {
+	onUpdate: ({ form }) => {
+		if (form.valid) {
+			toast.success('Goal weight set successfully!');
 		}
-	});
-
-	// svelte-ignore state_referenced_locally
-	const {
-		form: reminderForm,
-		errors: reminderErrors,
-		enhance: reminderEnhance,
-		message: reminderMessage
-	} = superForm(data.reminderForm, {
-		resetForm: true,
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				toast.success('Reminder saved successfully!');
-			}
-			if ($reminderMessage?.type === 'error') {
-				toast.error(`Error saving reminder. Reason: ${$reminderMessage.text}`);
-			}
+		if ($goalMessage?.type === 'error') {
+			toast.error(`Error setting goal weight. Reason: ${$goalMessage.text}`);
 		}
-	});
+	}
+});
 
-	let workoutExercises = $state<Exercise[]>([]);
-	let weightEntryToDelete = $state<string | null>(null);
-	let workoutToDelete = $state<string | null>(null);
-	let mealToDelete = $state<string | null>(null);
-	let showDeleteWeightDialog = $state(false);
-	let showDeleteWorkoutDialog = $state(false);
-	let showDeleteMealDialog = $state(false);
-	let reminderToDelete = $state<string | null>(null);
-	let showDeleteReminderDialog = $state(false);
-	let reminderToToggle = $state<{
-		id: string;
-		workoutType: string;
-		cadence: string;
-		time: string;
-		daysOfWeek: string;
-		enabled: boolean;
-	} | null>(null);
-	let showToggleReminderDialog = $state(false);
-	let activeTab = $state('weight');
-	const handledNotices = new SvelteSet<string>();
-
-	$effect(() => {
-		const tab = page.url.searchParams.get('tab');
-		if (tab === 'workouts' || tab === 'meals' || tab === 'reminders' || tab === 'weight') {
-			activeTab = tab;
+// svelte-ignore state_referenced_locally
+const {
+	form: mealForm,
+	errors: mealErrors,
+	enhance: mealEnhance,
+	message: mealMessage
+} = superForm(data.mealForm, {
+	resetForm: true,
+	onUpdate: ({ form }) => {
+		if (form.valid) {
+			toast.success('Meal logged successfully!');
 		}
-	});
-
-	$effect(() => {
-		const notice = page.url.searchParams.get('notice');
-		if (!notice || handledNotices.has(notice)) {
-			return;
+		if ($mealMessage?.type === 'error') {
+			toast.error(`Error logging meal. Reason: ${$mealMessage.text}`);
 		}
+	}
+});
 
-		handledNotices.add(notice);
-		if (notice === 'weight-updated') {
-			toast.success('Weight entry updated successfully!');
-		} else if (notice === 'weight-deleted') {
-			toast.success('Weight entry deleted successfully!');
-		} else if (notice === 'workout-updated') {
-			toast.success('Workout updated successfully!');
-		} else if (notice === 'workout-deleted') {
-			toast.success('Workout deleted successfully!');
-		} else if (notice === 'meal-updated') {
-			toast.success('Meal updated successfully!');
-		} else if (notice === 'meal-deleted') {
-			toast.success('Meal deleted successfully!');
+// svelte-ignore state_referenced_locally
+const {
+	form: calorieForm,
+	errors: calorieErrors,
+	enhance: calorieEnhance,
+	message: calorieMessage
+} = superForm(data.calorieForm, {
+	onUpdate: ({ form }) => {
+		if (form.valid) {
+			toast.success('Calorie target set successfully!');
 		}
-	});
-
-	// When form is valid, sync to hidden input
-	$effect(() => {
-		if (workoutExercises.length > 0) {
-			$workoutForm.exercises = JSON.stringify(workoutExercises);
+		if ($calorieMessage?.type === 'error') {
+			toast.error(`Error setting calorie target. Reason: ${$calorieMessage.text}`);
 		}
-	});
+	}
+});
 
-	// Calculate today's total calories
-	let todayTotalCalories = $derived.by(() => {
-		const today = getTodayString();
-		const todayMeals = data.meals.filter((meal) => meal.date === today);
-		return todayMeals.reduce((sum, meal) => sum + (meal.caloriesEstimate || 0), 0);
-	});
+// svelte-ignore state_referenced_locally
+const {
+	form: reminderForm,
+	errors: reminderErrors,
+	enhance: reminderEnhance,
+	message: reminderMessage
+} = superForm(data.reminderForm, {
+	resetForm: true,
+	onUpdate: ({ form }) => {
+		if (form.valid) {
+			toast.success('Reminder saved successfully!');
+		}
+		if ($reminderMessage?.type === 'error') {
+			toast.error(`Error saving reminder. Reason: ${$reminderMessage.text}`);
+		}
+	}
+});
 
-	let toggleReminderDialogTitle = $derived(
-		reminderToToggle?.enabled ? 'Enable Reminder' : 'Disable Reminder'
-	);
-	let toggleReminderDialogMessage = $derived(
-		reminderToToggle?.enabled
-			? 'Are you sure you want to enable this reminder?'
-			: 'Are you sure you want to disable this reminder?'
-	);
-	let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enable' : 'Disable');
+let workoutExercises = $state<Exercise[]>([]);
+let weightEntryToDelete = $state<string | null>(null);
+let workoutToDelete = $state<string | null>(null);
+let mealToDelete = $state<string | null>(null);
+let showDeleteWeightDialog = $state(false);
+let showDeleteWorkoutDialog = $state(false);
+let showDeleteMealDialog = $state(false);
+let reminderToDelete = $state<string | null>(null);
+let showDeleteReminderDialog = $state(false);
+let reminderToToggle = $state<{
+	id: string;
+	workoutType: string;
+	cadence: string;
+	time: string;
+	daysOfWeek: string;
+	enabled: boolean;
+} | null>(null);
+let showToggleReminderDialog = $state(false);
+let activeTab = $state('weight');
+const handledNotices = new SvelteSet<string>();
+
+$effect(() => {
+	const tab = page.url.searchParams.get('tab');
+	if (tab === 'workouts' || tab === 'meals' || tab === 'reminders' || tab === 'weight') {
+		activeTab = tab;
+	}
+});
+
+$effect(() => {
+	const notice = page.url.searchParams.get('notice');
+	if (!notice || handledNotices.has(notice)) {
+		return;
+	}
+
+	handledNotices.add(notice);
+	if (notice === 'weight-updated') {
+		toast.success('Weight entry updated successfully!');
+	} else if (notice === 'weight-deleted') {
+		toast.success('Weight entry deleted successfully!');
+	} else if (notice === 'workout-updated') {
+		toast.success('Workout updated successfully!');
+	} else if (notice === 'workout-deleted') {
+		toast.success('Workout deleted successfully!');
+	} else if (notice === 'meal-updated') {
+		toast.success('Meal updated successfully!');
+	} else if (notice === 'meal-deleted') {
+		toast.success('Meal deleted successfully!');
+	}
+});
+
+// When form is valid, sync to hidden input
+$effect(() => {
+	if (workoutExercises.length > 0) {
+		$workoutForm.exercises = JSON.stringify(workoutExercises);
+	}
+});
+
+// Calculate today's total calories
+let todayTotalCalories = $derived.by(() => {
+	const today = getTodayString();
+	const todayMeals = data.meals.filter((meal) => meal.date === today);
+	return todayMeals.reduce((sum, meal) => sum + (meal.caloriesEstimate || 0), 0);
+});
+
+let toggleReminderDialogTitle = $derived(
+	reminderToToggle?.enabled ? 'Enable Reminder' : 'Disable Reminder'
+);
+let toggleReminderDialogMessage = $derived(
+	reminderToToggle?.enabled
+		? 'Are you sure you want to enable this reminder?'
+		: 'Are you sure you want to disable this reminder?'
+);
+let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enable' : 'Disable');
 </script>
 
 {#if navigating.to?.url.pathname === '/fitness'}
@@ -255,6 +255,7 @@
 						stroke-linejoin="round"
 						class="h-4 w-4"
 					>
+						<title>Workouts</title>
 						<path d="m6.5 6.5 11 11" />
 						<path d="m21 21-1-1" />
 						<path d="m3 3 1 1" />
@@ -279,6 +280,7 @@
 						stroke-linejoin="round"
 						class="h-4 w-4"
 					>
+						<title>Meals</title>
 						<path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8" />
 						<path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7" />
 						<path d="m2.1 21.8 6.4-6.3" />
@@ -300,6 +302,7 @@
 						stroke-linejoin="round"
 						class="h-4 w-4"
 					>
+						<title>Reminders</title>
 						<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
 						<path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
 					</svg>
@@ -317,7 +320,8 @@
 						</Card.Header>
 						<Card.Content>
 							<div class="font-display text-2xl font-bold">
-								{data.weightStats.currentWeight ?? '-'} lbs
+								{data.weightStats.currentWeight ?? '-'}
+								lbs
 							</div>
 						</Card.Content>
 					</Card.Root>
@@ -329,7 +333,8 @@
 						</Card.Header>
 						<Card.Content>
 							<div class="font-display text-2xl font-bold">
-								{data.goalWeight?.targetWeightLbs ?? '-'} lbs
+								{data.goalWeight?.targetWeightLbs ?? '-'}
+								lbs
 							</div>
 						</Card.Content>
 					</Card.Root>
@@ -470,9 +475,7 @@
 				<!-- Recent Entries -->
 				{#if data.weightEntries.length > 0}
 					<Card.Root>
-						<Card.Header>
-							<Card.Title>Recent Entries</Card.Title>
-						</Card.Header>
+						<Card.Header> <Card.Title>Recent Entries</Card.Title> </Card.Header>
 						<Card.Content>
 							<div class="space-y-2">
 								{#each data.weightEntries.slice(0, 10) as entry (entry.id)}
@@ -630,9 +633,7 @@
 				<!-- Recent Workouts -->
 				{#if data.workouts.length > 0}
 					<Card.Root>
-						<Card.Header>
-							<Card.Title>Recent Workouts</Card.Title>
-						</Card.Header>
+						<Card.Header> <Card.Title>Recent Workouts</Card.Title> </Card.Header>
 						<Card.Content>
 							<div class="space-y-3">
 								{#each data.workouts.slice(0, 10) as workout (workout.id)}
@@ -655,7 +656,8 @@
 													</span>
 													{#if workout.durationMinutes}
 														<span class="text-sm text-muted-foreground">
-															{workout.durationMinutes} min
+															{workout.durationMinutes}
+															min
 														</span>
 													{/if}
 												</div>
@@ -677,7 +679,8 @@
 																{#if exercise.sets || exercise.reps || exercise.weightLbs}
 																	<span class="ml-2">
 																		{#if exercise.sets}
-																			{exercise.sets} sets
+																			{exercise.sets}
+																			sets
 																		{/if}
 																		{#if exercise.reps}
 																			× {exercise.reps} reps
@@ -855,9 +858,7 @@
 				<!-- Recent Meals -->
 				{#if data.meals.length > 0}
 					<Card.Root>
-						<Card.Header>
-							<Card.Title>Recent Meals</Card.Title>
-						</Card.Header>
+						<Card.Header> <Card.Title>Recent Meals</Card.Title> </Card.Header>
 						<Card.Content>
 							<div class="space-y-3">
 								{#each data.meals.slice(0, 15) as meal (meal.id)}
@@ -882,9 +883,7 @@
 														<span class="text-sm font-medium">{meal.caloriesEstimate} cal</span>
 													{/if}
 												</div>
-												<p class="text-sm text-muted-foreground">
-													{formatDateShort(meal.date)}
-												</p>
+												<p class="text-sm text-muted-foreground">{formatDateShort(meal.date)}</p>
 												<p class="mt-2 text-sm">{meal.description}</p>
 											</div>
 											<div class="mt-3 flex items-center gap-2">
@@ -1038,9 +1037,7 @@
 								{/if}
 							</div>
 
-							<div class="mt-4">
-								<Button type="submit">Create Reminder</Button>
-							</div>
+							<div class="mt-4"><Button type="submit">Create Reminder</Button></div>
 						</form>
 					</Card.Content>
 				</Card.Root>
@@ -1048,9 +1045,7 @@
 				<!-- Active Reminders List -->
 				{#if data.reminders.length > 0}
 					<Card.Root>
-						<Card.Header>
-							<Card.Title>Active Reminders</Card.Title>
-						</Card.Header>
+						<Card.Header> <Card.Title>Active Reminders</Card.Title> </Card.Header>
 						<Card.Content>
 							<div class="space-y-3">
 								{#each data.reminders as reminder (reminder.id)}

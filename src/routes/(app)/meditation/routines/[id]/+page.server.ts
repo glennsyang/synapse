@@ -135,7 +135,7 @@ export const actions: Actions = {
 			const daysOfWeekJson = form.data.days_of_week
 				? JSON.stringify(
 						splitCommaSeparated(form.data.days_of_week)
-							.map((d) => Number.parseInt(d.trim()))
+							.map((d) => Number.parseInt(d.trim(), 10))
 							.filter((d) => !Number.isNaN(d) && d >= 0 && d <= 6)
 					)
 				: null;
@@ -181,10 +181,16 @@ export const actions: Actions = {
 					updatedAt: new Date().toISOString()
 				});
 
-				logger.info('Meditation schedule created', { scheduleId, userId: locals.user.id });
+				logger.info('Meditation schedule created', {
+					scheduleId,
+					userId: locals.user.id
+				});
 			}
 
-			return message(form, { type: 'success', text: 'Schedule saved successfully!' });
+			return message(form, {
+				type: 'success',
+				text: 'Schedule saved successfully!'
+			});
 		} catch (error) {
 			logger.error('Failed to create/update schedule', { error });
 			return message(
@@ -215,7 +221,10 @@ export const actions: Actions = {
 					)
 				);
 
-			logger.info('Meditation schedule deleted', { routineId: params.id, userId: locals.user.id });
+			logger.info('Meditation schedule deleted', {
+				routineId: params.id,
+				userId: locals.user.id
+			});
 			return { success: true };
 		} catch (error) {
 			logger.error('Failed to delete schedule', { error });
@@ -251,8 +260,14 @@ export const actions: Actions = {
 					updatedAt: new Date().toISOString()
 				});
 
-			logger.info('Meditation session completed', { sessionId, userId: locals.user.id });
-			return message(form, { type: 'success', text: 'Session logged successfully!' });
+			logger.info('Meditation session completed', {
+				sessionId,
+				userId: locals.user.id
+			});
+			return message(form, {
+				type: 'success',
+				text: 'Session logged successfully!'
+			});
 		} catch (error) {
 			logger.error('Failed to complete session', { error });
 			return message(
@@ -312,8 +327,14 @@ export const actions: Actions = {
 				})
 				.where(eq(meditationRoutines.id, params.id));
 
-			logger.info('Meditation routine updated', { routineId: params.id, userId: locals.user.id });
-			return message(form, { type: 'success', text: 'Routine updated successfully!' });
+			logger.info('Meditation routine updated', {
+				routineId: params.id,
+				userId: locals.user.id
+			});
+			return message(form, {
+				type: 'success',
+				text: 'Routine updated successfully!'
+			});
 		} catch (error) {
 			logger.error('Failed to update routine', { error });
 			return message(
@@ -353,7 +374,10 @@ export const actions: Actions = {
 
 			await db.delete(meditationRoutines).where(eq(meditationRoutines.id, params.id));
 
-			logger.info('Meditation routine deleted', { routineId: params.id, userId: locals.user.id });
+			logger.info('Meditation routine deleted', {
+				routineId: params.id,
+				userId: locals.user.id
+			});
 		} catch (error) {
 			logger.error('Failed to delete routine', { error });
 			return fail(500, { error: 'Failed to delete routine' });

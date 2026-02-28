@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { ModeWatcher } from 'mode-watcher';
+import { ModeWatcher } from 'mode-watcher';
 
-	import '../../app.css';
+import '../../app.css';
 </script>
 
 <ModeWatcher />
@@ -14,8 +14,6 @@
 			<p class="text-slate-600 dark:text-slate-400">Your Second Brain</p>
 		</div>
 
-		<div>
-			<slot />
-		</div>
+		<div><slot /></div>
 	</div>
 </div>

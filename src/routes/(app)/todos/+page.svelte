@@ -1,34 +1,34 @@
 <script lang="ts">
-	import { Plus } from '@lucide/svelte';
+import { Plus } from '@lucide/svelte';
 
-	import { navigating, page } from '$app/state';
-	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-	import TagFilter from '$lib/components/todos/TagFilter.svelte';
-	import TodoGridView from '$lib/components/todos/TodoGridView.svelte';
-	import TodoKanbanView from '$lib/components/todos/TodoKanbanView.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import { Label } from '$lib/components/ui/label';
-	import * as Tabs from '$lib/components/ui/tabs';
+import { navigating, page } from '$app/state';
+import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+import TagFilter from '$lib/components/todos/TagFilter.svelte';
+import TodoGridView from '$lib/components/todos/TodoGridView.svelte';
+import TodoKanbanView from '$lib/components/todos/TodoKanbanView.svelte';
+import { Button } from '$lib/components/ui/button';
+import { Label } from '$lib/components/ui/label';
+import * as Tabs from '$lib/components/ui/tabs';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	// Get current view from URL params (default: grid)
-	let currentView = $derived(page.url.searchParams.get('view') || 'grid');
+// Get current view from URL params (default: grid)
+let currentView = $derived(page.url.searchParams.get('view') || 'grid');
 
-	// Filter state
-	let selectedCadence = $state<'all' | 'daily' | 'weekly' | 'monthly'>('all');
-	let selectedState = $state<string | null>(null);
+// Filter state
+let selectedCadence = $state<'all' | 'daily' | 'weekly' | 'monthly'>('all');
+let selectedState = $state<string | null>(null);
 
-	// Filtered todos based on local filters
-	let filteredTodos = $derived(
-		data.todos.filter((todo) => {
-			if (selectedCadence !== 'all' && todo.cadence !== selectedCadence) return false;
-			if (selectedState && todo.state !== selectedState) return false;
-			return true;
-		})
-	);
+// Filtered todos based on local filters
+let filteredTodos = $derived(
+	data.todos.filter((todo) => {
+		if (selectedCadence !== 'all' && todo.cadence !== selectedCadence) return false;
+		if (selectedState && todo.state !== selectedState) return false;
+		return true;
+	})
+);
 </script>
 
 {#if navigating.to?.url.pathname === '/todos'}

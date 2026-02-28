@@ -1,50 +1,50 @@
 <script lang="ts">
-	import { Plus } from '@lucide/svelte';
-	import Sparkles from '@lucide/svelte/icons/sparkles';
-	import X from '@lucide/svelte/icons/x';
+import { Plus } from '@lucide/svelte';
+import Sparkles from '@lucide/svelte/icons/sparkles';
+import X from '@lucide/svelte/icons/x';
 
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Separator } from '$lib/components/ui/separator';
-	import { quickFeelings } from '$lib/utils';
+import { Badge } from '$lib/components/ui/badge';
+import { Button } from '$lib/components/ui/button';
+import { Input } from '$lib/components/ui/input';
+import { Separator } from '$lib/components/ui/separator';
+import { quickFeelings } from '$lib/utils';
 
-	let { value = $bindable() }: { value?: string } = $props();
+let { value = $bindable() }: { value?: string } = $props();
 
-	let inputValue = $state('');
-	let tags = $derived(
-		value
-			? value
-					.split(',')
-					.map((t) => t.trim())
-					.filter((t) => t.length > 0)
-			: []
-	);
+let inputValue = $state('');
+let tags = $derived(
+	value
+		? value
+				.split(',')
+				.map((t) => t.trim())
+				.filter((t) => t.length > 0)
+		: []
+);
 
-	function addTag(tag?: string) {
-		const tagToAdd = tag || inputValue.trim();
-		if (!tagToAdd) return;
-		if (tags.some((currentTag) => currentTag.toLowerCase() === tagToAdd.toLowerCase())) {
-			inputValue = '';
-			return;
-		}
-
-		const newTags = [...tags, tagToAdd];
-		value = newTags.join(', ');
+function addTag(tag?: string) {
+	const tagToAdd = tag || inputValue.trim();
+	if (!tagToAdd) return;
+	if (tags.some((currentTag) => currentTag.toLowerCase() === tagToAdd.toLowerCase())) {
 		inputValue = '';
+		return;
 	}
 
-	function removeTag(tagToRemove: string) {
-		const newTags = tags.filter((t) => t !== tagToRemove);
-		value = newTags.length > 0 ? newTags.join(', ') : undefined;
-	}
+	const newTags = [...tags, tagToAdd];
+	value = newTags.join(', ');
+	inputValue = '';
+}
 
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') {
-			e.preventDefault();
-			addTag();
-		}
+function removeTag(tagToRemove: string) {
+	const newTags = tags.filter((t) => t !== tagToRemove);
+	value = newTags.length > 0 ? newTags.join(', ') : undefined;
+}
+
+function handleKeydown(e: KeyboardEvent) {
+	if (e.key === 'Enter') {
+		e.preventDefault();
+		addTag();
 	}
+}
 </script>
 
 <div

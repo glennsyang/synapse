@@ -15,7 +15,7 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals, params }) => {
 	// Load todoItem
 	const todo = await getDb().query.todoItems.findFirst({
-		where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user!.id))
+		where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user?.id))
 	});
 
 	if (!todo) {

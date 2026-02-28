@@ -1,98 +1,98 @@
 <script lang="ts">
-	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-	import CalendarIcon from '@lucide/svelte/icons/calendar';
-	import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
-	import ClockIcon from '@lucide/svelte/icons/clock';
-	import EditIcon from '@lucide/svelte/icons/edit';
-	import PlayCircleIcon from '@lucide/svelte/icons/play-circle';
-	import TrashIcon from '@lucide/svelte/icons/trash';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
+import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+import CalendarIcon from '@lucide/svelte/icons/calendar';
+import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
+import ClockIcon from '@lucide/svelte/icons/clock';
+import EditIcon from '@lucide/svelte/icons/edit';
+import PlayCircleIcon from '@lucide/svelte/icons/play-circle';
+import TrashIcon from '@lucide/svelte/icons/trash';
+import { toast } from 'svelte-sonner';
+import { superForm } from 'sveltekit-superforms';
 
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { daysOfWeek, formatTimestampLong } from '$lib/utils/date';
+import { Badge } from '$lib/components/ui/badge';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import * as Dialog from '$lib/components/ui/dialog';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
+import * as Select from '$lib/components/ui/select';
+import { Textarea } from '$lib/components/ui/textarea';
+import { daysOfWeek, formatTimestampLong } from '$lib/utils/date';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	let showScheduleDialog = $state(false);
-	let showSessionDialog = $state(false);
-	let showEditDialog = $state(false);
-	let showDeleteConfirm = $state(false);
+let showScheduleDialog = $state(false);
+let showSessionDialog = $state(false);
+let showEditDialog = $state(false);
+let showDeleteConfirm = $state(false);
 
-	// svelte-ignore state_referenced_locally
-	const {
-		form: scheduleForm,
-		errors: scheduleErrors,
-		enhance: scheduleEnhance,
-		message: scheduleMessage
-	} = superForm(data.scheduleForm, {
-		onUpdate: ({ form }) => {
-			if (form.valid && $scheduleMessage?.type === 'success') {
-				toast.success('Schedule saved successfully!');
-				showScheduleDialog = false;
-			}
-			if ($scheduleMessage?.type === 'error') {
-				toast.error(`Error: ${$scheduleMessage.text}`);
-			}
+// svelte-ignore state_referenced_locally
+const {
+	form: scheduleForm,
+	errors: scheduleErrors,
+	enhance: scheduleEnhance,
+	message: scheduleMessage
+} = superForm(data.scheduleForm, {
+	onUpdate: ({ form }) => {
+		if (form.valid && $scheduleMessage?.type === 'success') {
+			toast.success('Schedule saved successfully!');
+			showScheduleDialog = false;
 		}
-	});
-
-	// svelte-ignore state_referenced_locally
-	const {
-		form: sessionForm,
-		errors: sessionErrors,
-		enhance: sessionEnhance,
-		message: sessionMessage
-	} = superForm(data.sessionForm, {
-		onUpdate: ({ form }) => {
-			if (form.valid && $sessionMessage?.type === 'success') {
-				toast.success('Session logged successfully!');
-				showSessionDialog = false;
-			}
-			if ($sessionMessage?.type === 'error') {
-				toast.error(`Error: ${$sessionMessage.text}`);
-			}
+		if ($scheduleMessage?.type === 'error') {
+			toast.error(`Error: ${$scheduleMessage.text}`);
 		}
-	});
-
-	// svelte-ignore state_referenced_locally
-	const {
-		form: updateForm,
-		errors: updateErrors,
-		enhance: updateEnhance,
-		message: updateMessage
-	} = superForm(data.updateForm, {
-		onUpdate: ({ form }) => {
-			if (form.valid && $updateMessage?.type === 'success') {
-				toast.success('Routine updated successfully!');
-				showEditDialog = false;
-			}
-			if ($updateMessage?.type === 'error') {
-				toast.error(`Error: ${$updateMessage.text}`);
-			}
-		}
-	});
-
-	const moodTagColors: Record<string, string> = {
-		Anxious: 'bg-amber-100 text-amber-800',
-		'Low Energy': 'bg-blue-100 text-blue-800',
-		Focused: 'bg-green-100 text-green-800',
-		'Pre-Sleep': 'bg-purple-100 text-purple-800',
-		General: 'bg-gray-100 text-gray-800'
-	};
-
-	function getDayName(dayNumber: number) {
-		return daysOfWeek.find((d) => d.id === dayNumber)?.name || 'Unknown';
 	}
+});
+
+// svelte-ignore state_referenced_locally
+const {
+	form: sessionForm,
+	errors: sessionErrors,
+	enhance: sessionEnhance,
+	message: sessionMessage
+} = superForm(data.sessionForm, {
+	onUpdate: ({ form }) => {
+		if (form.valid && $sessionMessage?.type === 'success') {
+			toast.success('Session logged successfully!');
+			showSessionDialog = false;
+		}
+		if ($sessionMessage?.type === 'error') {
+			toast.error(`Error: ${$sessionMessage.text}`);
+		}
+	}
+});
+
+// svelte-ignore state_referenced_locally
+const {
+	form: updateForm,
+	errors: updateErrors,
+	enhance: updateEnhance,
+	message: updateMessage
+} = superForm(data.updateForm, {
+	onUpdate: ({ form }) => {
+		if (form.valid && $updateMessage?.type === 'success') {
+			toast.success('Routine updated successfully!');
+			showEditDialog = false;
+		}
+		if ($updateMessage?.type === 'error') {
+			toast.error(`Error: ${$updateMessage.text}`);
+		}
+	}
+});
+
+const moodTagColors: Record<string, string> = {
+	Anxious: 'bg-amber-100 text-amber-800',
+	'Low Energy': 'bg-blue-100 text-blue-800',
+	Focused: 'bg-green-100 text-green-800',
+	'Pre-Sleep': 'bg-purple-100 text-purple-800',
+	General: 'bg-gray-100 text-gray-800'
+};
+
+function getDayName(dayNumber: number) {
+	return daysOfWeek.find((d) => d.id === dayNumber)?.name || 'Unknown';
+}
 </script>
 
 <div class="container mx-auto max-w-4xl py-8">
@@ -203,9 +203,7 @@
 
 		<!-- Session History -->
 		<Card.Root>
-			<Card.Header>
-				<Card.Title>Recent Sessions</Card.Title>
-			</Card.Header>
+			<Card.Header> <Card.Title>Recent Sessions</Card.Title> </Card.Header>
 			<Card.Content>
 				{#if data.sessions.length > 0}
 					<div class="space-y-3">
@@ -286,9 +284,7 @@
 				{/if}
 			</div>
 
-			<Dialog.Footer>
-				<Button type="submit">Save Schedule</Button>
-			</Dialog.Footer>
+			<Dialog.Footer> <Button type="submit">Save Schedule</Button> </Dialog.Footer>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
@@ -331,9 +327,7 @@
 				{/if}
 			</div>
 
-			<Dialog.Footer>
-				<Button type="submit">Log Session</Button>
-			</Dialog.Footer>
+			<Dialog.Footer> <Button type="submit">Log Session</Button> </Dialog.Footer>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
@@ -341,9 +335,7 @@
 <!-- Edit Routine Dialog -->
 <Dialog.Root bind:open={showEditDialog}>
 	<Dialog.Content class="sm:max-w-md">
-		<Dialog.Header>
-			<Dialog.Title>Edit Routine</Dialog.Title>
-		</Dialog.Header>
+		<Dialog.Header> <Dialog.Title>Edit Routine</Dialog.Title> </Dialog.Header>
 		<form method="POST" action="?/updateRoutine" use:updateEnhance class="space-y-4">
 			<div class="space-y-2">
 				<Label for="edit_title">Title</Label>
@@ -397,9 +389,7 @@
 				{/if}
 			</div>
 
-			<Dialog.Footer>
-				<Button type="submit">Update Routine</Button>
-			</Dialog.Footer>
+			<Dialog.Footer> <Button type="submit">Update Routine</Button> </Dialog.Footer>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>

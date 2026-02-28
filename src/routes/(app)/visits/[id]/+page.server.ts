@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	// Load person
 	const person = await db.query.people.findFirst({
-		where: and(eq(people.id, params.id), eq(people.userId, locals.user!.id))
+		where: and(eq(people.id, params.id), eq(people.userId, locals.user?.id))
 	});
 
 	if (!person) {
@@ -110,7 +110,11 @@ export const actions: Actions = {
 				updatedAt: new Date().toISOString()
 			});
 
-			logger.info('Visit logged', { visitId, personId: params.id, userId: user.id });
+			logger.info('Visit logged', {
+				visitId,
+				personId: params.id,
+				userId: user.id
+			});
 
 			return message(form, {
 				type: 'success',
@@ -183,7 +187,11 @@ export const actions: Actions = {
 				})
 				.where(eq(visits.id, visitId));
 
-			logger.info('Visit updated', { visitId, personId: params.id, userId: user.id });
+			logger.info('Visit updated', {
+				visitId,
+				personId: params.id,
+				userId: user.id
+			});
 
 			return message(form, {
 				type: 'success',

@@ -1,18 +1,18 @@
 <script lang="ts">
-	import BrainIcon from '@lucide/svelte/icons/brain';
+import BrainIcon from '@lucide/svelte/icons/brain';
 
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import type { SidebarNav, User } from '$lib/types';
+import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+import type { SidebarNav, User } from '$lib/types';
 
-	import NavMain from './NavMain.svelte';
-	import NavUser from './NavUser.svelte';
+import NavMain from './NavMain.svelte';
+import NavUser from './NavUser.svelte';
 
-	interface Props {
-		user: User;
-		navItems: SidebarNav;
-	}
+interface Props {
+	user: User;
+	navItems: SidebarNav;
+}
 
-	let { user, navItems, ...restProps }: Props = $props();
+let { user, navItems, ...restProps }: Props = $props();
 </script>
 
 <Sidebar.Root collapsible="icon" {...restProps}>
@@ -37,10 +37,6 @@
 			</Sidebar.MenuItem>
 		</Sidebar.Menu>
 	</Sidebar.Header>
-	<Sidebar.Content>
-		<NavMain items={navItems.navMain} />
-	</Sidebar.Content>
-	<Sidebar.Footer>
-		<NavUser {user} />
-	</Sidebar.Footer>
+	<Sidebar.Content> <NavMain items={navItems.navMain} /> </Sidebar.Content>
+	<Sidebar.Footer> <NavUser {user} /> </Sidebar.Footer>
 </Sidebar.Root>

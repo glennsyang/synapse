@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	try {
 		const db = getDb();
-		const conditions = [eq(journalEntries.userId, locals.user!.id)];
+		const conditions = [eq(journalEntries.userId, locals.user?.id)];
 
 		if (startDate) {
 			conditions.push(gte(journalEntries.date, startDate));

@@ -1,24 +1,24 @@
 <script lang="ts">
-	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-	import Trash2Icon from '@lucide/svelte/icons/trash-2';
-	import { superForm } from 'sveltekit-superforms';
+import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { superForm } from 'sveltekit-superforms';
 
-	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
+import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, submitting } = superForm(data.form, {
-		dataType: 'form'
-	});
+// svelte-ignore state_referenced_locally
+const { form, errors, enhance, submitting } = superForm(data.form, {
+	dataType: 'form'
+});
 
-	let showDeleteDialog = $state(false);
+let showDeleteDialog = $state(false);
 </script>
 
 <div class="container mx-auto max-w-2xl py-8">
@@ -40,9 +40,7 @@
 	</div>
 
 	<Card.Root>
-		<Card.Header>
-			<Card.Title>Weight Entry</Card.Title>
-		</Card.Header>
+		<Card.Header> <Card.Title>Weight Entry</Card.Title> </Card.Header>
 		<Card.Content>
 			<form method="POST" action="?/update" use:enhance class="space-y-4">
 				<Input type="hidden" name="id" bind:value={$form.id} />

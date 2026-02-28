@@ -1,16 +1,14 @@
 <script lang="ts">
-	import MailIcon from '@lucide/svelte/icons/mail';
+import MailIcon from '@lucide/svelte/icons/mail';
 
-	import { Button } from '$lib/components/ui/button';
+import { Button } from '$lib/components/ui/button';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 </script>
 
-<svelte:head>
-	<title>Verify Your Email - Synapse</title>
-</svelte:head>
+<svelte:head> <title>Verify Your Email - Synapse</title> </svelte:head>
 
 <div class="flex items-center justify-center bg-background px-4 py-12">
 	<div class="w-full max-w-md space-y-8">
@@ -22,9 +20,7 @@
 			</div>
 			<h1 class="text-3xl font-bold tracking-tight">Check your email</h1>
 			<p class="mt-2 text-sm text-muted-foreground">We've sent a verification link to</p>
-			<p class="mt-1 text-sm font-medium text-foreground">
-				{data.email}
-			</p>
+			<p class="mt-1 text-sm font-medium text-foreground">{data.email}</p>
 		</div>
 
 		<div class="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
@@ -49,8 +45,8 @@
 
 				<div class="rounded-md bg-muted p-3">
 					<p class="text-xs text-muted-foreground">
-						💡 <strong>Tip:</strong> If you don't see the email, check your spam or junk folder. The verification
-						link will expire in 10 minutes.
+						💡 <strong>Tip:</strong> If you don't see the email, check your spam or junk folder. The
+						verification link will expire in 10 minutes.
 					</p>
 				</div>
 			</div>
@@ -64,9 +60,7 @@
 		</div>
 
 		<div class="text-center">
-			<a href="/sign-in">
-				<Button variant="outline" class="w-full">Back to Sign In</Button>
-			</a>
+			<a href="/sign-in"> <Button variant="outline" class="w-full">Back to Sign In</Button> </a>
 		</div>
 	</div>
 </div>

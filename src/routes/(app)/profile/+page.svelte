@@ -1,89 +1,87 @@
 <script lang="ts">
-	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
-	import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
-	import EditIcon from '@lucide/svelte/icons/edit';
-	import LockIcon from '@lucide/svelte/icons/lock';
-	import SaveIcon from '@lucide/svelte/icons/save';
-	import UserIcon from '@lucide/svelte/icons/user';
-	import XIcon from '@lucide/svelte/icons/x';
-	import { superForm } from 'sveltekit-superforms';
+import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
+import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
+import EditIcon from '@lucide/svelte/icons/edit';
+import LockIcon from '@lucide/svelte/icons/lock';
+import SaveIcon from '@lucide/svelte/icons/save';
+import UserIcon from '@lucide/svelte/icons/user';
+import XIcon from '@lucide/svelte/icons/x';
+import { superForm } from 'sveltekit-superforms';
 
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import * as Separator from '$lib/components/ui/separator';
+import { Button } from '$lib/components/ui/button';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
+import * as Separator from '$lib/components/ui/separator';
 
-	import type { PageProps } from './$types';
+import type { PageProps } from './$types';
 
-	let { data }: PageProps = $props();
+let { data }: PageProps = $props();
 
-	// Profile form
-	// svelte-ignore state_referenced_locally
-	const profileFormStore = superForm(data.profileForm, {
-		onUpdate: ({ form }) => {
-			if (form.message) {
-				// Reset editing state on success
-				if (form.message.includes('successfully')) {
-					isEditingProfile = false;
-				}
+// Profile form
+// svelte-ignore state_referenced_locally
+const profileFormStore = superForm(data.profileForm, {
+	onUpdate: ({ form }) => {
+		if (form.message) {
+			// Reset editing state on success
+			if (form.message.includes('successfully')) {
+				isEditingProfile = false;
 			}
 		}
-	});
+	}
+});
 
-	const {
-		form: profileForm,
-		errors: profileErrors,
-		message: profileMessage,
-		submitting: profileSubmitting
-	} = profileFormStore;
+const {
+	form: profileForm,
+	errors: profileErrors,
+	message: profileMessage,
+	submitting: profileSubmitting
+} = profileFormStore;
 
-	// Password form
-	// svelte-ignore state_referenced_locally
-	const passwordFormStore = superForm(data.passwordForm, {
-		resetForm: true,
-		onUpdate: ({ form }) => {
-			if (form.message) {
-				// Reset editing state and form on success
-				if (form.message.includes('successfully')) {
-					isEditingPassword = false;
-				}
+// Password form
+// svelte-ignore state_referenced_locally
+const passwordFormStore = superForm(data.passwordForm, {
+	resetForm: true,
+	onUpdate: ({ form }) => {
+		if (form.message) {
+			// Reset editing state and form on success
+			if (form.message.includes('successfully')) {
+				isEditingPassword = false;
 			}
 		}
-	});
-
-	const {
-		form: passwordForm,
-		errors: passwordErrors,
-		message: passwordMessage,
-		submitting: passwordSubmitting
-	} = passwordFormStore;
-
-	// Profile editing state
-	let isEditingProfile = $state(false);
-	let isEditingPassword = $state(false);
-
-	// Derived values from data
-	const userEmail = $derived(data.user?.email || '');
-	const passwordUpdatedAt = $derived(data.passwordUpdatedAt || '');
-
-	// Reset profile form
-	function resetProfileForm() {
-		$profileForm.name = data.user?.name || '';
-		isEditingProfile = false;
 	}
+});
 
-	// Reset password form
-	function resetPasswordForm() {
-		$passwordForm.currentPassword = '';
-		$passwordForm.newPassword = '';
-		$passwordForm.confirmPassword = '';
-		isEditingPassword = false;
-	}
+const {
+	form: passwordForm,
+	errors: passwordErrors,
+	message: passwordMessage,
+	submitting: passwordSubmitting
+} = passwordFormStore;
+
+// Profile editing state
+let isEditingProfile = $state(false);
+let isEditingPassword = $state(false);
+
+// Derived values from data
+const userEmail = $derived(data.user?.email || '');
+const passwordUpdatedAt = $derived(data.passwordUpdatedAt || '');
+
+// Reset profile form
+function resetProfileForm() {
+	$profileForm.name = data.user?.name || '';
+	isEditingProfile = false;
+}
+
+// Reset password form
+function resetPasswordForm() {
+	$passwordForm.currentPassword = '';
+	$passwordForm.newPassword = '';
+	$passwordForm.confirmPassword = '';
+	isEditingPassword = false;
+}
 </script>
 
-<svelte:head>
-	<title>Profile</title>
-</svelte:head>
+<svelte:head> <title>Profile</title> </svelte:head>
 
 <div class="px-4 py-6 sm:px-0">
 	<div class="mb-8">
@@ -302,9 +300,7 @@
 				{:else}
 					<div class="text-sm text-muted-foreground">
 						{#if passwordUpdatedAt}
-							<p>
-								Password was last updated on {new Date(passwordUpdatedAt).toLocaleDateString()}
-							</p>
+							<p>Password was last updated on {new Date(passwordUpdatedAt).toLocaleDateString()}</p>
 						{/if}
 						<p class="mt-1">Click "Change Password" to update your password.</p>
 					</div>

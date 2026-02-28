@@ -1,34 +1,34 @@
 <script lang="ts">
-	import { ArrowLeft } from '@lucide/svelte';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
+import { ArrowLeft } from '@lucide/svelte';
+import { toast } from 'svelte-sonner';
+import { superForm } from 'sveltekit-superforms';
 
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { Textarea } from '$lib/components/ui/textarea';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
+import * as Select from '$lib/components/ui/select';
+import { Textarea } from '$lib/components/ui/textarea';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, message } = superForm(data.form, {
-		dataType: 'form',
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				toast.success('Todo created successfully!');
-			}
-			if ($message?.type === 'error') {
-				toast.error(`Error creating todo. Reason: ${$message.text}`);
-			}
+// svelte-ignore state_referenced_locally
+const { form, errors, enhance, message } = superForm(data.form, {
+	dataType: 'form',
+	onUpdate: ({ form }) => {
+		if (form.valid) {
+			toast.success('Todo created successfully!');
 		}
-	});
+		if ($message?.type === 'error') {
+			toast.error(`Error creating todo. Reason: ${$message.text}`);
+		}
+	}
+});
 
-	// Type coercion helpers for Select components
-	let priorityString = $derived($form.priority?.toString() ?? '2');
+// Type coercion helpers for Select components
+let priorityString = $derived($form.priority?.toString() ?? '2');
 </script>
 
 <div class="container mx-auto max-w-2xl py-8">
@@ -42,9 +42,7 @@
 	</div>
 
 	<Card.Root>
-		<Card.Header>
-			<Card.Title>Todo Details</Card.Title>
-		</Card.Header>
+		<Card.Header> <Card.Title>Todo Details</Card.Title> </Card.Header>
 		<Card.Content>
 			<form method="POST" use:enhance class="space-y-4">
 				<!-- Title -->
@@ -167,9 +165,7 @@
 
 				<!-- Error Message -->
 				{#if $message}
-					<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-						{$message}
-					</div>
+					<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{$message}</div>
 				{/if}
 
 				<!-- Actions -->

@@ -37,7 +37,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		} else {
 			// 'all' - show both predefined and user-created
 			routineConditions.push(
-				or(isNull(meditationRoutines.userId), eq(meditationRoutines.userId, locals.user!.id))!
+				// biome-ignore lint/style/noNonNullAssertion: I'll fix this later
+				or(isNull(meditationRoutines.userId), eq(meditationRoutines.userId, locals.user?.id))!
 			);
 		}
 

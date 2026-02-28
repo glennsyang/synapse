@@ -7,9 +7,8 @@ import { getRequestEvent } from '$app/server';
 import { logger } from '$lib/utils/logger';
 
 import { getEnv } from '../../env';
-
-import * as schema from './db/schema';
 import { getDb } from './db';
+import * as schema from './db/schema';
 import { sendNewUserEmail, sendPasswordResetEmail, sendVerificationEmail } from './email';
 
 const env = getEnv();

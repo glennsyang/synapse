@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const mealForm = await superValidate(zod4(logMealSchema));
 	const reminderForm = await superValidate(zod4(workoutReminderSchema));
 
-	const userId = locals.user!.id;
+	const userId = locals.user?.id;
 	const db = getDb();
 
 	try {
@@ -185,7 +185,10 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, { type: 'success', text: 'Weight logged successfully!' });
+		return message(form, {
+			type: 'success',
+			text: 'Weight logged successfully!'
+		});
 	}),
 
 	setGoal: requireAuth(async ({ request }, user) => {
@@ -237,7 +240,10 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, { type: 'success', text: 'Goal weight set successfully!' });
+		return message(form, {
+			type: 'success',
+			text: 'Goal weight set successfully!'
+		});
 	}),
 
 	logWorkout: requireAuth(async ({ request }, user) => {
@@ -304,7 +310,10 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, { type: 'success', text: 'Workout logged successfully!' });
+		return message(form, {
+			type: 'success',
+			text: 'Workout logged successfully!'
+		});
 	}),
 
 	logMeal: requireAuth(async ({ request }, user) => {
@@ -343,7 +352,10 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, { type: 'success', text: 'Meal logged successfully!' });
+		return message(form, {
+			type: 'success',
+			text: 'Meal logged successfully!'
+		});
 	}),
 
 	setCalorieTarget: requireAuth(async ({ request }, user) => {
@@ -400,7 +412,9 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(workoutReminderSchema));
 
 		if (!form.valid) {
-			logger.warn('Invalid workout reminder form data', { errors: form.errors });
+			logger.warn('Invalid workout reminder form data', {
+				errors: form.errors
+			});
 			return fail(400, { form });
 		}
 
@@ -433,14 +447,19 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, { type: 'success', text: 'Reminder created successfully!' });
+		return message(form, {
+			type: 'success',
+			text: 'Reminder created successfully!'
+		});
 	}),
 
 	updateReminder: requireAuth(async ({ request }, user) => {
 		const form = await superValidate(request, zod4(updateWorkoutReminderSchema));
 
 		if (!form.valid) {
-			logger.warn('Invalid workout reminder update form data', { errors: form.errors });
+			logger.warn('Invalid workout reminder update form data', {
+				errors: form.errors
+			});
 			return fail(400, { form });
 		}
 
@@ -475,7 +494,10 @@ export const actions: Actions = {
 				})
 				.where(eq(workoutReminders.id, form.data.id));
 
-			logger.info('Workout reminder updated', { reminderId: form.data.id, userId: user.id });
+			logger.info('Workout reminder updated', {
+				reminderId: form.data.id,
+				userId: user.id
+			});
 		} catch (error) {
 			logger.error('Failed to update workout reminder', { error });
 			return message(
@@ -488,7 +510,10 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, { type: 'success', text: 'Reminder updated successfully!' });
+		return message(form, {
+			type: 'success',
+			text: 'Reminder updated successfully!'
+		});
 	}),
 
 	deleteReminder: requireAuth(async ({ request }, user) => {
@@ -517,7 +542,10 @@ export const actions: Actions = {
 			return { success: true };
 		} catch (error) {
 			logger.error('Failed to delete workout reminder', { error });
-			return { success: false, error: 'Failed to delete reminder. Please try again.' };
+			return {
+				success: false,
+				error: 'Failed to delete reminder. Please try again.'
+			};
 		}
 	})
 };
