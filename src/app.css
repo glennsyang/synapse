@@ -1,6 +1,6 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@import 'tw-animate-css';
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -218,8 +218,8 @@
 /* Ensure buttons and interactive elements are touch-friendly on mobile */
 @media (max-width: 768px) {
 	button,
-	a[role='button'],
-	[role='button'] {
+	a[role="button"],
+	[role="button"] {
 		@apply min-h-11 min-w-11;
 	}
 

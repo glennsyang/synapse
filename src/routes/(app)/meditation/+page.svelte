@@ -1,49 +1,49 @@
 <script lang="ts">
-	import ChevronDown from '@lucide/svelte/icons/chevron-down';
-	import ClockIcon from '@lucide/svelte/icons/clock';
-	import FilterIcon from '@lucide/svelte/icons/filter';
-	import PlayCircleIcon from '@lucide/svelte/icons/play-circle';
-	import PlusIcon from '@lucide/svelte/icons/plus';
-	import SparklesIcon from '@lucide/svelte/icons/sparkles';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
+import ChevronDown from '@lucide/svelte/icons/chevron-down';
+import ClockIcon from '@lucide/svelte/icons/clock';
+import FilterIcon from '@lucide/svelte/icons/filter';
+import PlayCircleIcon from '@lucide/svelte/icons/play-circle';
+import PlusIcon from '@lucide/svelte/icons/plus';
+import SparklesIcon from '@lucide/svelte/icons/sparkles';
+import { SvelteURLSearchParams } from 'svelte/reactivity';
 
-	import { navigating, page } from '$app/state';
-	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import * as Collapsible from '$lib/components/ui/collapsible';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import * as Tabs from '$lib/components/ui/tabs';
-	import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
+import { navigating, page } from '$app/state';
+import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+import { Badge } from '$lib/components/ui/badge';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import * as Collapsible from '$lib/components/ui/collapsible';
+import { Label } from '$lib/components/ui/label';
+import * as Select from '$lib/components/ui/select';
+import * as Tabs from '$lib/components/ui/tabs';
+import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	const moodTagColors: Record<string, string> = {
-		Anxious: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
-		'Low Energy': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-		Focused: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-		'Pre-Sleep': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-		General: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-	};
+const moodTagColors: Record<string, string> = {
+	Anxious: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+	'Low Energy': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+	Focused: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+	'Pre-Sleep': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+	General: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+};
 
-	let selectedMood = $state<string | undefined>(undefined);
-	let selectedType = $state<string>('all');
-	let filtersOpen = $state(false);
+let selectedMood = $state<string | undefined>(undefined);
+let selectedType = $state<string>('all');
+let filtersOpen = $state(false);
 
-	function applyFilters() {
-		const params = new SvelteURLSearchParams(page.url.searchParams);
-		if (selectedMood) {
-			params.set('mood', selectedMood);
-		} else {
-			params.delete('mood');
-		}
-		params.set('type', selectedType);
-		window.location.href = `/meditation?${params.toString()}`;
+function applyFilters() {
+	const params = new SvelteURLSearchParams(page.url.searchParams);
+	if (selectedMood) {
+		params.set('mood', selectedMood);
+	} else {
+		params.delete('mood');
 	}
+	params.set('type', selectedType);
+	window.location.href = `/meditation?${params.toString()}`;
+}
 </script>
 
 {#if navigating.to?.url.pathname === '/meditation'}
@@ -218,7 +218,9 @@
 										<div class="flex-1">
 											<h3 class="font-medium">{session.routine.title}</h3>
 											<p class="text-sm text-muted-foreground">
-												{formatTimestampShort(session.completedAt)} at {formatTimeFromTimestamp(
+												{formatTimestampShort(session.completedAt)}
+												at
+												{formatTimeFromTimestamp(
 													session.completedAt
 												)}
 											</p>
@@ -231,7 +233,8 @@
 												<Badge variant="outline">Mood: {session.moodRating}/5</Badge>
 											{/if}
 											<span class="text-sm text-muted-foreground"
-												>{session.routine.durationMinutes} min</span
+												>{session.routine.durationMinutes}
+												min</span
 											>
 										</div>
 									</div>

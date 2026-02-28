@@ -1,51 +1,51 @@
 <script lang="ts">
-	import AlertTriangleIcon from '@lucide/svelte/icons/alert-triangle';
-	import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
+import AlertTriangleIcon from '@lucide/svelte/icons/alert-triangle';
+import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
 
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import { logger } from '$lib/utils/logger';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import { logger } from '$lib/utils/logger';
 
-	interface Props {
-		error?: Error | string | null;
-		title?: string;
-		description?: string;
-		showRetry?: boolean;
-		onRetry?: () => void;
-		children?: import('svelte').Snippet;
+interface Props {
+	error?: Error | string | null;
+	title?: string;
+	description?: string;
+	showRetry?: boolean;
+	onRetry?: () => void;
+	children?: import('svelte').Snippet;
+}
+
+let {
+	error = null,
+	title = 'Something went wrong',
+	description = 'An unexpected error occurred. Please try again.',
+	showRetry = true,
+	onRetry,
+	children
+}: Props = $props();
+
+let hasError = $derived(error !== null);
+let errorMessage = $derived(
+	error instanceof Error ? error.message : typeof error === 'string' ? error : description
+);
+
+function handleRetry() {
+	if (onRetry) {
+		onRetry();
+	} else {
+		// Default retry: reload page
+		window.location.reload();
 	}
+}
 
-	let {
-		error = null,
-		title = 'Something went wrong',
-		description = 'An unexpected error occurred. Please try again.',
-		showRetry = true,
-		onRetry,
-		children
-	}: Props = $props();
-
-	let hasError = $derived(error !== null);
-	let errorMessage = $derived(
-		error instanceof Error ? error.message : typeof error === 'string' ? error : description
-	);
-
-	function handleRetry() {
-		if (onRetry) {
-			onRetry();
-		} else {
-			// Default retry: reload page
-			window.location.reload();
-		}
+$effect(() => {
+	if (hasError) {
+		logger.error('Error boundary caught error', {
+			error: error instanceof Error ? error.message : String(error),
+			stack: error instanceof Error ? error.stack : undefined
+		});
 	}
-
-	$effect(() => {
-		if (hasError) {
-			logger.error('Error boundary caught error', {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined
-			});
-		}
-	});
+});
 </script>
 
 {#if hasError}

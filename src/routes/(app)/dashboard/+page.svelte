@@ -1,68 +1,66 @@
 <script lang="ts">
-	import BookIcon from '@lucide/svelte/icons/book';
-	import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-	import HeartIcon from '@lucide/svelte/icons/heart';
-	import { scaleTime } from 'd3-scale';
-	import { LineChart } from 'layerchart';
-	import { fade } from 'svelte/transition';
+import BookIcon from '@lucide/svelte/icons/book';
+import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
+import HeartIcon from '@lucide/svelte/icons/heart';
+import { scaleTime } from 'd3-scale';
+import { LineChart } from 'layerchart';
+import { fade } from 'svelte/transition';
 
-	import { navigating } from '$app/state';
-	import ContentSection from '$lib/components/app/ContentSection.svelte';
-	import FeatureCard from '$lib/components/app/FeatureCard.svelte';
-	import StatCard from '$lib/components/app/StatCard.svelte';
-	import DashboardSkeleton from '$lib/components/skeletons/DashboardSkeleton.svelte';
-	import * as Accordion from '$lib/components/ui/accordion/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import * as Chart from '$lib/components/ui/chart/index.js';
-	import * as ScrollArea from '$lib/components/ui/scroll-area/index.js';
-	import {
-		formatDateMedium,
-		formatTime12Hour,
-		formatTimestampMedium,
-		formatTimestampShort
-	} from '$lib/utils/date';
+import { navigating } from '$app/state';
+import ContentSection from '$lib/components/app/ContentSection.svelte';
+import FeatureCard from '$lib/components/app/FeatureCard.svelte';
+import StatCard from '$lib/components/app/StatCard.svelte';
+import DashboardSkeleton from '$lib/components/skeletons/DashboardSkeleton.svelte';
+import * as Accordion from '$lib/components/ui/accordion/index.js';
+import { Badge } from '$lib/components/ui/badge/index.js';
+import * as Chart from '$lib/components/ui/chart/index.js';
+import * as ScrollArea from '$lib/components/ui/scroll-area/index.js';
+import {
+	formatDateMedium,
+	formatTime12Hour,
+	formatTimestampMedium,
+	formatTimestampShort
+} from '$lib/utils/date';
 
-	import { navItems } from './../sidebar';
+import { navItems } from './../sidebar';
 
-	let { data } = $props();
+let { data } = $props();
 
-	const features = $derived(navItems.navMain.filter((item) => item.title !== 'Dashboard'));
+const features = $derived(navItems.navMain.filter((item) => item.title !== 'Dashboard'));
 
-	// Map features to colors
-	const featureColors = {
-		Journal: 'blue' as const,
-		Todos: 'orange' as const,
-		Fitness: 'green' as const,
-		Meditation: 'purple' as const,
-		Visits: 'pink' as const
-	};
+// Map features to colors
+const featureColors = {
+	Journal: 'blue' as const,
+	Todos: 'orange' as const,
+	Fitness: 'green' as const,
+	Meditation: 'purple' as const,
+	Visits: 'pink' as const
+};
 
-	// Chart configuration
-	const chartConfig = {
-		total: { label: 'Total Activity', color: 'oklch(var(--color-teal))' }
-	} satisfies Chart.ChartConfig;
+// Chart configuration
+const chartConfig = {
+	total: { label: 'Total Activity', color: 'oklch(var(--color-teal))' }
+} satisfies Chart.ChartConfig;
 
-	// Prepare chart data
-	const chartData = $derived(
-		data.stats.weeklyActivity.map((d) => ({
-			date: new Date(d.date),
-			journal: d.journal,
-			meditation: d.meditation,
-			workouts: d.workouts,
-			total: d.journal + d.meditation + d.workouts
-		}))
-	);
+// Prepare chart data
+const chartData = $derived(
+	data.stats.weeklyActivity.map((d) => ({
+		date: new Date(d.date),
+		journal: d.journal,
+		meditation: d.meditation,
+		workouts: d.workouts,
+		total: d.journal + d.meditation + d.workouts
+	}))
+);
 
-	// Truncate text
-	function truncate(text: string | null | undefined, length: number) {
-		if (!text) return '';
-		return text.length > length ? text.substring(0, length) + '...' : text;
-	}
+// Truncate text
+function truncate(text: string | null | undefined, length: number) {
+	if (!text) return '';
+	return text.length > length ? text.substring(0, length) + '...' : text;
+}
 </script>
 
-<svelte:head>
-	<title>Dashboard - Synapse</title>
-</svelte:head>
+<svelte:head> <title>Dashboard - Synapse</title> </svelte:head>
 
 {#if navigating.to?.url.pathname === '/dashboard'}
 	<DashboardSkeleton />
@@ -71,7 +69,8 @@
 		<!-- Hero Section -->
 		<div class="space-y-3">
 			<h1 class="font-display text-4xl font-bold tracking-tight md:text-5xl">
-				Welcome back, <span
+				Welcome back,
+				<span
 					class="bg-linear-to-r from-[oklch(var(--color-teal))] to-[oklch(var(--color-blue))] bg-clip-text text-transparent"
 					>{data.user.name}</span
 				>!
@@ -244,7 +243,8 @@
 												<div class="flex items-center gap-2">
 													{#if workout.durationMinutes}
 														<span class="text-xs text-muted-foreground"
-															>{workout.durationMinutes} min</span
+															>{workout.durationMinutes}
+															min</span
 														>
 														<span class="text-xs text-muted-foreground">•</span>
 													{/if}
@@ -289,7 +289,8 @@
 												<p class="text-sm font-medium">{session.routine?.title || 'Meditation'}</p>
 												<div class="flex items-center gap-2">
 													<span class="text-xs text-muted-foreground"
-														>{session.routine?.durationMinutes} min</span
+														>{session.routine?.durationMinutes}
+														min</span
 													>
 													<span class="text-xs text-muted-foreground">•</span>
 													<span class="text-xs text-muted-foreground">

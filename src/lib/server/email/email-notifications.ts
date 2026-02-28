@@ -328,9 +328,7 @@ async function processVisitWarnings(): Promise<void> {
 			.get();
 
 		if (recentWarning) {
-			logger.debug(
-				`   ⏭️  Already sent ${warningStatus} warning for ${person.name} in last 7 days`
-			);
+			logger.debug(`   ⏭️  Already sent ${warningStatus} warning for ${person.name} in last 7 days`);
 			continue;
 		}
 

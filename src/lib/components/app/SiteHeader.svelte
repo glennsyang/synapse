@@ -1,73 +1,73 @@
 <script lang="ts">
-	import MoonIcon from '@lucide/svelte/icons/moon';
-	import SunIcon from '@lucide/svelte/icons/sun';
-	import { toggleMode } from 'mode-watcher';
+import MoonIcon from '@lucide/svelte/icons/moon';
+import SunIcon from '@lucide/svelte/icons/sun';
+import { toggleMode } from 'mode-watcher';
 
-	import { page } from '$app/state';
-	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Separator } from '$lib/components/ui/separator/index.js';
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+import { page } from '$app/state';
+import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
+import { Button } from '$lib/components/ui/button/index.js';
+import { Separator } from '$lib/components/ui/separator/index.js';
+import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
-	// Helper to get page title from URL
-	function getPageTitle(): string {
-		const path = page.url.pathname;
-		const segments = path.split('/').filter(Boolean);
+// Helper to get page title from URL
+function getPageTitle(): string {
+	const path = page.url.pathname;
+	const segments = path.split('/').filter(Boolean);
 
-		if (segments.length === 0 || path === '/') return 'Synapse';
-		if (segments[0] === 'dashboard') return 'Dashboard';
+	if (segments.length === 0 || path === '/') return 'Synapse';
+	if (segments[0] === 'dashboard') return 'Dashboard';
 
-		// Capitalize first letter of first segment
-		return segments[0].charAt(0).toUpperCase() + segments[0].slice(1);
-	}
+	// Capitalize first letter of first segment
+	return segments[0].charAt(0).toUpperCase() + segments[0].slice(1);
+}
 
-	// Helper to get section color based on URL
-	function getSectionColor(): string {
-		const path = page.url.pathname;
+// Helper to get section color based on URL
+function getSectionColor(): string {
+	const path = page.url.pathname;
 
-		if (path.includes('/dashboard')) return 'border-teal';
-		if (path.includes('/journal')) return 'border-blue';
-		if (path.includes('/todos')) return 'border-orange';
-		if (path.includes('/fitness')) return 'border-green';
-		if (path.includes('/meditation')) return 'border-purple';
-		if (path.includes('/visits')) return 'border-pink';
+	if (path.includes('/dashboard')) return 'border-teal';
+	if (path.includes('/journal')) return 'border-blue';
+	if (path.includes('/todos')) return 'border-orange';
+	if (path.includes('/fitness')) return 'border-green';
+	if (path.includes('/meditation')) return 'border-purple';
+	if (path.includes('/visits')) return 'border-pink';
 
-		return 'border-teal';
-	}
+	return 'border-teal';
+}
 
-	// Helper to build breadcrumb segments
-	function getBreadcrumbs(): { title: string; url?: string }[] {
-		const path = page.url.pathname;
-		const segments = path.split('/').filter(Boolean);
-		const breadcrumbs: { title: string; url?: string }[] = [];
+// Helper to build breadcrumb segments
+function getBreadcrumbs(): { title: string; url?: string }[] {
+	const path = page.url.pathname;
+	const segments = path.split('/').filter(Boolean);
+	const breadcrumbs: { title: string; url?: string }[] = [];
 
-		if (segments.length === 0) return breadcrumbs;
+	if (segments.length === 0) return breadcrumbs;
 
-		// First segment is always the main section
-		const mainSection = segments[0];
+	// First segment is always the main section
+	const mainSection = segments[0];
+	breadcrumbs.push({
+		title: mainSection.charAt(0).toUpperCase() + mainSection.slice(1),
+		url: `/${mainSection}`
+	});
+
+	// Add detail pages if they exist
+	if (segments.length > 1) {
+		// Just show the last segment as current page (no link)
 		breadcrumbs.push({
-			title: mainSection.charAt(0).toUpperCase() + mainSection.slice(1),
-			url: `/${mainSection}`
+			title: decodeURIComponent(segments[segments.length - 1])
+				.split('-')
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join(' ')
 		});
-
-		// Add detail pages if they exist
-		if (segments.length > 1) {
-			// Just show the last segment as current page (no link)
-			breadcrumbs.push({
-				title: decodeURIComponent(segments[segments.length - 1])
-					.split('-')
-					.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-					.join(' ')
-			});
-		}
-
-		return breadcrumbs;
 	}
 
-	let title = $derived(getPageTitle());
-	let sectionColor = $derived(getSectionColor());
-	let breadcrumbs = $derived(getBreadcrumbs());
-	let showBreadcrumbs = $derived(breadcrumbs.length > 1);
+	return breadcrumbs;
+}
+
+let title = $derived(getPageTitle());
+let sectionColor = $derived(getSectionColor());
+let breadcrumbs = $derived(getBreadcrumbs());
+let showBreadcrumbs = $derived(breadcrumbs.length > 1);
 </script>
 
 <header

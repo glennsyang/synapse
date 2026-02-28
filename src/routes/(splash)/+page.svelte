@@ -1,13 +1,13 @@
 <script lang="ts">
-	import MoonIcon from '@lucide/svelte/icons/moon';
-	import SunIcon from '@lucide/svelte/icons/sun';
-	import { toggleMode } from 'mode-watcher';
+import MoonIcon from '@lucide/svelte/icons/moon';
+import SunIcon from '@lucide/svelte/icons/sun';
+import { toggleMode } from 'mode-watcher';
 
-	import { goto } from '$app/navigation';
-	import { Button } from '$lib/components/ui/button';
+import { goto } from '$app/navigation';
+import { Button } from '$lib/components/ui/button';
 
-	const handleSignIn = () => goto('/sign-in');
-	const handleRegister = () => goto('/register');
+const handleSignIn = () => goto('/sign-in');
+const handleRegister = () => goto('/register');
 </script>
 
 <div class="flex min-h-screen flex-col">

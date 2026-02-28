@@ -1,40 +1,38 @@
 <script lang="ts">
-	import { toast } from 'svelte-sonner';
+import { toast } from 'svelte-sonner';
 
-	import { enhance } from '$app/forms';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Dialog from '$lib/components/ui/dialog';
+import { enhance } from '$app/forms';
+import { Button } from '$lib/components/ui/button/index.js';
+import * as Dialog from '$lib/components/ui/dialog';
 
-	import Input from '../ui/input/input.svelte';
+import Input from '../ui/input/input.svelte';
 
-	interface Props {
-		open: boolean;
-		title: string;
-		message: string;
-		confirmButtonText: string;
-		id?: string;
-		actionUrl?: string;
-		hiddenFields?: Record<string, string | number | boolean>;
-	}
+interface Props {
+	open: boolean;
+	title: string;
+	message: string;
+	confirmButtonText: string;
+	id?: string;
+	actionUrl?: string;
+	hiddenFields?: Record<string, string | number | boolean>;
+}
 
-	let {
-		open = $bindable(),
-		title,
-		message,
-		id,
-		confirmButtonText,
-		actionUrl,
-		hiddenFields
-	}: Props = $props();
+let {
+	open = $bindable(),
+	title,
+	message,
+	id,
+	confirmButtonText,
+	actionUrl,
+	hiddenFields
+}: Props = $props();
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="sm:max-w-106.25">
 		<Dialog.Header>
 			<Dialog.Title>{title}</Dialog.Title>
-			<Dialog.Description>
-				{message}
-			</Dialog.Description>
+			<Dialog.Description> {message} </Dialog.Description>
 		</Dialog.Header>
 		<form
 			method="POST"
@@ -57,7 +55,7 @@
 		>
 			<Input type="hidden" name="id" value={id} />
 			{#if hiddenFields}
-				{#each Object.entries(hiddenFields) as [name, value] (name)}
+				{#each Object.entries(hiddenFields) as [ name, value ] (name)}
 					<Input type="hidden" {name} value={String(value)} />
 				{/each}
 			{/if}

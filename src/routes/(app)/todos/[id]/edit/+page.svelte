@@ -1,38 +1,38 @@
 <script lang="ts">
-	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-	import Trash2Icon from '@lucide/svelte/icons/trash-2';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
+import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { toast } from 'svelte-sonner';
+import { superForm } from 'sveltekit-superforms';
 
-	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { Textarea } from '$lib/components/ui/textarea';
+import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
+import * as Select from '$lib/components/ui/select';
+import { Textarea } from '$lib/components/ui/textarea';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, message, submitting } = superForm(data.form, {
-		dataType: 'form',
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				toast.success('Todo updated successfully!');
-			}
-			if ($message?.type === 'error') {
-				toast.error(`Error updating todo. Reason: ${$message.text}`);
-			}
+// svelte-ignore state_referenced_locally
+const { form, errors, enhance, message, submitting } = superForm(data.form, {
+	dataType: 'form',
+	onUpdate: ({ form }) => {
+		if (form.valid) {
+			toast.success('Todo updated successfully!');
 		}
-	});
+		if ($message?.type === 'error') {
+			toast.error(`Error updating todo. Reason: ${$message.text}`);
+		}
+	}
+});
 
-	let showDeleteDialog = $state(false);
+let showDeleteDialog = $state(false);
 
-	// Type coercion helpers for Select components
-	let priorityString = $derived($form.priority?.toString() ?? '2');
+// Type coercion helpers for Select components
+let priorityString = $derived($form.priority?.toString() ?? '2');
 </script>
 
 <div class="container mx-auto max-w-2xl py-8">
@@ -54,9 +54,7 @@
 	</div>
 
 	<Card.Root>
-		<Card.Header>
-			<Card.Title>Todo Details</Card.Title>
-		</Card.Header>
+		<Card.Header> <Card.Title>Todo Details</Card.Title> </Card.Header>
 		<Card.Content>
 			<form method="POST" action="?/update" use:enhance class="space-y-4">
 				<!-- Title -->
@@ -200,9 +198,7 @@
 
 				<!-- Error Message -->
 				{#if $message}
-					<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-						{$message}
-					</div>
+					<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{$message}</div>
 				{/if}
 
 				<!-- Actions -->

@@ -1,21 +1,21 @@
 <script lang="ts">
-	import Calendar from '@lucide/svelte/icons/calendar';
-	import Cloud from '@lucide/svelte/icons/cloud';
-	import Edit from '@lucide/svelte/icons/edit';
-	import MapPin from '@lucide/svelte/icons/map-pin';
-	import Trash2 from '@lucide/svelte/icons/trash-2';
+import Calendar from '@lucide/svelte/icons/calendar';
+import Cloud from '@lucide/svelte/icons/cloud';
+import Edit from '@lucide/svelte/icons/edit';
+import MapPin from '@lucide/svelte/icons/map-pin';
+import Trash2 from '@lucide/svelte/icons/trash-2';
 
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import type { JournalEntry } from '$lib/types';
-	import { formatDateLong } from '$lib/utils/date';
+import { Badge } from '$lib/components/ui/badge';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import type { JournalEntry } from '$lib/types';
+import { formatDateLong } from '$lib/utils/date';
 
-	import ConfirmDialog from '../shared/ConfirmDialog.svelte';
+import ConfirmDialog from '../shared/ConfirmDialog.svelte';
 
-	let { entry }: { entry: JournalEntry } = $props();
+let { entry }: { entry: JournalEntry } = $props();
 
-	let openDeleteModal = $state<boolean>(false);
+let openDeleteModal = $state<boolean>(false);
 </script>
 
 <Card.Root class="border-l-4 border-l-blue-500">
@@ -46,9 +46,7 @@
 		</div>
 	</Card.Header>
 	<Card.Content class="space-y-4">
-		<div class="prose dark:prose-invert max-w-none">
-			{entry.content}
-		</div>
+		<div class="prose dark:prose-invert max-w-none">{entry.content}</div>
 
 		{#if entry.tags && entry.tags.length > 0}
 			<div class="flex flex-wrap gap-2">

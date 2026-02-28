@@ -1,22 +1,20 @@
 <script lang="ts">
-	import { EllipsisVerticalIcon } from '@lucide/svelte';
-	import { CircleUserIcon } from '@lucide/svelte';
-	import { LogOutIcon } from '@lucide/svelte';
+import { CircleUserIcon, EllipsisVerticalIcon, LogOutIcon } from '@lucide/svelte';
 
-	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import type { User } from '$lib/types';
+import { enhance } from '$app/forms';
+import { goto } from '$app/navigation';
+import * as Avatar from '$lib/components/ui/avatar/index.js';
+import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+import type { User } from '$lib/types';
 
-	interface Props {
-		user: User;
-	}
+interface Props {
+	user: User;
+}
 
-	let { user }: Props = $props();
+let { user }: Props = $props();
 
-	const sidebar = Sidebar.useSidebar();
+const sidebar = Sidebar.useSidebar();
 </script>
 
 <Sidebar.Menu>
@@ -30,15 +28,11 @@
 						class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 					>
 						<Avatar.Root class="size-8 rounded-lg">
-							<Avatar.Fallback class="rounded-lg">
-								{user?.name?.[0] || ''}
-							</Avatar.Fallback>
+							<Avatar.Fallback class="rounded-lg"> {user?.name?.[0] || ''} </Avatar.Fallback>
 						</Avatar.Root>
 						<div class="grid flex-1 text-start text-sm leading-tight">
 							<span class="truncate font-medium">{user?.name || ''}</span>
-							<span class="truncate text-xs text-muted-foreground">
-								{user.email}
-							</span>
+							<span class="truncate text-xs text-muted-foreground"> {user.email} </span>
 						</div>
 						<EllipsisVerticalIcon class="ms-auto size-4" />
 					</Sidebar.MenuButton>
@@ -53,15 +47,11 @@
 				<DropdownMenu.Label class="p-0 font-normal">
 					<div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
 						<Avatar.Root class="size-8 rounded-lg">
-							<Avatar.Fallback class="rounded-lg">
-								{user?.name?.[0] || ''}
-							</Avatar.Fallback>
+							<Avatar.Fallback class="rounded-lg"> {user?.name?.[0] || ''} </Avatar.Fallback>
 						</Avatar.Root>
 						<div class="grid flex-1 text-start text-sm leading-tight">
 							<span class="truncate font-medium">{user?.name || ''}</span>
-							<span class="truncate text-xs text-muted-foreground">
-								{user.email}
-							</span>
+							<span class="truncate text-xs text-muted-foreground"> {user.email} </span>
 						</div>
 					</div>
 				</DropdownMenu.Label>

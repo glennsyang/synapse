@@ -1,85 +1,85 @@
 <script lang="ts">
-	import AlertCircle from '@lucide/svelte/icons/alert-circle';
-	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
-	import ChevronDown from '@lucide/svelte/icons/chevron-down';
-	import MapPin from '@lucide/svelte/icons/map-pin';
-	import Thermometer from '@lucide/svelte/icons/thermometer';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
+import AlertCircle from '@lucide/svelte/icons/alert-circle';
+import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+import ChevronDown from '@lucide/svelte/icons/chevron-down';
+import MapPin from '@lucide/svelte/icons/map-pin';
+import Thermometer from '@lucide/svelte/icons/thermometer';
+import { toast } from 'svelte-sonner';
+import { superForm } from 'sveltekit-superforms';
 
-	import ContentSection from '$lib/components/app/ContentSection.svelte';
-	import SectionHeader from '$lib/components/app/SectionHeader.svelte';
-	import TagInput from '$lib/components/journal/TagInput.svelte';
-	import * as Alert from '$lib/components/ui/alert';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Collapsible from '$lib/components/ui/collapsible';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Separator } from '$lib/components/ui/separator';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { getCurrentLocationCity, getCurrentWeather } from '$lib/utils/journal-context';
+import ContentSection from '$lib/components/app/ContentSection.svelte';
+import SectionHeader from '$lib/components/app/SectionHeader.svelte';
+import TagInput from '$lib/components/journal/TagInput.svelte';
+import * as Alert from '$lib/components/ui/alert';
+import { Badge } from '$lib/components/ui/badge';
+import { Button } from '$lib/components/ui/button';
+import * as Collapsible from '$lib/components/ui/collapsible';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
+import { Separator } from '$lib/components/ui/separator';
+import { Textarea } from '$lib/components/ui/textarea';
+import { getCurrentLocationCity, getCurrentWeather } from '$lib/utils/journal-context';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, message, submitting } = superForm(data.form, {
-		onUpdate: ({ form }) => {
-			if (form.valid) {
-				gettingLocation = false;
-				toast.success('Journal entry created successfully!');
-			}
-			if ($message?.type === 'error') {
-				toast.error(`Error creating journal entry. Reason: ${$message.text}`);
-			}
-		}
-	});
-
-	let gettingLocation = $state(false);
-	let gettingWeather = $state(false);
-	let locationError = $state('');
-	let contextOpen = $state(false);
-
-	async function getLocation() {
-		locationError = '';
-
-		gettingLocation = true;
-
-		try {
-			const city = await getCurrentLocationCity();
-			$form.location = city;
-			toast.success(`Location added to your entry: ${city}`);
-		} catch (error) {
-			locationError =
-				error instanceof Error
-					? error.message
-					: 'Unable to retrieve your location. You can still enter it manually.';
-			toast.error(locationError);
-		} finally {
+// svelte-ignore state_referenced_locally
+const { form, errors, enhance, message, submitting } = superForm(data.form, {
+	onUpdate: ({ form }) => {
+		if (form.valid) {
 			gettingLocation = false;
+			toast.success('Journal entry created successfully!');
+		}
+		if ($message?.type === 'error') {
+			toast.error(`Error creating journal entry. Reason: ${$message.text}`);
 		}
 	}
+});
 
-	async function getWeather() {
-		gettingWeather = true;
+let gettingLocation = $state(false);
+let gettingWeather = $state(false);
+let locationError = $state('');
+let contextOpen = $state(false);
 
-		try {
-			const weather = await getCurrentWeather();
-			$form.weatherTemp = weather.temperature;
-			$form.weatherCondition = weather.condition;
-			toast.success(`Weather added: ${weather.condition}, ${weather.temperature}°C`);
-		} catch (error) {
-			toast.error(
-				error instanceof Error
-					? error.message
-					: 'Unable to retrieve your location for weather information.'
-			);
-		} finally {
-			gettingWeather = false;
-		}
+async function getLocation() {
+	locationError = '';
+
+	gettingLocation = true;
+
+	try {
+		const city = await getCurrentLocationCity();
+		$form.location = city;
+		toast.success(`Location added to your entry: ${city}`);
+	} catch (error) {
+		locationError =
+			error instanceof Error
+				? error.message
+				: 'Unable to retrieve your location. You can still enter it manually.';
+		toast.error(locationError);
+	} finally {
+		gettingLocation = false;
 	}
+}
+
+async function getWeather() {
+	gettingWeather = true;
+
+	try {
+		const weather = await getCurrentWeather();
+		$form.weatherTemp = weather.temperature;
+		$form.weatherCondition = weather.condition;
+		toast.success(`Weather added: ${weather.condition}, ${weather.temperature}°C`);
+	} catch (error) {
+		toast.error(
+			error instanceof Error
+				? error.message
+				: 'Unable to retrieve your location for weather information.'
+		);
+	} finally {
+		gettingWeather = false;
+	}
+}
 </script>
 
 <div class="container mx-auto max-w-3xl space-y-6 py-6">

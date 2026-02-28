@@ -1,145 +1,145 @@
 <script lang="ts">
-	import ArchiveIcon from '@lucide/svelte/icons/archive';
-	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-	import CalendarIcon from '@lucide/svelte/icons/calendar';
-	import EditIcon from '@lucide/svelte/icons/edit';
-	import Trash2Icon from '@lucide/svelte/icons/trash-2';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
-	import { zod4 } from 'sveltekit-superforms/adapters';
+import ArchiveIcon from '@lucide/svelte/icons/archive';
+import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+import CalendarIcon from '@lucide/svelte/icons/calendar';
+import EditIcon from '@lucide/svelte/icons/edit';
+import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { toast } from 'svelte-sonner';
+import { superForm } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
 
-	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { personSchema, visitSchema } from '$lib/schemas/visits';
-	import { formatDateLong, formatDateShort } from '$lib/utils/date';
-	import { getStatusLabel } from '$lib/utils/visit-status';
+import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
+import * as Dialog from '$lib/components/ui/dialog';
+import { Input } from '$lib/components/ui/input';
+import { Label } from '$lib/components/ui/label';
+import { Textarea } from '$lib/components/ui/textarea';
+import { personSchema, visitSchema } from '$lib/schemas/visits';
+import { formatDateLong, formatDateShort } from '$lib/utils/date';
+import { getStatusLabel } from '$lib/utils/visit-status';
 
-	import type { PageData } from './$types';
+import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+let { data }: { data: PageData } = $props();
 
-	let showLogVisitDialog = $state(false);
-	let showEditPersonDialog = $state(false);
-	let showArchivePersonDialog = $state(false);
-	let showDeletePersonDialog = $state(false);
-	let editingVisitId = $state<string | null>(null);
-	let visitToDelete = $state<string | null>(null);
+let showLogVisitDialog = $state(false);
+let showEditPersonDialog = $state(false);
+let showArchivePersonDialog = $state(false);
+let showDeletePersonDialog = $state(false);
+let editingVisitId = $state<string | null>(null);
+let visitToDelete = $state<string | null>(null);
 
-	let visitFormState = $derived(
-		superForm(data.visitForm, {
-			validators: zod4(visitSchema),
-			resetForm: true,
-			onUpdated({ form }) {
-				if (form.message) {
-					if (form.message.type === 'success') {
-						toast.success(form.message.text);
-						showLogVisitDialog = false;
-						editingVisitId = null;
-					} else if (form.message.type === 'error') {
-						toast.error(form.message.text);
-					}
+let visitFormState = $derived(
+	superForm(data.visitForm, {
+		validators: zod4(visitSchema),
+		resetForm: true,
+		onUpdated({ form }) {
+			if (form.message) {
+				if (form.message.type === 'success') {
+					toast.success(form.message.text);
+					showLogVisitDialog = false;
+					editingVisitId = null;
+				} else if (form.message.type === 'error') {
+					toast.error(form.message.text);
 				}
 			}
-		})
-	);
+		}
+	})
+);
 
-	let editFormState = $derived(
-		superForm(data.editForm, {
-			validators: zod4(personSchema),
-			onUpdated({ form }) {
-				if (form.message) {
-					if (form.message.type === 'success') {
-						toast.success(form.message.text);
-						showEditPersonDialog = false;
-					} else if (form.message.type === 'error') {
-						toast.error(form.message.text);
-					}
+let editFormState = $derived(
+	superForm(data.editForm, {
+		validators: zod4(personSchema),
+		onUpdated({ form }) {
+			if (form.message) {
+				if (form.message.type === 'success') {
+					toast.success(form.message.text);
+					showEditPersonDialog = false;
+				} else if (form.message.type === 'error') {
+					toast.error(form.message.text);
 				}
 			}
-		})
-	);
-
-	const {
-		form: visitForm,
-		errors: visitErrors,
-		enhance: visitEnhance,
-		submitting: visitSubmitting
-	} = $derived(visitFormState);
-
-	const {
-		form: editForm,
-		errors: editErrors,
-		enhance: editEnhance,
-		submitting: editSubmitting
-	} = $derived(editFormState);
-
-	const isEditingVisit = $derived(editingVisitId !== null);
-
-	function openLogVisitDialogForCreate() {
-		editingVisitId = null;
-		$visitForm.date = data.visitForm.data.date ?? '';
-		$visitForm.time = '';
-		$visitForm.companions = '';
-		$visitForm.notes = '';
-		$visitForm.followUpDate = '';
-		showLogVisitDialog = true;
-	}
-
-	function openLogVisitDialogForEdit(visit: PageData['visits'][number]) {
-		editingVisitId = visit.id;
-		$visitForm.date = visit.date;
-		$visitForm.time = visit.time ?? '';
-		$visitForm.companions = visit.companions?.join(', ') ?? '';
-		$visitForm.notes = visit.notes ?? '';
-		$visitForm.followUpDate = visit.followUpDate ?? '';
-		showLogVisitDialog = true;
-	}
-
-	function closeLogVisitDialog() {
-		showLogVisitDialog = false;
-		editingVisitId = null;
-	}
-
-	function getStatusBadge(status: string) {
-		switch (status) {
-			case 'green':
-				return 'bg-green-100 text-green-800';
-			case 'yellow':
-				return 'bg-yellow-100 text-yellow-800';
-			case 'red':
-				return 'bg-red-100 text-red-800';
-			case 'exempt':
-				return 'bg-gray-100 text-gray-800';
-			default:
-				return 'bg-gray-100 text-gray-800';
 		}
-	}
+	})
+);
 
-	function formatTime(timeString: string): string {
-		const [hours, minutes] = timeString.split(':').map(Number);
-		const period = hours >= 12 ? 'PM' : 'AM';
-		const hour12 = hours % 12 || 12;
-		return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
-	}
+const {
+	form: visitForm,
+	errors: visitErrors,
+	enhance: visitEnhance,
+	submitting: visitSubmitting
+} = $derived(visitFormState);
 
-	function formatTimeSince(days: number): string {
-		if (days < 30) {
-			return `${days} day${days !== 1 ? 's' : ''} ago`;
-		}
-		const months = Math.floor(days / 30);
-		return `${months} month${months !== 1 ? 's' : ''} ago`;
-	}
+const {
+	form: editForm,
+	errors: editErrors,
+	enhance: editEnhance,
+	submitting: editSubmitting
+} = $derived(editFormState);
 
-	function getEditStatusDescription(isExempt: boolean): string {
-		return isExempt
-			? 'This person is exempt from yellow/critical visit warnings and appears in the Exempt tab.'
-			: 'This person will follow normal yellow/critical visit warning rules.';
+const isEditingVisit = $derived(editingVisitId !== null);
+
+function openLogVisitDialogForCreate() {
+	editingVisitId = null;
+	$visitForm.date = data.visitForm.data.date ?? '';
+	$visitForm.time = '';
+	$visitForm.companions = '';
+	$visitForm.notes = '';
+	$visitForm.followUpDate = '';
+	showLogVisitDialog = true;
+}
+
+function openLogVisitDialogForEdit(visit: PageData['visits'][number]) {
+	editingVisitId = visit.id;
+	$visitForm.date = visit.date;
+	$visitForm.time = visit.time ?? '';
+	$visitForm.companions = visit.companions?.join(', ') ?? '';
+	$visitForm.notes = visit.notes ?? '';
+	$visitForm.followUpDate = visit.followUpDate ?? '';
+	showLogVisitDialog = true;
+}
+
+function closeLogVisitDialog() {
+	showLogVisitDialog = false;
+	editingVisitId = null;
+}
+
+function getStatusBadge(status: string) {
+	switch (status) {
+		case 'green':
+			return 'bg-green-100 text-green-800';
+		case 'yellow':
+			return 'bg-yellow-100 text-yellow-800';
+		case 'red':
+			return 'bg-red-100 text-red-800';
+		case 'exempt':
+			return 'bg-gray-100 text-gray-800';
+		default:
+			return 'bg-gray-100 text-gray-800';
 	}
+}
+
+function formatTime(timeString: string): string {
+	const [hours, minutes] = timeString.split(':').map(Number);
+	const period = hours >= 12 ? 'PM' : 'AM';
+	const hour12 = hours % 12 || 12;
+	return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
+function formatTimeSince(days: number): string {
+	if (days < 30) {
+		return `${days} day${days !== 1 ? 's' : ''} ago`;
+	}
+	const months = Math.floor(days / 30);
+	return `${months} month${months !== 1 ? 's' : ''} ago`;
+}
+
+function getEditStatusDescription(isExempt: boolean): string {
+	return isExempt
+		? 'This person is exempt from yellow/critical visit warnings and appears in the Exempt tab.'
+		: 'This person will follow normal yellow/critical visit warning rules.';
+}
 </script>
 
 <div class="container mx-auto p-6">
@@ -226,18 +226,14 @@
 							<div class="flex items-start justify-between">
 								<div class="flex-1">
 									<div class="mb-2 flex items-center gap-4">
-										<p class="font-semibold">
-											{formatDateLong(visit.date)}
-										</p>
+										<p class="font-semibold">{formatDateLong(visit.date)}</p>
 										{#if visit.time}
 											<span class="text-sm text-muted-foreground">{formatTime(visit.time)}</span>
 										{/if}
 									</div>
 
 									{#if visit.companions && visit.companions.length > 0}
-										<p class="text-sm text-muted-foreground">
-											With: {visit.companions.join(', ')}
-										</p>
+										<p class="text-sm text-muted-foreground">With: {visit.companions.join(', ')}</p>
 									{/if}
 
 									{#if visit.notes}
@@ -420,7 +416,7 @@
 							type="checkbox"
 							class="h-4 w-4 rounded border-input"
 							bind:checked={$editForm.isExempt}
-						/>
+						>
 						<Label for="edit-isExempt">Exempt from visit warning rules</Label>
 					</div>
 					<p class="text-xs text-muted-foreground">

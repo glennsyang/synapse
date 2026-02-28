@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-	import { cn } from '$lib/utils.js';
+import { Skeleton } from '$lib/components/ui/skeleton/index.js';
+import { cn } from '$lib/utils.js';
 
-	let {
-		showBreadcrumb = false,
-		color = 'teal',
-		class: className,
-		...restProps
-	}: {
-		showBreadcrumb?: boolean;
-		color?: 'teal' | 'blue' | 'green' | 'orange' | 'purple' | 'pink';
-		class?: string;
-	} = $props();
+let {
+	showBreadcrumb = false,
+	color = 'teal',
+	class: className,
+	...restProps
+}: {
+	showBreadcrumb?: boolean;
+	color?: 'teal' | 'blue' | 'green' | 'orange' | 'purple' | 'pink';
+	class?: string;
+} = $props();
 </script>
 
 <div class={cn('space-y-6', className)} {...restProps}>

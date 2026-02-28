@@ -1,28 +1,28 @@
 <script lang="ts">
-	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-	import { cn } from '$lib/utils.js';
+import { Skeleton } from '$lib/components/ui/skeleton/index.js';
+import { cn } from '$lib/utils.js';
 
-	let {
-		class: className,
-		...restProps
-	}: {
-		class?: string;
-	} = $props();
+let {
+	class: className,
+	...restProps
+}: {
+	class?: string;
+} = $props();
 
-	const statsSkeleton = [
-		{ id: 1, value: '123' },
-		{ id: 2, value: '5 days' },
-		{ id: 3, value: '12 days' }
-	];
-	const featureSkeleton = [
-		{ id: 1, value: '123' },
-		{ id: 2, value: '5 days' },
-		{ id: 3, value: '12 days' },
-		{ id: 4, value: '123' },
-		{ id: 5, value: '5 days' },
-		{ id: 6, value: '12 days' }
-	];
-	const calendarSkeleton = Array.from({ length: 35 }, (_, i) => ({ id: i }));
+const statsSkeleton = [
+	{ id: 1, value: '123' },
+	{ id: 2, value: '5 days' },
+	{ id: 3, value: '12 days' }
+];
+const featureSkeleton = [
+	{ id: 1, value: '123' },
+	{ id: 2, value: '5 days' },
+	{ id: 3, value: '12 days' },
+	{ id: 4, value: '123' },
+	{ id: 5, value: '5 days' },
+	{ id: 6, value: '12 days' }
+];
+const calendarSkeleton = Array.from({ length: 35 }, (_, i) => ({ id: i }));
 </script>
 
 <div class={cn('space-y-6', className)} {...restProps}>

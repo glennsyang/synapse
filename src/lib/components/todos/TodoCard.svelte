@@ -1,64 +1,64 @@
 <script lang="ts">
-	import CalendarIcon from '@lucide/svelte/icons/calendar';
-	import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
-	import CircleIcon from '@lucide/svelte/icons/circle';
-	import CircleMinusIcon from '@lucide/svelte/icons/circle-minus';
-	import ClockIcon from '@lucide/svelte/icons/clock';
-	import PauseCircleIcon from '@lucide/svelte/icons/pause-circle';
+import CalendarIcon from '@lucide/svelte/icons/calendar';
+import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
+import CircleIcon from '@lucide/svelte/icons/circle';
+import CircleMinusIcon from '@lucide/svelte/icons/circle-minus';
+import ClockIcon from '@lucide/svelte/icons/clock';
+import PauseCircleIcon from '@lucide/svelte/icons/pause-circle';
 
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
+import { Badge } from '$lib/components/ui/badge';
+import { Button } from '$lib/components/ui/button';
+import * as Card from '$lib/components/ui/card';
 
-	interface Props {
-		todo: {
-			id: string;
-			title: string;
-			description: string | null;
-			state: string;
-			cadence: string | null;
-			dueDate: string | null;
-			priority: number;
-			tags: string[] | null;
-		};
-		onStateChange?: (newState: string) => void;
-	}
-
-	let { todo, onStateChange }: Props = $props();
-
-	// Priority color mapping (larger, more vibrant)
-	const priorityColors = {
-		1: 'bg-red-500',
-		2: 'bg-orange-400',
-		3: 'bg-blue-500',
-		4: 'bg-gray-400'
+interface Props {
+	todo: {
+		id: string;
+		title: string;
+		description: string | null;
+		state: string;
+		cadence: string | null;
+		dueDate: string | null;
+		priority: number;
+		tags: string[] | null;
 	};
+	onStateChange?: (newState: string) => void;
+}
 
-	const priorityLabels = {
-		1: 'Highest',
-		2: 'High',
-		3: 'Medium',
-		4: 'Low'
-	};
+let { todo, onStateChange }: Props = $props();
 
-	// State badges
-	const stateBadgeColor = {
-		new: 'bg-orange-500',
-		in_progress: 'bg-blue-500',
-		on_hold: 'bg-yellow-500',
-		blocked: 'bg-red-500',
-		done: 'bg-green-500'
-	} as const;
+// Priority color mapping (larger, more vibrant)
+const priorityColors = {
+	1: 'bg-red-500',
+	2: 'bg-orange-400',
+	3: 'bg-blue-500',
+	4: 'bg-gray-400'
+};
 
-	const stateIcons = {
-		new: CircleIcon,
-		in_progress: ClockIcon,
-		on_hold: PauseCircleIcon,
-		blocked: CircleMinusIcon,
-		done: CheckCircleIcon
-	};
+const priorityLabels = {
+	1: 'Highest',
+	2: 'High',
+	3: 'Medium',
+	4: 'Low'
+};
 
-	const StateIcon = $derived(stateIcons[todo.state as keyof typeof stateIcons]);
+// State badges
+const stateBadgeColor = {
+	new: 'bg-orange-500',
+	in_progress: 'bg-blue-500',
+	on_hold: 'bg-yellow-500',
+	blocked: 'bg-red-500',
+	done: 'bg-green-500'
+} as const;
+
+const stateIcons = {
+	new: CircleIcon,
+	in_progress: ClockIcon,
+	on_hold: PauseCircleIcon,
+	blocked: CircleMinusIcon,
+	done: CheckCircleIcon
+};
+
+const StateIcon = $derived(stateIcons[todo.state as keyof typeof stateIcons]);
 </script>
 
 <Card.Root class="border transition-shadow hover:shadow-md">
@@ -66,9 +66,7 @@
 		<div class="flex items-start justify-between gap-2">
 			<div class="flex-1">
 				<Card.Title class="font-display text-lg">
-					<a href={`/todos/${todo.id}`} class="hover:underline">
-						{todo.title}
-					</a>
+					<a href={`/todos/${todo.id}`} class="hover:underline"> {todo.title} </a>
 				</Card.Title>
 				{#if todo.description}
 					<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{todo.description}</p>
