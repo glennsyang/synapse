@@ -48,7 +48,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	// Calculate status
 	const latestVisit = personVisits[0];
-	const statusInfo = calculatePersonVisitStatus(latestVisit?.date ?? null, person.isExempt);
+	const statusInfo = calculatePersonVisitStatus(
+		latestVisit?.date ?? null,
+		person.isExempt,
+		latestVisit?.followUpDate ?? null,
+		getTodayString()
+	);
 
 	// Initialize forms
 	const visitForm = await superValidate(zod4(visitSchema));

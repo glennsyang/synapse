@@ -41,4 +41,40 @@ describe('visit status exemptions', () => {
 		expect(getStatusLabel('exempt')).toBe('Exempt');
 		expect(getStatusPriority('exempt')).toBeGreaterThan(getStatusPriority('none'));
 	});
+
+	it('marks person as scheduled when latest follow-up is today or later', () => {
+		const redVisitDate = dateDaysAgo(400);
+		const today = new Date().toISOString().split('T')[0];
+
+		const result = calculatePersonVisitStatus(redVisitDate, false, today, today);
+
+		expect(result.status).toBe('scheduled');
+		expect(result.daysSinceLastVisit).toBeGreaterThan(365);
+		expect(result.daysUntilStatusChange).toBeNull();
+	});
+
+	it('gives scheduled precedence over exempt', () => {
+		const redVisitDate = dateDaysAgo(400);
+		const today = new Date().toISOString().split('T')[0];
+
+		const result = calculatePersonVisitStatus(redVisitDate, true, today, today);
+
+		expect(result.status).toBe('scheduled');
+	});
+
+	it('returns normal status when latest follow-up is in the past', () => {
+		const redVisitDate = dateDaysAgo(400);
+		const yesterday = dateDaysAgo(1);
+		const today = new Date().toISOString().split('T')[0];
+
+		const result = calculatePersonVisitStatus(redVisitDate, false, yesterday, today);
+
+		expect(result.status).toBe('red');
+	});
+
+	it('exposes scheduled label and priority ordering', () => {
+		expect(getStatusLabel('scheduled')).toBe('Scheduled');
+		expect(getStatusPriority('scheduled')).toBeGreaterThan(getStatusPriority('green'));
+		expect(getStatusPriority('scheduled')).toBeLessThan(getStatusPriority('none'));
+	});
 });

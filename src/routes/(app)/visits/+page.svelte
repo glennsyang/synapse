@@ -18,7 +18,7 @@ import type { PageData } from './$types';
 
 let { data }: { data: PageData } = $props();
 
-type VisitTab = 'all' | VisitStatus | 'scheduled';
+type VisitTab = 'all' | VisitStatus;
 
 const allowedTabs = new Set<VisitTab>([
 	'all',
@@ -77,7 +77,7 @@ function peopleForTab(tab: VisitTab) {
 
 	if (tab === 'scheduled') {
 		return data.people
-			.filter((person) => person.nextFollowUpDate !== null)
+			.filter((person) => person.status === 'scheduled')
 			.sort((a, b) => {
 				if (!a.nextFollowUpDate || !b.nextFollowUpDate) {
 					return 0;
@@ -209,6 +209,8 @@ function formatTimeSince(days: number): string {
 											? 'border-l-yellow-500'
 											: person.status === 'red'
 												? 'border-l-red-500'
+												: person.status === 'scheduled'
+													? 'border-l-purple-500'
 												: person.status === 'exempt'
 													? 'border-l-gray-500'
 													: 'border-l-gray-400'}
@@ -225,6 +227,8 @@ function formatTimeSince(days: number): string {
 																? 'secondary'
 																: person.status === 'red'
 																	? 'destructive'
+																	: person.status === 'scheduled'
+																		? 'secondary'
 																	: 'outline'}
 														class={person.status === 'green'
 															? 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-200'
@@ -232,6 +236,8 @@ function formatTimeSince(days: number): string {
 																? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-200'
 																: person.status === 'red'
 																	? 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900 dark:text-red-200'
+																		: person.status === 'scheduled'
+																			? 'bg-purple-100 text-purple-800 hover:bg-purple-100 dark:bg-purple-900 dark:text-purple-200'
 																	: ''}
 													>
 														{getStatusLabel(person.status)}

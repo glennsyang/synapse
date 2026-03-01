@@ -304,7 +304,7 @@ async function processVisitWarnings(): Promise<void> {
 			continue;
 		}
 
-		const warningStatus = getVisitWarningStatus(lastVisit.date);
+		const warningStatus = getVisitWarningStatus(lastVisit.date, lastVisit.followUpDate);
 		if (!warningStatus) {
 			continue;
 		}

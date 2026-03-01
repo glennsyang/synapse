@@ -27,6 +27,13 @@ describe('visit warning utilities', () => {
 		expect(getVisitWarningStatus(redVisitDate)).toBe('critical');
 	});
 
+	it('suppresses warnings when latest visit has a scheduled follow-up', () => {
+		const redVisitDate = dateDaysAgo(400);
+		const futureFollowUpDate = dateDaysAgo(-10);
+
+		expect(getVisitWarningStatus(redVisitDate, futureFollowUpDate)).toBeNull();
+	});
+
 	it('formats visit date as Month D, YYYY', () => {
 		expect(formatVisitWarningDate('2025-08-06T16:00:00.000Z')).toBe('August 6, 2025');
 	});
