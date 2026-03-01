@@ -25,7 +25,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           echo "Creating database backup..."
-          flyctl ssh console -a synapse -C "sqlite3 /data/synapse.db .dump" > backup-${{ steps.timestamp.outputs.date }}.sql
+          flyctl ssh console -a synapse-dev -C "sqlite3 /data/synapse.db .dump" > backup-${{ steps.timestamp.outputs.date }}.sql
 
       - name: Compress backup
         run: |
