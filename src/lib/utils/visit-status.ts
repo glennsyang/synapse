@@ -1,9 +1,18 @@
+import { getTodayString } from '$lib/utils/date';
+
 /**
  * Visit status types
  */
-export type VisitStatus = 'green' | 'yellow' | 'red' | 'none' | 'exempt';
+export type VisitStatus = 'green' | 'yellow' | 'red' | 'scheduled' | 'none' | 'exempt';
 
-export const VISIT_STATUS_ORDER: VisitStatus[] = ['red', 'yellow', 'green', 'none', 'exempt'];
+export const VISIT_STATUS_ORDER: VisitStatus[] = [
+	'red',
+	'yellow',
+	'green',
+	'scheduled',
+	'none',
+	'exempt'
+];
 
 /**
  * Person with visit status information
@@ -83,13 +92,25 @@ export function calculateVisitStatus(lastVisitDate: string | null): {
 
 export function calculatePersonVisitStatus(
 	lastVisitDate: string | null,
-	isExempt: boolean
+	isExempt: boolean,
+	latestFollowUpDate: string | null = null,
+	today: string = getTodayString()
 ): {
 	status: VisitStatus;
 	daysSinceLastVisit: number | null;
 	daysUntilStatusChange: number | null;
 } {
 	const baseStatus = calculateVisitStatus(lastVisitDate);
+	const normalizedFollowUpDate = latestFollowUpDate ? latestFollowUpDate.split('T')[0] : null;
+	const hasScheduledFollowUp = normalizedFollowUpDate !== null && normalizedFollowUpDate >= today;
+
+	if (hasScheduledFollowUp) {
+		return {
+			status: 'scheduled',
+			daysSinceLastVisit: baseStatus.daysSinceLastVisit,
+			daysUntilStatusChange: null
+		};
+	}
 
 	if (!isExempt) {
 		return baseStatus;
@@ -117,6 +138,8 @@ export function getStatusColor(status: VisitStatus): string {
 			return 'bg-yellow-500';
 		case 'red':
 			return 'bg-red-500';
+		case 'scheduled':
+			return 'bg-purple-500';
 		case 'none':
 			return 'bg-gray-400';
 		case 'exempt':
@@ -135,6 +158,8 @@ export function getStatusLabel(status: VisitStatus): string {
 			return 'Overdue';
 		case 'red':
 			return 'Critical';
+		case 'scheduled':
+			return 'Scheduled';
 		case 'none':
 			return 'No Visits';
 		case 'exempt':

@@ -1,4 +1,4 @@
-import { calculateVisitStatus } from '$lib/utils/visit-status';
+import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
 
 export type VisitWarningStatus = 'yellow' | 'critical';
 
@@ -9,8 +9,11 @@ const visitWarningDateFormatter = new Intl.DateTimeFormat('en-US', {
 	year: 'numeric'
 });
 
-export function getVisitWarningStatus(lastVisitDate: string): VisitWarningStatus | null {
-	const { status } = calculateVisitStatus(lastVisitDate);
+export function getVisitWarningStatus(
+	lastVisitDate: string,
+	latestFollowUpDate: string | null = null
+): VisitWarningStatus | null {
+	const { status } = calculatePersonVisitStatus(lastVisitDate, false, latestFollowUpDate);
 
 	if (status === 'yellow') {
 		return 'yellow';

@@ -32,16 +32,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 				});
 
 				const latestVisit = personVisits[0];
-				const upcomingFollowUps = personVisits
-					.map((visit) => visit.followUpDate)
-					.filter((followUpDate): followUpDate is string => {
-						return !!followUpDate && followUpDate >= today;
-					})
-					.sort((a, b) => a.localeCompare(b));
+				const latestFollowUpDate = latestVisit?.followUpDate ?? null;
+				const nextFollowUpDate =
+					latestFollowUpDate && latestFollowUpDate >= today ? latestFollowUpDate : null;
 
-				const nextFollowUpDate = upcomingFollowUps[0] ?? null;
-
-				const statusInfo = calculatePersonVisitStatus(latestVisit?.date ?? null, person.isExempt);
+				const statusInfo = calculatePersonVisitStatus(
+					latestVisit?.date ?? null,
+					person.isExempt,
+					latestFollowUpDate,
+					today
+				);
 
 				return {
 					id: person.id,

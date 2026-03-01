@@ -113,6 +113,8 @@ function getStatusBadge(status: string) {
 			return 'bg-yellow-100 text-yellow-800';
 		case 'red':
 			return 'bg-red-100 text-red-800';
+		case 'scheduled':
+			return 'bg-purple-100 text-purple-800';
 		case 'exempt':
 			return 'bg-gray-100 text-gray-800';
 		default:
@@ -137,7 +139,7 @@ function formatTimeSince(days: number): string {
 
 function getEditStatusDescription(isExempt: boolean): string {
 	return isExempt
-		? 'This person is exempt from yellow/critical visit warnings and appears in the Exempt tab.'
+		? 'This person is exempt from yellow/critical visit warnings when no scheduled follow-up is set.'
 		: 'This person will follow normal yellow/critical visit warning rules.';
 }
 </script>

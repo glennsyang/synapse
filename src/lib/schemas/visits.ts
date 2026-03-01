@@ -56,7 +56,7 @@ export type VisitFormData = z.infer<typeof visitSchema>;
  * Schema for filtering visits
  */
 export const visitFilterSchema = z.object({
-	status: z.enum(['green', 'yellow', 'red', 'none', 'exempt']).optional()
+	status: z.enum(['green', 'yellow', 'red', 'scheduled', 'none', 'exempt']).optional()
 });
 
 export type VisitFilterData = z.infer<typeof visitFilterSchema>;
