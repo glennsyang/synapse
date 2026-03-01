@@ -10,6 +10,6 @@ export const actions: Actions = {
 			headers: request.headers
 		});
 
-		redirect(302, '/sign-in');
+		throw redirect(302, '/sign-in');
 	}
 } satisfies Actions;

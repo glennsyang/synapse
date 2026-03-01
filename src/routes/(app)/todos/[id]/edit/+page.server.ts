@@ -3,8 +3,17 @@ import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
-import { type Cadence, type TodoState, updateTodoSchema } from '$lib/schemas/todo';
+import {
+	type Cadence,
+	type TodoState,
+	type UpdatetodoItemput,
+	updateTodoSchema
+} from '$lib/schemas/todo';
 import { requireAuth } from '$lib/server/actions/auth-guard';
+import {
+	getOwnedEntityOrNull,
+	getOwnedEntityOrThrow
+} from '$lib/server/actions/edit-route-helpers';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import getDb from '$lib/server/db';
 import { todoItems } from '$lib/server/db/schema';
@@ -12,15 +21,45 @@ import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
-	// Load todoItem
-	const todo = await getDb().query.todoItems.findFirst({
-		where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user?.id))
-	});
+function buildTodoUpdateData(
+	formData: UpdatetodoItemput,
+	existingState: string
+): Record<string, unknown> {
+	const updateData: Record<string, unknown> = {
+		updatedAt: new Date().toISOString()
+	};
 
-	if (!todo) {
-		throw redirect(303, '/todos');
+	if (formData.title !== undefined) updateData.title = formData.title;
+	if (formData.description !== undefined) updateData.description = formData.description;
+	if (formData.cadence === undefined) {
+		updateData.cadence = null;
+	} else {
+		updateData.cadence = formData.cadence;
 	}
+	if (formData.tags !== undefined) updateData.tags = toCommaSeparatedJson(formData.tags);
+	if (formData.dueDate !== undefined) updateData.dueDate = formData.dueDate;
+	if (formData.priority !== undefined) updateData.priority = formData.priority;
+
+	if (formData.state !== undefined) {
+		updateData.state = formData.state;
+		if (formData.state === 'done' && existingState !== 'done') {
+			updateData.completedAt = new Date().toISOString();
+		} else if (formData.state !== 'done' && existingState === 'done') {
+			updateData.completedAt = null;
+		}
+	}
+
+	return updateData;
+}
+
+export const load: PageServerLoad = async ({ locals, params }) => {
+	const todo = await getOwnedEntityOrThrow(
+		() =>
+			getDb().query.todoItems.findFirst({
+				where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user?.id))
+			}),
+		{ type: 'redirect', to: '/todos' }
+	);
 
 	// Parse JSON fields for form
 	const tagsArray = todo.tags ? JSON.parse(todo.tags) : [];
@@ -57,44 +96,18 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Verify todoItem belongs to user
-			const existing = await getDb().query.todoItems.findFirst({
-				where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
-			});
+			const existing = await getOwnedEntityOrNull(() =>
+				getDb().query.todoItems.findFirst({
+					where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
+				})
+			);
 
 			if (!existing) {
 				return fail(404, { form, error: 'Todo not found' });
 			}
 
-			const tagsJson = toCommaSeparatedJson(form.data.tags);
+			const updateData = buildTodoUpdateData(form.data, existing.state);
 
-			// Build update data
-			const updateData: Record<string, unknown> = {
-				updatedAt: new Date().toISOString()
-			};
-
-			if (form.data.title !== undefined) updateData.title = form.data.title;
-			if (form.data.description !== undefined) updateData.description = form.data.description;
-			if (form.data.cadence === undefined) {
-				updateData.cadence = null; // Clear cadence if not provided
-			} else {
-				updateData.cadence = form.data.cadence;
-			}
-			if (form.data.tags !== undefined) updateData.tags = tagsJson;
-			if (form.data.dueDate !== undefined) updateData.dueDate = form.data.dueDate;
-			if (form.data.priority !== undefined) updateData.priority = form.data.priority;
-
-			// Handle state change and completedAt
-			if (form.data.state !== undefined) {
-				updateData.state = form.data.state;
-				if (form.data.state === 'done' && existing.state !== 'done') {
-					updateData.completedAt = new Date().toISOString();
-				} else if (form.data.state !== 'done' && existing.state === 'done') {
-					updateData.completedAt = null;
-				}
-			}
-
-			// Update todoItem
 			await getDb().update(todoItems).set(updateData).where(eq(todoItems.id, todoId));
 
 			logger.info('Todo updated', { todoId, userId: user.id });
@@ -110,10 +123,11 @@ export const actions: Actions = {
 		const todoId = params.id as string;
 
 		try {
-			// Verify todoItem belongs to user
-			const existing = await getDb().query.todoItems.findFirst({
-				where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
-			});
+			const existing = await getOwnedEntityOrNull(() =>
+				getDb().query.todoItems.findFirst({
+					where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
+				})
+			);
 
 			if (!existing) {
 				return fail(404, { error: 'Todo not found' });

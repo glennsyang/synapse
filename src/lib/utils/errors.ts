@@ -54,32 +54,6 @@ export class ConflictError extends AppError {
 }
 
 /**
- * Format error for API response
- */
-export function formatError(error: unknown) {
-	if (error instanceof AppError) {
-		return {
-			error: {
-				message: error.message,
-				code: error.code,
-				statusCode: error.statusCode,
-				...(error instanceof ValidationError && error.fields ? { fields: error.fields } : {})
-			}
-		};
-	}
-
-	// Handle unknown errors
-	const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-	return {
-		error: {
-			message,
-			code: 'INTERNAL_ERROR',
-			statusCode: 500
-		}
-	};
-}
-
-/**
  * Log error with context
  */
 export function logError(error: unknown, context?: Record<string, unknown>) {
@@ -91,19 +65,4 @@ export function logError(error: unknown, context?: Record<string, unknown>) {
 	};
 
 	logger.error('[ERROR]', JSON.stringify(errorInfo));
-}
-
-/**
- * Handle async errors in server actions
- */
-export async function handleAsync<T>(
-	fn: () => Promise<T>,
-	context?: Record<string, unknown>
-): Promise<T> {
-	try {
-		return await fn();
-	} catch (error) {
-		logError(error, context);
-		throw error;
-	}
 }

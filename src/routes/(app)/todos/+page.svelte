@@ -2,6 +2,7 @@
 import { Plus } from '@lucide/svelte';
 
 import { navigating, page } from '$app/state';
+import PageShell from '$lib/components/app/PageShell.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 import TagFilter from '$lib/components/todos/TagFilter.svelte';
 import TodoGridView from '$lib/components/todos/TodoGridView.svelte';
@@ -34,7 +35,7 @@ let filteredTodos = $derived(
 {#if navigating.to?.url.pathname === '/todos'}
 	<PageSkeleton color="orange" />
 {:else}
-	<div class="mobile-container mx-auto w-full max-w-7xl py-4 sm:py-8">
+	<PageShell>
 		<div class="mobile-stack mb-6 justify-between sm:mb-8">
 			<div>
 				<h1 class="font-display text-2xl font-bold sm:text-3xl">Todos</h1>
@@ -119,5 +120,5 @@ let filteredTodos = $derived(
 				<TodoKanbanView todos={filteredTodos} />
 			{/if}
 		</div>
-	</div>
+	</PageShell>
 {/if}

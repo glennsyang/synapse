@@ -4,6 +4,7 @@ import PlusIcon from '@lucide/svelte/icons/plus';
 
 import { replaceState } from '$app/navigation';
 import { navigating, page } from '$app/state';
+import PageShell from '$lib/components/app/PageShell.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 import * as Alert from '$lib/components/ui/alert';
 import { Badge } from '$lib/components/ui/badge';
@@ -108,7 +109,7 @@ function formatTimeSince(days: number): string {
 {#if navigating.to?.url.pathname === '/visits'}
 	<PageSkeleton color="pink" />
 {:else}
-	<div class="mobile-container mx-auto w-full max-w-7xl py-4 sm:py-6">
+	<PageShell class="sm:py-6">
 		<div class="mb-6 flex items-center justify-between">
 			<div>
 				<h1 class="font-display text-3xl font-bold">Visit Tracking</h1>
@@ -282,5 +283,5 @@ function formatTimeSince(days: number): string {
 				</Tabs.Content>
 			{/each}
 		</Tabs.Root>
-	</div>
+	</PageShell>
 {/if}

@@ -5,6 +5,10 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { deleteEntrySchema, type MealType, updateMealSchema } from '$lib/schemas/fitness';
 import { requireAuth } from '$lib/server/actions/auth-guard';
+import {
+	getOwnedEntityOrNull,
+	getOwnedEntityOrThrow
+} from '$lib/server/actions/edit-route-helpers';
 import { getDb } from '$lib/server/db';
 import { mealLogs } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -12,13 +16,13 @@ import { logger } from '$lib/utils/logger';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const meal = await getDb().query.mealLogs.findFirst({
-		where: and(eq(mealLogs.id, params.id), eq(mealLogs.userId, locals.user?.id))
-	});
-
-	if (!meal) {
-		throw redirect(303, '/fitness?tab=meals');
-	}
+	const meal = await getOwnedEntityOrThrow(
+		() =>
+			getDb().query.mealLogs.findFirst({
+				where: and(eq(mealLogs.id, params.id), eq(mealLogs.userId, locals.user?.id))
+			}),
+		{ type: 'redirect', to: '/fitness?tab=meals' }
+	);
 
 	const form = await superValidate(
 		{
@@ -48,9 +52,11 @@ export const actions: Actions = {
 
 		try {
 			const db = getDb();
-			const existing = await db.query.mealLogs.findFirst({
-				where: and(eq(mealLogs.id, mealId), eq(mealLogs.userId, user.id))
-			});
+			const existing = await getOwnedEntityOrNull(() =>
+				db.query.mealLogs.findFirst({
+					where: and(eq(mealLogs.id, mealId), eq(mealLogs.userId, user.id))
+				})
+			);
 
 			if (!existing) {
 				return fail(404, { form, error: 'Meal not found' });
@@ -86,9 +92,11 @@ export const actions: Actions = {
 
 		try {
 			const db = getDb();
-			const existing = await db.query.mealLogs.findFirst({
-				where: and(eq(mealLogs.id, mealId), eq(mealLogs.userId, user.id))
-			});
+			const existing = await getOwnedEntityOrNull(() =>
+				db.query.mealLogs.findFirst({
+					where: and(eq(mealLogs.id, mealId), eq(mealLogs.userId, user.id))
+				})
+			);
 
 			if (!existing) {
 				return fail(404, { error: 'Meal not found' });

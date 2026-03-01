@@ -103,22 +103,3 @@ class Logger {
 
 // Export singleton instance
 export const logger = new Logger();
-
-/**
- * Create logger with request context
- */
-export function createRequestLogger(requestId: string, userId?: string): Logger {
-	return logger.child({ requestId, userId });
-}
-
-/**
- * Middleware helper to add logging to request handlers
- */
-export function withLogging<T>(
-	requestId: string,
-	userId: string | undefined,
-	fn: (logger: Logger) => Promise<T>
-): Promise<T> {
-	const requestLogger = createRequestLogger(requestId, userId);
-	return fn(requestLogger);
-}

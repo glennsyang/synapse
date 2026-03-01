@@ -15,6 +15,7 @@ import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 
 import { navigating, page } from '$app/state';
+import PageShell from '$lib/components/app/PageShell.svelte';
 import CalorieProgress from '$lib/components/fitness/CalorieProgress.svelte';
 import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
 import WeightChart from '$lib/components/fitness/WeightChart.svelte';
@@ -222,7 +223,7 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 {#if navigating.to?.url.pathname === '/fitness'}
 	<PageSkeleton color="green" />
 {:else}
-	<div class="mobile-container mx-auto w-full max-w-7xl py-4 sm:py-8">
+	<PageShell>
 		<div class="mb-8">
 			<h1 class="font-display text-3xl font-bold">Fitness & Nutrition</h1>
 			<p class="mt-2 text-muted-foreground">
@@ -1168,5 +1169,5 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 				{/if}
 			</Tabs.Content>
 		</Tabs.Root>
-	</div>
+	</PageShell>
 {/if}
