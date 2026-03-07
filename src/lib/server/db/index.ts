@@ -30,10 +30,6 @@ export function getDb() {
 	return _db;
 }
 
-export type DB = ReturnType<typeof getDb>;
-
-export default getDb;
-
 // --- Graceful shutdown for DB connection (if needed) ---
 // Note: better-sqlite3 doesn't have a built-in close method on the connection object,
 // but if you need to perform any cleanup, you can do it here.

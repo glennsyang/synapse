@@ -18,8 +18,6 @@ export const createRoutineSchema = z.object({
 	mood_tags: z.string().min(1, 'At least one mood tag is required')
 });
 
-export type CreateRoutineFormData = z.infer<typeof createRoutineSchema>;
-
 /**
  * Schema for updating a meditation routine
  */
@@ -31,8 +29,6 @@ export const updateRoutineSchema = z.object({
 	mood_tags: z.string().min(1, 'At least one mood tag is required')
 });
 
-export type UpdateRoutineFormData = z.infer<typeof updateRoutineSchema>;
-
 /**
  * Schema for creating or updating a meditation schedule
  */
@@ -42,8 +38,6 @@ export const scheduleSchema = z.object({
 	time: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be in HH:MM format')
 });
 
-export type ScheduleFormData = z.infer<typeof scheduleSchema>;
-
 /**
  * Schema for completing a meditation session
  */
@@ -52,8 +46,6 @@ export const completeSessionSchema = z.object({
 	notes: z.string().optional()
 });
 
-export type CompleteSessionFormData = z.infer<typeof completeSessionSchema>;
-
 /**
  * Schema for filtering meditation routines
  */
@@ -61,5 +53,3 @@ export const routineFilterSchema = z.object({
 	mood: z.enum([...MOOD_TAGS]).optional(),
 	type: z.enum(['predefined', 'user-created', 'all']).optional().default('all')
 });
-
-export type RoutineFilterData = z.infer<typeof routineFilterSchema>;

@@ -31,7 +31,7 @@ type CurrentWeatherResponse = {
 	};
 };
 
-export type JournalWeather = {
+type JournalWeather = {
 	temperature: number;
 	condition: string;
 };

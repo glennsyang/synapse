@@ -15,7 +15,7 @@ import {
 	getOwnedEntityOrThrow
 } from '$lib/server/actions/edit-route-helpers';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
-import getDb from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 import { todoItems } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
 
