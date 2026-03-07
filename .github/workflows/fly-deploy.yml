@@ -34,12 +34,12 @@ jobs:
         run: npm run lint
 
       # Run type checking
-      - name: Run check
+      - name: Run Svelte check
         run: npm run check
 
       # Run tests
       - name: Run tests
-        run: npm test
+        run: npm run test
 
       # Deploy only if all checks pass
       - uses: superfly/flyctl-actions/setup-flyctl@master

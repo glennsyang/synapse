@@ -21,14 +21,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Run security audit
+      - name: Run npm audit
+        run: npm audit --production --audit-level=high
+
       - name: Run format
         run: npm run format
 
       - name: Ensure no formatting changes
         run: git diff --exit-code
 
-      - name: Run lint
+      # Run linting
+      - name: Run Biome lint
         run: npm run lint
 
+      # Run type checking
+      - name: Run Svelte check
+        run: npm run check
+
+      # Run tests
       - name: Run tests
         run: npm run test
