@@ -1,6 +1,6 @@
 import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
 
-export type VisitWarningStatus = 'yellow' | 'critical';
+type VisitWarningStatus = 'yellow' | 'critical';
 
 const visitWarningDateFormatter = new Intl.DateTimeFormat('en-US', {
 	timeZone: 'UTC',

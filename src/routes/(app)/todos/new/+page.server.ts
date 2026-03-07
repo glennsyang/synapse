@@ -5,7 +5,7 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import { createTodoSchema } from '$lib/schemas/todo';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
-import getDb from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 import { todoItems } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
 

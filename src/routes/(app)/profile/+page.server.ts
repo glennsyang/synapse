@@ -4,7 +4,7 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { changePasswordSchema, updateProfileSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
-import getDb from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 import { account, user } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
 

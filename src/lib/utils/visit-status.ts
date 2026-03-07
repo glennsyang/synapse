@@ -5,14 +5,7 @@ import { getTodayString } from '$lib/utils/date';
  */
 export type VisitStatus = 'green' | 'yellow' | 'red' | 'scheduled' | 'none' | 'exempt';
 
-export const VISIT_STATUS_ORDER: VisitStatus[] = [
-	'red',
-	'yellow',
-	'green',
-	'scheduled',
-	'none',
-	'exempt'
-];
+const VISIT_STATUS_ORDER: VisitStatus[] = ['red', 'yellow', 'green', 'scheduled', 'none', 'exempt'];
 
 /**
  * Person with visit status information
@@ -125,26 +118,6 @@ export function calculatePersonVisitStatus(
 
 export function getStatusPriority(status: VisitStatus): number {
 	return VISIT_STATUS_ORDER.indexOf(status) + 1;
-}
-
-/**
- * Get status badge color class for Tailwind
- */
-export function getStatusColor(status: VisitStatus): string {
-	switch (status) {
-		case 'green':
-			return 'bg-green-500';
-		case 'yellow':
-			return 'bg-yellow-500';
-		case 'red':
-			return 'bg-red-500';
-		case 'scheduled':
-			return 'bg-purple-500';
-		case 'none':
-			return 'bg-gray-400';
-		case 'exempt':
-			return 'bg-gray-500';
-	}
 }
 
 /**

@@ -12,8 +12,6 @@ export const journalEntrySchema = z.object({
 	weatherCondition: z.string().optional()
 });
 
-export type JournalEntryFormData = z.infer<typeof journalEntrySchema>;
-
 /**
  * Schema for filtering journal entries
  */
@@ -29,5 +27,3 @@ export const journalFilterSchema = z.object({
 		.optional(),
 	limit: z.coerce.number().min(1).max(100).optional().default(50)
 });
-
-export type JournalFilterData = z.infer<typeof journalFilterSchema>;

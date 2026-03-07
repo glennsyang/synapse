@@ -13,7 +13,7 @@ import { and, eq, sql } from 'drizzle-orm';
 
 import { logger } from '$lib/utils/logger';
 
-import getDb from '../db';
+import { getDb } from '../db';
 
 import {
 	emailNotifications,

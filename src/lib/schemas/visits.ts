@@ -28,8 +28,6 @@ export const personSchema = z.object({
 	isExempt: booleanFromForm.default(false)
 });
 
-export type PersonFormData = z.infer<typeof personSchema>;
-
 /**
  * Schema for creating and updating visits
  */
@@ -49,14 +47,3 @@ export const visitSchema = z.object({
 			.optional()
 	)
 });
-
-export type VisitFormData = z.infer<typeof visitSchema>;
-
-/**
- * Schema for filtering visits
- */
-export const visitFilterSchema = z.object({
-	status: z.enum(['green', 'yellow', 'red', 'scheduled', 'none', 'exempt']).optional()
-});
-
-export type VisitFilterData = z.infer<typeof visitFilterSchema>;

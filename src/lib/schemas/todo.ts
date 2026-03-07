@@ -51,6 +51,4 @@ export const updateTodoStateSchema = z.object({
 
 export type Cadence = z.infer<typeof CadenceEnum>;
 export type TodoState = z.infer<typeof TodoStateEnum>;
-export type CreatetodoItemput = z.infer<typeof createTodoSchema>;
 export type UpdatetodoItemput = z.infer<typeof updateTodoSchema>;
-export type UpdateTodoStateInput = z.infer<typeof updateTodoStateSchema>;
