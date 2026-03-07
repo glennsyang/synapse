@@ -36,7 +36,7 @@ async function getAllTags(userId: string): Promise<string[]> {
 		}
 	}
 
-	return Array.from(tagSet).sort();
+	return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
