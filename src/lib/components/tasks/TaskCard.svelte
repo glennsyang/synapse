@@ -1,111 +1,155 @@
 <script lang="ts">
 import CalendarIcon from '@lucide/svelte/icons/calendar';
-import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
-import CircleIcon from '@lucide/svelte/icons/circle';
-import CircleMinusIcon from '@lucide/svelte/icons/circle-minus';
-import ClockIcon from '@lucide/svelte/icons/clock';
-import PauseCircleIcon from '@lucide/svelte/icons/pause-circle';
+import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
+import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
+import PencilIcon from '@lucide/svelte/icons/pencil';
+import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { goto } from '$app/navigation';
+import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 import {
-	getTaskStateLabel,
+	formatTaskDisplayId,
 	type TaskPriority,
 	type TaskSummary,
-	taskPriorityMeta,
-	taskStateMeta
+	taskPriorityMeta
 } from '$lib/components/tasks/task-ui';
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
+import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 import type { TaskState } from '$lib/schemas/task';
+import { formatDateMedium, getDateUrgencyStatus } from '$lib/utils/date';
 
 interface Props {
 	task: TaskSummary;
 	onStateChange?: (newState: TaskState) => void;
+	deleteAction?: string;
 }
 
-let { task, onStateChange }: Props = $props();
+let { task, onStateChange, deleteAction = '?/delete' }: Props = $props();
 
-const stateIcons = {
-	new: CircleIcon,
-	in_progress: ClockIcon,
-	on_hold: PauseCircleIcon,
-	blocked: CircleMinusIcon,
-	done: CheckCircleIcon
-};
+let openDeleteTaskDialog = $state(false);
 
 let priorityMeta = $derived(taskPriorityMeta[task.priority as TaskPriority] ?? taskPriorityMeta[4]);
-let stateMeta = $derived(taskStateMeta[task.state]);
-let isNewTask = $derived(task.state === 'new');
+let displayId = $derived(formatTaskDisplayId(task.taskNumber));
+let editHref = $derived(`/tasks/${task.id}/edit`);
 let isDoneTask = $derived(task.state === 'done');
-const StateIcon = $derived(stateIcons[task.state]);
+let isBlockedTask = $derived(task.state === 'blocked');
+let dueDateLabel = $derived(task.dueDate ? formatDateMedium(task.dueDate) : null);
+let dueDateStatus = $derived(getDateUrgencyStatus(task.dueDate));
+let hasFooterMeta = $derived(Boolean(dueDateLabel) || Boolean(task.tags?.length));
+let dueDateClass = $derived(
+	dueDateStatus === 'overdue'
+		? 'text-red-600 dark:text-red-300'
+		: dueDateStatus === 'today'
+			? 'text-orange-600 dark:text-orange-300'
+			: 'text-muted-foreground'
+);
 </script>
 
-<Card.Root
-	class={`border transition-shadow hover:shadow-md ${isNewTask ? 'border-slate-300/80 bg-slate-50/85 dark:border-slate-800 dark:bg-slate-950/55' : ''}`}
+<article
+	class={[
+		'group relative overflow-hidden rounded-2xl border-[0.5px] bg-background/95 p-3.5 pl-4 shadow-[0_1px_0_rgba(15,23,42,0.04)] transition-colors hover:border-slate-300/80 hover:shadow-sm dark:border-slate-800/80 dark:bg-slate-950/75 dark:hover:border-slate-700/80',
+		isBlockedTask &&
+			'border-red-200/80 bg-[repeating-linear-gradient(-45deg,rgba(248,113,113,0.06)_0px,rgba(248,113,113,0.06)_8px,transparent_8px,transparent_16px)] dark:border-red-900/60 dark:bg-[repeating-linear-gradient(-45deg,rgba(248,113,113,0.09)_0px,rgba(248,113,113,0.09)_8px,rgba(2,6,23,0.78)_8px,rgba(2,6,23,0.78)_16px)]',
+		isDoneTask && 'opacity-85'
+	]}
 >
-	<Card.Header class="pb-3">
-		<div class="flex items-start justify-between gap-2">
-			<div class="flex-1">
-				<Card.Title class={`font-display text-lg ${isDoneTask ? 'line-through opacity-50' : ''}`}>
-					<a href={`/tasks/${task.id}/edit`} class="transition-colors hover:underline">
-						{task.title}
-					</a>
-				</Card.Title>
-				{#if task.description}
-					<p
-						class={`mt-1 line-clamp-3 text-sm text-muted-foreground ${isDoneTask ? 'opacity-50' : ''}`}
-					>
-						{task.description}
-					</p>
-				{/if}
-			</div>
-			<div class={`flex flex-col items-end gap-1 ${isDoneTask ? 'opacity-60' : ''}`}>
-				<Badge variant="outline" class={`gap-2 ${priorityMeta.badgeClass}`}>
-					<span class={`h-2.5 w-2.5 rounded-full ${priorityMeta.dotClass}`}></span>
-					<span>{priorityMeta.valueLabel}</span>
-				</Badge>
-			</div>
-		</div>
-	</Card.Header>
+	<span class={['absolute inset-y-0 left-0 w-1', priorityMeta.railClass]}></span>
 
-	<Card.Content class={`pb-3 ${isDoneTask ? 'opacity-50' : ''}`}>
-		<div class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-			<Badge variant="outline" class={`gap-1 ${stateMeta.badgeClass}`}>
-				<StateIcon class="h-3 w-3" />
-				{getTaskStateLabel(task.state)}
+	<div class="flex items-start justify-between gap-2">
+		<div class="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+			<span
+				class="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground"
+			>
+				{displayId}
+			</span>
+			<Badge
+				variant="outline"
+				class={[
+					'h-5 rounded-full px-2 text-[10px] font-semibold uppercase tracking-[0.14em]',
+					priorityMeta.badgeClass
+				]}
+			>
+				{priorityMeta.label}
 			</Badge>
-
-			{#if task.dueDate}
-				<div class="flex items-center gap-1">
-					<CalendarIcon class="h-3 w-3" />
-					<span>{new Date(task.dueDate).toLocaleDateString()}</span>
-				</div>
-			{/if}
 		</div>
 
-		{#if task.tags && task.tags.length > 0}
-			<div class="mt-2 flex flex-wrap gap-1">
-				{#each task.tags as tag (tag)}
-					<Badge variant="secondary" class="text-xs">{tag}</Badge>
-				{/each}
-			</div>
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger>
+				{#snippet child({ props })}
+					<Button
+						{...props}
+						variant="ghost"
+						size="icon"
+						class="size-7 rounded-full text-muted-foreground hover:text-foreground"
+						aria-label={`More actions for ${task.title}`}
+					>
+						<EllipsisVerticalIcon class="size-4" />
+					</Button>
+				{/snippet}
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="end" sideOffset={6} class="w-48 rounded-xl">
+				<DropdownMenu.Item onclick={() => goto(editHref)}>
+					<PencilIcon class="size-4" />
+					<span>Edit task</span>
+				</DropdownMenu.Item>
+				{#if onStateChange && task.state !== 'done'}
+					<DropdownMenu.Item onclick={() => onStateChange?.('done')}>
+						<CircleCheckIcon class="size-4" />
+						<span>Mark done</span>
+					</DropdownMenu.Item>
+				{/if}
+				<DropdownMenu.Separator />
+				<DropdownMenu.Item variant="destructive" onclick={() => (openDeleteTaskDialog = true)}>
+					<Trash2Icon class="size-4" />
+					<span>Delete task</span>
+				</DropdownMenu.Item>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
+	</div>
+
+	<div class="mt-2.5 space-y-1.5">
+		<a
+			href={editHref}
+			class="block text-[15px] font-semibold leading-5 text-foreground transition-colors hover:text-orange-700 hover:underline dark:hover:text-orange-300"
+		>
+			{task.title}
+		</a>
+
+		{#if task.description}
+			<p class="line-clamp-2 text-[13px] leading-5 text-muted-foreground">{task.description}</p>
 		{/if}
-	</Card.Content>
+	</div>
 
-	<Card.Footer class="pt-0">
-		<div class="flex w-full gap-2">
-			<Button variant="outline" size="sm" href={`/tasks/${task.id}/edit`} class="flex-1">
-				Edit
-			</Button>
-			{#if onStateChange && task.state !== 'done'}
-				<Button
-					variant="default"
-					size="sm"
-					onclick={() => onStateChange?.('done')}
-					class="flex-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600/80 dark:hover:bg-emerald-500/80"
+	{#if hasFooterMeta}
+		<div class="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
+			{#if dueDateLabel}
+				<span
+					class={[
+						'inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-100/80 px-2 py-0.5 font-medium dark:border-slate-800 dark:bg-slate-900/80',
+						dueDateClass
+					]}
 				>
-					Mark Done
-				</Button>
+					<CalendarIcon class="size-3" />
+					{dueDateLabel}
+				</span>
+			{/if}
+
+			{#if task.tags && task.tags.length > 0}
+				{#each task.tags as tag (tag)}
+					<Badge variant="secondary" class="rounded-full px-2 py-0.5 text-[10px] font-medium">
+						{tag}
+					</Badge>
+				{/each}
 			{/if}
 		</div>
-	</Card.Footer>
-</Card.Root>
+	{/if}
+</article>
+
+<ConfirmDialog
+	bind:open={openDeleteTaskDialog}
+	title={`Delete ${displayId}`}
+	message={`Delete "${task.title}"? This action cannot be undone.`}
+	confirmButtonText="Delete"
+	id={task.id}
+	actionUrl={deleteAction}
+/>

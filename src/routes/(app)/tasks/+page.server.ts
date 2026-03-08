@@ -1,10 +1,10 @@
-import { fail } from '@sveltejs/kit';
-import { and, eq } from 'drizzle-orm';
+import { fail, redirect } from '@sveltejs/kit';
+import { and, eq, like, or } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { TaskState } from '$lib/schemas/task';
-import { updateTaskStateSchema } from '$lib/schemas/task';
+import { deleteTaskSchema, taskFilterSchema, updateTaskStateSchema } from '$lib/schemas/task';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { tasks } from '$lib/server/db/schema';
@@ -40,13 +40,38 @@ async function getAllTags(userId: string): Promise<string[]> {
 	return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
 }
 
+function parseStoredTags(rawTags: string | null): string[] | null {
+	if (!rawTags) {
+		return null;
+	}
+
+	try {
+		const parsed = JSON.parse(rawTags);
+		return Array.isArray(parsed) ? parsed : null;
+	} catch {
+		return null;
+	}
+}
+
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const userId = locals.user?.id;
+	const filters = taskFilterSchema.safeParse({
+		keyword: url.searchParams.get('keyword') ?? undefined,
+		priority: url.searchParams.get('priority') ?? undefined,
+		tag: url.searchParams.get('tag') ?? undefined,
+		state: url.searchParams.get('state') ?? undefined
+	});
 
-	// Parse query parameters for filtering
-	const state = url.searchParams.get('state');
-	const priority = url.searchParams.get('priority');
-	const tag = url.searchParams.get('tag');
+	if (!filters.success) {
+		logger.error('Invalid task filter parameters', { error: filters.error, userId });
+
+		return {
+			tasks: [],
+			allTags: userId ? await getAllTags(userId) : []
+		};
+	}
+
+	const { keyword, priority, state, tag } = filters.data;
 
 	try {
 		// Build where conditions
@@ -55,32 +80,39 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		if (state) {
 			conditions.push(eq(tasks.state, state));
 		}
-		if (priority) {
-			conditions.push(eq(tasks.priority, Number.parseInt(priority, 10)));
+		if (priority.length > 0) {
+			const priorityCondition = or(...priority.map((value) => eq(tasks.priority, value)));
+			if (priorityCondition) {
+				conditions.push(priorityCondition);
+			}
+		}
+		if (keyword) {
+			const keywordPattern = `%${keyword}%`;
+			const keywordCondition = or(
+				like(tasks.title, keywordPattern),
+				like(tasks.description, keywordPattern)
+			);
+			if (keywordCondition) {
+				conditions.push(keywordCondition);
+			}
+		}
+		if (tag.length > 0) {
+			const tagCondition = or(...tag.map((value) => like(tasks.tags, `%"${value}"%`)));
+			if (tagCondition) {
+				conditions.push(tagCondition);
+			}
 		}
 
-		let taskRows = await getDb().query.tasks.findMany({
+		const taskRows = await getDb().query.tasks.findMany({
 			where: and(...conditions),
-			orderBy: [tasks.priority, tasks.dueDate, tasks.createdAt]
+			orderBy: [tasks.priority, tasks.dueDate, tasks.taskNumber]
 		});
-
-		// Filter by tag if provided (tags are stored as JSON)
-		if (tag) {
-			taskRows = taskRows.filter((task) => {
-				if (!task.tags) return false;
-				try {
-					const tagArray = JSON.parse(task.tags);
-					return Array.isArray(tagArray) && tagArray.includes(tag);
-				} catch {
-					return false;
-				}
-			});
-		}
 
 		const tasksWithParsedFields = taskRows.map((task) => ({
 			...task,
+			taskNumber: task.taskNumber,
 			state: task.state as TaskState,
-			tags: task.tags ? (JSON.parse(task.tags) as string[]) : null
+			tags: parseStoredTags(task.tags)
 		}));
 
 		// Get all unique tags for filter component
@@ -135,5 +167,33 @@ export const actions: Actions = {
 			logger.error('Failed to update task state', { error, form });
 			return fail(500, { form, error: 'Failed to update task state' });
 		}
+	}),
+
+	delete: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(deleteTaskSchema));
+		if (!form.valid) return fail(400, { form });
+
+		try {
+			const existing = await getDb().query.tasks.findFirst({
+				where: and(eq(tasks.id, form.data.id), eq(tasks.userId, user.id))
+			});
+
+			if (!existing) {
+				return fail(404, { form, error: 'Task not found' });
+			}
+
+			await getDb().delete(tasks).where(eq(tasks.id, form.data.id));
+
+			logger.info('Task deleted from board', {
+				taskId: form.data.id,
+				taskNumber: existing.taskNumber,
+				userId: user.id
+			});
+		} catch (error) {
+			logger.error('Failed to delete task from board', { error, form });
+			return fail(500, { form, error: 'Failed to delete task' });
+		}
+
+		throw redirect(303, '/tasks');
 	})
 };

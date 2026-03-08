@@ -184,6 +184,31 @@ export function formatTime12Hour(timeString: string): string {
 	});
 }
 
+type DateUrgencyStatus = 'overdue' | 'today' | 'upcoming';
+
+/**
+ * Categorize a local YYYY-MM-DD date relative to today.
+ * String comparison is safe because both values use the same sortable date format.
+ */
+export function getDateUrgencyStatus(
+	dateString: string | null | undefined,
+	today: string = getTodayString()
+): DateUrgencyStatus | null {
+	if (!dateString) {
+		return null;
+	}
+
+	if (dateString < today) {
+		return 'overdue';
+	}
+
+	if (dateString === today) {
+		return 'today';
+	}
+
+	return 'upcoming';
+}
+
 export const daysOfWeek = [
 	{ id: 0, name: 'Sunday', shortName: 'Sun' },
 	{ id: 1, name: 'Monday', shortName: 'Mon' },

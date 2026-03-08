@@ -22,7 +22,7 @@ let { data, children } = $props();
 			<AppSidebar {navItems} user={data.user} />
 			<Sidebar.Inset>
 				<SiteHeader />
-				<main class="flex flex-1 flex-col space-y-4 p-4 md:py-2">{@render children()}</main>
+				<main class="flex min-w-0 flex-1 flex-col space-y-4 p-4 md:py-2">{@render children()}</main>
 			</Sidebar.Inset>
 		{/if}
 	</Sidebar.Provider>

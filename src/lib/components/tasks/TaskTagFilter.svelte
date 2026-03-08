@@ -19,7 +19,16 @@ let { allTags }: Props = $props();
 // Parse selected tags from URL
 let selectedTags = $derived.by(() => {
 	const tagParam = page.url.searchParams.get('tag');
-	return tagParam ? tagParam.split(',').filter(Boolean) : [];
+	return tagParam
+		? Array.from(
+				new Set(
+					tagParam
+						.split(',')
+						.map((tag) => tag.trim())
+						.filter(Boolean)
+				)
+			)
+		: [];
 });
 
 let open = $state(false);
@@ -51,29 +60,32 @@ function updateUrl(tags: string[]) {
 	} else {
 		url.searchParams.delete('tag');
 	}
-	goto(url.toString(), { replaceState: true, noScroll: true });
+	void goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
 }
 </script>
 
-<div class="flex flex-col gap-2">
+<div class="w-full space-y-2">
 	<div class="flex items-center gap-2">
 		<Popover.Root bind:open>
 			<Popover.Trigger>
-				<Button
-					variant="outline"
-					role="combobox"
-					aria-expanded={open}
-					class="min-w-50 justify-between"
-				>
-					<span class="truncate">
-						{selectedTags.length > 0
-							? `${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''} selected`
-							: 'Filter by tags...'}
-					</span>
-					<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-				</Button>
+				{#snippet child({ props })}
+					<Button
+						{...props}
+						variant="outline"
+						role="combobox"
+						aria-expanded={open}
+						class="h-10 w-full justify-between bg-background/90"
+					>
+						<span class="truncate">
+							{selectedTags.length > 0
+								? `${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''} selected`
+								: 'Tags'}
+						</span>
+						<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+					</Button>
+				{/snippet}
 			</Popover.Trigger>
-			<Popover.Content class="w-75 p-0">
+			<Popover.Content class="w-75 max-w-[calc(100vw-2rem)] p-0">
 				<Command.Root>
 					<Command.Input placeholder="Search tags..." />
 					<Command.Empty>No tags found.</Command.Empty>
@@ -122,9 +134,11 @@ function updateUrl(tags: string[]) {
 					{tag}
 					<Button
 						type="button"
+						variant="ghost"
+						size="icon-sm"
 						onclick={() => removeTag(tag)}
-						class="ml-1 hover:text-destructive"
-						aria-label="Remove {tag}"
+						class="size-5 hover:text-destructive"
+						aria-label={`Remove tag ${tag}`}
 					>
 						<X class="h-3 w-3" />
 					</Button>

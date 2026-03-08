@@ -4,6 +4,7 @@ export type TaskPriority = 1 | 2 | 3 | 4;
 
 export type TaskSummary = {
 	id: string;
+	taskNumber: number;
 	title: string;
 	description: string | null;
 	state: TaskState;
@@ -16,6 +17,7 @@ type TaskPriorityMeta = {
 	label: string;
 	valueLabel: string;
 	dotClass: string;
+	railClass: string;
 	badgeClass: string;
 };
 
@@ -32,6 +34,7 @@ export const taskPriorityMeta: Record<TaskPriority, TaskPriorityMeta> = {
 		label: 'Critical',
 		valueLabel: '1 - Critical',
 		dotClass: 'bg-red-600 dark:bg-red-400/65',
+		railClass: 'bg-red-600 dark:bg-red-400/85',
 		badgeClass:
 			'border-red-300/80 bg-red-100/80 text-red-700 dark:border-red-500/35 dark:bg-red-500/10 dark:text-red-200'
 	},
@@ -39,6 +42,7 @@ export const taskPriorityMeta: Record<TaskPriority, TaskPriorityMeta> = {
 		label: 'High',
 		valueLabel: '2 - High',
 		dotClass: 'bg-orange-500 dark:bg-orange-300/65',
+		railClass: 'bg-orange-500 dark:bg-orange-300/85',
 		badgeClass:
 			'border-orange-300/80 bg-orange-100/80 text-orange-700 dark:border-orange-500/35 dark:bg-orange-500/10 dark:text-orange-200'
 	},
@@ -46,6 +50,7 @@ export const taskPriorityMeta: Record<TaskPriority, TaskPriorityMeta> = {
 		label: 'Medium',
 		valueLabel: '3 - Medium',
 		dotClass: 'bg-blue-600 dark:bg-blue-400/65',
+		railClass: 'bg-blue-600 dark:bg-blue-400/85',
 		badgeClass:
 			'border-blue-300/80 bg-blue-100/80 text-blue-700 dark:border-blue-500/35 dark:bg-blue-500/10 dark:text-blue-200'
 	},
@@ -53,6 +58,7 @@ export const taskPriorityMeta: Record<TaskPriority, TaskPriorityMeta> = {
 		label: 'Low',
 		valueLabel: '4 - Low',
 		dotClass: 'bg-slate-500 dark:bg-slate-400/65',
+		railClass: 'bg-slate-500 dark:bg-slate-400/85',
 		badgeClass:
 			'border-slate-300/80 bg-slate-100/90 text-slate-700 dark:border-slate-500/35 dark:bg-slate-500/10 dark:text-slate-300'
 	}
@@ -72,17 +78,17 @@ export const taskStateMeta: Record<TaskState, TaskStateMeta> = {
 		badgeClass:
 			'border-slate-300/80 bg-slate-200/80 text-slate-700 dark:border-slate-600/60 dark:bg-slate-600/15 dark:text-slate-300',
 		headerClass:
-			'border-slate-300/80 bg-slate-100/85 text-slate-700 dark:border-slate-600/60 dark:bg-slate-900/65 dark:text-slate-300',
+			'border-orange-400/85 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(249,115,22,0.95)] dark:border-orange-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(251,146,60,0.72)]',
 		emptyClass: 'border-slate-300/70 bg-slate-100/55 dark:border-slate-700/70 dark:bg-slate-950/45'
 	},
 	in_progress: {
 		label: 'In Progress',
-		dotClass: 'bg-teal-500 dark:bg-teal-300/70',
+		dotClass: 'bg-blue-500 dark:bg-blue-300/70',
 		badgeClass:
-			'border-teal-300/80 bg-teal-100/85 text-teal-700 dark:border-teal-500/35 dark:bg-teal-500/12 dark:text-teal-200',
+			'border-blue-300/80 bg-blue-100/85 text-blue-700 dark:border-blue-500/35 dark:bg-blue-500/12 dark:text-blue-200',
 		headerClass:
-			'border-teal-300/80 bg-teal-100/80 text-teal-700 dark:border-teal-500/35 dark:bg-teal-950/60 dark:text-teal-200',
-		emptyClass: 'border-teal-300/70 bg-teal-100/50 dark:border-teal-900/60 dark:bg-teal-950/35'
+			'border-blue-400/85 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(59,130,246,0.95)] dark:border-blue-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(96,165,250,0.72)]',
+		emptyClass: 'border-blue-300/70 bg-blue-100/50 dark:border-blue-900/60 dark:bg-blue-950/35'
 	},
 	on_hold: {
 		label: 'On Hold',
@@ -90,7 +96,7 @@ export const taskStateMeta: Record<TaskState, TaskStateMeta> = {
 		badgeClass:
 			'border-amber-300/80 bg-amber-100/85 text-amber-800 dark:border-amber-500/35 dark:bg-amber-500/12 dark:text-amber-200',
 		headerClass:
-			'border-amber-300/80 bg-amber-100/80 text-amber-800 dark:border-amber-500/35 dark:bg-amber-950/55 dark:text-amber-200',
+			'border-amber-400/90 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(245,158,11,0.95)] dark:border-amber-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(252,211,77,0.72)]',
 		emptyClass: 'border-amber-300/70 bg-amber-100/50 dark:border-amber-900/60 dark:bg-amber-950/35'
 	},
 	blocked: {
@@ -99,7 +105,7 @@ export const taskStateMeta: Record<TaskState, TaskStateMeta> = {
 		badgeClass:
 			'border-red-300/80 bg-red-100/80 text-red-700 dark:border-red-500/35 dark:bg-red-500/10 dark:text-red-200',
 		headerClass:
-			'border-red-300/80 bg-red-100/75 text-red-700 dark:border-red-500/35 dark:bg-red-950/55 dark:text-red-200',
+			'border-red-400/85 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(239,68,68,0.95)] dark:border-red-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(248,113,113,0.72)]',
 		emptyClass: 'border-red-300/70 bg-red-100/50 dark:border-red-900/60 dark:bg-red-950/35'
 	},
 	done: {
@@ -108,7 +114,7 @@ export const taskStateMeta: Record<TaskState, TaskStateMeta> = {
 		badgeClass:
 			'border-emerald-300/80 bg-emerald-100/80 text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-500/10 dark:text-emerald-200',
 		headerClass:
-			'border-emerald-300/80 bg-emerald-100/75 text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-950/55 dark:text-emerald-200',
+			'border-emerald-400/85 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(34,197,94,0.95)] dark:border-emerald-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(74,222,128,0.72)]',
 		emptyClass:
 			'border-emerald-300/70 bg-emerald-100/50 dark:border-emerald-900/60 dark:bg-emerald-950/35'
 	}
@@ -124,4 +130,8 @@ export const taskStateOptions = [
 
 export function getTaskStateLabel(state: TaskState): string {
 	return taskStateMeta[state].label;
+}
+
+export function formatTaskDisplayId(taskNumber: number): string {
+	return `SYN-${String(taskNumber).padStart(3, '0')}`;
 }

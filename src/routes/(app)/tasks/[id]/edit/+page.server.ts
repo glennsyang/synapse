@@ -3,7 +3,12 @@ import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
-import { type TaskState, type UpdateTaskInput, updateTaskSchema } from '$lib/schemas/task';
+import {
+	deleteTaskSchema,
+	type TaskState,
+	type UpdateTaskInput,
+	updateTaskSchema
+} from '$lib/schemas/task';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import {
 	getOwnedEntityOrNull,
@@ -108,8 +113,13 @@ export const actions: Actions = {
 		throw redirect(303, '/tasks');
 	}),
 
-	delete: requireAuth(async ({ params }, user) => {
+	delete: requireAuth(async ({ request, params }, user) => {
 		const taskId = params.id as string;
+		const form = await superValidate(request, zod4(deleteTaskSchema));
+
+		if (!form.valid || form.data.id !== taskId) {
+			return fail(400, { error: 'Invalid task id' });
+		}
 
 		try {
 			const existing = await getOwnedEntityOrNull(() =>
@@ -124,7 +134,7 @@ export const actions: Actions = {
 
 			await getDb().delete(tasks).where(eq(tasks.id, taskId));
 
-			logger.info('Task deleted', { taskId, userId: user.id });
+			logger.info('Task deleted', { taskId, taskNumber: existing.taskNumber, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to delete task', { error, taskId });
 			return fail(500, { error: 'Failed to delete task' });

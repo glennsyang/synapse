@@ -1,8 +1,9 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { sql } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
-import { createTaskSchema } from '$lib/schemas/task';
+import { createTaskSchema, type TaskState, TaskStateEnum } from '$lib/schemas/task';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
@@ -11,8 +12,81 @@ import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-	const form = await superValidate(zod4(createTaskSchema));
+const MAX_TASK_NUMBER_ATTEMPTS = 3;
+const TASK_NUMBER_CONSTRAINT_TEXT = 'UNIQUE constraint failed: tasks.task_number';
+
+function getInitialTaskState(rawState: string | null): TaskState {
+	const parsedState = TaskStateEnum.safeParse(rawState);
+	return parsedState.success ? parsedState.data : 'new';
+}
+
+function isTaskNumberConflict(error: unknown): boolean {
+	return error instanceof Error && error.message.includes(TASK_NUMBER_CONSTRAINT_TEXT);
+}
+
+async function createTaskWithTaskNumber(
+	userId: string,
+	input: {
+		title: string;
+		description: string | null;
+		tags: string | null;
+		dueDate: string | null;
+		priority: number;
+		state: TaskState;
+	}
+) {
+	const db = getDb();
+
+	for (let attempt = 1; attempt <= MAX_TASK_NUMBER_ATTEMPTS; attempt += 1) {
+		try {
+			return await db.transaction(async (tx) => {
+				const [taskNumberRow] = await tx
+					.select({
+						nextTaskNumber: sql<number>`coalesce(max(${tasks.taskNumber}), 0) + 1`
+					})
+					.from(tasks);
+
+				const timestamp = new Date().toISOString();
+				const nextTaskNumber = taskNumberRow?.nextTaskNumber ?? 1;
+
+				const [newTask] = await tx
+					.insert(tasks)
+					.values({
+						userId,
+						taskNumber: nextTaskNumber,
+						title: input.title,
+						description: input.description,
+						tags: input.tags,
+						dueDate: input.dueDate,
+						priority: input.priority,
+						state: input.state,
+						createdAt: timestamp,
+						updatedAt: timestamp
+					})
+					.returning();
+
+				return newTask;
+			});
+		} catch (error) {
+			if (isTaskNumberConflict(error) && attempt < MAX_TASK_NUMBER_ATTEMPTS) {
+				continue;
+			}
+
+			throw error;
+		}
+	}
+
+	throw new Error('Failed to allocate a task number');
+}
+
+export const load: PageServerLoad = async ({ url }) => {
+	const form = await superValidate(
+		{
+			priority: 2,
+			state: getInitialTaskState(url.searchParams.get('state'))
+		},
+		zod4(createTaskSchema)
+	);
 
 	return {
 		form
@@ -30,22 +104,20 @@ export const actions: Actions = {
 		try {
 			const tagsJson = toCommaSeparatedJson(form.data.tags);
 
-			const [newTask] = await getDb()
-				.insert(tasks)
-				.values({
-					userId: user.id,
-					title: form.data.title,
-					description: form.data.description || null,
-					tags: tagsJson,
-					dueDate: form.data.dueDate || null,
-					priority: form.data.priority,
-					state: form.data.state,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
-				})
-				.returning();
+			const newTask = await createTaskWithTaskNumber(user.id, {
+				title: form.data.title,
+				description: form.data.description || null,
+				tags: tagsJson,
+				dueDate: form.data.dueDate || null,
+				priority: form.data.priority,
+				state: form.data.state
+			});
 
-			logger.info('Task created', { taskId: newTask.id, userId: user.id });
+			logger.info('Task created', {
+				taskId: newTask.id,
+				taskNumber: newTask.taskNumber,
+				userId: user.id
+			});
 		} catch (error) {
 			logger.error('Failed to create task', { error, userId: user.id });
 			return fail(500, { form, error: 'Failed to create task' });

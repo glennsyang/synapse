@@ -2,6 +2,25 @@ import { z } from 'zod';
 
 export const TaskStateEnum = z.enum(['new', 'in_progress', 'on_hold', 'blocked', 'done']);
 
+const commaSeparatedQueryParamSchema = z
+	.union([z.string(), z.array(z.string())])
+	.optional()
+	.transform((value): string[] => {
+		let entries: string[] = [];
+		if (Array.isArray(value)) {
+			entries = value;
+		} else if (value) {
+			entries = [value];
+		}
+
+		return entries
+			.flatMap((entry) => entry.split(','))
+			.map((entry) => entry.trim())
+			.filter((entry) => entry.length > 0);
+	});
+
+const uniqueValues = <T>(values: T[]): T[] => Array.from(new Set(values));
+
 /**
  * Schema for creating a new task item
  */
@@ -42,5 +61,39 @@ export const updateTaskStateSchema = z.object({
 	state: TaskStateEnum
 });
 
+export const deleteTaskSchema = z.object({
+	id: z.uuid()
+});
+
+export const taskFilterSchema = z.object({
+	keyword: z
+		.string()
+		.trim()
+		.max(200, 'Keyword too long')
+		.optional()
+		.transform((value): string | undefined => value || undefined),
+	priority: commaSeparatedQueryParamSchema.transform((values, ctx): number[] => {
+		const parsedValues: number[] = [];
+
+		for (const value of values) {
+			const parsedValue = Number.parseInt(value, 10);
+			if (!Number.isInteger(parsedValue) || parsedValue < 1 || parsedValue > 4) {
+				ctx.addIssue({
+					code: 'custom',
+					message: 'Priority filters must be between 1 and 4'
+				});
+				return z.NEVER;
+			}
+
+			parsedValues.push(parsedValue);
+		}
+
+		return uniqueValues(parsedValues);
+	}),
+	tag: commaSeparatedQueryParamSchema.transform((values): string[] => uniqueValues(values)),
+	state: TaskStateEnum.optional()
+});
+
 export type TaskState = z.infer<typeof TaskStateEnum>;
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type TaskFilters = z.infer<typeof taskFilterSchema>;

@@ -3,7 +3,7 @@ import { ArrowLeft } from '@lucide/svelte';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 
-import { taskPriorityOptions } from '$lib/components/tasks/task-ui';
+import { taskPriorityOptions, taskStateOptions } from '$lib/components/tasks/task-ui';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
 import { Input } from '$lib/components/ui/input';
@@ -32,6 +32,9 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 let selectedPriorityOption = $derived(
 	taskPriorityOptions.find((option) => option.value.toString() === priorityString) ??
 		taskPriorityOptions[1]
+);
+let selectedStateOption = $derived(
+	taskStateOptions.find((option) => option.value === $form.state) ?? taskStateOptions[0]
 );
 </script>
 
@@ -78,7 +81,7 @@ let selectedPriorityOption = $derived(
 					{/if}
 				</div>
 
-				<div class="grid gap-4 sm:grid-cols-2">
+				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					<div class="space-y-2">
 						<Label for="priority">Priority *</Label>
 						<Select.Root
@@ -109,6 +112,31 @@ let selectedPriorityOption = $derived(
 						</Select.Root>
 						{#if $errors.priority}
 							<p class="text-sm text-destructive">{$errors.priority}</p>
+						{/if}
+					</div>
+
+					<div class="space-y-2">
+						<Label for="state">Starting State *</Label>
+						<Select.Root type="single" name="state" bind:value={$form.state}>
+							<Select.Trigger class="w-full {$errors.state ? 'border-destructive' : ''}" id="state">
+								<div class="flex items-center gap-2">
+									<span class={`h-2.5 w-2.5 rounded-full ${selectedStateOption.dotClass}`}></span>
+									<span>{selectedStateOption.label}</span>
+								</div>
+							</Select.Trigger>
+							<Select.Content>
+								{#each taskStateOptions as option (option.value)}
+									<Select.Item value={option.value} label={option.label}>
+										<div class="flex items-center gap-2">
+											<span class={`h-2.5 w-2.5 rounded-full ${option.dotClass}`}></span>
+											<span>{option.label}</span>
+										</div>
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+						{#if $errors.state}
+							<p class="text-sm text-destructive">{$errors.state}</p>
 						{/if}
 					</div>
 

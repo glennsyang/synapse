@@ -4,7 +4,11 @@ import Trash2Icon from '@lucide/svelte/icons/trash-2';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-import { taskPriorityOptions, taskStateOptions } from '$lib/components/tasks/task-ui';
+import {
+	formatTaskDisplayId,
+	taskPriorityOptions,
+	taskStateOptions
+} from '$lib/components/tasks/task-ui';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
 import { Input } from '$lib/components/ui/input';
@@ -49,6 +53,11 @@ let selectedStateOption = $derived(
 		</Button>
 		<div class="flex items-start justify-between">
 			<div>
+				<p
+					class="font-mono text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground"
+				>
+					{formatTaskDisplayId(data.task.taskNumber)}
+				</p>
 				<h1 class="text-3xl font-bold">Edit Task</h1>
 				<p class="text-muted-foreground">Update the details, state, and priority for this task.</p>
 			</div>

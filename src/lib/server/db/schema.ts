@@ -155,6 +155,7 @@ export const tasks = sqliteTable('tasks', {
 	userId: text('user_id')
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
+	taskNumber: integer('task_number').notNull().unique(),
 	title: text('title').notNull(),
 	description: text('description'),
 	dueDate: text('due_date'), // Optional YYYY-MM-DD
