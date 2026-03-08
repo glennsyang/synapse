@@ -147,17 +147,16 @@ export const journalEntriesRelations = relations(journalEntries, ({ one }) => ({
 }));
 
 /**
- * TodoItems
- * Tasks with optional cadence and rich metadata
+ * Tasks
+ * Kanban-focused task items with priority, state, and tags
  */
-export const todoItems = sqliteTable('todo_items', {
+export const tasks = sqliteTable('tasks', {
 	id: text('id').primaryKey().$defaultFn(generateId),
 	userId: text('user_id')
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
 	title: text('title').notNull(),
 	description: text('description'),
-	cadence: text('cadence'), // Optional: 'daily' | 'weekly' | 'monthly' | undefined
 	dueDate: text('due_date'), // Optional YYYY-MM-DD
 	state: text('state').notNull().default('new'), // 'new' | 'in_progress' | 'on_hold' | 'blocked' | 'done'
 	priority: integer('priority').notNull(), // 1-4 (1=highest, required)
@@ -171,9 +170,9 @@ export const todoItems = sqliteTable('todo_items', {
 	completedAt: text('completed_at') // ISO timestamp when state changed to 'done'
 });
 
-export const todoItemsRelations = relations(todoItems, ({ one }) => ({
+export const tasksRelations = relations(tasks, ({ one }) => ({
 	user: one(user, {
-		fields: [todoItems.userId],
+		fields: [tasks.userId],
 		references: [user.id]
 	})
 }));

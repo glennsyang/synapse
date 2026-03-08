@@ -7,7 +7,7 @@
 
 ## Summary
 
-Synapse is a modern second-brain application providing journaling, todo management, fitness/nutrition tracking, meditation routines, and visit tracking. Built with SvelteKit and SQLite, the app features cloud sync, secure authentication, and a sleek responsive UI optimized for both desktop and mobile use.
+Synapse is a modern second-brain application providing journaling, task management, fitness/nutrition tracking, meditation routines, and visit tracking. Built with SvelteKit and SQLite, the app features cloud sync, secure authentication, and a sleek responsive UI optimized for both desktop and mobile use.
 
 ## Technical Context
 
@@ -20,7 +20,7 @@ Synapse is a modern second-brain application providing journaling, todo manageme
 **Performance Goals**: <200ms page loads, <100ms form submissions, 60fps UI animations  
 **Constraints**: mobile-responsive, single-user per account, last-write-wins conflict resolution  
 **Scale/Scope**: Single-user productivity app, ~20-30 screens/views, expected <100k records per user  
-**Code Quality**: Lefthook + lint-staged for git hooks, ESLint + Prettier
+**Code Quality**: Lefthook + lint-staged for git hooks, Biome
 
 ## Constitution Check
 
@@ -84,7 +84,7 @@ specs/001-synapse-second-brain/
 ├── contracts/           # Phase 1 output (/speckit.plan command)
 │   ├── auth.md          # Authentication endpoints
 │   ├── journal.md       # Journal CRUD endpoints
-│   ├── todos.md         # Todo/project management endpoints
+│   ├── tasks.md         # Kanban-focused task management endpoints
 │   ├── fitness.md       # Workout/meal/weight tracking endpoints
 │   ├── meditation.md    # Meditation routine endpoints
 │   └── visits.md        # Visit tracking endpoints
@@ -100,7 +100,7 @@ src/
 │   ├── components/      # Svelte 5 components (with runes)
 │   │   ├── ui/         # Shadcn base components
 │   │   ├── journal/    # Journal-specific components
-│   │   ├── todos/      # Todo management components
+│   │   ├── tasks/      # Task management components
 │   │   ├── fitness/    # Fitness tracking components
 │   │   ├── meditation/ # Meditation components
 │   │   └── visits/     # Visit tracking components
@@ -119,7 +119,7 @@ src/
 │   │   └── reset-password/
 │   ├── (app)/          # Protected app routes (all use +page.server.ts)
 │   │   ├── journal/
-│   │   ├── todos/
+│   │   ├── tasks/
 │   │   ├── fitness/
 │   │   │   ├── workouts/
 │   │   │   ├── meals/
@@ -184,7 +184,7 @@ No additional complexity justifications required.
 - [contracts/](contracts/) - 6 API contract documents:
   - [auth.md](contracts/auth.md) - Better-auth auto-generated endpoints (/api/auth/\*), email verification, password reset
   - [journal.md](contracts/journal.md) - Journal CRUD with tags, location, weather (UUID IDs)
-  - [todos.md](contracts/todos.md) - Todo/project management with kanban/list/grid views (UUID IDs)
+  - [tasks.md](contracts/tasks.md) - Kanban-focused task management with tags, due dates, and workflow states (UUID IDs)
   - [fitness.md](contracts/fitness.md) - Weight, workouts, meals, goals, reminders, charts (UUID IDs)
   - [meditation.md](contracts/meditation.md) - Routine library, scheduling, session tracking (UUID IDs)
   - [visits.md](contracts/visits.md) - People tracking with status and reminders (UUID IDs)

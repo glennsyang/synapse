@@ -123,39 +123,29 @@
 
 ---
 
-## Phase 5: User Story 3 - Todos by Cadence (Priority: P3)
+## Phase 5: User Story 3 - Tasks Board (Priority: P3)
 
-**Goal**: Create daily/weekly/monthly todos with projects, tags, priority, state, sub-steps; view in list/grid/kanban
+**Goal**: Create and manage tasks with tags, priority, due dates, and workflow state in a Kanban board
 
-**Independent Test**: Create todo with project, tags, priority, state, sub-steps → see in list view → switch to kanban → see in correct column → update state → verify moves
+**Independent Test**: Create a task with tags, priority, due date, and state → see it in the correct Kanban column → edit it → update its state → verify the move persists
 
 ### Implementation for User Story 3
 
-- [x] T065 [P] [US3] Define projects table in src/lib/server/db/schema.ts with UUID keys
-- [x] T066 [P] [US3] Define todoItems table in src/lib/server/db/schema.ts with UUID keys, project FK
-- [x] T067 [US3] Generate and apply migration for projects and todoItems tables
-- [x] T068 [P] [US3] Create Zod schema for project in src/lib/schemas/project.ts
-- [x] T069 [P] [US3] Create Zod schema for todo item in src/lib/schemas/todo.ts (title, description, cadence, project, tags, priority, state, sub_steps, due_date)
-- [x] T070 [US3] Create todos page in src/routes/(app)/todos/+page.svelte with view selector (list/grid/kanban)
-- [x] T071 [US3] Create todos loader in src/routes/(app)/todos/+page.server.ts (load todos + projects by cadence filter)
-- [x] T072 [P] [US3] Create TodoListView component in src/lib/components/todos/TodoListView.svelte with TanStack Table
-- [x] T073 [P] [US3] Create TodoGridView component in src/lib/components/todos/TodoGridView.svelte
-- [x] T074 [P] [US3] Create TodoKanbanView component in src/lib/components/todos/TodoKanbanView.svelte with columns by state
-- [x] T075 [P] [US3] Create TodoCard component in src/lib/components/todos/TodoCard.svelte showing all metadata
-- [x] T076 [P] [US3] Create new todo modal/page in src/routes/(app)/todos/new/+page.svelte
-- [x] T077 [US3] Create new todo action in src/routes/(app)/todos/new/+page.server.ts
-- [x] T078 [P] [US3] Create edit todo page in src/routes/(app)/todos/[id]/edit/+page.svelte
-- [x] T079 [US3] Create edit todo action in src/routes/(app)/todos/[id]/edit/+page.server.ts
-- [x] T080 [P] [US3] Create delete todo action
-- [x] T081 [P] [US3] Create project management page in src/routes/(app)/todos/projects/+page.svelte
-- [x] T082 [US3] Create project CRUD actions in src/routes/(app)/todos/projects/+page.server.ts
-- [x] T083 [P] [US3] Create SubStepsInput component in src/lib/components/todos/SubStepsInput.svelte for adding/editing sub-steps
-- [x] T084 [P] [US3] Implement priority selector UI (1-4 tier)
-- [x] T085 [P] [US3] Implement state selector UI (new, in_progress, blocked, done)
-- [x] T086 [P] [US3] Implement cadence filter tabs (daily, weekly, monthly)
-- [x] T087 [US3] Implement drag-and-drop state change in kanban view (update todo state on drop)
+- [x] T065 [P] [US3] Rename the legacy task route group and components to `tasks`
+- [x] T066 [P] [US3] Rename the canonical task table from its legacy name to `tasks`
+- [x] T067 [US3] Generate a data-preserving migration for the table rename and cadence removal
+- [x] T068 [P] [US3] Replace the legacy task schema exports with `task.ts`
+- [x] T069 [P] [US3] Remove cadence from task validation, persistence, and forms
+- [x] T070 [US3] Simplify the Tasks page to a Kanban-only experience
+- [x] T071 [US3] Update the task loader to filter by state, priority, and tag
+- [x] T072 [P] [US3] Delete the grid view and keep the Kanban board as the single task surface
+- [x] T073 [P] [US3] Restyle task cards for requested priority and workflow-state colors
+- [x] T074 [P] [US3] Add muted styling for new tasks and faded strike-through styling for done tasks
+- [x] T075 [P] [US3] Point task-title navigation at the existing edit page
+- [x] T076 [US3] Add compatibility redirects from the legacy task path to `/tasks`
+- [x] T077 [P] [US3] Refresh docs and contracts to use Tasks terminology and current behavior
 
-**Checkpoint**: User Story 3 complete - todos fully functional with all views and metadata
+**Checkpoint**: User Story 3 complete - tasks fully functional with a Kanban workflow and updated naming
 
 ---
 
@@ -298,7 +288,7 @@
 
 **Extended MVP**: US1 + US2 (journal) provides useful second-brain functionality
 
-**Full MVP**: US1 + US2 + US3 (todos) covers core productivity needs
+**Full MVP**: US1 + US2 + US3 (tasks) covers core productivity needs
 
 ---
 
@@ -316,7 +306,7 @@
 - **Phase 2 (Foundational)**: 17 tasks (BLOCKING)
 - **Phase 3 (US1 - Auth & Shell)**: 17 tasks
 - **Phase 4 (US2 - Journal)**: 16 tasks
-- **Phase 5 (US3 - Todos)**: 23 tasks
+- **Phase 5 (US3 - Tasks)**: 13 tasks
 - **Phase 6 (US4 - Fitness)**: 36 tasks
 - **Phase 7 (US5 - Meditation)**: 20 tasks
 - **Phase 8 (US6 - Visits)**: 18 tasks

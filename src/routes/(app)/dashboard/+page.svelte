@@ -31,7 +31,7 @@ const features = $derived(navItems.navMain.filter((item) => item.title !== 'Dash
 // Map features to colors
 const featureColors = {
 	Journal: 'blue' as const,
-	Todos: 'orange' as const,
+	Tasks: 'orange' as const,
 	Fitness: 'green' as const,
 	Meditation: 'purple' as const,
 	Visits: 'pink' as const

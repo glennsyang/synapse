@@ -10,7 +10,7 @@ Synapse is a comprehensive personal productivity app that helps you capture and 
 
 - 🔐 **Secure Authentication** - Email/password auth with email verification, password reset, and session management
 - 📝 **Daily Journal** - Rich journal entries with tags, location auto-capture, and optional weather integration
-- ✅ **Todo Management** - Organize tasks by cadence (daily/weekly/monthly) with projects, tags, priorities, sub-steps, and multiple views (list/grid/kanban)
+- ✅ **Task Management** - Organize work in a Kanban board with tags, priorities, due dates, and state-based workflows
 - 💪 **Fitness & Nutrition** - Track weight with goal tracking, log workouts with exercises (sets/reps/weight), meal logging with calorie tracking, and progress charts
 - 🧘 **Meditation Routines** - Predefined and custom meditation routines with scheduling, mood tracking, and session history
 - 👥 **Visit Tracking** - Log visits to people with status indicators (green/yellow/red based on recency), companions, notes, and follow-up reminders
@@ -159,7 +159,7 @@ synapse/
 │   │   │   ├── ui/           # shadcn-svelte UI primitives
 │   │   │   ├── shared/       # Shared components (LoadingSpinner, ErrorBoundary, etc.)
 │   │   │   ├── journal/      # Journal-specific components
-│   │   │   ├── todos/        # Todo-specific components
+│   │   │   ├── tasks/        # Task-specific components
 │   │   │   ├── fitness/      # Fitness-specific components
 │   │   │   └── skeletons/     # Loading and placeholder components
 │   │   ├── server/

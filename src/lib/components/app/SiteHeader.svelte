@@ -27,7 +27,7 @@ function getSectionColor(): string {
 
 	if (path.includes('/dashboard')) return 'border-teal';
 	if (path.includes('/journal')) return 'border-blue';
-	if (path.includes('/todos')) return 'border-orange';
+	if (path.includes('/tasks')) return 'border-orange';
 	if (path.includes('/fitness')) return 'border-green';
 	if (path.includes('/meditation')) return 'border-purple';
 	if (path.includes('/visits')) return 'border-pink';

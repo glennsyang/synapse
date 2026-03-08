@@ -24,9 +24,9 @@ export const navItems: SidebarNav = {
 			color: 'text-blue-600 dark:text-blue-400'
 		},
 		{
-			title: 'Todos',
-			description: 'Organize tasks by daily, weekly, and monthly cadence',
-			url: '/todos',
+			title: 'Tasks',
+			description: 'Track work on a kanban board with priorities and states',
+			url: '/tasks',
 			icon: CheckSquareIcon,
 			color: 'text-orange-600 dark:text-orange-400'
 		},

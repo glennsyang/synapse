@@ -11,7 +11,7 @@ This document defines the database schema using Drizzle ORM conventions for SQLi
 ## Schema Conventions
 
 - **Primary Keys**: UUID v4 stored as text (e.g., `id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID())`)
-- **Foreign Keys**: Named as `{table}_id` (e.g., `user_id`, `project_id`), stored as text (UUIDs)
+- **Foreign Keys**: Named as `{table}_id` (e.g., `user_id`, `task_id`), stored as text (UUIDs)
 - **Timestamps**: `created_at`, `updated_at` as ISO 8601 text strings
 - **Booleans**: Stored as integers (0 = false, 1 = true)
 - **Arrays/Objects**: Stored as JSON text
@@ -177,91 +177,56 @@ export const journalEntries = sqliteTable('journal_entries', {
 
 ---
 
-### 4. Project
+### 4. Project (Archived Design)
 
-User-defined project grouping for todos.
-
-```typescript
-export const projects = sqliteTable('projects', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	user_id: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	name: text('name').notNull(),
-	color: text('color'), // Optional hex color for UI
-	created_at: text('created_at').notNull().default("datetime('now')"),
-	updated_at: text('updated_at').notNull().default("datetime('now')")
-});
-```
-
-**Fields**:
-
-- `id`: Unique identifier (UUID)
-- `user_id`: Foreign key to better-auth user table
-- `name`: Project name (e.g., "Work", "Health", "Synapse Dev")
-- `color`: Optional hex color for UI display (e.g., "#3B82F6")
-- `created_at`: Creation timestamp
-- `updated_at`: Last modification timestamp
-
-**Indexes**:
-
-- Composite index on `(user_id, name)` to prevent duplicates
+Project groupings were part of an earlier task model, but the current implementation no longer stores projects for tasks. The live Tasks feature uses lightweight tags instead of a separate `projects` table.
 
 ---
 
-### 5. TodoItem
+### 5. Task
 
-Task with cadence, project assignment, and rich metadata.
+Kanban-focused task item with due dates, workflow state, priority, and tags.
 
 ```typescript
-export const todoItems = sqliteTable('todo_items', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	user_id: text('user_id')
+export const tasks = sqliteTable('tasks', {
+	id: text('id').primaryKey().$defaultFn(generateId),
+	userId: text('user_id')
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
-	project_id: text('project_id').references(() => projects.id, {
-		onDelete: 'set null'
-	}),
 	title: text('title').notNull(),
 	description: text('description'),
-	cadence: text('cadence').notNull(), // 'daily' | 'weekly' | 'monthly'
-	due_date: text('due_date'), // Optional YYYY-MM-DD
-	state: text('state').notNull().default('new'), // 'new' | 'in_progress' | 'blocked' | 'done'
-	priority: integer('priority').notNull().default(2), // 1-4 (1=highest)
+	dueDate: text('due_date'), // Optional YYYY-MM-DD
+	state: text('state').notNull().default('new'), // 'new' | 'in_progress' | 'on_hold' | 'blocked' | 'done'
+	priority: integer('priority').notNull(), // 1-4 (1=highest, required)
 	tags: text('tags'), // JSON array of strings
-	sub_steps: text('sub_steps'), // JSON array of {title: string, completed: boolean}
-	created_at: text('created_at').notNull().default("datetime('now')"),
-	updated_at: text('updated_at').notNull().default("datetime('now')"),
-	completed_at: text('completed_at')
+	createdAt: text('created_at')
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+	updatedAt: text('updated_at')
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+	completedAt: text('completed_at') // ISO timestamp when state changed to 'done'
 });
 ```
 
 **Fields**:
 
-- `id`: Unique identifier (UUID)
-- `user_id`: Foreign key to better-auth user table
-- `project_id`: Optional foreign key to projects (UUID)
-- `title`: Todo title
+- `id`: Unique identifier
+- `userId`: Foreign key to better-auth user table
+- `title`: Task title
 - `description`: Optional detailed description
-- `cadence`: Task frequency (`daily`, `weekly`, `monthly`)
-- `due_date`: Optional due date (YYYY-MM-DD)
-- `state`: Lifecycle state (`new`, `in_progress`, `blocked`, `done`)
-- `priority`: Priority level (1-4, where 1 is highest)
-- `tags`: JSON array of tag strings (e.g., `["#urgent", "#waiting"]`)
-- `sub_steps`: JSON array of sub-step objects (e.g., `[{title: "Research", completed: false}]`)
-- `created_at`: Creation timestamp
-- `updated_at`: Last modification timestamp
-- `completed_at`: Completion timestamp (null if not done)
+- `dueDate`: Optional due date (`YYYY-MM-DD`)
+- `state`: Workflow state (`new`, `in_progress`, `on_hold`, `blocked`, `done`)
+- `priority`: Priority level (`1` = Critical, `2` = High, `3` = Medium, `4` = Low)
+- `tags`: JSON array of tag strings (for example `['#urgent', '#waiting']`)
+- `createdAt`: Creation timestamp
+- `updatedAt`: Last modification timestamp
+- `completedAt`: Completion timestamp, set when a task moves to `done`
 
-**Indexes**:
+**Query Patterns**:
 
-- Composite index on `(user_id, cadence, state)` for filtered views
-- Index on `due_date` for reminders
-- Index on `updated_at` for sync
+- Task board queries filter by `user_id` and optionally by `state`, `priority`, and tag
+- Task lists are ordered by `priority`, `due_date`, and `created_at`
 
 ---
 
@@ -736,10 +701,8 @@ export const visits = sqliteTable('visits', {
 user (better-auth) (1) ──< (*) session (better-auth)
 user (better-auth) (1) ──< (*) account (better-auth)
 user (better-auth) (1) ──< (*) journalEntries
-user (better-auth) (1) ──< (*) projects
-user (better-auth) (1) ──< (*) todoItems
+user (better-auth) (1) ──< (*) tasks
 user (better-auth) (1) ──< (*) emailNotifications
-projects (1) ──< (*) todoItems
 user (better-auth) (1) ──< (*) workoutLogs
 workoutLogs (1) ──< (*) workoutExercises
 user (better-auth) (1) ──< (*) mealLogs

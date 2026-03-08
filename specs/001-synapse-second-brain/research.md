@@ -296,7 +296,7 @@ Use Shadcn-svelte + custom Svelte 5 components with runes:
 - Install Shadcn-svelte primitives: Button, Input, Card, Dialog, etc.
 - Create feature-specific components in `src/lib/components/{feature}/`
 - Use Tailwind utility classes for layout and spacing
-- TanStack Table for todo/journal/workout data tables with filtering/sorting
+- TanStack Table for journal and workout data tables with filtering/sorting; tasks use a dedicated Kanban board
 - **Svelte 5 runes for reactivity** (no stores)
 
 ### Rationale
@@ -347,11 +347,11 @@ src/lib/components/
 │   ├── EntryList.svelte
 │   ├── EntryForm.svelte
 │   └── EntryCard.svelte
-├── todos/
-│   ├── TodoKanban.svelte
-│   ├── TodoList.svelte
-│   ├── TodoGrid.svelte
-│   └── TodoForm.svelte
+├── tasks/
+│   ├── TaskKanbanView.svelte
+│   ├── TaskCard.svelte
+│   ├── TaskTagFilter.svelte
+│   └── task-ui.ts
 ├── fitness/
 │   ├── WorkoutForm.svelte
 │   ├── MealLog.svelte
@@ -458,7 +458,7 @@ Three-tier testing approach:
 
 - Unit: 80%+ coverage of schemas, utilities
 - Integration: 100% coverage of form actions, database operations
-- E2E: Smoke tests for P1-P3 user stories (auth, journal, todos)
+- E2E: Smoke tests for P1-P3 user stories (auth, journal, tasks)
 
 ---
 

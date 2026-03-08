@@ -3,28 +3,29 @@ import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
-import { updateTodoStateSchema } from '$lib/schemas/todo';
+import type { TaskState } from '$lib/schemas/task';
+import { updateTaskStateSchema } from '$lib/schemas/task';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
-import { todoItems } from '$lib/server/db/schema';
+import { tasks } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
 
 /**
- * Get all unique tags across user's todos
+ * Get all unique tags across the user's tasks
  */
 async function getAllTags(userId: string): Promise<string[]> {
-	const todos = await getDb().query.todoItems.findMany({
-		where: eq(todoItems.userId, userId),
+	const taskRows = await getDb().query.tasks.findMany({
+		where: eq(tasks.userId, userId),
 		columns: { tags: true }
 	});
 
 	const tagSet = new Set<string>();
-	for (const todo of todos) {
-		if (todo.tags) {
+	for (const task of taskRows) {
+		if (task.tags) {
 			try {
-				const tagArray = JSON.parse(todo.tags);
+				const tagArray = JSON.parse(task.tags);
 				if (Array.isArray(tagArray)) {
 					for (const tag of tagArray) {
 						tagSet.add(tag);
@@ -43,37 +44,32 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const userId = locals.user?.id;
 
 	// Parse query parameters for filtering
-	const cadence = url.searchParams.get('cadence');
 	const state = url.searchParams.get('state');
 	const priority = url.searchParams.get('priority');
 	const tag = url.searchParams.get('tag');
 
 	try {
 		// Build where conditions
-		const conditions = [eq(todoItems.userId, userId)];
+		const conditions = [eq(tasks.userId, userId)];
 
-		if (cadence) {
-			conditions.push(eq(todoItems.cadence, cadence));
-		}
 		if (state) {
-			conditions.push(eq(todoItems.state, state));
+			conditions.push(eq(tasks.state, state));
 		}
 		if (priority) {
-			conditions.push(eq(todoItems.priority, Number.parseInt(priority, 10)));
+			conditions.push(eq(tasks.priority, Number.parseInt(priority, 10)));
 		}
 
-		// Query todos without project relation
-		let todos = await getDb().query.todoItems.findMany({
+		let taskRows = await getDb().query.tasks.findMany({
 			where: and(...conditions),
-			orderBy: [todoItems.priority, todoItems.dueDate]
+			orderBy: [tasks.priority, tasks.dueDate, tasks.createdAt]
 		});
 
 		// Filter by tag if provided (tags are stored as JSON)
 		if (tag) {
-			todos = todos.filter((todo) => {
-				if (!todo.tags) return false;
+			taskRows = taskRows.filter((task) => {
+				if (!task.tags) return false;
 				try {
-					const tagArray = JSON.parse(todo.tags);
+					const tagArray = JSON.parse(task.tags);
 					return Array.isArray(tagArray) && tagArray.includes(tag);
 				} catch {
 					return false;
@@ -81,23 +77,23 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			});
 		}
 
-		// Parse tags JSON field for frontend
-		const todosWithParsedFields = todos.map((todo) => ({
-			...todo,
-			tags: todo.tags ? JSON.parse(todo.tags) : null
+		const tasksWithParsedFields = taskRows.map((task) => ({
+			...task,
+			state: task.state as TaskState,
+			tags: task.tags ? (JSON.parse(task.tags) as string[]) : null
 		}));
 
 		// Get all unique tags for filter component
 		const allTags = await getAllTags(userId);
 
 		return {
-			todos: todosWithParsedFields,
+			tasks: tasksWithParsedFields,
 			allTags
 		};
 	} catch (error) {
-		logger.error('Failed to load todos', { error, userId });
+		logger.error('Failed to load tasks', { error, userId });
 		return {
-			todos: [],
+			tasks: [],
 			allTags: []
 		};
 	}
@@ -105,20 +101,19 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 export const actions: Actions = {
 	/**
-	 * Update todoItem state (for drag-and-drop in kanban view)
+	 * Update task state from the kanban board
 	 */
 	updateState: requireAuth(async ({ request }, user) => {
-		const form = await superValidate(request, zod4(updateTodoStateSchema));
+		const form = await superValidate(request, zod4(updateTaskStateSchema));
 		if (!form.valid) return fail(400, { form });
 
 		try {
-			// Verify todoItem belongs to user
-			const existing = await getDb().query.todoItems.findFirst({
-				where: and(eq(todoItems.id, form.data.id), eq(todoItems.userId, user.id))
+			const existing = await getDb().query.tasks.findFirst({
+				where: and(eq(tasks.id, form.data.id), eq(tasks.userId, user.id))
 			});
 
 			if (!existing) {
-				return fail(404, { form, error: 'Todo not found' });
+				return fail(404, { form, error: 'Task not found' });
 			}
 
 			// Update state and completedAt if changing to done
@@ -133,12 +128,12 @@ export const actions: Actions = {
 				updateData.completedAt = null;
 			}
 
-			await getDb().update(todoItems).set(updateData).where(eq(todoItems.id, form.data.id));
+			await getDb().update(tasks).set(updateData).where(eq(tasks.id, form.data.id));
 
 			return { form };
 		} catch (error) {
-			logger.error('Failed to update todo state', { error, form });
-			return fail(500, { form, error: 'Failed to update todo state' });
+			logger.error('Failed to update task state', { error, form });
+			return fail(500, { form, error: 'Failed to update task state' });
 		}
 	})
 };

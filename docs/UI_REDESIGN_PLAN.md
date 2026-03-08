@@ -86,7 +86,7 @@ Map existing nav icon colors to semantic design tokens:
 | Journal    | Blue   | Secondary accent, journal features  |
 | Fitness    | Green  | Success states, health metrics      |
 | Meditation | Purple | Info states, mindfulness features   |
-| Todos      | Orange | Warning states, priority indicators |
+| Tasks      | Slate  | Board structure, task workflow UI   |
 | Visits     | Pink   | Accent state, location features     |
 
 #### New CSS Custom Properties
@@ -165,7 +165,7 @@ For subtle backgrounds:
   - Example: Fitness > Workouts > Workout Name
 - Colored accent bar (3px height) under header matching active section
 - Sync indicator: Pulse animation with section color
-- Add Button Group for view toggles where applicable (List/Grid/Kanban)
+- Add Button Group for mode toggles where applicable
 
 ---
 
@@ -184,7 +184,7 @@ For subtle backgrounds:
 
 - Use Progress component with vibrant section colors
 - Metrics:
-  - Todo completion percentage (orange/warning color)
+  - Task completion percentage (slate-to-green workflow color)
   - Journal entry streak (blue/secondary color)
   - Meditation minutes this week (purple/info color)
 - Create `StatCard.svelte` component with:
@@ -212,7 +212,7 @@ For subtle backgrounds:
 
 - **Activity Chart**: Chart component showing weekly/monthly trends
   - Journal entries per day
-  - Todos completed
+  - Tasks completed
   - Meditation sessions
 - **Calendar Heatmap**: Calendar component displaying activity across all features
   - Color intensity based on activity level
@@ -272,15 +272,15 @@ Display font for title - Description with muted color - CTA button
 - ✅ Reduce card shadow prominence
 - ✅ Typography: Display font for entry titles
 
-##### Todos Page ✅
+##### Tasks Page ✅
 
-**File**: `src/routes/(app)/todos/+page.svelte`
+**File**: `src/routes/(app)/tasks/+page.svelte`
 
-- ✅ Priority colors more prominent via Badge component
-- ✅ Use Accordion for category grouping in list view
-- ✅ Reduce card boxing in grid view - use subtle backgrounds
-- ✅ Colored dots for priority (larger, more visible)
-- ✅ Kanban: Column headers with colored underlines
+- ✅ Kanban is the single task surface; grid view removed
+- ✅ Priority labels use Critical / High / Medium / Low with stronger visual hierarchy
+- ✅ State badges and column headers use slate / teal / amber / red / green workflow colors
+- ✅ New task cards use a muted treatment; done tasks fade and strike through the title
+- ✅ Task titles open the dedicated edit form directly from the board
 
 ##### Fitness Page ✅
 
@@ -329,7 +329,7 @@ Display font for title - Description with muted color - CTA button
 - Mood tracking over time (line chart) - if mood data exists
 - Writing streaks (calendar heatmap)
 
-**Todos**:
+**Tasks**:
 
 - Completion rate over time (line chart)
 - Overdue trends (stacked bar)
@@ -434,7 +434,7 @@ Add Svelte page transitions for smooth navigation:
 
 - Section-colored badges:
   - Journal entries: teal background
-  - Todos: orange/blue based on priority
+  - Tasks: state and priority colors based on workflow tokens
   - Fitness: green for health metrics
   - Meditation: purple for mood tags
   - Visits: pink for location tags
@@ -465,7 +465,7 @@ Add Svelte page transitions for smooth navigation:
 - Use Command component for quick navigation
 - Categories by section with colored indicators
 - Recent items at top
-- Search across journal entries, todos, visits
+- Search across journal entries, tasks, visits
 
 #### Toast Notifications (Sonner)
 
@@ -668,7 +668,7 @@ Recommended sequence for development:
 
 5. **Phase 5: Feature Pages** ✅ COMPLETE
    - ✅ Journal page
-   - ✅ Todos page
+  - ✅ Tasks page
    - ✅ Fitness page
    - ✅ Meditation page
    - ✅ Visits page

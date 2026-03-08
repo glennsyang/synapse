@@ -1,17 +1,13 @@
 import { z } from 'zod';
 
-const CadenceEnum = z.enum(['daily', 'weekly', 'monthly', 'none']);
-const TodoStateEnum = z.enum(['new', 'in_progress', 'on_hold', 'blocked', 'done']);
+export const TaskStateEnum = z.enum(['new', 'in_progress', 'on_hold', 'blocked', 'done']);
 
 /**
- * Schema for creating a new todoItem item
+ * Schema for creating a new task item
  */
-export const createTodoSchema = z.object({
+export const createTaskSchema = z.object({
 	title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
 	description: z.string().max(5000, 'Description too long').optional(),
-	cadence: CadenceEnum.default('none')
-		.optional()
-		.transform((val) => (val === 'none' ? undefined : val)),
 	tags: z.string().optional(), // Comma-separated string, parsed in server action
 	dueDate: z
 		.string()
@@ -19,18 +15,15 @@ export const createTodoSchema = z.object({
 		.optional()
 		.nullable(),
 	priority: z.coerce.number().int().min(1, 'Priority is required').max(4),
-	state: TodoStateEnum.default('new')
+	state: TaskStateEnum.default('new')
 });
 
 /**
- * Schema for updating an existing todoItem item
+ * Schema for updating an existing task item
  */
-export const updateTodoSchema = z.object({
+export const updateTaskSchema = z.object({
 	title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
 	description: z.string().max(5000, 'Description too long').optional().nullable(),
-	cadence: CadenceEnum.default('none')
-		.optional()
-		.transform((val) => (val === 'none' ? undefined : val)),
 	tags: z.string().optional().nullable(), // Comma-separated string
 	dueDate: z
 		.string()
@@ -38,17 +31,16 @@ export const updateTodoSchema = z.object({
 		.optional()
 		.nullable(),
 	priority: z.coerce.number().int().min(1, 'Priority is required').max(4).optional(),
-	state: TodoStateEnum.optional()
+	state: TaskStateEnum.optional()
 });
 
 /**
- * Schema for updating todoItem state (for drag-and-drop kanban)
+ * Schema for updating task state from the kanban board
  */
-export const updateTodoStateSchema = z.object({
+export const updateTaskStateSchema = z.object({
 	id: z.uuid(),
-	state: TodoStateEnum
+	state: TaskStateEnum
 });
 
-export type Cadence = z.infer<typeof CadenceEnum>;
-export type TodoState = z.infer<typeof TodoStateEnum>;
-export type UpdatetodoItemput = z.infer<typeof updateTodoSchema>;
+export type TaskState = z.infer<typeof TaskStateEnum>;
+export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;

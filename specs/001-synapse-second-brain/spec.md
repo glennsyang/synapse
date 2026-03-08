@@ -3,7 +3,7 @@
 **Feature Branch**: `001-synapse-second-brain`  
 **Created**: 2026-02-01  
 **Status**: Draft  
-**Input**: User description: "I am building a modern \"Second-Brain\" type app called Synapse. I want it to look sleek, something that would stand out. There should be a sidebar with menu items for: 1.Tracking exercise workouts and meals (what I eat) plus tracking my weight over time. 2.Meditations for different meditation routines. 3.Daily Journal to make daily journal entries. 4.Todos to track daily, weekly and monthly todos. There should be an authentication page before being able to access the app."
+**Input**: User description: "I am building a modern \"Second-Brain\" type app called Synapse. I want it to look sleek, something that would stand out. There should be a sidebar with menu items for: 1.Tracking exercise workouts and meals (what I eat) plus tracking my weight over time. 2.Meditations for different meditation routines. 3.Daily Journal to make daily journal entries. 4.Tasks to organize and complete work in a Kanban board. There should be an authentication page before being able to access the app."
 
 ## Clarifications
 
@@ -60,20 +60,20 @@ As a user, I want to create and review daily journal entries with tags, location
 
 ---
 
-### User Story 3 - Todos by Cadence (Priority: P3)
+### User Story 3 - Tasks Board (Priority: P3)
 
-As a user, I want to create daily, weekly, and monthly todos with rich metadata (project, tags, priority, and state) so I can organize and execute work effectively.
+As a user, I want to create and manage tasks with tags, priority, due dates, and state so I can organize and execute work effectively.
 
 **Why this priority**: Task tracking is a primary productivity need and should be independently usable.
 
-**Independent Test**: Can be tested by creating a todo with a project, tags, priority, and state, plus a sub-step, then verifying it appears in list and kanban views.
+**Independent Test**: Can be tested by creating a task with tags, priority, due date, and state, then verifying it appears in the correct Kanban column and can be edited.
 
 **Acceptance Scenarios**:
 
-1. **Given** I am signed in, **When** I add todos with daily, weekly, and monthly cadences, **Then** each todo appears in the correct cadence view.
-2. **Given** I create or edit a todo, **When** I set title, description, project, tags, priority, and state, **Then** those fields are saved and displayed.
-3. **Given** a complex todo, **When** I add sub-steps, **Then** the sub-steps are saved and shown under the parent todo.
-4. **Given** I switch between list, grid, and kanban views, **When** I open the Todos section, **Then** the tasks render in the selected view.
+1. **Given** I am signed in, **When** I create a task with a title, description, tags, priority, and optional due date, **Then** it is saved and appears on the Tasks board.
+2. **Given** I create or edit a task, **When** I set its title, description, tags, priority, due date, and state, **Then** those fields are saved and displayed.
+3. **Given** I drag or update a task into a different workflow state, **When** I move it between Kanban columns, **Then** the new state is persisted.
+4. **Given** I open the Tasks section, **When** tasks are loaded, **Then** they render in Kanban columns grouped by state.
 
 ---
 
@@ -81,7 +81,7 @@ As a user, I want to create daily, weekly, and monthly todos with rich metadata 
 
 As a user, I want to log weight/biometrics, workouts, and meals with targets and visualizations so I can track health progress and trends.
 
-**Why this priority**: Health tracking is a core module but can be delivered after journaling and todos.
+**Why this priority**: Health tracking is a core module but can be delivered after journaling and tasks.
 
 **Independent Test**: Can be tested by logging weight with a timestamp, setting a goal weight, logging a workout and meal, and confirming charts and daily calorie progress update.
 
@@ -137,8 +137,8 @@ As a user, I want to track visits to people with status and reminders so I can m
 - What happens when a user enters invalid credentials repeatedly?
 - How does the system handle empty or missing content for a journal entry or meal log?
 - What happens if location or weather data is unavailable when saving a journal entry?
-- What happens if a user tries to create a todo with an invalid cadence?
-- What happens if a user leaves project unset or uses an invalid project name?
+- What happens if a user tries to create a task with an invalid or unsupported state?
+- What happens if a user enters a priority outside the supported 1-4 range?
 - What happens if a user enters an invalid state or priority?
 - How does the system handle very long titles, descriptions, or many tags?
 - What happens if a user enters non-numeric or negative values for weight or calories?
@@ -164,19 +164,19 @@ As a user, I want to track visits to people with status and reminders so I can m
 - **FR-001**: The system MUST require authentication before any app content is accessible.
 - **FR-002**: The system MUST provide an authentication page for sign-in and a way to sign out.
 - **FR-002a**: The system MUST support email-and-password authentication for initial release.
-- **FR-003**: The main app shell MUST include a sidebar with menu items for Health Tracking (with sub-menu for Workouts, Meals and Weight), Meditations, Daily Journal, and Todos.
+- **FR-003**: The main app shell MUST include a sidebar with menu items for Health Tracking (with sub-menu for Workouts, Meals and Weight), Meditations, Daily Journal, and Tasks.
 - **FR-004**: Users MUST be able to create, view, edit, and delete daily journal entries with a date, text content, and tags.
 - **FR-004a**: Journal entries MUST automatically capture location when available.
 - **FR-004b**: Journal entries SHOULD automatically capture weather when available.
-- **FR-005**: Users MUST be able to create and complete todos with a cadence of daily, weekly, or monthly.
-- **FR-005a**: Todos MUST include a title and MAY include a description.
-- **FR-005b**: Todos MUST be assignable to a project (e.g., Work, Health, Synapse Dev).
-- **FR-005c**: Todos MUST support tags (e.g., #urgent, #waiting) for filtering across projects.
-- **FR-005d**: Todos MAY include an optional due date.
-- **FR-005e**: Todos MUST support a state lifecycle (e.g., new, in progress, blocked, done).
-- **FR-005f**: Todos MUST support a 4-tier priority system.
-- **FR-005g**: Todos MUST support sub-steps for breaking down complex tasks.
-- **FR-005h**: Users MUST be able to view todos in list, grid, and kanban styles.
+- **FR-005**: Users MUST be able to create, edit, complete, and delete tasks in a Kanban-first workflow.
+- **FR-005a**: Tasks MUST include a title and MAY include a description.
+- **FR-005b**: Tasks MUST support tags (e.g., #urgent, #waiting) for filtering.
+- **FR-005c**: Tasks MAY include an optional due date.
+- **FR-005d**: Tasks MUST support a state lifecycle (`new`, `in_progress`, `on_hold`, `blocked`, `done`).
+- **FR-005e**: Tasks MUST support a 4-tier priority system.
+- **FR-005f**: Users MUST be able to filter tasks by state, priority, and tag.
+- **FR-005g**: Users MUST be able to open and edit a task from a dedicated task form.
+- **FR-005h**: Users MUST be able to view and manage tasks in a Kanban board grouped by state.
 - **FR-006**: Users MUST be able to log workouts and meals with a date and basic details.
 - **FR-006a**: Weight entries MUST include a numeric value in lbs and a date/time stamp.
 - **FR-006b**: The system MUST display a Weight over Time line graph with weekly trends.
@@ -213,8 +213,7 @@ As a user, I want to track visits to people with status and reminders so I can m
 
 - **User**: Authenticated person using the app; owns all personal data.
 - **JournalEntry**: A dated text entry created by a user with tags and optional location/weather metadata.
-- **TodoItem**: A task with title, description, cadence (daily/weekly/monthly), project, tags, optional due date, status, priority, and sub-steps.
-- **Project**: A user-defined grouping for todos (e.g., Work, Health, Synapse Dev).
+- **Task**: A task with title, description, tags, optional due date, workflow state, priority, and completion timestamp.
 - **WorkoutLog**: A dated record of exercise activity with type, duration, and optional exercise details.
 - **WorkoutExercise**: An exercise entry with sets, reps, and weight for strength workouts.
 - **MealLog**: A dated record of meals with description, time of day, and calorie estimate.
@@ -238,7 +237,7 @@ As a user, I want to track visits to people with status and reminders so I can m
 ### Measurable Outcomes
 
 - **SC-001**: 95% of users can sign in and reach the app shell in under 60 seconds on first attempt.
-- **SC-002**: Users can create a journal entry, a todo, or a weight entry in under 2 minutes per item.
+- **SC-002**: Users can create a journal entry, a task, or a weight entry in under 2 minutes per item.
 - **SC-003**: 90% of users can complete at least one meditation routine and see it recorded without assistance.
 - **SC-004**: 90% of users rate the interface as "sleek and visually distinctive" in a post-task survey.
 
