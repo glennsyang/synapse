@@ -249,7 +249,7 @@ synapse/
 │   │   ├── components/       # Svelte components
 │   │   │   ├── ui/          # Shadcn primitives
 │   │   │   ├── journal/
-│   │   │   ├── todos/
+│   │   │   ├── tasks/
 │   │   │   ├── fitness/
 │   │   │   ├── meditation/
 │   │   │   └── visits/
@@ -271,7 +271,7 @@ synapse/
 │   │   │   └── reset-password/
 │   │   ├── (app)/           # Protected app routes
 │   │   │   ├── journal/
-│   │   │   ├── todos/
+│   │   │   ├── tasks/
 │   │   │   ├── fitness/
 │   │   │   ├── meditation/
 │   │   │   └── visits/
@@ -684,7 +684,7 @@ After setup, proceed to:
 
 1. **Implement authentication** (User Story 1 - P1)
 2. **Create journal CRUD** (User Story 2 - P2)
-3. **Build todos module** (User Story 3 - P3)
+3. **Build tasks module** (User Story 3 - P3)
 4. **Add fitness tracking** (User Story 4 - P4)
 5. **Implement meditation routines** (User Story 5 - P5)
 6. **Add visit tracking** (User Story 6 - P6)

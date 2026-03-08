@@ -11,6 +11,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return new Response(undefined, { status: 404 });
 	}
 
+	if (event.url.pathname === '/todos' || event.url.pathname.startsWith('/todos/')) {
+		const target = new URL(event.url);
+		target.pathname = event.url.pathname.replace(/^\/todos(?=\/|$)/, '/tasks');
+		return Response.redirect(target, 307);
+	}
+
 	// Generate unique request ID for logging
 	const requestId = generateId();
 	event.locals.requestId = requestId;

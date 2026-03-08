@@ -3,8 +3,12 @@ import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 import Trash2Icon from '@lucide/svelte/icons/trash-2';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
-
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import {
+	formatTaskDisplayId,
+	taskPriorityOptions,
+	taskStateOptions
+} from '$lib/components/tasks/task-ui';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
 import { Input } from '$lib/components/ui/input';
@@ -21,30 +25,41 @@ const { form, errors, enhance, message, submitting } = superForm(data.form, {
 	dataType: 'form',
 	onUpdate: ({ form }) => {
 		if (form.valid) {
-			toast.success('Todo updated successfully!');
+			toast.success('Task updated successfully!');
 		}
 		if ($message?.type === 'error') {
-			toast.error(`Error updating todo. Reason: ${$message.text}`);
+			toast.error(`Error updating task. Reason: ${$message.text}`);
 		}
 	}
 });
 
 let showDeleteDialog = $state(false);
 
-// Type coercion helpers for Select components
 let priorityString = $derived($form.priority?.toString() ?? '2');
+let selectedPriorityOption = $derived(
+	taskPriorityOptions.find((option) => option.value.toString() === priorityString) ??
+		taskPriorityOptions[1]
+);
+let selectedStateOption = $derived(
+	taskStateOptions.find((option) => option.value === $form.state) ?? taskStateOptions[0]
+);
 </script>
 
 <div class="container mx-auto max-w-2xl py-8">
 	<div class="mb-6">
-		<Button variant="ghost" href="/todos" class="mb-4">
+		<Button variant="ghost" href="/tasks" class="mb-4">
 			<ArrowLeftIcon class="mr-2 h-4 w-4" />
-			Back to Todos
+			Back to Tasks
 		</Button>
 		<div class="flex items-start justify-between">
 			<div>
-				<h1 class="text-3xl font-bold">Edit Todo</h1>
-				<p class="text-muted-foreground">Update task details</p>
+				<p
+					class="font-mono text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground"
+				>
+					{formatTaskDisplayId(data.task.taskNumber)}
+				</p>
+				<h1 class="text-3xl font-bold">Edit Task</h1>
+				<p class="text-muted-foreground">Update the details, state, and priority for this task.</p>
 			</div>
 			<Button variant="destructive" onclick={() => (showDeleteDialog = true)}>
 				<Trash2Icon class="mr-2 h-4 w-4" />
@@ -54,10 +69,9 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 	</div>
 
 	<Card.Root>
-		<Card.Header> <Card.Title>Todo Details</Card.Title> </Card.Header>
+		<Card.Header> <Card.Title>Task Details</Card.Title> </Card.Header>
 		<Card.Content>
 			<form method="POST" action="?/update" use:enhance class="space-y-4">
-				<!-- Title -->
 				<div class="space-y-2">
 					<Label for="title">Title *</Label>
 					<Input
@@ -65,7 +79,7 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 						name="title"
 						type="text"
 						bind:value={$form.title}
-						placeholder="Enter todo title"
+						placeholder="Enter task title"
 						aria-invalid={$errors.title ? 'true' : undefined}
 						required
 					/>
@@ -74,14 +88,13 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 					{/if}
 				</div>
 
-				<!-- Description -->
 				<div class="space-y-2">
 					<Label for="description">Description</Label>
 					<Textarea
 						id="description"
 						name="description"
 						bind:value={$form.description}
-						placeholder="Add more details about this todo"
+						placeholder="Add more details about this task"
 						rows={4}
 					/>
 					{#if $errors.description}
@@ -89,27 +102,7 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 					{/if}
 				</div>
 
-				<!-- Cadence -->
-				<div class="space-y-2">
-					<Label for="cadence">Cadence (Optional)</Label>
-					<Select.Root type="single" name="cadence" bind:value={$form.cadence}>
-						<Select.Trigger id="cadence">
-							{$form.cadence || 'Select cadence (e.g., daily, weekly)'}
-						</Select.Trigger>
-						<Select.Content>
-							<Select.Item value="none" label="None">None</Select.Item>
-							<Select.Item value="daily" label="Daily">Daily</Select.Item>
-							<Select.Item value="weekly" label="Weekly">Weekly</Select.Item>
-							<Select.Item value="monthly" label="Monthly">Monthly</Select.Item>
-						</Select.Content>
-					</Select.Root>
-					{#if $errors.cadence}
-						<p class="text-sm text-destructive">{$errors.cadence}</p>
-					{/if}
-				</div>
-
 				<div class="grid gap-4 sm:grid-cols-2">
-					<!-- Priority -->
 					<div class="space-y-2">
 						<Label for="priority">Priority *</Label>
 						<Select.Root
@@ -120,23 +113,22 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 							required
 						>
 							<Select.Trigger class="w-full">
-								{#if $form.priority === 1}
-									1 - Highest
-								{:else if $form.priority === 2}
-									2 - High
-								{:else if $form.priority === 3}
-									3 - Medium
-								{:else if $form.priority === 4}
-									4 - Low
-								{:else}
-									Select priority
-								{/if}
+								<div class="flex items-center gap-2">
+									<span
+										class={`h-2.5 w-2.5 rounded-full ${selectedPriorityOption.dotClass}`}
+									></span>
+									<span>{selectedPriorityOption.valueLabel}</span>
+								</div>
 							</Select.Trigger>
 							<Select.Content>
-								<Select.Item value="1" label="1 - Highest">1 - Highest</Select.Item>
-								<Select.Item value="2" label="2 - High">2 - High</Select.Item>
-								<Select.Item value="3" label="3 - Medium">3 - Medium</Select.Item>
-								<Select.Item value="4" label="4 - Low">4 - Low</Select.Item>
+								{#each taskPriorityOptions as option (option.value)}
+									<Select.Item value={option.value.toString()} label={option.valueLabel}>
+										<div class="flex items-center gap-2">
+											<span class={`h-2.5 w-2.5 rounded-full ${option.dotClass}`}></span>
+											<span>{option.valueLabel}</span>
+										</div>
+									</Select.Item>
+								{/each}
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.priority}
@@ -144,7 +136,6 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 						{/if}
 					</div>
 
-					<!-- Due Date -->
 					<div class="space-y-2">
 						<Label for="dueDate">Due Date</Label>
 						<Input
@@ -160,19 +151,24 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 					</div>
 				</div>
 
-				<!-- State -->
 				<div class="space-y-2">
 					<Label for="state">State</Label>
 					<Select.Root type="single" name="state" bind:value={$form.state}>
 						<Select.Trigger class="w-full {$errors.state ? 'border-destructive' : ''}" id="state">
-							{$form.state ? $form.state.replace('_', ' ') : 'Select state'}
+							<div class="flex items-center gap-2">
+								<span class={`h-2.5 w-2.5 rounded-full ${selectedStateOption.dotClass}`}></span>
+								<span>{selectedStateOption.label}</span>
+							</div>
 						</Select.Trigger>
 						<Select.Content>
-							<Select.Item value="new" label="New">New</Select.Item>
-							<Select.Item value="in_progress" label="In Progress">In Progress</Select.Item>
-							<Select.Item value="on_hold" label="On Hold">On Hold</Select.Item>
-							<Select.Item value="blocked" label="Blocked">Blocked</Select.Item>
-							<Select.Item value="done" label="Done">Done</Select.Item>
+							{#each taskStateOptions as option (option.value)}
+								<Select.Item value={option.value} label={option.label}>
+									<div class="flex items-center gap-2">
+										<span class={`h-2.5 w-2.5 rounded-full ${option.dotClass}`}></span>
+										<span>{option.label}</span>
+									</div>
+								</Select.Item>
+							{/each}
 						</Select.Content>
 					</Select.Root>
 					{#if $errors.state}
@@ -180,7 +176,6 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 					{/if}
 				</div>
 
-				<!-- Tags -->
 				<div class="space-y-2">
 					<Label for="tags">Tags</Label>
 					<Input
@@ -196,17 +191,15 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 					{/if}
 				</div>
 
-				<!-- Error Message -->
 				{#if $message}
 					<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{$message}</div>
 				{/if}
 
-				<!-- Actions -->
 				<div class="flex gap-4">
 					<Button type="submit" disabled={$submitting}
 						>{$submitting ? 'Saving...' : 'Update'}</Button
 					>
-					<Button type="button" variant="outline" href="/todos">Cancel</Button>
+					<Button type="button" variant="outline" href="/tasks">Cancel</Button>
 				</div>
 			</form>
 		</Card.Content>
@@ -216,8 +209,8 @@ let priorityString = $derived($form.priority?.toString() ?? '2');
 <!-- Delete Confirmation Dialog -->
 <ConfirmDialog
 	bind:open={showDeleteDialog}
-	title="Delete Todo"
-	message="Are you sure you want to delete this todo? This action cannot be undone."
+	title="Delete Task"
+	message="Are you sure you want to delete this task? This action cannot be undone."
 	confirmButtonText="Delete"
 	actionUrl="?/delete"
 />

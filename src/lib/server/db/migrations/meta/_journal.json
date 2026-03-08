@@ -71,6 +71,20 @@
 			"when": 1771982543953,
 			"tag": "0009_vengeful_inhumans",
 			"breakpoints": true
+		},
+		{
+			"idx": 10,
+			"version": "6",
+			"when": 1772930320110,
+			"tag": "0010_glossy_carlie_cooper",
+			"breakpoints": true
+		},
+		{
+			"idx": 11,
+			"version": "6",
+			"when": 1772935422195,
+			"tag": "0011_confused_rawhide_kid",
+			"breakpoints": true
 		}
 	]
 }

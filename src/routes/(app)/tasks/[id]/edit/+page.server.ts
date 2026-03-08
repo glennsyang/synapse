@@ -4,11 +4,11 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import {
-	type Cadence,
-	type TodoState,
-	type UpdatetodoItemput,
-	updateTodoSchema
-} from '$lib/schemas/todo';
+	deleteTaskSchema,
+	type TaskState,
+	type UpdateTaskInput,
+	updateTaskSchema
+} from '$lib/schemas/task';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import {
 	getOwnedEntityOrNull,
@@ -16,13 +16,13 @@ import {
 } from '$lib/server/actions/edit-route-helpers';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
-import { todoItems } from '$lib/server/db/schema';
+import { tasks } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
 
-function buildTodoUpdateData(
-	formData: UpdatetodoItemput,
+function buildTaskUpdateData(
+	formData: UpdateTaskInput,
 	existingState: string
 ): Record<string, unknown> {
 	const updateData: Record<string, unknown> = {
@@ -31,11 +31,6 @@ function buildTodoUpdateData(
 
 	if (formData.title !== undefined) updateData.title = formData.title;
 	if (formData.description !== undefined) updateData.description = formData.description;
-	if (formData.cadence === undefined) {
-		updateData.cadence = null;
-	} else {
-		updateData.cadence = formData.cadence;
-	}
 	if (formData.tags !== undefined) updateData.tags = toCommaSeparatedJson(formData.tags);
 	if (formData.dueDate !== undefined) updateData.dueDate = formData.dueDate;
 	if (formData.priority !== undefined) updateData.priority = formData.priority;
@@ -53,43 +48,42 @@ function buildTodoUpdateData(
 }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const todo = await getOwnedEntityOrThrow(
+	const task = await getOwnedEntityOrThrow(
 		() =>
-			getDb().query.todoItems.findFirst({
-				where: and(eq(todoItems.id, params.id), eq(todoItems.userId, locals.user?.id))
+			getDb().query.tasks.findFirst({
+				where: and(eq(tasks.id, params.id), eq(tasks.userId, locals.user?.id))
 			}),
-		{ type: 'redirect', to: '/todos' }
+		{ type: 'redirect', to: '/tasks' }
 	);
 
 	// Parse JSON fields for form
-	const tagsArray = todo.tags ? JSON.parse(todo.tags) : [];
+	const tagsArray = task.tags ? JSON.parse(task.tags) : [];
 	const tagsString = Array.isArray(tagsArray) ? tagsArray.join(', ') : '';
 
 	// Prepare form data
 	const form = await superValidate(
 		{
-			title: todo.title,
-			description: todo.description ?? undefined,
-			cadence: (todo.cadence as Cadence) ?? 'none',
-			priority: todo.priority,
-			dueDate: todo.dueDate ?? undefined,
-			state: todo.state as TodoState,
+			title: task.title,
+			description: task.description ?? undefined,
+			priority: task.priority,
+			dueDate: task.dueDate ?? undefined,
+			state: task.state as TaskState,
 			tags: tagsString
 		},
-		zod4(updateTodoSchema)
+		zod4(updateTaskSchema)
 	);
 
 	return {
-		todo,
+		task,
 		form
 	};
 };
 
 export const actions: Actions = {
 	update: requireAuth(async ({ request, params }, user) => {
-		const todoId = params.id as string;
+		const taskId = params.id as string;
 
-		const form = await superValidate(request, zod4(updateTodoSchema));
+		const form = await superValidate(request, zod4(updateTaskSchema));
 
 		if (!form.valid) {
 			return fail(400, { form });
@@ -97,51 +91,55 @@ export const actions: Actions = {
 
 		try {
 			const existing = await getOwnedEntityOrNull(() =>
-				getDb().query.todoItems.findFirst({
-					where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
+				getDb().query.tasks.findFirst({
+					where: and(eq(tasks.id, taskId), eq(tasks.userId, user.id))
 				})
 			);
 
 			if (!existing) {
-				return fail(404, { form, error: 'Todo not found' });
+				return fail(404, { form, error: 'Task not found' });
 			}
 
-			const updateData = buildTodoUpdateData(form.data, existing.state);
+			const updateData = buildTaskUpdateData(form.data, existing.state);
 
-			await getDb().update(todoItems).set(updateData).where(eq(todoItems.id, todoId));
+			await getDb().update(tasks).set(updateData).where(eq(tasks.id, taskId));
 
-			logger.info('Todo updated', { todoId, userId: user.id });
+			logger.info('Task updated', { taskId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to update todo', { error, todoId });
-			return fail(500, { form, error: 'Failed to update todo' });
+			logger.error('Failed to update task', { error, taskId });
+			return fail(500, { form, error: 'Failed to update task' });
 		}
 
-		throw redirect(303, `/todos`);
+		throw redirect(303, '/tasks');
 	}),
 
-	delete: requireAuth(async ({ params }, user) => {
-		const todoId = params.id as string;
+	delete: requireAuth(async ({ request, params }, user) => {
+		const taskId = params.id as string;
+		const form = await superValidate(request, zod4(deleteTaskSchema));
+
+		if (!form.valid || form.data.id !== taskId) {
+			return fail(400, { error: 'Invalid task id' });
+		}
 
 		try {
 			const existing = await getOwnedEntityOrNull(() =>
-				getDb().query.todoItems.findFirst({
-					where: and(eq(todoItems.id, todoId), eq(todoItems.userId, user.id))
+				getDb().query.tasks.findFirst({
+					where: and(eq(tasks.id, taskId), eq(tasks.userId, user.id))
 				})
 			);
 
 			if (!existing) {
-				return fail(404, { error: 'Todo not found' });
+				return fail(404, { error: 'Task not found' });
 			}
 
-			// Delete todoItem
-			await getDb().delete(todoItems).where(eq(todoItems.id, todoId));
+			await getDb().delete(tasks).where(eq(tasks.id, taskId));
 
-			logger.info('Todo deleted', { todoId, userId: user.id });
+			logger.info('Task deleted', { taskId, taskNumber: existing.taskNumber, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to delete todo', { error, todoId });
-			return fail(500, { error: 'Failed to delete todo' });
+			logger.error('Failed to delete task', { error, taskId });
+			return fail(500, { error: 'Failed to delete task' });
 		}
 
-		throw redirect(303, '/todos');
+		throw redirect(303, '/tasks');
 	})
 };
