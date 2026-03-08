@@ -71,7 +71,7 @@ export const taskPriorityOptions = [
 	{ value: 4 as const, ...taskPriorityMeta[4] }
 ];
 
-export const taskStateMeta: Record<TaskState, TaskStateMeta> = {
+const taskStateMeta: Record<TaskState, TaskStateMeta> = {
 	new: {
 		label: 'New',
 		dotClass: 'bg-slate-500 dark:bg-slate-400/70',
@@ -127,10 +127,6 @@ export const taskStateOptions = [
 	{ value: 'blocked' as const, ...taskStateMeta.blocked },
 	{ value: 'done' as const, ...taskStateMeta.done }
 ];
-
-export function getTaskStateLabel(state: TaskState): string {
-	return taskStateMeta[state].label;
-}
 
 export function formatTaskDisplayId(taskNumber: number): string {
 	return `SYN-${String(taskNumber).padStart(3, '0')}`;

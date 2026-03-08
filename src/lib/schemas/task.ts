@@ -96,4 +96,3 @@ export const taskFilterSchema = z.object({
 
 export type TaskState = z.infer<typeof TaskStateEnum>;
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
-export type TaskFilters = z.infer<typeof taskFilterSchema>;
