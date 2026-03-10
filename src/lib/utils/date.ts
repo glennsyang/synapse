@@ -90,6 +90,44 @@ export function getTodayString(): string {
 	return new Date().toLocaleDateString('en-CA');
 }
 
+export function parseLocalDateString(dateString: string): Date {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+
+	if (!match) {
+		throw new Error(`Invalid local date string: ${dateString}`);
+	}
+
+	const [, year, month, day] = match;
+	return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
+export function toLocalDateString(date: Date): string {
+	return date.toLocaleDateString('en-CA');
+}
+
+export function addDaysToDateString(dateString: string, days: number): string {
+	const date = parseLocalDateString(dateString);
+	date.setDate(date.getDate() + days);
+	return toLocalDateString(date);
+}
+
+export function getStartOfWeek(dateString: string = getTodayString()): string {
+	const date = parseLocalDateString(dateString);
+	const mondayOffset = (date.getDay() + 6) % 7;
+	date.setDate(date.getDate() - mondayOffset);
+	return toLocalDateString(date);
+}
+
+export function getWeekDates(weekStart: string): string[] {
+	return Array.from({ length: 7 }, (_, index) => addDaysToDateString(weekStart, index));
+}
+
+export function getRollingDateRange(endDate: string, dayCount: number): string[] {
+	return Array.from({ length: dayCount }, (_, index) =>
+		addDaysToDateString(endDate, index - dayCount + 1)
+	);
+}
+
 /**
  * Format an ISO timestamp for display with date and time.
  *
