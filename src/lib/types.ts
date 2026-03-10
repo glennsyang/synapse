@@ -36,3 +36,67 @@ export type Exercise = {
 	reps: number | null;
 	weightLbs: number | null;
 };
+
+export type TaskPageTab = 'kanban' | 'agenda';
+
+export type DailyAgendaSourceType = 'default' | 'custom';
+
+export type DailyAgendaTemplate = {
+	id: string;
+	templateGroupId: string;
+	title: string;
+	sortOrder: number;
+	startsOn: string;
+	endsOn: string | null;
+};
+
+export type DailyAgendaEntry = {
+	id: string;
+	templateId: string | null;
+	templateGroupId: string | null;
+	date: string;
+	title: string;
+	sourceType: DailyAgendaSourceType;
+	sortOrder: number;
+	completed: boolean;
+	completedAt: string | null;
+};
+
+export type DailyAgendaDay = {
+	date: string;
+	dayName: string;
+	shortDayName: string;
+	dayOfWeek: number;
+	dayNumber: number;
+	monthLabel: string;
+	isToday: boolean;
+	isWeekend: boolean;
+	isEditable: boolean;
+	completionPercentage: number;
+	completedCount: number;
+	totalCount: number;
+	entries: DailyAgendaEntry[];
+};
+
+export type DailyAgendaChartPoint = {
+	date: string;
+	completionPercentage: number;
+	completedCount: number;
+	totalCount: number;
+};
+
+export type DailyAgendaData = {
+	weekStart: string;
+	weekEnd: string;
+	weekLabel: string;
+	previousWeekStart: string;
+	nextWeekStart: string;
+	chartRangeLabel: string;
+	isCurrentWeek: boolean;
+	overallCompletionPercentage: number;
+	overallCompletedCount: number;
+	overallTotalCount: number;
+	days: DailyAgendaDay[];
+	templates: DailyAgendaTemplate[];
+	chartPoints: DailyAgendaChartPoint[];
+};

@@ -12,11 +12,16 @@
 	},
 	"chat.useAgentSkills": true,
 	"editor.formatOnSave": true,
+	"editor.formatOnSaveMode": "file",
 	"editor.codeActionsOnSave": {
-		"source.organizeImports.biome": "explicit"
+		"source.organizeImports.biome": "explicit",
+		"source.fixAll.biome": "explicit"
 	},
 	"editor.defaultFormatter": "biomejs.biome",
 	"[svelte]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[javascript]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	},
 	"[json]": {

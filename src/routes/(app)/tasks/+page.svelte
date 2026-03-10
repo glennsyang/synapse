@@ -1,23 +1,27 @@
 <script lang="ts">
-import { ListFilter, Plus } from '@lucide/svelte';
+import { CalendarCog, CalendarDays, ListFilter, Plus, SquareKanban } from '@lucide/svelte';
 import { onDestroy } from 'svelte';
 
 import { goto } from '$app/navigation';
 import { navigating, page } from '$app/state';
 import PageShell from '$lib/components/app/PageShell.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+import DailyAgendaView from '$lib/components/tasks/DailyAgendaView.svelte';
 import TaskKanbanView from '$lib/components/tasks/TaskKanbanView.svelte';
 import TaskPriorityFilter from '$lib/components/tasks/TaskPriorityFilter.svelte';
 import TaskTagFilter from '$lib/components/tasks/TaskTagFilter.svelte';
 import { Button } from '$lib/components/ui/button';
 import * as Collapsible from '$lib/components/ui/collapsible';
 import { Input } from '$lib/components/ui/input';
+import * as Tabs from '$lib/components/ui/tabs';
+import type { TaskPageTab } from '$lib/types';
 
 import type { PageData } from './$types';
 
 let { data }: { data: PageData } = $props();
 
 let filtersOpen = $state(false);
+let defaultsDialogOpen = $state(false);
 let keyword = $state(page.url.searchParams.get('keyword') ?? '');
 let keywordDebounce = $state<ReturnType<typeof setTimeout> | null>(null);
 let keywordDirty = $state(false);
@@ -32,6 +36,23 @@ let hasActiveFilters = $derived(
 let showPageSkeleton = $derived(
 	navigating.to?.url.pathname === '/tasks' && navigating.from?.url.pathname !== '/tasks'
 );
+
+function buildTasksHref(tab: TaskPageTab, week?: string | null): string {
+	const url = new URL(page.url);
+	url.searchParams.set('tab', tab);
+
+	if (week) {
+		url.searchParams.set('week', week);
+	}
+
+	return `${url.pathname}?${url.searchParams.toString()}`;
+}
+
+async function openTaskTab(tab: TaskPageTab) {
+	const week =
+		tab === 'agenda' ? (data.agenda?.weekStart ?? page.url.searchParams.get('week')) : null;
+	await goto(buildTasksHref(tab, week), { replaceState: true, noScroll: true, keepFocus: true });
+}
 
 onDestroy(() => {
 	if (keywordDebounce) {
@@ -91,16 +112,26 @@ async function applyKeywordFilter() {
 {#if showPageSkeleton}
 	<PageSkeleton color="orange" />
 {:else}
-	<PageShell class="min-w-0">
-		<Collapsible.Root bind:open={filtersOpen}>
-			<div class="mobile-stack mb-5 justify-between gap-4 sm:mb-6 sm:flex-wrap lg:flex-nowrap">
-				<div class="min-w-0 flex-1">
-					<h1 class="font-display text-2xl font-bold sm:text-3xl">Tasks</h1>
-					<p class="text-sm text-muted-foreground sm:text-base">
-						Move work through your board and keep priorities visible.
-					</p>
-				</div>
-				<div class="flex w-full items-center gap-2 sm:w-auto">
+	<PageShell class="min-w-0 overflow-x-hidden">
+		<div class="mobile-stack mb-4 justify-between gap-3 sm:mb-5 sm:flex-wrap lg:flex-nowrap">
+			<div class="min-w-0 flex-1">
+				<h1 class="font-display text-2xl font-bold sm:text-3xl">Tasks</h1>
+				<p class="text-sm text-muted-foreground sm:text-base">
+					Switch between your kanban board and your weekly Daily Agenda.
+				</p>
+			</div>
+			<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+				{#if data.activeTab === 'agenda'}
+					<Button
+						type="button"
+						class="min-w-0 flex-1 bg-orange-600 hover:bg-orange-700 sm:flex-none"
+						onclick={() => (defaultsDialogOpen = true)}
+					>
+						<CalendarCog class="mr-2 h-4 w-4" />
+						Set Defaults
+					</Button>
+				{/if}
+				{#if data.activeTab === 'kanban'}
 					<Button
 						href="/tasks/new"
 						class="min-w-0 flex-1 bg-orange-600 hover:bg-orange-700 sm:w-auto sm:flex-none"
@@ -124,35 +155,77 @@ async function applyKeywordFilter() {
 					>
 						<ListFilter class="size-4" />
 					</Button>
-				</div>
+				{/if}
 			</div>
+		</div>
 
-			<Collapsible.Content id="tasks-filter-bar" class="mb-5 w-full sm:mb-6">
-				<div
-					class="grid gap-4 rounded-3xl border border-orange-200/80 bg-orange-50/55 p-4 shadow-sm dark:border-orange-500/25 dark:bg-orange-500/8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
+		<Tabs.Root value={data.activeTab} class="w-full gap-3">
+			<Tabs.List
+				class="grid h-11 w-full grid-cols-2 rounded-xl bg-muted/75 p-1 text-muted-foreground"
+			>
+				<Tabs.Trigger
+					value="kanban"
+					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-orange-500"
+					onclick={() => {
+						if (data.activeTab !== 'kanban') {
+							void openTaskTab('kanban');
+						}
+					}}
 				>
-					<div class="min-w-0 w-full">
-						<Input
-							id="task-keyword-filter"
-							type="search"
-							value={keywordDirty ? keyword : urlKeyword}
-							oninput={handleKeywordInput}
-							aria-label="Search tasks by keyword"
-							placeholder="Search title or description"
-							maxlength={200}
-							class="bg-background/90"
-						/>
-					</div>
+					<SquareKanban class="size-4" />
+					Kanban
+				</Tabs.Trigger>
+				<Tabs.Trigger
+					value="agenda"
+					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-orange-500"
+					onclick={() => {
+						if (data.activeTab !== 'agenda') {
+							void openTaskTab('agenda');
+						}
+					}}
+				>
+					<CalendarDays class="size-4" />
+					Daily Agenda
+				</Tabs.Trigger>
+			</Tabs.List>
 
-					<div class="flex flex-col gap-4 lg:flex-row lg:flex-nowrap lg:justify-self-end">
-						<div class="w-full lg:w-32 lg:shrink-0"><TaskPriorityFilter /></div>
+			<Tabs.Content value="kanban" class="mt-0 space-y-4">
+				<Collapsible.Root bind:open={filtersOpen}>
+					<Collapsible.Content id="tasks-filter-bar" class="w-full">
+						<div
+							class="grid gap-4 rounded-3xl border border-orange-200/80 bg-orange-50/55 p-4 shadow-sm dark:border-orange-500/25 dark:bg-orange-500/8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
+						>
+							<div class="min-w-0 w-full">
+								<Input
+									id="task-keyword-filter"
+									type="search"
+									value={keywordDirty ? keyword : urlKeyword}
+									oninput={handleKeywordInput}
+									aria-label="Search tasks by keyword"
+									placeholder="Search title or description"
+									maxlength={200}
+									class="bg-background/90"
+								/>
+							</div>
 
-						<div class="w-full lg:w-36 lg:shrink-0"><TaskTagFilter allTags={data.allTags} /></div>
-					</div>
-				</div>
-			</Collapsible.Content>
-		</Collapsible.Root>
+							<div class="flex flex-col gap-4 lg:flex-row lg:flex-nowrap lg:justify-self-end">
+								<div class="w-full lg:w-32 lg:shrink-0"><TaskPriorityFilter /></div>
+								<div class="w-full lg:w-36 lg:shrink-0">
+									<TaskTagFilter allTags={data.allTags} />
+								</div>
+							</div>
+						</div>
+					</Collapsible.Content>
+				</Collapsible.Root>
 
-		<div class="mt-4 min-w-0 w-full sm:min-h-80"><TaskKanbanView tasks={data.tasks} /></div>
+				<div class="min-w-0 w-full sm:min-h-80"><TaskKanbanView tasks={data.tasks} /></div>
+			</Tabs.Content>
+
+			<Tabs.Content value="agenda" class="mt-0 min-w-0">
+				{#if data.agenda}
+					<DailyAgendaView agenda={data.agenda} bind:defaultsDialogOpen />
+				{/if}
+			</Tabs.Content>
+		</Tabs.Root>
 	</PageShell>
 {/if}
