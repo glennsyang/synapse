@@ -8,6 +8,28 @@
  * These utilities ensure dates are parsed and displayed in the local timezone.
  */
 
+const APP_TIME_ZONE = 'America/Los_Angeles';
+
+const appDateFormatter = new Intl.DateTimeFormat('en-US', {
+	timeZone: APP_TIME_ZONE,
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit'
+});
+
+function formatDateParts(date: Date, formatter: Intl.DateTimeFormat): string {
+	const parts = formatter.formatToParts(date);
+	const year = parts.find((part) => part.type === 'year')?.value;
+	const month = parts.find((part) => part.type === 'month')?.value;
+	const day = parts.find((part) => part.type === 'day')?.value;
+
+	if (!year || !month || !day) {
+		throw new Error('Unable to format date parts');
+	}
+
+	return `${year}-${month}-${day}`;
+}
+
 /**
  * Parse a YYYY-MM-DD string as a local date (not UTC).
  * Avoids timezone shift issues when displaying dates.
@@ -79,15 +101,15 @@ export function formatDateShort(dateString: string): string {
 }
 
 /**
- * Get today's date in YYYY-MM-DD format (local timezone).
+ * Get today's date in YYYY-MM-DD format using the app timezone.
  *
  * @returns Today's date in YYYY-MM-DD format
  *
  * @example
  * getTodayString() // "2026-02-11"
  */
-export function getTodayString(): string {
-	return new Date().toLocaleDateString('en-CA');
+export function getTodayString(referenceDate: Date = new Date()): string {
+	return formatDateParts(referenceDate, appDateFormatter);
 }
 
 export function parseLocalDateString(dateString: string): Date {

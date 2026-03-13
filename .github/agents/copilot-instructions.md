@@ -1,6 +1,6 @@
 # Synapse Copilot Instructions
 
-Last updated: 2026-02-27
+Last updated: 2026-03-12
 
 ## Active Technologies
 
@@ -134,6 +134,8 @@ src/
 - Runtime/ops env var: `CRON_SECRET` (for `/api/cron/email-notifications`)
 - Validated in `src/env.ts` (production fail-fast + build/dev fallbacks)
 - Node.js version: **22.21.1** (required for better-sqlite3 compatibility)
+- Application timezone is fixed to Pacific time: `America/Los_Angeles`
+- All app-level date boundaries, `getTodayString()`-style helpers, week calculations, reminder cutoffs, and editability rules must use Pacific time instead of server local time or UTC
 
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
 

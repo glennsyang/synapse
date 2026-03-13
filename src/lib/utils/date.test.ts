@@ -5,6 +5,7 @@ import {
 	getDateUrgencyStatus,
 	getRollingDateRange,
 	getStartOfWeek,
+	getTodayString,
 	getWeekDates,
 	parseLocalDateString,
 	toLocalDateString
@@ -66,5 +67,10 @@ describe('date urgency helpers', () => {
 			'2026-03-07',
 			'2026-03-08'
 		]);
+	});
+
+	it('uses Pacific time when calculating today across a UTC midnight boundary', () => {
+		expect(getTodayString(new Date('2026-03-13T06:59:59.000Z'))).toBe('2026-03-12');
+		expect(getTodayString(new Date('2026-03-13T07:00:00.000Z'))).toBe('2026-03-13');
 	});
 });

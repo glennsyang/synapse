@@ -1,12 +1,15 @@
 <script lang="ts">
 import {
 	CalendarDays,
+	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
 	Pencil,
 	Plus,
 	Save,
 	Trash2,
+	TrendingDown,
+	TrendingUp,
 	X
 } from '@lucide/svelte';
 import type { ActionResult } from '@sveltejs/kit';
@@ -17,6 +20,7 @@ import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
+import * as Collapsible from '$lib/components/ui/collapsible';
 import * as Dialog from '$lib/components/ui/dialog';
 import { Input } from '$lib/components/ui/input';
 import type { DailyAgendaData, DailyAgendaEntry, DailyAgendaTemplate } from '$lib/types';
@@ -24,6 +28,7 @@ import { cn } from '$lib/utils';
 import { getStartOfWeek } from '$lib/utils/date';
 
 import DailyAgendaChart from './DailyAgendaChart.svelte';
+import DailyAgendaRadial from './DailyAgendaRadial.svelte';
 
 interface Props {
 	agenda: DailyAgendaData;
@@ -39,9 +44,155 @@ let newEntryDate = $state<string | null>(null);
 let newEntryTitle = $state('');
 let editingEntryId = $state<string | null>(null);
 let editingEntryTitle = $state('');
+let heroOpen = $state(true);
 
-const hasEditableDays = $derived(agenda.days.some((day) => day.isEditable));
-const hasHistoricalDays = $derived(agenda.days.some((day) => !day.isEditable));
+function calculateAverageCompletion(points: Array<{ completionPercentage: number }>): number {
+	return points.length === 0
+		? 0
+		: Math.round(
+				points.reduce((total, point) => total + point.completionPercentage, 0) / points.length
+			);
+}
+
+const overallCompletionPercentage = $derived(
+	Math.min(Math.max(agenda.overallCompletionPercentage, 0), 100)
+);
+const remainingAgendaItemCount = $derived(
+	Math.max(agenda.overallTotalCount - agenda.overallCompletedCount, 0)
+);
+const activeDayCount = $derived(agenda.days.filter((day) => day.totalCount > 0).length);
+const bestDay = $derived(
+	agenda.days.reduce<DailyAgendaData['days'][number] | null>((best, day) => {
+		if (day.totalCount === 0) {
+			return best;
+		}
+
+		if (
+			!best ||
+			day.completionPercentage > best.completionPercentage ||
+			(day.completionPercentage === best.completionPercentage &&
+				day.completedCount > best.completedCount)
+		) {
+			return day;
+		}
+
+		return best;
+	}, null)
+);
+const todayAgendaDay = $derived(agenda.days.find((day) => day.isToday) ?? null);
+const currentWindowPoints = $derived(agenda.chartPoints.slice(-7));
+const previousWindowPoints = $derived(
+	agenda.chartPoints.slice(0, Math.max(agenda.chartPoints.length - 7, 0))
+);
+const currentWindowAverage = $derived(calculateAverageCompletion(currentWindowPoints));
+const previousWindowAverage = $derived(calculateAverageCompletion(previousWindowPoints));
+const completionDelta = $derived(currentWindowAverage - previousWindowAverage);
+const momentumLabel = $derived.by(() => {
+	if (agenda.overallTotalCount === 0) {
+		return 'Fresh canvas';
+	}
+
+	if (overallCompletionPercentage >= 80) {
+		return 'Locked in';
+	}
+
+	if (overallCompletionPercentage >= 55) {
+		return 'Strong rhythm';
+	}
+
+	if (overallCompletionPercentage >= 30) {
+		return 'Building heat';
+	}
+
+	return 'Just warming up';
+});
+const heroSummary = $derived.by(() => {
+	if (agenda.overallTotalCount === 0) {
+		return agenda.isCurrentWeek
+			? 'Seed this week with a few defaults or a day-only item and the planner will start to glow.'
+			: 'This archived week closed without any agenda items on the board.';
+	}
+
+	const todayText = agenda.isCurrentWeek
+		? todayAgendaDay
+			? todayAgendaDay.totalCount === 0
+				? 'Today is still open for its first agenda item.'
+				: `${todayAgendaDay.completedCount} of ${todayAgendaDay.totalCount} items are done today.`
+			: 'Today is still open for its first agenda item.'
+		: 'Archive mode keeps this week read only.';
+	const bestDayText = bestDay
+		? `${bestDay.dayName} currently leads the week at ${bestDay.completionPercentage}%.`
+		: 'No day has separated itself yet.';
+	const deltaAbs = Math.abs(completionDelta);
+	const trendText =
+		previousWindowPoints.length === 0
+			? 'A prior ribbon is not available yet.'
+			: completionDelta > 0
+				? `${deltaAbs} points brighter than the previous 7 days.`
+				: completionDelta < 0
+					? `${deltaAbs} points softer than the previous 7 days.`
+					: 'Tracking even with the previous 7 days.';
+
+	return `${todayText} ${bestDayText} ${trendText}`;
+});
+const todayMetricTitle = $derived(agenda.isCurrentWeek ? 'Today' : 'Active days');
+const todayMetricValue = $derived(
+	agenda.isCurrentWeek && todayAgendaDay
+		? `${todayAgendaDay.completionPercentage}%`
+		: `${activeDayCount}`
+);
+const todayMetricDetail = $derived.by(() => {
+	if (agenda.isCurrentWeek && todayAgendaDay) {
+		if (todayAgendaDay.totalCount === 0) {
+			return 'Open canvas today';
+		}
+
+		return `${todayAgendaDay.completedCount} of ${todayAgendaDay.totalCount} finished`;
+	}
+
+	if (agenda.isCurrentWeek) {
+		return 'Nothing scheduled yet';
+	}
+
+	return activeDayCount === 0 ? 'No scheduled days' : `${activeDayCount} days carry items`;
+});
+const trendMetricValue = $derived(
+	agenda.overallTotalCount === 0
+		? '0 pts'
+		: `${completionDelta > 0 ? '+' : ''}${completionDelta} pts`
+);
+const trendMetricDetail = $derived(
+	previousWindowPoints.length === 0
+		? 'No prior ribbon yet'
+		: completionDelta > 0
+			? 'Brighter than the prior 7 days'
+			: completionDelta < 0
+				? 'Softer than the prior 7 days'
+				: 'Even with the prior 7 days'
+);
+const radialTodayLabel = $derived.by(() => {
+	if (!agenda.isCurrentWeek) {
+		return 'Archive snapshot';
+	}
+
+	if (!todayAgendaDay || todayAgendaDay.totalCount === 0) {
+		return 'Today is open';
+	}
+
+	return `${todayAgendaDay.shortDayName} ${todayAgendaDay.completedCount}/${todayAgendaDay.totalCount}`;
+});
+const radialTodayCompletion = $derived(
+	!agenda.isCurrentWeek || !todayAgendaDay || todayAgendaDay.totalCount === 0
+		? null
+		: todayAgendaDay.completionPercentage
+);
+const heroCollapsedSummary = $derived.by(() => {
+	if (agenda.overallTotalCount === 0) {
+		return agenda.isCurrentWeek ? 'No items scheduled yet' : 'Empty archive week';
+	}
+
+	return `${overallCompletionPercentage}% complete, ${agenda.overallCompletedCount}/${agenda.overallTotalCount} closed`;
+});
 
 type AgendaActionData = {
 	agendaAction?: {
@@ -173,95 +324,270 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 </script>
 
 <div class="space-y-4">
-	<div
-		class="rounded-[1.45rem] border border-orange-200/80 bg-linear-to-br from-orange-50/80 via-background to-amber-50/65 p-3.5 shadow-sm dark:border-orange-500/20 dark:from-orange-500/8 dark:via-background dark:to-amber-500/6 sm:p-4"
+	<section
+		class={cn(
+			'relative isolate overflow-hidden rounded-[1.65rem] border border-orange-200/80 bg-linear-to-br from-orange-50/95 via-background to-amber-50/80 shadow-[0_24px_64px_-38px_rgba(249,115,22,0.28)] dark:border-orange-500/22 dark:from-orange-500/10 dark:via-background dark:to-amber-500/5 dark:shadow-[0_24px_64px_-42px_rgba(249,115,22,0.18)]',
+			heroOpen ? 'p-4 sm:p-5' : 'p-3.5 sm:p-4'
+		)}
 	>
-		<div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-			<div class="min-w-0 flex-1 space-y-3">
-				<div class="flex flex-wrap items-center gap-2">
-					<Badge variant="outline">
-						{agenda.overallCompletedCount}/{agenda.overallTotalCount}
-						items complete
-					</Badge>
-					{#if !hasEditableDays}
-						<Badge variant="secondary">Historical week is locked</Badge>
-					{:else if hasHistoricalDays}
-						<Badge variant="secondary">Past days are view only</Badge>
-					{/if}
-				</div>
-				<div>
-					<div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-						<div>
-							<h2
-								class="font-display text-xl font-semibold tracking-[-0.02em] text-foreground sm:text-2xl"
-							>
-								Daily Agenda
-							</h2>
-							<p class="mt-1 max-w-xl text-sm text-muted-foreground">
-								A weekly planner for the routines and one-off items you want to hit each day.
-							</p>
-						</div>
-						<div
-							class="rounded-2xl border border-orange-200/70 bg-background/80 px-4 py-3 shadow-xs dark:border-orange-500/20 dark:bg-background/70"
+		<div
+			class="absolute -left-14 top-0 size-40 rounded-full bg-orange-300/25 blur-3xl dark:bg-orange-500/12"
+		></div>
+		<div
+			class="absolute right-0 top-1/3 size-36 rounded-full bg-amber-200/35 blur-3xl dark:bg-amber-400/10"
+		></div>
+		<div
+			class="absolute inset-x-6 top-5 h-px bg-linear-to-r from-transparent via-orange-300/60 to-transparent dark:via-orange-400/25"
+		></div>
+
+		<Collapsible.Root bind:open={heroOpen}>
+			<div class="relative space-y-4">
+				<div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+					<div class="flex flex-wrap items-center gap-2.5">
+						<Badge
+							variant="orange"
+							class="rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]"
 						>
-							<p class="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-								This Week
-							</p>
-							<div class="mt-1 flex items-end gap-3">
-								<p class="font-display text-3xl font-semibold tracking-[-0.03em] text-foreground">
-									{agenda.overallCompletionPercentage}%
+							Daily Agenda
+						</Badge>
+						<span
+							class={cn(
+								'inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] backdrop-blur',
+								agenda.isCurrentWeek
+									? 'border-orange-300/70 bg-[oklch(var(--color-orange)/0.12)] text-[oklch(var(--color-orange))] dark:border-orange-400/30 dark:bg-orange-500/10 dark:text-orange-200'
+									: 'border-border/70 bg-background/70 text-muted-foreground dark:bg-background/55'
+							)}
+						>
+							{agenda.isCurrentWeek ? 'Current week' : 'Archive snapshot'}
+						</span>
+						{#if !heroOpen}
+							<span
+								class="inline-flex rounded-full border border-orange-200/80 bg-background/75 px-3 py-1 text-[10px] font-medium tracking-[0.04em] text-muted-foreground backdrop-blur dark:border-orange-500/20 dark:bg-background/65"
+							>
+								{heroCollapsedSummary}
+							</span>
+						{/if}
+					</div>
+
+					<div class="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-auto">
+						<div
+							class="flex min-w-0 items-center gap-1.5 rounded-[1.1rem] border border-orange-200/80 bg-background/78 p-1.5 shadow-xs backdrop-blur dark:border-orange-500/20 dark:bg-background/70"
+						>
+							<Button
+								href={buildAgendaHref(agenda.previousWeekStart)}
+								variant="outline"
+								size="icon"
+								class="size-10 rounded-2xl border-orange-200/70 bg-background/85 hover:bg-orange-50/80 dark:border-orange-500/20 dark:bg-background/70 dark:hover:bg-orange-500/10"
+							>
+								<ChevronLeft class="size-4" />
+							</Button>
+							<div class="min-w-0 px-2 text-center sm:min-w-56">
+								<p
+									class="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"
+								>
+									Week window
 								</p>
-								<p class="max-w-40 pb-1 text-xs text-muted-foreground">
-									Across all items scheduled in this planner week.
+								<p
+									class="mt-1 font-display text-sm font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-base"
+								>
+									{agenda.weekLabel}
 								</p>
 							</div>
+							<Button
+								href={buildAgendaHref(agenda.nextWeekStart)}
+								variant="outline"
+								size="icon"
+								class="size-10 rounded-2xl border-orange-200/70 bg-background/85 hover:bg-orange-50/80 dark:border-orange-500/20 dark:bg-background/70 dark:hover:bg-orange-500/10"
+							>
+								<ChevronRight class="size-4" />
+							</Button>
 						</div>
-					</div>
-				</div>
-			</div>
 
-			<div class="flex flex-col gap-2 xl:items-end">
-				<div class="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:w-auto">
-					<Button
-						href={buildAgendaHref(agenda.previousWeekStart)}
-						variant="outline"
-						size="icon"
-						class="size-9"
-					>
-						<ChevronLeft class="size-4" />
-					</Button>
-					<div
-						class="min-w-0 rounded-xl border border-orange-200/70 bg-background/80 px-3 py-1.5 text-center shadow-xs dark:border-orange-500/20 dark:bg-background/70 sm:min-w-44"
-					>
-						<p class="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-							Planner Week
-						</p>
-						<p class="font-display text-base font-semibold text-foreground sm:text-lg">
-							{agenda.weekLabel}
-						</p>
+						{#if !agenda.isCurrentWeek}
+							<Button
+								href={buildAgendaHref(getStartOfWeek())}
+								variant="outline"
+								class="h-11 rounded-full border-orange-200/80 bg-background/78 px-4 text-[oklch(var(--color-orange))] shadow-xs backdrop-blur hover:bg-orange-50/80 dark:border-orange-500/20 dark:bg-background/70 dark:text-orange-200 dark:hover:bg-orange-500/10"
+							>
+								<CalendarDays class="mr-2 size-4" />
+								Jump to current week
+							</Button>
+						{/if}
+
+						<Button
+							type="button"
+							variant="outline"
+							class="h-11 rounded-full border-orange-200/80 bg-background/78 px-4 text-foreground shadow-xs backdrop-blur hover:bg-orange-50/80 dark:border-orange-500/20 dark:bg-background/70 dark:hover:bg-orange-500/10"
+							aria-controls="daily-agenda-hero-body"
+							aria-expanded={heroOpen}
+							onclick={() => (heroOpen = !heroOpen)}
+						>
+							<ChevronDown
+								class={cn('ml-2 size-4 transition-transform duration-200', heroOpen && 'rotate-180')}
+							/>
+						</Button>
 					</div>
-					<Button
-						href={buildAgendaHref(agenda.nextWeekStart)}
-						variant="outline"
-						size="icon"
-						class="size-9"
-					>
-						<ChevronRight class="size-4" />
-					</Button>
 				</div>
-				{#if !agenda.isCurrentWeek}
-					<Button
-						href={buildAgendaHref(getStartOfWeek())}
-						variant="ghost"
-						class="self-start px-0 text-xs sm:text-sm lg:self-auto"
+
+				<Collapsible.Content id="daily-agenda-hero-body" class="overflow-hidden">
+					<div
+						class="grid gap-5 pt-1 xl:grid-cols-[minmax(0,1.16fr)_minmax(18.5rem,0.84fr)] xl:items-stretch xl:gap-6"
 					>
-						<CalendarDays class="mr-2 size-4" />
-						Jump to current week
-					</Button>
-				{/if}
+						<div class="min-w-0 space-y-5">
+							<div class="space-y-4">
+								<p
+									class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[oklch(var(--color-orange))]"
+								>
+									Weekly focus
+								</p>
+
+								{#if agenda.overallTotalCount === 0}
+									<div class="space-y-3">
+										<h2
+											class="max-w-xl font-display text-3xl font-semibold tracking-[-0.05em] text-foreground sm:text-4xl xl:text-[3.65rem]"
+										>
+											Ready to seed the week.
+										</h2>
+										<p class="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+											{heroSummary}
+										</p>
+									</div>
+								{:else}
+									<div class="space-y-3">
+										<div class="flex flex-wrap items-end gap-3 sm:gap-4">
+											<div class="flex items-end gap-2.5">
+												<span
+													class="font-display text-5xl font-semibold tracking-[-0.08em] text-[oklch(var(--color-orange))] [text-shadow:0_0_28px_rgba(249,115,22,0.18)] sm:text-6xl xl:text-[5rem]"
+												>
+													{agenda.overallCompletedCount}
+												</span>
+												<span
+													class="pb-2 font-display text-2xl tracking-[-0.04em] text-muted-foreground sm:text-3xl"
+												>
+													/ {agenda.overallTotalCount}
+												</span>
+											</div>
+
+											<div class="pb-2">
+												<p
+													class="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground"
+												>
+													Agenda items closed this week
+												</p>
+												<h2
+													class="mt-1 font-display text-2xl font-semibold tracking-[-0.04em] text-foreground sm:text-3xl"
+												>
+													{momentumLabel}
+												</h2>
+											</div>
+										</div>
+
+										<p class="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+											{heroSummary}
+										</p>
+									</div>
+								{/if}
+							</div>
+
+							<div class="grid gap-3 sm:grid-cols-2 min-[1500px]:grid-cols-4">
+								<div
+									class="rounded-[1.15rem] border border-orange-200/80 bg-orange-50/80 px-4 py-3.5 shadow-xs dark:border-orange-500/20 dark:bg-orange-500/8"
+								>
+									<p
+										class="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+									>
+										Completed
+									</p>
+									<p
+										class="mt-3 font-display text-2xl font-semibold tracking-[-0.05em] text-foreground sm:text-3xl"
+									>
+										{agenda.overallCompletedCount}
+									</p>
+									<p class="mt-2 text-xs leading-5 text-muted-foreground">
+										Closed across the ribbon
+									</p>
+								</div>
+
+								<div
+									class="rounded-[1.15rem] border border-border/70 bg-background/78 px-4 py-3.5 shadow-xs backdrop-blur dark:bg-background/70"
+								>
+									<p
+										class="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+									>
+										Remaining
+									</p>
+									<p
+										class="mt-3 font-display text-2xl font-semibold tracking-[-0.05em] text-foreground sm:text-3xl"
+									>
+										{remainingAgendaItemCount}
+									</p>
+									<p class="mt-2 text-xs leading-5 text-muted-foreground">
+										Still waiting this week
+									</p>
+								</div>
+
+								<div
+									class="rounded-[1.15rem] border border-orange-200/70 bg-background/78 px-4 py-3.5 shadow-xs backdrop-blur dark:border-orange-500/18 dark:bg-background/70"
+								>
+									<p
+										class="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+									>
+										{todayMetricTitle}
+									</p>
+									<p
+										class="mt-3 font-display text-2xl font-semibold tracking-[-0.05em] text-foreground sm:text-3xl"
+									>
+										{todayMetricValue}
+									</p>
+									<p class="mt-2 text-xs leading-5 text-muted-foreground">{todayMetricDetail}</p>
+								</div>
+
+								<div
+									class="rounded-[1.15rem] border border-orange-200/70 bg-linear-to-br from-background via-orange-50/70 to-orange-100/70 px-4 py-3.5 shadow-xs dark:border-orange-500/18 dark:from-background dark:via-orange-500/6 dark:to-orange-500/10"
+								>
+									<div class="flex items-start justify-between gap-3">
+										<div>
+											<p
+												class="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+											>
+												Ribbon shift
+											</p>
+											<p
+												class="mt-3 font-display text-2xl font-semibold tracking-[-0.05em] text-foreground sm:text-3xl"
+											>
+												{trendMetricValue}
+											</p>
+										</div>
+
+										{#if completionDelta > 0}
+											<TrendingUp class="mt-1 size-5 text-emerald-600 dark:text-emerald-300" />
+										{:else if completionDelta < 0}
+											<TrendingDown class="mt-1 size-5 text-amber-600 dark:text-amber-300" />
+										{/if}
+									</div>
+									<p class="mt-2 text-xs leading-5 text-muted-foreground">{trendMetricDetail}</p>
+								</div>
+							</div>
+						</div>
+
+						<DailyAgendaRadial
+							completionPercentage={overallCompletionPercentage}
+							completedCount={agenda.overallCompletedCount}
+							remainingCount={remainingAgendaItemCount}
+							totalCount={agenda.overallTotalCount}
+							{activeDayCount}
+							bestDayLabel={bestDay ? bestDay.dayName : 'No standout day yet'}
+							bestDayCompletion={bestDay?.completionPercentage ?? 0}
+							todayCompletion={radialTodayCompletion}
+							todayLabel={radialTodayLabel}
+							trendDelta={completionDelta}
+							{momentumLabel}
+						/>
+					</div>
+				</Collapsible.Content>
 			</div>
-		</div>
-	</div>
+		</Collapsible.Root>
+	</section>
 
 	<div>
 		<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 min-[1200px]:grid-cols-7">
