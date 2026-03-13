@@ -44,6 +44,8 @@ Synapse is a modern second-brain application providing journaling, todo manageme
 - Runtime/ops env var: `CRON_SECRET` (required for `/api/cron/email-notifications`)
 - Validated in `src/env.ts` using Zod schema
 - Node.js version: **22.21.1** (required for better-sqlite3 compatibility)
+- Application timezone is fixed to Pacific time: `America/Los_Angeles`
+- All app-level "today", day boundaries, week calculations, and editability cutoffs must use Pacific time, never server local time or UTC
 
 ## Coding Standards
 
@@ -130,6 +132,7 @@ $effect(() => {
 
 - Health checks are served from `/src/routes/api/healthz/+server.ts` and validated against DB responsiveness
 - Scheduled email notifications run via `/src/routes/api/cron/email-notifications/+server.ts` and require `Authorization: Bearer ${CRON_SECRET}`
+- Date-sensitive server logic must use Pacific time for app behavior consistency across local development and Fly.io production
 
 ### Component Structure
 
@@ -165,6 +168,13 @@ $effect(() => {
 - This version is **non-negotiable** - other versions may cause build failures or runtime errors
 
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
+
+## Local Dev Account when using Integrated Browser
+
+Credentials to login to the app:
+
+Email: gsheppard.yang@gmail.com
+Password: ZAH.zkf*bfv_dvt1zmt
 
 ## Available MCP Tools:
 

@@ -190,39 +190,41 @@ async function applyKeywordFilter() {
 			</Tabs.List>
 
 			<Tabs.Content value="kanban" class="mt-0 space-y-4">
-				<Collapsible.Root bind:open={filtersOpen}>
-					<Collapsible.Content id="tasks-filter-bar" class="w-full">
-						<div
-							class="grid gap-4 rounded-3xl border border-orange-200/80 bg-orange-50/55 p-4 shadow-sm dark:border-orange-500/25 dark:bg-orange-500/8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
-						>
-							<div class="min-w-0 w-full">
-								<Input
-									id="task-keyword-filter"
-									type="search"
-									value={keywordDirty ? keyword : urlKeyword}
-									oninput={handleKeywordInput}
-									aria-label="Search tasks by keyword"
-									placeholder="Search title or description"
-									maxlength={200}
-									class="bg-background/90"
-								/>
-							</div>
+				{#if data.activeTab === 'kanban'}
+					<Collapsible.Root bind:open={filtersOpen}>
+						<Collapsible.Content id="tasks-filter-bar" class="w-full">
+							<div
+								class="grid gap-4 rounded-3xl border border-orange-200/80 bg-orange-50/55 p-4 shadow-sm dark:border-orange-500/25 dark:bg-orange-500/8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
+							>
+								<div class="min-w-0 w-full">
+									<Input
+										id="task-keyword-filter"
+										type="search"
+										value={keywordDirty ? keyword : urlKeyword}
+										oninput={handleKeywordInput}
+										aria-label="Search tasks by keyword"
+										placeholder="Search title or description"
+										maxlength={200}
+										class="bg-background/90"
+									/>
+								</div>
 
-							<div class="flex flex-col gap-4 lg:flex-row lg:flex-nowrap lg:justify-self-end">
-								<div class="w-full lg:w-32 lg:shrink-0"><TaskPriorityFilter /></div>
-								<div class="w-full lg:w-36 lg:shrink-0">
-									<TaskTagFilter allTags={data.allTags} />
+								<div class="flex flex-col gap-4 lg:flex-row lg:flex-nowrap lg:justify-self-end">
+									<div class="w-full lg:w-32 lg:shrink-0"><TaskPriorityFilter /></div>
+									<div class="w-full lg:w-36 lg:shrink-0">
+										<TaskTagFilter allTags={data.allTags} />
+									</div>
 								</div>
 							</div>
-						</div>
-					</Collapsible.Content>
-				</Collapsible.Root>
+						</Collapsible.Content>
+					</Collapsible.Root>
 
-				<div class="min-w-0 w-full sm:min-h-80"><TaskKanbanView tasks={data.tasks} /></div>
+					<div class="min-w-0 w-full sm:min-h-80"><TaskKanbanView tasks={data.tasks} /></div>
+				{/if}
 			</Tabs.Content>
 
 			<Tabs.Content value="agenda" class="mt-0 min-w-0">
-				{#if data.agenda}
+				{#if data.activeTab === 'agenda' && data.agenda}
 					<DailyAgendaView agenda={data.agenda} bind:defaultsDialogOpen />
 				{/if}
 			</Tabs.Content>
