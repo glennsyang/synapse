@@ -103,25 +103,78 @@ const comparisonSummary = $derived.by(() => {
 
 	return 'Holding steady against the prior 7 days.';
 });
-const todayAlertMessage = $derived.by(() => {
+type TodayAlertState = {
+	variant: 'destructive' | 'warning' | 'success';
+	title: string;
+	description: string;
+	className: string;
+};
+
+const todayAlertState = $derived.by((): TodayAlertState | null => {
 	if (!agenda.isCurrentWeek) {
-		return '';
+		return null;
 	}
 
 	if (!todayAgendaDay || todayAgendaDay.totalCount === 0) {
-		return 'Today is open. Add a task when you are ready. 💪';
+		return {
+			variant: 'warning',
+			title: 'Nothing queued yet',
+			description: 'Today is open. Add a task you want to get done.',
+			className:
+				'border-orange-200/80 bg-orange-50/75 dark:border-orange-500/25 dark:bg-orange-500/10'
+		};
 	}
 
-	if (todayAgendaDay.completedCount === todayAgendaDay.totalCount) {
-		return 'Great work! You finished all your tasks today. 💪';
+	const doneCount = todayAgendaDay.completedCount;
+	const totalCount = todayAgendaDay.totalCount;
+	const progress = todayAgendaDay.completionPercentage;
+	const taskLabel = totalCount === 1 ? 'task' : 'tasks';
+
+	if (progress >= 80) {
+		if (doneCount === totalCount) {
+			return {
+				variant: 'success',
+				title: 'All done for today 🎉',
+				description: `You wrapped up all ${totalCount} ${taskLabel}. Nice finish.`,
+				className:
+					'border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-500/25 dark:bg-emerald-500/10'
+			};
+		}
+
+		return {
+			variant: 'success',
+			title: 'Almost there 🎉',
+			description: `You have ${doneCount} of ${totalCount} ${taskLabel} done today. You're close to a clean sweep.`,
+			className:
+				'border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-500/25 dark:bg-emerald-500/10'
+		};
 	}
 
-	if (todayAgendaDay.completedCount > 0) {
-		const taskLabel = todayAgendaDay.completedCount === 1 ? 'task' : 'tasks';
-		return `You have ${todayAgendaDay.completedCount} ${taskLabel} completed today. Keep it up! 💪`;
+	if (progress >= 40) {
+		return {
+			variant: 'warning',
+			title: progress >= 50 ? 'Halfway there' : 'Good momentum',
+			description: `You have ${doneCount} of ${totalCount} ${taskLabel} done today. Keep going and this day ends strong.`,
+			className:
+				'border-orange-200/80 bg-orange-50/75 dark:border-orange-500/25 dark:bg-orange-500/10'
+		};
 	}
 
-	return 'Get doing those tasks! 💪';
+	if (doneCount === 0) {
+		return {
+			variant: 'destructive',
+			title: 'Today needs a first win',
+			description: 'No tasks are done yet today. Start with the easiest one and build momentum.',
+			className: 'border-red-200/80 bg-red-50/80 dark:border-red-500/25 dark:bg-red-500/10'
+		};
+	}
+
+	return {
+		variant: 'destructive',
+		title: 'Today needs attention',
+		description: `You have only ${doneCount} of ${totalCount} ${taskLabel} done today. Knock out the next one to get back on pace.`,
+		className: 'border-red-200/80 bg-red-50/80 dark:border-red-500/25 dark:bg-red-500/10'
+	};
 });
 
 type AgendaActionData = {
@@ -384,13 +437,17 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 						<p class="mt-2.5 text-[11px] leading-5 text-muted-foreground">{comparisonSummary}</p>
 					</div>
 
-					{#if agenda.isCurrentWeek}
+					{#if todayAlertState}
 						<Alert.Root
-							variant="warning"
-							class="w-full min-w-0 rounded-[1.15rem] border-orange-200/80 bg-background/76 px-3.5 py-2.5 shadow-xs backdrop-blur dark:border-orange-500/20 dark:bg-background/68"
+							variant={todayAlertState.variant}
+							class={cn(
+								'w-full min-w-0 rounded-[1.15rem] px-3.5 py-2.5 shadow-xs backdrop-blur',
+								todayAlertState.className
+							)}
 						>
-							<Alert.Description class="text-sm font-medium text-foreground [&_p]:leading-5">
-								<p>{todayAlertMessage}</p>
+							<Alert.Title class="text-sm font-semibold"> {todayAlertState.title} </Alert.Title>
+							<Alert.Description class="text-sm [&_p]:leading-5">
+								<p>{todayAlertState.description}</p>
 							</Alert.Description>
 						</Alert.Root>
 					{/if}
@@ -458,7 +515,7 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 						</div>
 						<p class="mt-1.5 text-[11px] text-muted-foreground">
 							{day.completedCount}
-							of {day.totalCount} complete
+							of {day.totalCount} done
 						</p>
 					</div>
 

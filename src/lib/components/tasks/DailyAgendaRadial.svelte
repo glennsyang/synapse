@@ -57,8 +57,8 @@ const trendLabel = $derived.by(() => {
 });
 const ariaLabel = $derived(
 	hasComparisonData
-		? `Week completion ${displayPercentage} percent. ${completedCount} completed out of ${totalCount} items. Rolling seven day average is ${displayRollingAverage} percent compared with ${displayPreviousAverage} percent across the prior seven days.`
-		: `Week completion ${displayPercentage} percent. ${completedCount} completed out of ${totalCount} items.`
+		? `Week progress ${displayPercentage} percent. ${completedCount} done out of ${totalCount} items. Rolling seven day average is ${displayRollingAverage} percent compared with ${displayPreviousAverage} percent across the prior seven days.`
+		: `Week progress ${displayPercentage} percent. ${completedCount} done out of ${totalCount} items.`
 );
 </script>
 
@@ -81,7 +81,7 @@ const ariaLabel = $derived(
 				<p class="mt-1 text-xs leading-5 text-muted-foreground">
 					{#if totalCount > 0}
 						{completedCount}
-						of {totalCount} complete
+						of {totalCount} done
 					{:else}
 						Nothing scheduled yet
 					{/if}
