@@ -93,7 +93,7 @@ BETTER_AUTH_BASE_URL=http://localhost:5173
 RESEND_FROM_ADDRESS=noreply@example.com
 RESEND_NEW_USER_ADDRESS=admin@example.com
 
-# Cron authentication (required for /api/cron/email-notifications)
+# Cron authentication (required for scheduled notifications via /api/cron/email-notifications)
 CRON_SECRET=your_cron_secret_here
 ```
 
@@ -241,7 +241,7 @@ fly deploy
 
 - **Health check endpoint** at `/api/healthz` validates DB responsiveness
 - **Request IDs** are generated in `hooks.server.ts` and included via `X-Request-ID`
-- **Scheduled notifications** run via `/api/cron/email-notifications` with `Authorization: Bearer ${CRON_SECRET}`
+- **Scheduled notifications** (workout, meditation, visit warnings, and daily agenda digest at 6:00 AM PT) run via `/api/cron/email-notifications` with `Authorization: Bearer ${CRON_SECRET}`
 
 ### Security
 

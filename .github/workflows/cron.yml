@@ -1,4 +1,4 @@
-name: Email Notifications Job
+name: Scheduled Notifications Job
 
 on:
   schedule:
@@ -9,7 +9,7 @@ jobs:
   trigger-emails:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger email notifications
+      - name: Trigger scheduled notifications
         run: |
           curl -X POST ${{ secrets.APP_URL }}/api/cron/email-notifications \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \

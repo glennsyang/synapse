@@ -101,7 +101,7 @@ export const emailNotifications = sqliteTable('email_notifications', {
 	userId: text('userId')
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
-	notificationType: text('notification_type').notNull(), // 'workout_reminder' | 'meditation_reminder' | 'visit_warning'
+	notificationType: text('notification_type').notNull(), // 'workout_reminder' | 'meditation_reminder' | 'visit_warning' | 'daily_agenda_digest'
 	entityId: text('entity_id'), // ID of related entity (workout_reminder, meditation_schedule, or person)
 	sentAt: text('sent_at').notNull(), // ISO 8601 timestamp
 	emailSubject: text('email_subject').notNull(),
