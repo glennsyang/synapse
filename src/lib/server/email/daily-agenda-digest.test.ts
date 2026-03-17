@@ -26,10 +26,10 @@ function createEntry(overrides: Partial<DailyAgendaEntry>): DailyAgendaEntry {
 }
 
 describe('daily-agenda-digest', () => {
-	it('builds a title with date and calendar emoji', () => {
+	it('builds a plain title with date', () => {
 		const title = buildDailyAgendaDigestTitle('2026-03-16');
 
-		expect(title).toContain('🗓️');
+		expect(title).toContain('Synapse - Daily Agenda Tasks');
 		expect(title).toContain('Daily Agenda Tasks');
 		expect(title).toContain('March');
 	});

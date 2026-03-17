@@ -57,7 +57,7 @@ export function getDailyMotivationPhrase(
 }
 
 export function buildDailyAgendaDigestTitle(dateString: string): string {
-	return `🗓️ Synapse - Daily Agenda Tasks for ${formatDateLong(dateString)}`;
+	return `Synapse - Daily Agenda Tasks for ${formatDateLong(dateString)}`;
 }
 
 function toTaskBullet(entry: DailyAgendaEntry): string {
@@ -75,8 +75,11 @@ export function buildDailyAgendaDigestMessage(
 			: ['• 🌟 No agenda tasks today - enjoy the momentum and make it count!'];
 
 	const motivationalPhrase = getDailyMotivationPhrase(dateString);
+	const taskList = listLines.join(`
+`);
 
-	return ['📝 Here is your daily agenda:', ...listLines, '', `🚀 ${motivationalPhrase} ✨`].join(
-		'\n'
-	);
+	return `📝 Here is your daily agenda:
+${taskList}
+
+🚀 ${motivationalPhrase} ✨`;
 }
