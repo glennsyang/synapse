@@ -283,7 +283,7 @@ async function processMeditationReminders(
 			await sendReminderNotification(
 				`Meditation reminder: ${routine.title} at ${schedule.time}.`,
 				'Synapse - Meditation Reminder',
-				'meditation'
+				'lotus_position_man'
 			);
 
 			await logNotification(
@@ -396,7 +396,7 @@ async function processVisitWarnings(): Promise<void> {
 			await sendReminderNotification(
 				visitNotificationMessage,
 				'Synapse - Visit Warning',
-				'visit',
+				'busts_in_silhouette',
 				warningStatus === 'critical' ? 4 : 3
 			);
 
