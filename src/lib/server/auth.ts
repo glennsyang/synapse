@@ -15,7 +15,7 @@ const env = getEnv();
 export const auth = betterAuth({
 	appName: 'Synapse',
 	secret: env.BETTER_AUTH_SECRET,
-	baseUrl: env.BETTER_AUTH_BASE_URL,
+	baseURL: env.BETTER_AUTH_BASE_URL,
 	database: drizzleAdapter(getDb(), {
 		provider: 'sqlite',
 		schema: {
