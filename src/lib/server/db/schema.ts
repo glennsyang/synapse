@@ -191,6 +191,7 @@ export const dailyAgendaTemplates = sqliteTable(
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
 		title: text('title').notNull(),
+		applicableDays: text('applicable_days').notNull().default('[0,1,2,3,4,5,6]'),
 		sortOrder: integer('sort_order').notNull().default(0),
 		startsOn: text('starts_on').notNull(), // YYYY-MM-DD
 		endsOn: text('ends_on'), // YYYY-MM-DD

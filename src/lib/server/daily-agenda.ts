@@ -20,6 +20,7 @@ import {
 
 const DEFAULT_SOURCE = 'default' as const;
 const CUSTOM_SOURCE = 'custom' as const;
+const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
 type DailyAgendaTemplateRecord = typeof dailyAgendaTemplates.$inferSelect;
 type DailyAgendaEntryRecord = typeof dailyAgendaEntries.$inferSelect;
@@ -66,14 +67,46 @@ function buildDateRangeLabel(startDate: string, endDate: string): string {
 }
 
 function mapTemplateRecord(template: DailyAgendaTemplateRecord): DailyAgendaTemplate {
+	const applicableDays = parseTemplateApplicableDays(template.applicableDays);
+
 	return {
 		id: template.id,
 		templateGroupId: template.templateGroupId,
 		title: template.title,
+		applicableDays,
 		sortOrder: template.sortOrder,
 		startsOn: template.startsOn,
 		endsOn: template.endsOn ?? null
 	};
+}
+
+function normalizeApplicableDays(rawDays: unknown[]): number[] {
+	return Array.from(
+		new Set(
+			rawDays
+				.map((value) => Number(value))
+				.filter((value) => Number.isInteger(value) && value >= 0 && value <= 6)
+		)
+	).sort((left, right) => left - right);
+}
+
+function parseTemplateApplicableDays(rawApplicableDays: string): number[] {
+	try {
+		const parsed = JSON.parse(rawApplicableDays);
+		if (!Array.isArray(parsed)) {
+			return [...ALL_WEEKDAYS];
+		}
+
+		const normalizedDays = normalizeApplicableDays(parsed);
+
+		return normalizedDays.length > 0 ? normalizedDays : [...ALL_WEEKDAYS];
+	} catch {
+		return [...ALL_WEEKDAYS];
+	}
+}
+
+function serializeTemplateApplicableDays(applicableDays: number[]): string {
+	return JSON.stringify(normalizeApplicableDays(applicableDays));
 }
 
 function mapEntryRecord(entry: DailyAgendaEntryRecord): DailyAgendaEntry {
@@ -91,7 +124,14 @@ function mapEntryRecord(entry: DailyAgendaEntryRecord): DailyAgendaEntry {
 }
 
 function isTemplateActiveOnDate(template: DailyAgendaTemplateRecord, date: string): boolean {
-	return template.startsOn <= date && (!template.endsOn || template.endsOn >= date);
+	if (!(template.startsOn <= date && (!template.endsOn || template.endsOn >= date))) {
+		return false;
+	}
+
+	const applicableDays = parseTemplateApplicableDays(template.applicableDays);
+	const weekday = parseLocalDateString(date).getDay();
+
+	return applicableDays.includes(weekday);
 }
 
 function sortAgendaEntriesForDisplay(entries: DailyAgendaEntry[]): DailyAgendaEntry[] {
@@ -124,7 +164,7 @@ async function getActiveTemplatesForDate(
 		orderBy: [asc(dailyAgendaTemplates.sortOrder), asc(dailyAgendaTemplates.createdAt)]
 	});
 
-	return rows.map(mapTemplateRecord);
+	return rows.filter((row) => isTemplateActiveOnDate(row, date)).map(mapTemplateRecord);
 }
 
 async function ensureDefaultEntriesForDates(userId: string, dates: string[]): Promise<void> {
@@ -332,10 +372,15 @@ export async function loadDailyAgendaEntriesForDate(
 	return sortAgendaEntriesForDisplay(entries);
 }
 
-export async function createDailyAgendaTemplate(userId: string, title: string): Promise<void> {
+export async function createDailyAgendaTemplate(
+	userId: string,
+	title: string,
+	applicableDays: number[]
+): Promise<void> {
 	const db = getDb();
 	const today = getTodayString();
 	const timestamp = new Date().toISOString();
+	const serializedApplicableDays = serializeTemplateApplicableDays(applicableDays);
 
 	await db.transaction(async (tx) => {
 		const [sortOrderRow] = await tx
@@ -357,6 +402,7 @@ export async function createDailyAgendaTemplate(userId: string, title: string): 
 			templateGroupId,
 			userId,
 			title,
+			applicableDays: serializedApplicableDays,
 			sortOrder: (sortOrderRow?.maxSortOrder ?? -1) + 1,
 			startsOn: today,
 			createdAt: timestamp,
@@ -368,11 +414,14 @@ export async function createDailyAgendaTemplate(userId: string, title: string): 
 export async function updateDailyAgendaTemplate(
 	userId: string,
 	templateId: string,
-	title: string
+	title: string,
+	applicableDays: number[]
 ): Promise<void> {
 	const db = getDb();
 	const today = getTodayString();
 	const timestamp = new Date().toISOString();
+	const serializedApplicableDays = serializeTemplateApplicableDays(applicableDays);
+	const applicableDaysSet = new Set(parseTemplateApplicableDays(serializedApplicableDays));
 
 	await db.transaction(async (tx) => {
 		const existing = await tx.query.dailyAgendaTemplates.findFirst({
@@ -391,7 +440,7 @@ export async function updateDailyAgendaTemplate(
 		if (existing.startsOn === today) {
 			await tx
 				.update(dailyAgendaTemplates)
-				.set({ title, updatedAt: timestamp })
+				.set({ title, applicableDays: serializedApplicableDays, updatedAt: timestamp })
 				.where(eq(dailyAgendaTemplates.id, existing.id));
 
 			await tx
@@ -405,6 +454,27 @@ export async function updateDailyAgendaTemplate(
 						gte(dailyAgendaEntries.date, today)
 					)
 				);
+
+			const entriesToDelete = await tx.query.dailyAgendaEntries.findMany({
+				where: and(
+					eq(dailyAgendaEntries.userId, userId),
+					eq(dailyAgendaEntries.templateGroupId, existing.templateGroupId),
+					eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
+					gte(dailyAgendaEntries.date, today)
+				),
+				columns: {
+					id: true,
+					date: true
+				}
+			});
+
+			const entryIdsToDelete = entriesToDelete
+				.filter((entry) => !applicableDaysSet.has(parseLocalDateString(entry.date).getDay()))
+				.map((entry) => entry.id);
+
+			if (entryIdsToDelete.length > 0) {
+				await tx.delete(dailyAgendaEntries).where(inArray(dailyAgendaEntries.id, entryIdsToDelete));
+			}
 
 			return;
 		}
@@ -420,6 +490,7 @@ export async function updateDailyAgendaTemplate(
 			templateGroupId: existing.templateGroupId,
 			userId,
 			title,
+			applicableDays: serializedApplicableDays,
 			sortOrder: existing.sortOrder,
 			startsOn: today,
 			createdAt: timestamp,
@@ -442,6 +513,27 @@ export async function updateDailyAgendaTemplate(
 					gte(dailyAgendaEntries.date, today)
 				)
 			);
+
+		const entriesToDelete = await tx.query.dailyAgendaEntries.findMany({
+			where: and(
+				eq(dailyAgendaEntries.userId, userId),
+				eq(dailyAgendaEntries.templateGroupId, existing.templateGroupId),
+				eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
+				gte(dailyAgendaEntries.date, today)
+			),
+			columns: {
+				id: true,
+				date: true
+			}
+		});
+
+		const entryIdsToDelete = entriesToDelete
+			.filter((entry) => !applicableDaysSet.has(parseLocalDateString(entry.date).getDay()))
+			.map((entry) => entry.id);
+
+		if (entryIdsToDelete.length > 0) {
+			await tx.delete(dailyAgendaEntries).where(inArray(dailyAgendaEntries.id, entryIdsToDelete));
+		}
 	});
 }
 

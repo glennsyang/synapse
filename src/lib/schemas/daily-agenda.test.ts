@@ -23,19 +23,32 @@ describe('daily agenda schemas', () => {
 
 	it('validates default item creation with trimmed titles', () => {
 		const result = createDailyAgendaTemplateSchema.parse({
-			title: '  Morning review  '
+			title: '  Morning review  ',
+			applicableDays: ['1', '3', '5']
 		});
 
 		expect(result.title).toBe('Morning review');
+		expect(result.applicableDays).toEqual([1, 3, 5]);
 	});
 
 	it('accepts updating default items by id', () => {
 		const result = updateDailyAgendaTemplateSchema.parse({
 			id: '123e4567-e89b-12d3-a456-426614174000',
-			title: 'Plan tomorrow before bed'
+			title: 'Plan tomorrow before bed',
+			applicableDays: ['0', '6', '0']
 		});
 
 		expect(result.title).toBe('Plan tomorrow before bed');
+		expect(result.applicableDays).toEqual([0, 6]);
+	});
+
+	it('requires at least one applicable day for default items', () => {
+		const result = createDailyAgendaTemplateSchema.safeParse({
+			title: 'Exercise',
+			applicableDays: []
+		});
+
+		expect(result.success).toBe(false);
 	});
 
 	it('validates day-only agenda items with required local dates', () => {

@@ -33,9 +33,21 @@ interface Props {
 
 let { agenda, defaultsDialogOpen = $bindable(false) }: Props = $props();
 
+const WEEKDAY_OPTIONS = [
+	{ value: 1, label: 'Mon' },
+	{ value: 2, label: 'Tue' },
+	{ value: 3, label: 'Wed' },
+	{ value: 4, label: 'Thu' },
+	{ value: 5, label: 'Fri' },
+	{ value: 6, label: 'Sat' },
+	{ value: 0, label: 'Sun' }
+] as const;
+
 let newTemplateTitle = $state('');
+let newTemplateApplicableDays = $state<number[]>(WEEKDAY_OPTIONS.map((option) => option.value));
 let editingTemplateId = $state<string | null>(null);
 let editingTemplateTitle = $state('');
+let editingTemplateApplicableDays = $state<number[]>([]);
 let newEntryDate = $state<string | null>(null);
 let newEntryTitle = $state('');
 let editingEntryId = $state<string | null>(null);
@@ -262,11 +274,35 @@ function createAgendaEnhance(options: {
 function startTemplateEdit(template: DailyAgendaTemplate) {
 	editingTemplateId = template.id;
 	editingTemplateTitle = template.title;
+	editingTemplateApplicableDays = [...template.applicableDays];
 }
 
 function cancelTemplateEdit() {
 	editingTemplateId = null;
 	editingTemplateTitle = '';
+	editingTemplateApplicableDays = [];
+}
+
+function updateApplicableDaysSelection(
+	currentDays: number[],
+	day: number,
+	checked: boolean
+): number[] {
+	if (checked) {
+		return Array.from(new Set([...currentDays, day])).sort((left, right) => left - right);
+	}
+
+	return currentDays.filter((currentDay) => currentDay !== day);
+}
+
+function formatApplicableDays(applicableDays: number[]): string {
+	if (applicableDays.length === WEEKDAY_OPTIONS.length) {
+		return 'Every day';
+	}
+
+	return WEEKDAY_OPTIONS.filter((option) => applicableDays.includes(option.value))
+		.map((option) => option.label)
+		.join(', ');
 }
 
 function openNewEntry(date: string) {
@@ -748,22 +784,50 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 						errorMessage: 'Unable to add default item.',
 						afterSuccess: () => {
 							newTemplateTitle = '';
+							newTemplateApplicableDays = WEEKDAY_OPTIONS.map((option) => option.value);
 						}
 					})}
 					class="rounded-2xl border border-orange-200/80 bg-orange-50/50 p-4 dark:border-orange-500/20 dark:bg-orange-500/6"
 				>
-					<div class="flex flex-col gap-2 sm:flex-row">
-						<Input
-							name="title"
-							bind:value={newTemplateTitle}
-							placeholder="Add a recurring item"
-							maxlength={200}
-							required
-						/>
-						<Button type="submit" class="bg-orange-600 hover:bg-orange-700">
-							<Plus class="mr-2 size-4" />
-							Add Default
-						</Button>
+					<div class="space-y-3">
+						<div class="grid gap-2 sm:grid-cols-7">
+							{#each WEEKDAY_OPTIONS as option}
+								<div
+									class="inline-flex items-center gap-2 rounded-md border border-border/70 px-2 py-1 text-xs"
+								>
+									<input
+										id={`new-template-day-${option.value}`}
+										class="size-4"
+										type="checkbox"
+										name="applicableDays"
+										value={String(option.value)}
+										checked={newTemplateApplicableDays.includes(option.value)}
+										onchange={(event) => {
+											const target = event.currentTarget as HTMLInputElement;
+											newTemplateApplicableDays = updateApplicableDaysSelection(
+												newTemplateApplicableDays,
+												option.value,
+												target.checked
+											);
+										}}
+									>
+									<label for={`new-template-day-${option.value}`}>{option.label}</label>
+								</div>
+							{/each}
+						</div>
+						<div class="flex flex-col gap-2 sm:flex-row">
+							<Input
+								name="title"
+								bind:value={newTemplateTitle}
+								placeholder="Add a recurring item"
+								maxlength={200}
+								required
+							/>
+							<Button type="submit" class="bg-orange-600 hover:bg-orange-700">
+								<Plus class="mr-2 size-4" />
+								Add Default
+							</Button>
+						</div>
 					</div>
 				</form>
 
@@ -782,7 +846,41 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 									class="flex flex-col gap-2 sm:flex-row"
 								>
 									<input type="hidden" name="id" value={template.id}>
-									<Input name="title" bind:value={editingTemplateTitle} maxlength={200} required />
+									<div class="space-y-2">
+										<div class="grid gap-2 sm:grid-cols-7">
+											{#each WEEKDAY_OPTIONS as option}
+												<div
+													class="inline-flex items-center gap-2 rounded-md border border-border/70 px-2 py-1 text-xs"
+												>
+													<input
+														id={`edit-template-day-${template.id}-${option.value}`}
+														class="size-4"
+														type="checkbox"
+														name="applicableDays"
+														value={String(option.value)}
+														checked={editingTemplateApplicableDays.includes(option.value)}
+														onchange={(event) => {
+															const target = event.currentTarget as HTMLInputElement;
+															editingTemplateApplicableDays = updateApplicableDaysSelection(
+																editingTemplateApplicableDays,
+																option.value,
+																target.checked
+															);
+														}}
+													>
+													<label for={`edit-template-day-${template.id}-${option.value}`}
+														>{option.label}</label
+													>
+												</div>
+											{/each}
+										</div>
+										<Input
+											name="title"
+											bind:value={editingTemplateTitle}
+											maxlength={200}
+											required
+										/>
+									</div>
 									<div class="flex items-center gap-2">
 										<Button type="submit" size="sm" class="bg-orange-600 hover:bg-orange-700">
 											<Save class="mr-2 size-4" />
@@ -799,7 +897,7 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 									<div class="min-w-0">
 										<p class="font-medium text-foreground wrap-break-word">{template.title}</p>
 										<p class="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-											Default item
+											{formatApplicableDays(template.applicableDays)}
 										</p>
 									</div>
 									<div class="flex items-center gap-1">

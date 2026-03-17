@@ -9,6 +9,20 @@ const localDateStringSchema = z
 	.regex(LOCAL_DATE_REGEX, 'Invalid date format (use YYYY-MM-DD)');
 
 const titleSchema = z.string().trim().min(1, 'Title is required').max(200, 'Title too long');
+const weekdaySchema = z.coerce.number().int().min(0).max(6);
+const applicableDaysSchema = z
+	.preprocess((value) => {
+		if (Array.isArray(value)) {
+			return value;
+		}
+
+		if (value === undefined || value === null || value === '') {
+			return [];
+		}
+
+		return [value];
+	}, z.array(weekdaySchema).min(1, 'Select at least one day').max(7))
+	.transform((days) => Array.from(new Set(days)).sort((left, right) => left - right));
 
 const booleanishSchema = z
 	.union([z.boolean(), z.string().trim().toLowerCase()])
@@ -45,12 +59,14 @@ export const dailyAgendaPageQuerySchema = z.object({
 });
 
 export const createDailyAgendaTemplateSchema = z.object({
-	title: titleSchema
+	title: titleSchema,
+	applicableDays: applicableDaysSchema
 });
 
 export const updateDailyAgendaTemplateSchema = z.object({
 	id: z.uuid(),
-	title: titleSchema
+	title: titleSchema,
+	applicableDays: applicableDaysSchema
 });
 
 export const deleteDailyAgendaTemplateSchema = z.object({
