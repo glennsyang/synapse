@@ -2,14 +2,13 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createAuthMiddleware } from 'better-auth/api';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
-
 import { getRequestEvent } from '$app/server';
 import { logger } from '$lib/utils/logger';
-
 import { getEnv } from '../../env';
 import { getDb } from './db';
 import * as schema from './db/schema';
 import { sendNewUserEmail, sendPasswordResetEmail, sendVerificationEmail } from './email';
+import { sendAuthAlerts } from './notifications';
 
 const env = getEnv();
 
@@ -44,6 +43,11 @@ export const auth = betterAuth({
 			logger.debug('✉️ Email verification sent');
 			const verifyUrl = `${url}?token=${token}`;
 			void sendVerificationEmail(user.email, user.name, verifyUrl);
+			void sendAuthAlerts(
+				`Verification email sent to ${user.email}`,
+				'Synapse - Verification Alert',
+				3
+			);
 		},
 		sendResetPassword: async ({ user, url, token }) => {
 			const urlObj = new URL(url, 'http://localhost');
@@ -53,9 +57,19 @@ export const auth = betterAuth({
 			}
 			const resetUrl = `${callbackUrl}?token=${token}`;
 			void sendPasswordResetEmail(user.email, user.name, resetUrl);
+			void sendAuthAlerts(
+				`Password reset requested for ${user.email}`,
+				'Synapse - Password Reset Alert',
+				4
+			);
 		},
 		onPasswordReset: async ({ user }) => {
 			logger.debug('🔐 Password reset completed', { userId: user.id });
+			sendAuthAlerts(
+				`Password reset completed for ${user.email}`,
+				'Synapse - Password Reset Completed',
+				2
+			);
 		}
 	},
 	emailVerification: {
@@ -64,7 +78,12 @@ export const auth = betterAuth({
 		sendVerificationEmail: async ({ user, url, token }) => {
 			logger.debug('✉️ Sending verification email', { userId: user.id });
 			const verifyUrl = `${url}&token=${token}`;
-			await sendVerificationEmail(user.email, user.name, verifyUrl);
+			void sendVerificationEmail(user.email, user.name, verifyUrl);
+			void sendAuthAlerts(
+				`Verification email sent to ${user.email}`,
+				'Synapse - Verification Alert',
+				3
+			);
 		}
 	},
 	hooks: {
@@ -77,6 +96,11 @@ export const auth = betterAuth({
 						newSession.user.name,
 						newSession.user.email
 					);
+					void sendAuthAlerts(
+						`New user registered: ${newSession.user.email}`,
+						'Synapse - New User Alert',
+						4
+					);
 				}
 			}
 			// Audit logging
@@ -88,6 +112,11 @@ export const auth = betterAuth({
 			}
 			if (ctx.path.includes('/reset-password')) {
 				logger.info('🔑 Password reset requested');
+				void sendAuthAlerts(
+					`Password reset requested for ${ctx.context.session?.user.email}`,
+					'Synapse - Password Reset Alert',
+					4
+				);
 			}
 		})
 	},

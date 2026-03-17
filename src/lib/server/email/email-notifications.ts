@@ -14,7 +14,6 @@ import { and, eq, sql } from 'drizzle-orm';
 import { logger } from '$lib/utils/logger';
 
 import { getDb } from '../db';
-
 import {
 	emailNotifications,
 	meditationRoutines,
@@ -24,6 +23,7 @@ import {
 	visits,
 	workoutReminders
 } from './../db/schema';
+import { sendReminderAlerts } from '../notifications';
 import {
 	sendMeditationReminderEmail,
 	sendVisitWarningEmail,
@@ -102,6 +102,25 @@ async function logNotification(
 }
 
 /**
+ * Send a short phone notification alongside reminder emails
+ */
+async function sendReminderNotification(
+	message: string,
+	title: string,
+	tags: string,
+	priority = 3
+): Promise<void> {
+	const sent = await sendReminderAlerts(message, title, priority, tags);
+
+	if (!sent) {
+		logger.warn('Reminder notification could not be delivered', {
+			title,
+			message
+		});
+	}
+}
+
+/**
  * Process workout reminders
  */
 async function processWorkoutReminders(
@@ -162,6 +181,12 @@ async function processWorkoutReminders(
 				userData.name,
 				reminder.workoutType,
 				reminder.time
+			);
+
+			await sendReminderNotification(
+				`Your ${reminder.workoutType} workout reminder is for ${reminder.time}.`,
+				'Synapse - Workout Reminder',
+				'muscle'
 			);
 
 			await logNotification(
@@ -244,6 +269,12 @@ async function processMeditationReminders(
 				userData.name,
 				routine.title,
 				schedule.time
+			);
+
+			await sendReminderNotification(
+				`Meditation reminder: ${routine.title} at ${schedule.time}.`,
+				'Synapse - Meditation Reminder',
+				'meditation'
 			);
 
 			await logNotification(
@@ -346,6 +377,18 @@ async function processVisitWarnings(): Promise<void> {
 				person.name,
 				formattedLastVisitDate,
 				warningStatus
+			);
+
+			const visitNotificationMessage =
+				warningStatus === 'critical'
+					? `Critical visit warning: ${person.name} needs follow-up.`
+					: `Visit warning: ${person.name} is due for follow-up.`;
+
+			await sendReminderNotification(
+				visitNotificationMessage,
+				'Synapse - Visit Warning',
+				'visit',
+				warningStatus === 'critical' ? 4 : 3
 			);
 
 			await logNotification(
