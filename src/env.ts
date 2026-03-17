@@ -11,6 +11,8 @@ const envSchema = z.object({
 	RESEND_API_KEY: z.string().min(1),
 	RESEND_FROM_ADDRESS: z.email(),
 	RESEND_NEW_USER_ADDRESS: z.email(),
+	AUTH_ALERTS_URL: z.url(),
+	REMINDER_ALERTS_URL: z.url(),
 	NODE_ENV: z.enum(['development', 'production', 'test']).default('development')
 });
 
@@ -35,6 +37,8 @@ const ENV_FALLBACKS = {
 	RESEND_API_KEY: 'dummy_key_for_build',
 	RESEND_FROM_ADDRESS: 'noreply@example.com',
 	RESEND_NEW_USER_ADDRESS: 'admin@example.com',
+	AUTH_ALERTS_URL: 'https://notification-service.com/dummy_topic_for_auth_alerts',
+	REMINDER_ALERTS_URL: 'https://notification-service.com/dummy_topic_for_reminders',
 	NODE_ENV: 'development'
 } as const;
 
@@ -92,6 +96,8 @@ export function getEnv() {
 		RESEND_API_KEY: env.RESEND_API_KEY || ENV_FALLBACKS.RESEND_API_KEY,
 		RESEND_FROM_ADDRESS: env.RESEND_FROM_ADDRESS || ENV_FALLBACKS.RESEND_FROM_ADDRESS,
 		RESEND_NEW_USER_ADDRESS: env.RESEND_NEW_USER_ADDRESS || ENV_FALLBACKS.RESEND_NEW_USER_ADDRESS,
+		AUTH_ALERTS_URL: env.AUTH_ALERTS_URL || ENV_FALLBACKS.AUTH_ALERTS_URL,
+		REMINDER_ALERTS_URL: env.REMINDER_ALERTS_URL || ENV_FALLBACKS.REMINDER_ALERTS_URL,
 		NODE_ENV: (env.NODE_ENV as 'development' | 'production' | 'test') || ENV_FALLBACKS.NODE_ENV
 	};
 }

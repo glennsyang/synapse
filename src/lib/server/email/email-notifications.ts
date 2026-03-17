@@ -5,16 +5,16 @@
  * - Workout reminders (based on workout_reminders table)
  * - Meditation reminders (based on meditation_schedules table)
  * - Visit warnings (for people in yellow/red visit status)
+ * - Daily agenda digests at 6:00 AM PT (based on daily_agenda_entries)
  *
  * Logs all sent emails in email_notifications table to prevent duplicates.
  */
 
 import { and, eq, sql } from 'drizzle-orm';
-
+import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
-
+import { loadDailyAgendaEntriesForDate } from '../daily-agenda';
 import { getDb } from '../db';
-
 import {
 	emailNotifications,
 	meditationRoutines,
@@ -24,6 +24,15 @@ import {
 	visits,
 	workoutReminders
 } from './../db/schema';
+import { sendReminderAlerts } from '../notifications';
+import {
+	buildDailyAgendaDigestMessage,
+	buildDailyAgendaDigestTitle,
+	DAILY_AGENDA_DIGEST_NOTIFICATION_TYPE,
+	DAILY_AGENDA_DIGEST_TAGS,
+	DAILY_AGENDA_DIGEST_TIME,
+	isWithinDailyDigestWindow
+} from './daily-agenda-digest';
 import {
 	sendMeditationReminderEmail,
 	sendVisitWarningEmail,
@@ -67,7 +76,7 @@ async function alreadySentToday(
 ): Promise<boolean> {
 	const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-	const existing = await db
+	const existing = db
 		.select()
 		.from(emailNotifications)
 		.where(
@@ -102,6 +111,25 @@ async function logNotification(
 }
 
 /**
+ * Send a short phone notification alongside reminder emails
+ */
+async function sendReminderNotification(
+	message: string,
+	title: string,
+	tags: string,
+	priority = 3
+): Promise<void> {
+	const sent = await sendReminderAlerts(message, title, priority, tags);
+
+	if (!sent) {
+		logger.warn('Reminder notification could not be delivered', {
+			title,
+			message
+		});
+	}
+}
+
+/**
  * Process workout reminders
  */
 async function processWorkoutReminders(
@@ -111,7 +139,7 @@ async function processWorkoutReminders(
 ): Promise<void> {
 	logger.debug('\n💪 Processing workout reminders...');
 
-	const reminders = await db
+	const reminders = db
 		.select({
 			reminder: workoutReminders,
 			user: user
@@ -164,6 +192,12 @@ async function processWorkoutReminders(
 				reminder.time
 			);
 
+			await sendReminderNotification(
+				`Your ${reminder.workoutType} workout reminder is for ${reminder.time}.`,
+				'Synapse - Workout Reminder',
+				'muscle'
+			);
+
 			await logNotification(
 				userData.id,
 				'workout_reminder',
@@ -191,7 +225,7 @@ async function processMeditationReminders(
 ): Promise<void> {
 	logger.debug('\n🧘 Processing meditation reminders...');
 
-	const schedules = await db
+	const schedules = db
 		.select({
 			schedule: meditationSchedules,
 			routine: meditationRoutines,
@@ -246,6 +280,12 @@ async function processMeditationReminders(
 				schedule.time
 			);
 
+			await sendReminderNotification(
+				`Meditation reminder: ${routine.title} at ${schedule.time}.`,
+				'Synapse - Meditation Reminder',
+				'meditation'
+			);
+
 			await logNotification(
 				userData.id,
 				'meditation_reminder',
@@ -270,7 +310,7 @@ async function processVisitWarnings(): Promise<void> {
 	logger.debug('\n👥 Processing visit warnings...');
 
 	// Get all people with their last visit date
-	const allPeople = await db
+	const allPeople = db
 		.select({
 			person: people,
 			user: user
@@ -291,7 +331,7 @@ async function processVisitWarnings(): Promise<void> {
 		}
 
 		// Get last visit for this person
-		const lastVisit = await db
+		const lastVisit = db
 			.select()
 			.from(visits)
 			.where(eq(visits.personId, person.id))
@@ -316,7 +356,7 @@ async function processVisitWarnings(): Promise<void> {
 		const sevenDaysAgo = new Date();
 		sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-		const recentWarning = await db
+		const recentWarning = db
 			.select()
 			.from(emailNotifications)
 			.where(
@@ -348,6 +388,18 @@ async function processVisitWarnings(): Promise<void> {
 				warningStatus
 			);
 
+			const visitNotificationMessage =
+				warningStatus === 'critical'
+					? `Critical visit warning: ${person.name} needs follow-up.`
+					: `Visit warning: ${person.name} is due for follow-up.`;
+
+			await sendReminderNotification(
+				visitNotificationMessage,
+				'Synapse - Visit Warning',
+				'visit',
+				warningStatus === 'critical' ? 4 : 3
+			);
+
 			await logNotification(
 				userData.id,
 				'visit_warning',
@@ -363,6 +415,89 @@ async function processVisitWarnings(): Promise<void> {
 	}
 
 	logger.debug(`   📊 Sent ${sentCount} visit warnings`);
+}
+
+async function alreadySentDailyAgendaDigest(userId: string, dateString: string): Promise<boolean> {
+	const existing = db
+		.select({ id: emailNotifications.id })
+		.from(emailNotifications)
+		.where(
+			and(
+				eq(emailNotifications.userId, userId),
+				eq(emailNotifications.notificationType, DAILY_AGENDA_DIGEST_NOTIFICATION_TYPE),
+				eq(emailNotifications.entityId, dateString)
+			)
+		)
+		.get();
+
+	return !!existing;
+}
+
+/**
+ * Process daily agenda digest notifications
+ */
+async function processDailyAgendaDigests(
+	currentHour: string,
+	currentMinute: string,
+	todayPacific: string
+): Promise<void> {
+	logger.debug('\n🗓️ Processing daily agenda digests...');
+
+	if (!isWithinDailyDigestWindow(currentHour, currentMinute)) {
+		logger.debug(
+			`   ⏭️  Outside daily digest send window (${DAILY_AGENDA_DIGEST_TIME} PT through 10 minutes after)`
+		);
+		return;
+	}
+
+	const allUsers = db
+		.select({
+			id: user.id,
+			email: user.email,
+			name: user.name
+		})
+		.from(user)
+		.all();
+
+	logger.debug(`   Found ${allUsers.length} users for daily agenda digests`);
+
+	let sentCount = 0;
+
+	for (const userData of allUsers) {
+		if (await alreadySentDailyAgendaDigest(userData.id, todayPacific)) {
+			logger.debug(`   ⏭️  Already sent daily digest to ${userData.email} for ${todayPacific}`);
+			continue;
+		}
+
+		const entries = await loadDailyAgendaEntriesForDate(userData.id, todayPacific);
+		const title = buildDailyAgendaDigestTitle(todayPacific);
+		const message = buildDailyAgendaDigestMessage(entries, todayPacific);
+
+		logger.debug(
+			`   📲 Sending daily agenda digest to ${userData.email} (${entries.length} tasks)`
+		);
+
+		try {
+			await sendReminderNotification(message, title, DAILY_AGENDA_DIGEST_TAGS);
+
+			await logNotification(
+				userData.id,
+				DAILY_AGENDA_DIGEST_NOTIFICATION_TYPE,
+				todayPacific,
+				title
+			);
+
+			sentCount++;
+			logger.debug('   ✅ Sent successfully');
+		} catch (error) {
+			logger.error('   ❌ Failed to send daily agenda digest', {
+				error,
+				userId: userData.id
+			});
+		}
+	}
+
+	logger.debug(`   📊 Sent ${sentCount} daily agenda digests`);
 }
 
 /**
@@ -403,10 +538,14 @@ export async function runEmailNotifications() {
 		Sat: 6
 	};
 	const currentDay: number = dayMap[pstDayStr] || 0;
+	const todayPacific = getTodayString(now);
 
-	logger.debug(`⏰ Current time (PST/PDT): ${currentTime}, Day: ${currentDay}`);
+	logger.debug(
+		`⏰ Current time (PST/PDT): ${currentTime}, Day: ${currentDay}, Date: ${todayPacific}`
+	);
 
 	try {
+		await processDailyAgendaDigests(currentHour, currentMinute, todayPacific);
 		await processWorkoutReminders(currentDay, currentHour, currentMinute);
 		await processMeditationReminders(currentDay, currentHour, currentMinute);
 		await processVisitWarnings();

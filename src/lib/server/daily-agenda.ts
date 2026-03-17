@@ -317,6 +317,21 @@ export async function loadDailyAgendaData(
 	};
 }
 
+export async function loadDailyAgendaEntriesForDate(
+	userId: string,
+	date: string
+): Promise<DailyAgendaEntry[]> {
+	await ensureDefaultEntriesForDates(userId, [date]);
+
+	const rows = await getDb().query.dailyAgendaEntries.findMany({
+		where: and(eq(dailyAgendaEntries.userId, userId), eq(dailyAgendaEntries.date, date)),
+		orderBy: [asc(dailyAgendaEntries.sortOrder), asc(dailyAgendaEntries.createdAt)]
+	});
+
+	const entries = rows.map(mapEntryRecord);
+	return sortAgendaEntriesForDisplay(entries);
+}
+
 export async function createDailyAgendaTemplate(userId: string, title: string): Promise<void> {
 	const db = getDb();
 	const today = getTodayString();
