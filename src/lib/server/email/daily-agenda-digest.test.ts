@@ -29,9 +29,9 @@ describe('daily-agenda-digest', () => {
 	it('builds a plain title with date', () => {
 		const title = buildDailyAgendaDigestTitle('2026-03-16');
 
-		expect(title).toContain('Synapse - Daily Agenda Tasks');
-		expect(title).toContain('Daily Agenda Tasks');
-		expect(title).toContain('March');
+		expect(title).toContain('Synapse - Daily Agenda for');
+		expect(title).toContain('Daily Agenda for');
+		expect(title).toContain('Mar');
 	});
 
 	it('builds an emoji-prefixed bullet list for tasks and motivational ending', () => {
@@ -42,16 +42,15 @@ describe('daily-agenda-digest', () => {
 
 		const message = buildDailyAgendaDigestMessage(entries, '2026-03-16');
 
-		expect(message).toContain('• ⏳ Plan sprint tasks');
-		expect(message).toContain('• ✅ Submit weekly report');
+		expect(message).toContain('⚪ Plan sprint tasks');
+		expect(message).toContain('✅ Submit weekly report');
 		expect(message).toContain('🚀');
-		expect(message).toContain('✨');
 	});
 
 	it('builds an empty-state message with a positive emoji when there are no tasks', () => {
 		const message = buildDailyAgendaDigestMessage([], '2026-03-16');
 
-		expect(message).toContain('• 🌟 No agenda tasks today');
+		expect(message).toContain('🌟 No agenda tasks today');
 		expect(message).toContain('🚀');
 	});
 

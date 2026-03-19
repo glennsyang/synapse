@@ -1,20 +1,20 @@
 import type { DailyAgendaEntry } from '$lib/types';
-import { formatDateLong } from '$lib/utils/date';
+import { formatDateMedium } from '$lib/utils/date';
 
 export const DAILY_AGENDA_DIGEST_TIME = '06:00';
 const DAILY_AGENDA_DIGEST_WINDOW_MINUTES = 10;
 export const DAILY_AGENDA_DIGEST_NOTIFICATION_TYPE = 'daily_agenda_digest';
-export const DAILY_AGENDA_DIGEST_TAGS = 'spiral_calendar_pad,white_check_mark,rocket';
+export const DAILY_AGENDA_DIGEST_TAGS = 'date,point_right';
 
 export const DAILY_MOTIVATION_PHRASES = [
-	'One focused day can change your whole week',
-	'Progress beats perfection every single time',
-	'You are closer than you were yesterday',
-	'Show up now and your future self will thank you',
-	'Momentum starts with the very next task',
-	'Win the morning and let the day follow',
-	'Small actions create meaningful change',
-	'Consistency is your secret superpower'
+	'One focused day can change your whole week!',
+	'Progress beats perfection every single time!',
+	'You are closer than you were yesterday!',
+	'Show up now and your future self will thank you!',
+	'Momentum starts with the very next task!',
+	'Win the morning and let the day follow!',
+	'Small actions create meaningful change!',
+	'Consistency is your secret superpower!'
 ] as const;
 
 function parseTimeToMinutes(time: string): number {
@@ -57,12 +57,12 @@ export function getDailyMotivationPhrase(
 }
 
 export function buildDailyAgendaDigestTitle(dateString: string): string {
-	return `Synapse - Daily Agenda Tasks for ${formatDateLong(dateString)}`;
+	return `Synapse - Daily Agenda for ${formatDateMedium(dateString)}`;
 }
 
 function toTaskBullet(entry: DailyAgendaEntry): string {
-	const statusEmoji = entry.completed ? '✅' : '⏳';
-	return `• ${statusEmoji} ${entry.title}`;
+	const statusEmoji = entry.completed ? '✅' : '⚪';
+	return `${statusEmoji} ${entry.title}`;
 }
 
 export function buildDailyAgendaDigestMessage(
@@ -72,14 +72,15 @@ export function buildDailyAgendaDigestMessage(
 	const listLines =
 		entries.length > 0
 			? entries.map(toTaskBullet)
-			: ['• 🌟 No agenda tasks today - enjoy the momentum and make it count!'];
+			: ['🌟 No agenda tasks today - enjoy the momentum and make it count!'];
 
 	const motivationalPhrase = getDailyMotivationPhrase(dateString);
 	const taskList = listLines.join(`
 `);
 
-	return `📝 Here is your daily agenda:
+	return `📝 Today's agenda:
+
 ${taskList}
 
-🚀 ${motivationalPhrase} ✨`;
+🚀 ${motivationalPhrase}`;
 }
