@@ -1,9 +1,10 @@
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { desc, eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import {
+	deleteEntrySchema,
 	logMealSchema,
 	logWeightSchema,
 	logWorkoutSchema,
@@ -23,6 +24,7 @@ import {
 	workoutReminders
 } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
+import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
@@ -201,6 +203,7 @@ export const actions: Actions = {
 
 		try {
 			const db = getDb();
+			const today = getTodayString();
 
 			// Upsert goal weight (replace existing)
 			const existing = await db.query.goalWeights.findFirst({
@@ -212,7 +215,7 @@ export const actions: Actions = {
 					.update(goalWeights)
 					.set({
 						targetWeightLbs: form.data.targetWeightLbs,
-						setDate: new Date().toISOString().split('T')[0],
+						setDate: today,
 						updatedAt: new Date().toISOString()
 					})
 					.where(eq(goalWeights.userId, user.id));
@@ -221,7 +224,7 @@ export const actions: Actions = {
 					id: generateId(),
 					userId: user.id,
 					targetWeightLbs: form.data.targetWeightLbs,
-					setDate: new Date().toISOString().split('T')[0],
+					setDate: today,
 					createdAt: new Date().toISOString(),
 					updatedAt: new Date().toISOString()
 				});
@@ -368,6 +371,7 @@ export const actions: Actions = {
 
 		try {
 			const db = getDb();
+			const today = getTodayString();
 
 			// Upsert calorie target (replace existing)
 			const existing = await db.query.dailyCalorieTargets.findFirst({
@@ -379,7 +383,7 @@ export const actions: Actions = {
 					.update(dailyCalorieTargets)
 					.set({
 						targetCalories: form.data.targetCalories,
-						setDate: new Date().toISOString().split('T')[0],
+						setDate: today,
 						updatedAt: new Date().toISOString()
 					})
 					.where(eq(dailyCalorieTargets.userId, user.id));
@@ -388,7 +392,7 @@ export const actions: Actions = {
 					id: generateId(),
 					userId: user.id,
 					targetCalories: form.data.targetCalories,
-					setDate: new Date().toISOString().split('T')[0],
+					setDate: today,
 					createdAt: new Date().toISOString(),
 					updatedAt: new Date().toISOString()
 				});
@@ -510,18 +514,14 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, {
-			type: 'success',
-			text: 'Reminder updated successfully!'
-		});
+		throw redirect(303, '/fitness?tab=reminders&notice=reminder-disabled');
 	}),
 
 	deleteReminder: requireAuth(async ({ request }, user) => {
-		const formData = await request.formData();
-		const reminderId = formData.get('id') as string;
+		const form = await superValidate(request, zod4(deleteEntrySchema));
 
-		if (!reminderId) {
-			return { success: false, error: 'Reminder ID is required' };
+		if (!form.valid) {
+			return fail(400, { error: 'Invalid workout reminder data' });
 		}
 
 		try {
@@ -529,23 +529,28 @@ export const actions: Actions = {
 
 			// Verify ownership
 			const existing = await db.query.workoutReminders.findFirst({
-				where: eq(workoutReminders.id, reminderId)
+				where: eq(workoutReminders.id, form.data.id)
 			});
 
 			if (!existing || existing.userId !== user.id) {
-				return { success: false, error: 'Reminder not found or access denied' };
+				return fail(404, { error: 'Workout reminder not found' });
 			}
 
-			await db.delete(workoutReminders).where(eq(workoutReminders.id, reminderId));
+			await db.delete(workoutReminders).where(eq(workoutReminders.id, form.data.id));
 
-			logger.info('Workout reminder deleted', { reminderId, userId: user.id });
-			return { success: true };
+			logger.info('Workout reminder deleted', { reminderId: form.data.id, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to delete workout reminder', { error });
-			return {
-				success: false,
-				error: 'Failed to delete reminder. Please try again.'
-			};
+			logger.error('Failed to delete workout reminder', { error, reminderId: form.data.id });
+			return message(
+				form,
+				{
+					type: 'error',
+					text: 'Failed to delete reminder. Please try again.'
+				},
+				{ status: 500 }
+			);
 		}
+
+		throw redirect(303, '/fitness?tab=reminders&notice=reminder-deleted');
 	})
 };

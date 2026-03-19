@@ -192,6 +192,10 @@ $effect(() => {
 		toast.success('Meal updated successfully!');
 	} else if (notice === 'meal-deleted') {
 		toast.success('Meal deleted successfully!');
+	} else if (notice === 'reminder-disabled') {
+		toast.success('Reminder disabled successfully!');
+	} else if (notice === 'reminder-deleted') {
+		toast.success('Reminder deleted successfully!');
 	}
 });
 

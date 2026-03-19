@@ -8,6 +8,7 @@ import {
 	scheduleSchema,
 	updateRoutineSchema
 } from '$lib/schemas/meditation';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
@@ -116,15 +117,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
-	createSchedule: async ({ request, locals, params }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	createSchedule: requireAuth(async ({ request, locals, params }, user) => {
 		const form = await superValidate(request, zod4(scheduleSchema));
+		const routineId = params.id;
 
 		if (!form.valid) {
 			logger.warn('Invalid schedule form data', { errors: form.errors });
+			return fail(400, { form });
+		}
+
+		if (!routineId) {
+			logger.warn('Missing routine ID in createSchedule action', { userId: user.id });
 			return fail(400, { form });
 		}
 
@@ -143,8 +146,8 @@ export const actions: Actions = {
 			// Check if schedule already exists
 			const existingSchedule = await db.query.meditationSchedules.findFirst({
 				where: and(
-					eq(meditationSchedules.routineId, params.id),
-					eq(meditationSchedules.userId, locals.user.id)
+					eq(meditationSchedules.routineId, routineId),
+					eq(meditationSchedules.userId, user.id)
 				)
 			});
 
@@ -172,7 +175,7 @@ export const actions: Actions = {
 				await db.insert(meditationSchedules).values({
 					id: scheduleId,
 					userId: locals.user.id,
-					routineId: params.id,
+					routineId,
 					cadence: form.data.cadence,
 					daysOfWeek: daysOfWeekJson,
 					time: form.data.time,
@@ -202,11 +205,14 @@ export const actions: Actions = {
 				{ status: 500 }
 			);
 		}
-	},
+	}),
 
-	deleteSchedule: async ({ locals, params }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
+	deleteSchedule: requireAuth(async ({ params }, user) => {
+		const routineId = params.id;
+
+		if (!routineId) {
+			logger.warn('Missing routine ID in deleteSchedule action', { userId: user.id });
+			return fail(400, { error: 'Routine ID is required' });
 		}
 
 		try {
@@ -215,28 +221,22 @@ export const actions: Actions = {
 			await db
 				.delete(meditationSchedules)
 				.where(
-					and(
-						eq(meditationSchedules.routineId, params.id),
-						eq(meditationSchedules.userId, locals.user.id)
-					)
+					and(eq(meditationSchedules.routineId, routineId), eq(meditationSchedules.userId, user.id))
 				);
 
 			logger.info('Meditation schedule deleted', {
-				routineId: params.id,
-				userId: locals.user.id
+				routineId: routineId,
+				userId: user.id
 			});
 			return { success: true };
 		} catch (error) {
 			logger.error('Failed to delete schedule', { error });
 			return fail(500, { error: 'Failed to delete schedule' });
 		}
-	},
+	}),
 
-	completeSession: async ({ request, locals, params }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	completeSession: requireAuth(async ({ request, params }, user) => {
+		const routineId = params.id as string;
 		const form = await superValidate(request, zod4(completeSessionSchema));
 
 		if (!form.valid) {
@@ -251,8 +251,8 @@ export const actions: Actions = {
 				.insert(meditationSessions)
 				.values({
 					id: sessionId,
-					userId: locals.user.id,
-					routineId: params.id,
+					userId: user.id,
+					routineId: routineId,
 					completedAt: new Date().toISOString(),
 					moodRating: form.data.mood_rating || null,
 					notes: form.data.notes || null,
@@ -262,7 +262,7 @@ export const actions: Actions = {
 
 			logger.info('Meditation session completed', {
 				sessionId,
-				userId: locals.user.id
+				userId: user.id
 			});
 			return message(form, {
 				type: 'success',
@@ -279,13 +279,10 @@ export const actions: Actions = {
 				{ status: 500 }
 			);
 		}
-	},
+	}),
 
-	updateRoutine: async ({ request, locals, params }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	updateRoutine: requireAuth(async ({ request, params }, user) => {
+		const routineId = params.id as string;
 		const form = await superValidate(request, zod4(updateRoutineSchema));
 
 		if (!form.valid) {
@@ -298,17 +295,14 @@ export const actions: Actions = {
 
 			// Check if routine exists and user owns it
 			const routine = await db.query.meditationRoutines.findFirst({
-				where: and(
-					eq(meditationRoutines.id, params.id),
-					eq(meditationRoutines.userId, locals.user.id)
-				)
+				where: and(eq(meditationRoutines.id, routineId), eq(meditationRoutines.userId, user.id))
 			});
 
 			if (!routine) {
 				return fail(404, { error: 'Routine not found' });
 			}
 
-			if (routine.isPredefined || routine.userId !== locals.user.id) {
+			if (routine.isPredefined || routine.userId !== user.id) {
 				return fail(403, { error: 'Cannot edit this routine' });
 			}
 
@@ -325,11 +319,11 @@ export const actions: Actions = {
 					moodTags: moodTagsJson,
 					updatedAt: new Date().toISOString()
 				})
-				.where(eq(meditationRoutines.id, params.id));
+				.where(eq(meditationRoutines.id, routineId));
 
 			logger.info('Meditation routine updated', {
-				routineId: params.id,
-				userId: locals.user.id
+				routineId: routineId,
+				userId: user.id
 			});
 			return message(form, {
 				type: 'success',
@@ -346,37 +340,32 @@ export const actions: Actions = {
 				{ status: 500 }
 			);
 		}
-	},
+	}),
 
-	deleteRoutine: async ({ locals, params }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
+	deleteRoutine: requireAuth(async ({ params }, user) => {
+		const routineId = params.id as string;
 
 		try {
 			const db = getDb();
 
 			// Check if routine exists and user owns it
 			const routine = await db.query.meditationRoutines.findFirst({
-				where: and(
-					eq(meditationRoutines.id, params.id),
-					eq(meditationRoutines.userId, locals.user.id)
-				)
+				where: and(eq(meditationRoutines.id, routineId), eq(meditationRoutines.userId, user.id))
 			});
 
 			if (!routine) {
 				return fail(404, { error: 'Routine not found' });
 			}
 
-			if (routine.isPredefined || routine.userId !== locals.user.id) {
+			if (routine.isPredefined || routine.userId !== user.id) {
 				return fail(403, { error: 'Cannot delete this routine' });
 			}
 
-			await db.delete(meditationRoutines).where(eq(meditationRoutines.id, params.id));
+			await db.delete(meditationRoutines).where(eq(meditationRoutines.id, routineId));
 
 			logger.info('Meditation routine deleted', {
-				routineId: params.id,
-				userId: locals.user.id
+				routineId: routineId,
+				userId: user.id
 			});
 		} catch (error) {
 			logger.error('Failed to delete routine', { error });
@@ -384,5 +373,5 @@ export const actions: Actions = {
 		}
 
 		throw redirect(303, '/meditation');
-	}
+	})
 };
