@@ -46,6 +46,7 @@ export type DailyAgendaTemplate = {
 	templateGroupId: string;
 	title: string;
 	sortOrder: number;
+	daysOfWeek: number[];
 	startsOn: string;
 	endsOn: string | null;
 };

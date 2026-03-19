@@ -10,6 +10,41 @@ const localDateStringSchema = z
 
 const titleSchema = z.string().trim().min(1, 'Title is required').max(200, 'Title too long');
 
+const daysOfWeekSchema = z.string().transform((value, ctx) => {
+	const selectedDays = [] as number[];
+	const seen = new Set<number>();
+	const tokens = value
+		.split(',')
+		.map((item) => item.trim())
+		.filter((item) => item.length > 0);
+
+	if (tokens.length === 0) {
+		ctx.addIssue({
+			code: 'custom',
+			message: 'Select at least one day.'
+		});
+		return z.NEVER;
+	}
+
+	for (const token of tokens) {
+		const parsedDay = Number.parseInt(token, 10);
+		if (Number.isNaN(parsedDay) || parsedDay < 0 || parsedDay > 6) {
+			ctx.addIssue({
+				code: 'custom',
+				message: 'Days must be between 0 (Sunday) and 6 (Saturday).'
+			});
+			return z.NEVER;
+		}
+
+		if (!seen.has(parsedDay)) {
+			seen.add(parsedDay);
+			selectedDays.push(parsedDay);
+		}
+	}
+
+	return selectedDays.sort((left, right) => left - right);
+});
+
 const booleanishSchema = z
 	.union([z.boolean(), z.string().trim().toLowerCase()])
 	.transform((value, ctx) => {
@@ -45,12 +80,14 @@ export const dailyAgendaPageQuerySchema = z.object({
 });
 
 export const createDailyAgendaTemplateSchema = z.object({
-	title: titleSchema
+	title: titleSchema,
+	daysOfWeek: daysOfWeekSchema
 });
 
 export const updateDailyAgendaTemplateSchema = z.object({
 	id: z.uuid(),
-	title: titleSchema
+	title: titleSchema,
+	daysOfWeek: daysOfWeekSchema
 });
 
 export const deleteDailyAgendaTemplateSchema = z.object({

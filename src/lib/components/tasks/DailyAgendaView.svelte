@@ -22,7 +22,7 @@ import * as Dialog from '$lib/components/ui/dialog';
 import { Input } from '$lib/components/ui/input';
 import type { DailyAgendaData, DailyAgendaEntry, DailyAgendaTemplate } from '$lib/types';
 import { cn } from '$lib/utils';
-import { getStartOfWeek } from '$lib/utils/date';
+import { daysOfWeek, getStartOfWeek } from '$lib/utils/date';
 
 import DailyAgendaRadial from './DailyAgendaRadial.svelte';
 
@@ -33,13 +33,56 @@ interface Props {
 
 let { agenda, defaultsDialogOpen = $bindable(false) }: Props = $props();
 
+const templateDayOptions = [...daysOfWeek.slice(1), daysOfWeek[0]];
+const allTemplateDays = templateDayOptions.map((day) => day.id);
+
 let newTemplateTitle = $state('');
+let newTemplateDays = $state<number[]>([...allTemplateDays]);
 let editingTemplateId = $state<string | null>(null);
 let editingTemplateTitle = $state('');
+let editingTemplateDays = $state<number[]>([...allTemplateDays]);
 let newEntryDate = $state<string | null>(null);
 let newEntryTitle = $state('');
 let editingEntryId = $state<string | null>(null);
 let editingEntryTitle = $state('');
+
+function normalizeTemplateDays(days: number[]): number[] {
+	const selected = new Set(days);
+
+	return templateDayOptions.filter((day) => selected.has(day.id)).map((day) => day.id);
+}
+
+function toggleTemplateDay(days: number[], dayId: number): number[] {
+	if (days.includes(dayId)) {
+		return days.filter((day) => day !== dayId);
+	}
+
+	return normalizeTemplateDays([...days, dayId]);
+}
+
+function serializeTemplateDays(days: number[]): string {
+	return normalizeTemplateDays(days).join(',');
+}
+
+function formatTemplateDays(days: number[]): string {
+	const orderedDays = normalizeTemplateDays(days);
+	if (orderedDays.length === templateDayOptions.length) {
+		return 'Every day';
+	}
+
+	return templateDayOptions
+		.filter((day) => orderedDays.includes(day.id))
+		.map((day) => day.shortName)
+		.join(', ');
+}
+
+function toggleNewTemplateDay(dayId: number) {
+	newTemplateDays = toggleTemplateDay(newTemplateDays, dayId);
+}
+
+function toggleEditingTemplateDay(dayId: number) {
+	editingTemplateDays = toggleTemplateDay(editingTemplateDays, dayId);
+}
 
 function calculateAverageCompletion(points: Array<{ completionPercentage: number }>): number {
 	return points.length === 0
@@ -262,11 +305,13 @@ function createAgendaEnhance(options: {
 function startTemplateEdit(template: DailyAgendaTemplate) {
 	editingTemplateId = template.id;
 	editingTemplateTitle = template.title;
+	editingTemplateDays = normalizeTemplateDays(template.daysOfWeek);
 }
 
 function cancelTemplateEdit() {
 	editingTemplateId = null;
 	editingTemplateTitle = '';
+	editingTemplateDays = [...allTemplateDays];
 }
 
 function openNewEntry(date: string) {
@@ -711,12 +756,6 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 								<Plus class="mr-2 size-4" />
 								Add item
 							</Button>
-						{:else}
-							<p
-								class="mt-auto text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground"
-							>
-								Historical items are view only.
-							</p>
 						{/if}
 					</div>
 				</section>
@@ -748,22 +787,60 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 						errorMessage: 'Unable to add default item.',
 						afterSuccess: () => {
 							newTemplateTitle = '';
+							newTemplateDays = [...allTemplateDays];
 						}
 					})}
 					class="rounded-2xl border border-orange-200/80 bg-orange-50/50 p-4 dark:border-orange-500/20 dark:bg-orange-500/6"
 				>
-					<div class="flex flex-col gap-2 sm:flex-row">
-						<Input
-							name="title"
-							bind:value={newTemplateTitle}
-							placeholder="Add a recurring item"
-							maxlength={200}
-							required
-						/>
-						<Button type="submit" class="bg-orange-600 hover:bg-orange-700">
-							<Plus class="mr-2 size-4" />
-							Add Default
-						</Button>
+					<input type="hidden" name="daysOfWeek" value={serializeTemplateDays(newTemplateDays)}>
+					<div class="space-y-3">
+						<div class="flex flex-col gap-2 sm:flex-row">
+							<Input
+								name="title"
+								bind:value={newTemplateTitle}
+								placeholder="Add a recurring item"
+								maxlength={200}
+								required
+							/>
+							<Button
+								type="submit"
+								class="bg-orange-600 hover:bg-orange-700"
+								disabled={newTemplateDays.length === 0}
+							>
+								<Plus class="mr-2 size-4" />
+								Add Default
+							</Button>
+						</div>
+						<fieldset class="space-y-2">
+							<legend
+								class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+							>
+								Apply on days
+							</legend>
+							<div class="grid grid-cols-4 gap-2 sm:grid-cols-7">
+								{#each templateDayOptions as day (day.id)}
+									<label
+										class={cn(
+											'flex items-center gap-2 rounded-lg border bg-background/90 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors',
+											newTemplateDays.includes(day.id)
+												? 'border-orange-300/90 ring-1 ring-orange-300/70 dark:border-orange-500/45 dark:ring-orange-500/35'
+												: 'border-border/70'
+										)}
+									>
+										<input
+											type="checkbox"
+											checked={newTemplateDays.includes(day.id)}
+											class="size-3.5 rounded border-orange-300 text-orange-600 focus:ring-orange-500"
+											onchange={() => toggleNewTemplateDay(day.id)}
+										>
+										<span>{day.shortName}</span>
+									</label>
+								{/each}
+							</div>
+							<p class="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+								Select at least one day.
+							</p>
+						</fieldset>
 					</div>
 				</form>
 
@@ -779,20 +856,69 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 										errorMessage: 'Unable to update default item.',
 										afterSuccess: cancelTemplateEdit
 									})}
-									class="flex flex-col gap-2 sm:flex-row"
+									class="space-y-3"
 								>
 									<input type="hidden" name="id" value={template.id}>
-									<Input name="title" bind:value={editingTemplateTitle} maxlength={200} required />
-									<div class="flex items-center gap-2">
-										<Button type="submit" size="sm" class="bg-orange-600 hover:bg-orange-700">
-											<Save class="mr-2 size-4" />
-											Save
-										</Button>
-										<Button type="button" size="sm" variant="ghost" onclick={cancelTemplateEdit}>
-											<X class="mr-2 size-4" />
-											Cancel
-										</Button>
+									<input
+										type="hidden"
+										name="daysOfWeek"
+										value={serializeTemplateDays(editingTemplateDays)}
+									>
+									<div class="flex flex-col gap-2 sm:flex-row">
+										<Input
+											name="title"
+											bind:value={editingTemplateTitle}
+											maxlength={200}
+											required
+										/>
+										<div class="flex items-center gap-2">
+											<Button
+												type="submit"
+												size="sm"
+												class="bg-orange-600 hover:bg-orange-700"
+												disabled={editingTemplateDays.length === 0}
+											>
+												<Save class="mr-2 size-4" />
+												Save
+											</Button>
+											<Button type="button" size="sm" variant="ghost" onclick={cancelTemplateEdit}>
+												<X class="mr-2 size-4" />
+												Cancel
+											</Button>
+										</div>
 									</div>
+									<fieldset class="space-y-2">
+										<legend
+											class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+										>
+											Apply on days
+										</legend>
+										<div class="grid grid-cols-4 gap-2 sm:grid-cols-7">
+											{#each templateDayOptions as day (day.id)}
+												<label
+													class={cn(
+														'flex items-center gap-2 rounded-lg border bg-background/90 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors',
+														editingTemplateDays.includes(day.id)
+															? 'border-orange-300/90 ring-1 ring-orange-300/70 dark:border-orange-500/45 dark:ring-orange-500/35'
+															: 'border-border/70'
+													)}
+												>
+													<input
+														type="checkbox"
+														checked={editingTemplateDays.includes(day.id)}
+														class="size-3.5 rounded border-orange-300 text-orange-600 focus:ring-orange-500"
+														onchange={() => toggleEditingTemplateDay(day.id)}
+													>
+													<span>{day.shortName}</span>
+												</label>
+											{/each}
+										</div>
+										<p
+											class="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground"
+										>
+											Select at least one day.
+										</p>
+									</fieldset>
 								</form>
 							{:else}
 								<div class="flex items-center justify-between gap-3">
@@ -800,6 +926,9 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 										<p class="font-medium text-foreground wrap-break-word">{template.title}</p>
 										<p class="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
 											Default item
+										</p>
+										<p class="mt-1 text-xs text-muted-foreground">
+											{formatTemplateDays(template.daysOfWeek)}
 										</p>
 									</div>
 									<div class="flex items-center gap-1">
