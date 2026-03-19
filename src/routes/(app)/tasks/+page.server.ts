@@ -340,7 +340,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			await createDailyAgendaTemplate(user.id, form.data.title);
+			await createDailyAgendaTemplate(user.id, form.data.title, form.data.daysOfWeek);
 
 			return buildAgendaActionPayload('create-template', {
 				type: 'success',
@@ -362,7 +362,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			await updateDailyAgendaTemplate(user.id, form.data.id, form.data.title);
+			await updateDailyAgendaTemplate(user.id, form.data.id, form.data.title, form.data.daysOfWeek);
 
 			return buildAgendaActionPayload('update-template', {
 				type: 'success',

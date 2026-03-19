@@ -192,6 +192,7 @@ export const dailyAgendaTemplates = sqliteTable(
 			.references(() => user.id, { onDelete: 'cascade' }),
 		title: text('title').notNull(),
 		sortOrder: integer('sort_order').notNull().default(0),
+		daysOfWeek: text('days_of_week').notNull().default('[0,1,2,3,4,5,6]'),
 		startsOn: text('starts_on').notNull(), // YYYY-MM-DD
 		endsOn: text('ends_on'), // YYYY-MM-DD
 		createdAt: text('created_at')

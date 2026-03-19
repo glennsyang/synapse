@@ -20,6 +20,7 @@ import {
 
 const DEFAULT_SOURCE = 'default' as const;
 const CUSTOM_SOURCE = 'custom' as const;
+const EVERY_DAY_TEMPLATE_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
 type DailyAgendaTemplateRecord = typeof dailyAgendaTemplates.$inferSelect;
 type DailyAgendaEntryRecord = typeof dailyAgendaEntries.$inferSelect;
@@ -65,12 +66,50 @@ function buildDateRangeLabel(startDate: string, endDate: string): string {
 	return `${startLabel} - ${endLabel}`;
 }
 
+function normalizeTemplateDays(daysOfWeek: number[]): number[] {
+	const normalizedDays = Array.from(new Set(daysOfWeek))
+		.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+		.sort((left, right) => left - right);
+
+	return normalizedDays.length > 0 ? normalizedDays : [...EVERY_DAY_TEMPLATE_DAYS];
+}
+
+function parseTemplateDays(daysOfWeek: string): number[] {
+	try {
+		const parsed = JSON.parse(daysOfWeek);
+		if (!Array.isArray(parsed)) {
+			return [...EVERY_DAY_TEMPLATE_DAYS];
+		}
+
+		const numericDays = parsed.filter((day): day is number => typeof day === 'number');
+		return normalizeTemplateDays(numericDays);
+	} catch {
+		return [...EVERY_DAY_TEMPLATE_DAYS];
+	}
+}
+
+function serializeTemplateDays(daysOfWeek: number[]): string {
+	return JSON.stringify(normalizeTemplateDays(daysOfWeek));
+}
+
+function getEntriesToDeleteForDays(
+	entries: Array<{ id: string; date: string }>,
+	allowedDays: number[]
+): string[] {
+	const allowedDaySet = new Set(allowedDays);
+
+	return entries
+		.filter((entry) => !allowedDaySet.has(parseLocalDateString(entry.date).getDay()))
+		.map((entry) => entry.id);
+}
+
 function mapTemplateRecord(template: DailyAgendaTemplateRecord): DailyAgendaTemplate {
 	return {
 		id: template.id,
 		templateGroupId: template.templateGroupId,
 		title: template.title,
 		sortOrder: template.sortOrder,
+		daysOfWeek: parseTemplateDays(template.daysOfWeek),
 		startsOn: template.startsOn,
 		endsOn: template.endsOn ?? null
 	};
@@ -91,7 +130,13 @@ function mapEntryRecord(entry: DailyAgendaEntryRecord): DailyAgendaEntry {
 }
 
 function isTemplateActiveOnDate(template: DailyAgendaTemplateRecord, date: string): boolean {
-	return template.startsOn <= date && (!template.endsOn || template.endsOn >= date);
+	if (template.startsOn > date || (template.endsOn && template.endsOn < date)) {
+		return false;
+	}
+
+	const dayOfWeek = parseLocalDateString(date).getDay();
+	const allowedDays = parseTemplateDays(template.daysOfWeek);
+	return allowedDays.includes(dayOfWeek);
 }
 
 function sortAgendaEntriesForDisplay(entries: DailyAgendaEntry[]): DailyAgendaEntry[] {
@@ -332,10 +377,15 @@ export async function loadDailyAgendaEntriesForDate(
 	return sortAgendaEntriesForDisplay(entries);
 }
 
-export async function createDailyAgendaTemplate(userId: string, title: string): Promise<void> {
+export async function createDailyAgendaTemplate(
+	userId: string,
+	title: string,
+	daysOfWeek: number[]
+): Promise<void> {
 	const db = getDb();
 	const today = getTodayString();
 	const timestamp = new Date().toISOString();
+	const serializedDays = serializeTemplateDays(daysOfWeek);
 
 	await db.transaction(async (tx) => {
 		const [sortOrderRow] = await tx
@@ -358,6 +408,7 @@ export async function createDailyAgendaTemplate(userId: string, title: string): 
 			userId,
 			title,
 			sortOrder: (sortOrderRow?.maxSortOrder ?? -1) + 1,
+			daysOfWeek: serializedDays,
 			startsOn: today,
 			createdAt: timestamp,
 			updatedAt: timestamp
@@ -368,11 +419,14 @@ export async function createDailyAgendaTemplate(userId: string, title: string): 
 export async function updateDailyAgendaTemplate(
 	userId: string,
 	templateId: string,
-	title: string
+	title: string,
+	daysOfWeek: number[]
 ): Promise<void> {
 	const db = getDb();
 	const today = getTodayString();
 	const timestamp = new Date().toISOString();
+	const normalizedDays = normalizeTemplateDays(daysOfWeek);
+	const serializedDays = JSON.stringify(normalizedDays);
 
 	await db.transaction(async (tx) => {
 		const existing = await tx.query.dailyAgendaTemplates.findFirst({
@@ -391,8 +445,26 @@ export async function updateDailyAgendaTemplate(
 		if (existing.startsOn === today) {
 			await tx
 				.update(dailyAgendaTemplates)
-				.set({ title, updatedAt: timestamp })
+				.set({ title, daysOfWeek: serializedDays, updatedAt: timestamp })
 				.where(eq(dailyAgendaTemplates.id, existing.id));
+
+			const futureDefaultEntries = await tx.query.dailyAgendaEntries.findMany({
+				where: and(
+					eq(dailyAgendaEntries.userId, userId),
+					eq(dailyAgendaEntries.templateGroupId, existing.templateGroupId),
+					eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
+					gte(dailyAgendaEntries.date, today)
+				),
+				columns: {
+					id: true,
+					date: true
+				}
+			});
+
+			const entriesToDelete = getEntriesToDeleteForDays(futureDefaultEntries, normalizedDays);
+			if (entriesToDelete.length > 0) {
+				await tx.delete(dailyAgendaEntries).where(inArray(dailyAgendaEntries.id, entriesToDelete));
+			}
 
 			await tx
 				.update(dailyAgendaEntries)
@@ -421,10 +493,29 @@ export async function updateDailyAgendaTemplate(
 			userId,
 			title,
 			sortOrder: existing.sortOrder,
+			daysOfWeek: serializedDays,
 			startsOn: today,
 			createdAt: timestamp,
 			updatedAt: timestamp
 		});
+
+		const futureDefaultEntries = await tx.query.dailyAgendaEntries.findMany({
+			where: and(
+				eq(dailyAgendaEntries.userId, userId),
+				eq(dailyAgendaEntries.templateGroupId, existing.templateGroupId),
+				eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
+				gte(dailyAgendaEntries.date, today)
+			),
+			columns: {
+				id: true,
+				date: true
+			}
+		});
+
+		const entriesToDelete = getEntriesToDeleteForDays(futureDefaultEntries, normalizedDays);
+		if (entriesToDelete.length > 0) {
+			await tx.delete(dailyAgendaEntries).where(inArray(dailyAgendaEntries.id, entriesToDelete));
+		}
 
 		await tx
 			.update(dailyAgendaEntries)
