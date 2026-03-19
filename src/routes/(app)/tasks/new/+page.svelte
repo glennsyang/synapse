@@ -3,6 +3,7 @@ import { ArrowLeft } from '@lucide/svelte';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 
+import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
 import { taskPriorityOptions, taskStateOptions } from '$lib/components/tasks/task-ui';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
@@ -38,7 +39,7 @@ let selectedStateOption = $derived(
 );
 </script>
 
-<div class="container mx-auto max-w-2xl py-8">
+<PageFormShell>
 	<div class="mb-6">
 		<Button variant="ghost" href="/tasks" class="mb-4">
 			<ArrowLeft class="mr-2 h-4 w-4" />
@@ -181,4 +182,4 @@ let selectedStateOption = $derived(
 			</form>
 		</Card.Content>
 	</Card.Root>
-</div>
+</PageFormShell>

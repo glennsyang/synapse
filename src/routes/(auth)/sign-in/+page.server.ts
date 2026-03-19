@@ -1,27 +1,21 @@
-import { isRedirect, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { loginSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
-import { getBetterAuthErrorMessage } from '$lib/utils';
+import {
+	createAuthLoadForm,
+	mapAuthActionError,
+	redirectIfAuthenticated
+} from '$lib/server/auth/form-helpers';
 import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	// Redirect if already signed in
-	if (locals.user) {
-		throw redirect(302, '/dashboard');
-	}
-
-	const form = await superValidate(zod4(loginSchema));
-
-	// Check for success message from registration
-	const message = url.searchParams.get('message');
-	if (message) {
-		form.message = message;
-	}
+	redirectIfAuthenticated(locals.user);
+	const form = await createAuthLoadForm(loginSchema, url);
 
 	return { form };
 };
@@ -49,14 +43,8 @@ export const actions: Actions = {
 
 			throw redirect(302, '/dashboard');
 		} catch (error) {
-			// Don't catch redirects as errors - re-throw them
-			if (isRedirect(error)) {
-				throw error;
-			}
-
 			logger.error('Sign-in failed', error);
-			// Get user-friendly error message from better-auth error
-			const errorMessage = getBetterAuthErrorMessage(
+			const errorMessage = mapAuthActionError(
 				error,
 				'An error occurred during sign-in. Please try again.'
 			);

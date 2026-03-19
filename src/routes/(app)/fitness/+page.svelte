@@ -20,6 +20,7 @@ import CalorieProgress from '$lib/components/fitness/CalorieProgress.svelte';
 import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
 import WeightChart from '$lib/components/fitness/WeightChart.svelte';
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
@@ -616,14 +617,13 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 
 								<div class="grid gap-2">
 									<Label for="workout-notes">Notes (optional)</Label>
-									<textarea
+									<LongTextInput
 										id="workout-notes"
 										name="notes"
 										bind:value={$workoutForm.notes}
-										rows="3"
-										class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+										rows={3}
 										placeholder="How did the workout feel?"
-									></textarea>
+									/>
 									{#if $workoutErrors.notes}
 										<p class="text-sm text-destructive">{$workoutErrors.notes}</p>
 									{/if}
@@ -792,15 +792,14 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 									</div>
 									<div class="grid gap-2">
 										<Label for="meal-description">Description</Label>
-										<textarea
+										<LongTextInput
 											id="meal-description"
 											name="description"
 											bind:value={$mealForm.description}
-											rows="3"
-											class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+											rows={3}
 											placeholder="e.g., Chicken salad with olive oil dressing"
 											required
-										></textarea>
+										/>
 										{#if $mealErrors.description}
 											<p class="text-sm text-destructive">{$mealErrors.description}</p>
 										{/if}
