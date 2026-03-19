@@ -1,5 +1,5 @@
-import { error, fail, redirect } from '@sveltejs/kit';
-import { and, desc, eq } from 'drizzle-orm';
+import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
+import { and, desc, eq, or } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		const routine = await db.query.meditationRoutines.findFirst({
 			where: and(
 				eq(meditationRoutines.id, params.id),
-				eq(meditationRoutines.userId, locals.user.id)
+				or(eq(meditationRoutines.userId, locals.user.id), eq(meditationRoutines.isPredefined, true))
 			)
 		});
 
@@ -107,7 +107,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			updateForm
 		};
 	} catch (err) {
-		if (err instanceof Error && 'status' in err) {
+		if (isHttpError(err) || isRedirect(err)) {
 			throw err;
 		}
 		logger.error('Failed to load meditation routine', { error: err });
