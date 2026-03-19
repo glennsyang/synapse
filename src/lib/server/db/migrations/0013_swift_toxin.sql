@@ -1,0 +1,1 @@
+ALTER TABLE `daily_agenda_templates` ADD `days_of_week` text DEFAULT '[0,1,2,3,4,5,6]' NOT NULL;
