@@ -71,7 +71,7 @@ export const actions: Actions = {
 					caloriesEstimate: form.data.caloriesEstimate || null,
 					updatedAt: new Date().toISOString()
 				})
-				.where(eq(mealLogs.id, mealId));
+				.where(and(eq(mealLogs.id, mealId), eq(mealLogs.userId, user.id)));
 
 			logger.info('Meal updated', { mealId, userId: user.id });
 		} catch (error) {
@@ -102,7 +102,7 @@ export const actions: Actions = {
 				return fail(404, { error: 'Meal not found' });
 			}
 
-			await db.delete(mealLogs).where(eq(mealLogs.id, mealId));
+			await db.delete(mealLogs).where(and(eq(mealLogs.id, mealId), eq(mealLogs.userId, user.id)));
 			logger.info('Meal deleted', { mealId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to delete meal', { error, mealId });

@@ -102,7 +102,10 @@ export const actions: Actions = {
 
 			const updateData = buildTaskUpdateData(form.data, existing.state);
 
-			await getDb().update(tasks).set(updateData).where(eq(tasks.id, taskId));
+			await getDb()
+				.update(tasks)
+				.set(updateData)
+				.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)));
 
 			logger.info('Task updated', { taskId, userId: user.id });
 		} catch (error) {
@@ -132,7 +135,9 @@ export const actions: Actions = {
 				return fail(404, { error: 'Task not found' });
 			}
 
-			await getDb().delete(tasks).where(eq(tasks.id, taskId));
+			await getDb()
+				.delete(tasks)
+				.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)));
 
 			logger.info('Task deleted', { taskId, taskNumber: existing.taskNumber, userId: user.id });
 		} catch (error) {

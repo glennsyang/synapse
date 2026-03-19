@@ -503,7 +503,7 @@ async function processDailyAgendaDigests(
 /**
  * Main execution
  */
-export async function runEmailNotifications() {
+export async function runEmailNotifications(): Promise<{ ok: true } | { ok: false; error: Error }> {
 	logger.debug('🚀 Starting email notifications job run...');
 	logger.debug(`📅 Current time (UTC): ${new Date().toISOString()}`);
 
@@ -551,9 +551,9 @@ export async function runEmailNotifications() {
 		await processVisitWarnings();
 
 		logger.debug('\n✅ Email notifications cron job completed successfully!');
-		process.exit(0);
+		return { ok: true };
 	} catch (error) {
 		logger.error('\n❌ Email notifications cron job failed:', { error });
-		process.exit(1);
+		return { ok: false, error: error instanceof Error ? error : new Error('Unknown error') };
 	}
 }

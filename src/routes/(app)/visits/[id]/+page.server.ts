@@ -183,7 +183,9 @@ export const actions: Actions = {
 					followUpDate: form.data.followUpDate || null,
 					updatedAt: new Date().toISOString()
 				})
-				.where(eq(visits.id, visitId));
+				.where(
+					and(eq(visits.id, visitId), eq(visits.userId, user.id), eq(visits.personId, params.id))
+				);
 
 			logger.info('Visit updated', {
 				visitId,
@@ -239,7 +241,7 @@ export const actions: Actions = {
 					isExempt: form.data.isExempt,
 					updatedAt: new Date().toISOString()
 				})
-				.where(eq(people.id, params.id));
+				.where(and(eq(people.id, params.id), eq(people.userId, user.id)));
 
 			logger.info('Person updated', { personId: params.id, userId: user.id });
 
@@ -283,7 +285,7 @@ export const actions: Actions = {
 					isArchived: true,
 					updatedAt: new Date().toISOString()
 				})
-				.where(eq(people.id, params.id));
+				.where(and(eq(people.id, params.id), eq(people.userId, user.id)));
 
 			logger.info('Person archived', { personId: params.id, userId: user.id });
 		} catch (err) {
@@ -312,7 +314,7 @@ export const actions: Actions = {
 			}
 
 			// Delete person (cascades to visits)
-			await db.delete(people).where(eq(people.id, params.id));
+			await db.delete(people).where(and(eq(people.id, params.id), eq(people.userId, user.id)));
 
 			logger.info('Person deleted', { personId: params.id, userId: user.id });
 		} catch (err) {
@@ -343,7 +345,7 @@ export const actions: Actions = {
 				throw error(404, 'Visit not found');
 			}
 
-			await db.delete(visits).where(eq(visits.id, visitId));
+			await db.delete(visits).where(and(eq(visits.id, visitId), eq(visits.userId, user.id)));
 
 			logger.info('Visit deleted', { visitId, userId: user.id });
 

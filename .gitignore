@@ -28,5 +28,9 @@ data/
 *.db-shm
 *.db-wal
 
+# docs
+docs/security-review/
+docs/structure-review/
+
 # Sentry Config File
 .env.sentry-build-plugin

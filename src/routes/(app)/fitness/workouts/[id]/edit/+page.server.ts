@@ -122,7 +122,7 @@ export const actions: Actions = {
 						notes: form.data.notes || null,
 						updatedAt: new Date().toISOString()
 					})
-					.where(eq(workoutLogs.id, workoutId));
+					.where(and(eq(workoutLogs.id, workoutId), eq(workoutLogs.userId, user.id)));
 
 				await tx.delete(workoutExercises).where(eq(workoutExercises.workoutLogId, workoutId));
 
@@ -171,7 +171,9 @@ export const actions: Actions = {
 				return fail(404, { error: 'Workout not found' });
 			}
 
-			await db.delete(workoutLogs).where(eq(workoutLogs.id, workoutId));
+			await db
+				.delete(workoutLogs)
+				.where(and(eq(workoutLogs.id, workoutId), eq(workoutLogs.userId, user.id)));
 			logger.info('Workout deleted', { workoutId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to delete workout', { error, workoutId });

@@ -297,7 +297,10 @@ export const actions: Actions = {
 				updateData.completedAt = null;
 			}
 
-			await getDb().update(tasks).set(updateData).where(eq(tasks.id, form.data.id));
+			await getDb()
+				.update(tasks)
+				.set(updateData)
+				.where(and(eq(tasks.id, form.data.id), eq(tasks.userId, user.id)));
 
 			return { form };
 		} catch (error) {
@@ -318,7 +321,9 @@ export const actions: Actions = {
 			if (!existing) {
 				return fail(404, { form, error: 'Task not found' });
 			}
-			await getDb().delete(tasks).where(eq(tasks.id, form.data.id));
+			await getDb()
+				.delete(tasks)
+				.where(and(eq(tasks.id, form.data.id), eq(tasks.userId, user.id)));
 
 			logger.info('Task deleted from board', {
 				taskId: form.data.id,

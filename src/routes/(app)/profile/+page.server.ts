@@ -3,6 +3,7 @@ import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { changePasswordSchema, updateProfileSchema } from '$lib/schemas/auth';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import { auth } from '$lib/server/auth';
 import { getDb } from '$lib/server/db';
 import { account, user } from '$lib/server/db/schema';
@@ -39,9 +40,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	update: async ({ request, locals }) => {
-		const currentUser = locals.user;
-
+	update: requireAuth(async ({ request }, currentUser) => {
 		const form = await superValidate(request, zod4(updateProfileSchema));
 		if (!form.valid) {
 			return message(
@@ -67,10 +66,9 @@ export const actions: Actions = {
 				{ status: 500 }
 			);
 		}
-	},
+	}),
 
-	changePassword: async ({ request, locals }) => {
-		const currentUser = locals.user;
+	changePassword: requireAuth(async ({ request }, currentUser) => {
 		const form = await superValidate(request, zod4(changePasswordSchema));
 		if (!form.valid) {
 			return message(
@@ -102,5 +100,5 @@ export const actions: Actions = {
 				{ status: 400 }
 			);
 		}
-	}
+	})
 } satisfies Actions;
