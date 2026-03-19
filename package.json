@@ -16,6 +16,7 @@
 		"lint:static": "npm run check:redirect-throws && npm run check:dead-exports",
 		"check:redirect-throws": "node scripts/check-redirect-throws.mjs",
 		"check:dead-exports": "node scripts/check-dead-exports.mjs",
+		"check:all": "npm run format && npm run lint && npm run test",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
 		"update-deps": "npm outdated || npm update",

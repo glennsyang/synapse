@@ -2,7 +2,7 @@ import type { DailyAgendaEntry } from '$lib/types';
 import { formatDateMedium } from '$lib/utils/date';
 
 export const DAILY_AGENDA_DIGEST_TIME = '06:00';
-const DAILY_AGENDA_DIGEST_WINDOW_MINUTES = 10;
+export const DAILY_AGENDA_DIGEST_WINDOW_MINUTES = 20;
 export const DAILY_AGENDA_DIGEST_NOTIFICATION_TYPE = 'daily_agenda_digest';
 export const DAILY_AGENDA_DIGEST_TAGS = 'date,point_right';
 
