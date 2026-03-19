@@ -70,7 +70,7 @@ export const actions: Actions = {
 					weightLbs: form.data.weightLbs,
 					updatedAt: new Date().toISOString()
 				})
-				.where(eq(weightEntries.id, entryId));
+				.where(and(eq(weightEntries.id, entryId), eq(weightEntries.userId, user.id)));
 
 			logger.info('Weight entry updated', { entryId, userId: user.id });
 		} catch (error) {
@@ -102,7 +102,9 @@ export const actions: Actions = {
 				return fail(404, { error: 'Weight entry not found' });
 			}
 
-			await db.delete(weightEntries).where(eq(weightEntries.id, entryId));
+			await db
+				.delete(weightEntries)
+				.where(and(eq(weightEntries.id, entryId), eq(weightEntries.userId, user.id)));
 
 			logger.info('Weight entry deleted', { entryId, userId: user.id });
 		} catch (error) {
