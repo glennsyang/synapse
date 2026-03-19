@@ -2,6 +2,13 @@ import { and, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { getDb } from '$lib/server/db';
 import { journalEntries, meditationSessions, workoutLogs } from '$lib/server/db/schema';
+import {
+	addDaysToDateString,
+	getRollingDateRange,
+	getStartOfWeek,
+	getTodayString,
+	getWeekDates
+} from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 
 import type { PageServerLoad } from './$types';
@@ -26,185 +33,134 @@ export const load: PageServerLoad = async ({ locals }) => {
 		};
 	}
 
-	const today = new Date();
-
-	// Calculate current week (Monday to Sunday)
-	const dayOfWeek = today.getDay();
-	const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday is 0, we want Monday as 0
-
-	const startOfThisWeek = new Date(today);
-	startOfThisWeek.setDate(today.getDate() - daysFromMonday);
-	startOfThisWeek.setHours(0, 0, 0, 0);
-
-	const endOfThisWeek = new Date(startOfThisWeek);
-	endOfThisWeek.setDate(startOfThisWeek.getDate() + 7);
-
-	// Calculate previous week (Monday to Sunday)
-	const startOfLastWeek = new Date(startOfThisWeek);
-	startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
-
-	const endOfLastWeek = new Date(startOfThisWeek);
-
-	const startOfMonth = new Date(today);
-	startOfMonth.setDate(today.getDate() - 30);
+	const today = getTodayString();
+	const startOfThisWeekDate = getStartOfWeek(today);
+	const endOfThisWeekDate = addDaysToDateString(startOfThisWeekDate, 7);
+	const startOfLastWeekDate = addDaysToDateString(startOfThisWeekDate, -7);
+	const startOfMonthDate = addDaysToDateString(today, -30);
+	const thisWeekDates = getWeekDates(startOfThisWeekDate);
+	const lastWeekDates = getWeekDates(startOfLastWeekDate);
+	const rollingWeekDates = getRollingDateRange(today, 7);
+	const meditationRangeStartIso = `${addDaysToDateString(startOfLastWeekDate, -1)}T00:00:00.000Z`;
+	const meditationRangeEndIso = `${addDaysToDateString(endOfThisWeekDate, 1)}T00:00:00.000Z`;
 
 	const db = getDb();
 
 	try {
-		// This week counts
-		const journalCountThisWeek = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(journalEntries)
-			.where(
-				and(
-					eq(journalEntries.userId, user.id),
-					gte(journalEntries.date, startOfThisWeek.toISOString().split('T')[0]),
-					sql`${journalEntries.date} < ${endOfThisWeek.toISOString().split('T')[0]}`
-				)
-			);
-
-		const workoutCountThisWeek = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(workoutLogs)
-			.where(
-				and(
-					eq(workoutLogs.userId, user.id),
-					gte(workoutLogs.date, startOfThisWeek.toISOString().split('T')[0]),
-					sql`${workoutLogs.date} < ${endOfThisWeek.toISOString().split('T')[0]}`
-				)
-			);
-
-		const meditationCountThisWeek = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(meditationSessions)
-			.where(
-				and(
-					eq(meditationSessions.userId, user.id),
-					gte(meditationSessions.completedAt, startOfThisWeek.toISOString()),
-					sql`${meditationSessions.completedAt} < ${endOfThisWeek.toISOString()}`
-				)
-			);
-
-		// Last week counts
-		const journalCountLastWeek = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(journalEntries)
-			.where(
-				and(
-					eq(journalEntries.userId, user.id),
-					gte(journalEntries.date, startOfLastWeek.toISOString().split('T')[0]),
-					sql`${journalEntries.date} < ${endOfLastWeek.toISOString().split('T')[0]}`
-				)
-			);
-
-		const workoutCountLastWeek = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(workoutLogs)
-			.where(
-				and(
-					eq(workoutLogs.userId, user.id),
-					gte(workoutLogs.date, startOfLastWeek.toISOString().split('T')[0]),
-					sql`${workoutLogs.date} < ${endOfLastWeek.toISOString().split('T')[0]}`
-				)
-			);
-
-		const meditationCountLastWeek = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(meditationSessions)
-			.where(
-				and(
-					eq(meditationSessions.userId, user.id),
-					gte(meditationSessions.completedAt, startOfLastWeek.toISOString()),
-					sql`${meditationSessions.completedAt} < ${endOfLastWeek.toISOString()}`
-				)
-			);
-
-		const workoutCountMonth = await db
-			.select({ count: sql<number>`count(*)` })
-			.from(workoutLogs)
-			.where(
-				and(
-					eq(workoutLogs.userId, user.id),
-					gte(workoutLogs.date, startOfMonth.toISOString().split('T')[0])
-				)
-			);
-
-		const weeklyActivity = [];
-		for (let i = 6; i >= 0; i--) {
-			const date = new Date(today);
-			date.setDate(today.getDate() - i);
-			date.setHours(0, 0, 0, 0);
-			const nextDate = new Date(date);
-			nextDate.setDate(date.getDate() + 1);
-
-			const journalCount = await db
-				.select({ count: sql<number>`count(*)` })
+		const [
+			journalDateCounts,
+			workoutDateCounts,
+			meditationSessionsInRange,
+			workoutCountMonth,
+			recentJournalEntries,
+			recentWorkouts,
+			recentMeditations
+		] = await Promise.all([
+			db
+				.select({
+					date: journalEntries.date,
+					count: sql<number>`count(*)`
+				})
 				.from(journalEntries)
 				.where(
 					and(
 						eq(journalEntries.userId, user.id),
-						eq(journalEntries.date, date.toISOString().split('T')[0])
+						gte(journalEntries.date, startOfLastWeekDate),
+						sql`${journalEntries.date} < ${endOfThisWeekDate}`
 					)
-				);
-
-			const meditationCountDay = await db
-				.select({ count: sql<number>`count(*)` })
-				.from(meditationSessions)
-				.where(
-					and(
-						eq(meditationSessions.userId, user.id),
-						gte(meditationSessions.completedAt, date.toISOString()),
-						sql`${meditationSessions.completedAt} < ${nextDate.toISOString()}`
-					)
-				);
-
-			const workoutCountDay = await db
-				.select({ count: sql<number>`count(*)` })
+				)
+				.groupBy(journalEntries.date),
+			db
+				.select({
+					date: workoutLogs.date,
+					count: sql<number>`count(*)`
+				})
 				.from(workoutLogs)
 				.where(
 					and(
 						eq(workoutLogs.userId, user.id),
-						eq(workoutLogs.date, date.toISOString().split('T')[0])
+						gte(workoutLogs.date, startOfLastWeekDate),
+						sql`${workoutLogs.date} < ${endOfThisWeekDate}`
 					)
-				);
+				)
+				.groupBy(workoutLogs.date),
+			db
+				.select({
+					completedAt: meditationSessions.completedAt
+				})
+				.from(meditationSessions)
+				.where(
+					and(
+						eq(meditationSessions.userId, user.id),
+						gte(meditationSessions.completedAt, meditationRangeStartIso),
+						sql`${meditationSessions.completedAt} < ${meditationRangeEndIso}`
+					)
+				),
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(workoutLogs)
+				.where(and(eq(workoutLogs.userId, user.id), gte(workoutLogs.date, startOfMonthDate))),
+			db.query.journalEntries.findMany({
+				where: eq(journalEntries.userId, user.id),
+				orderBy: [desc(journalEntries.createdAt)],
+				limit: 3
+			}),
+			db.query.workoutLogs.findMany({
+				where: eq(workoutLogs.userId, user.id),
+				orderBy: [desc(workoutLogs.createdAt)],
+				limit: 3
+			}),
+			db.query.meditationSessions.findMany({
+				where: eq(meditationSessions.userId, user.id),
+				orderBy: [desc(meditationSessions.createdAt)],
+				limit: 3,
+				with: {
+					routine: true
+				}
+			})
+		]);
 
-			weeklyActivity.push({
-				date: date.toISOString().split('T')[0],
-				journal: Number(journalCount[0]?.count || 0),
-				meditation: Number(meditationCountDay[0]?.count || 0),
-				workouts: Number(workoutCountDay[0]?.count || 0)
-			});
+		const journalCountByDate = new Map<string, number>();
+		for (const row of journalDateCounts) {
+			journalCountByDate.set(row.date, Number(row.count || 0));
 		}
 
-		const recentJournalEntries = await db.query.journalEntries.findMany({
-			where: eq(journalEntries.userId, user.id),
-			orderBy: [desc(journalEntries.createdAt)],
-			limit: 3
-		});
+		const workoutCountByDate = new Map<string, number>();
+		for (const row of workoutDateCounts) {
+			workoutCountByDate.set(row.date, Number(row.count || 0));
+		}
 
-		const recentWorkouts = await db.query.workoutLogs.findMany({
-			where: eq(workoutLogs.userId, user.id),
-			orderBy: [desc(workoutLogs.createdAt)],
-			limit: 3
-		});
+		const meditationCountByDate = new Map<string, number>();
+		for (const session of meditationSessionsInRange) {
+			// Convert the UTC timestamp to app-local date before aggregation.
+			const localDate = getTodayString(new Date(session.completedAt));
 
-		const recentMeditations = await db.query.meditationSessions.findMany({
-			where: eq(meditationSessions.userId, user.id),
-			orderBy: [desc(meditationSessions.createdAt)],
-			limit: 3,
-			with: {
-				routine: true
+			if (localDate < startOfLastWeekDate || localDate >= endOfThisWeekDate) {
+				continue;
 			}
-		});
+
+			meditationCountByDate.set(localDate, (meditationCountByDate.get(localDate) ?? 0) + 1);
+		}
+
+		const sumCountsByDate = (countByDate: Map<string, number>, dates: string[]): number => {
+			return dates.reduce((total, date) => total + (countByDate.get(date) ?? 0), 0);
+		};
+
+		const weeklyActivity = rollingWeekDates.map((activityDate) => ({
+			date: activityDate,
+			journal: journalCountByDate.get(activityDate) ?? 0,
+			meditation: meditationCountByDate.get(activityDate) ?? 0,
+			workouts: workoutCountByDate.get(activityDate) ?? 0
+		}));
 
 		return {
 			stats: {
-				journalThisWeek: Number(journalCountThisWeek[0]?.count || 0),
-				journalLastWeek: Number(journalCountLastWeek[0]?.count || 0),
-				meditationThisWeek: Number(meditationCountThisWeek[0]?.count || 0),
-				meditationLastWeek: Number(meditationCountLastWeek[0]?.count || 0),
-				workoutsThisWeek: Number(workoutCountThisWeek[0]?.count || 0),
-				workoutsLastWeek: Number(workoutCountLastWeek[0]?.count || 0),
+				journalThisWeek: sumCountsByDate(journalCountByDate, thisWeekDates),
+				journalLastWeek: sumCountsByDate(journalCountByDate, lastWeekDates),
+				meditationThisWeek: sumCountsByDate(meditationCountByDate, thisWeekDates),
+				meditationLastWeek: sumCountsByDate(meditationCountByDate, lastWeekDates),
+				workoutsThisWeek: sumCountsByDate(workoutCountByDate, thisWeekDates),
+				workoutsLastWeek: sumCountsByDate(workoutCountByDate, lastWeekDates),
 				workoutsCompletedMonth: Number(workoutCountMonth[0]?.count || 0),
 				weeklyActivity
 			},
@@ -213,7 +169,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			recentMeditations
 		};
 	} catch (error) {
-		logger.error('Failed to delete journal entry', { error });
+		logger.error('Failed to load dashboard data', { error });
 
 		return {
 			stats: {

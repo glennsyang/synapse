@@ -47,6 +47,7 @@ export const actions: Actions = {
 			await getDb()
 				.insert(journalEntries)
 				.values({
+					id: entryId,
 					userId: user.id,
 					date: form.data.date,
 					content: form.data.content,

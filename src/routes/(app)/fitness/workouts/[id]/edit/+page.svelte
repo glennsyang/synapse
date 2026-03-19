@@ -5,6 +5,7 @@ import { superForm } from 'sveltekit-superforms';
 
 import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
 import { Input } from '$lib/components/ui/input';
@@ -131,14 +132,13 @@ $effect(() => {
 
 				<div class="grid gap-2">
 					<Label for="workout-notes">Notes (optional)</Label>
-					<textarea
+					<LongTextInput
 						id="workout-notes"
 						name="notes"
 						bind:value={$form.notes}
-						rows="3"
-						class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+						rows={3}
 						placeholder="How did the workout feel?"
-					></textarea>
+					/>
 					{#if $errors.notes}
 						<p class="text-sm text-destructive">{$errors.notes}</p>
 					{/if}

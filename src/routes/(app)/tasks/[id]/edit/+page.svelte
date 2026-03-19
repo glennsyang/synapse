@@ -4,6 +4,7 @@ import Trash2Icon from '@lucide/svelte/icons/trash-2';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
 import {
 	formatTaskDisplayId,
 	taskPriorityOptions,
@@ -45,7 +46,7 @@ let selectedStateOption = $derived(
 );
 </script>
 
-<div class="container mx-auto max-w-2xl py-8">
+<PageFormShell>
 	<div class="mb-6">
 		<Button variant="ghost" href="/tasks" class="mb-4">
 			<ArrowLeftIcon class="mr-2 h-4 w-4" />
@@ -204,7 +205,7 @@ let selectedStateOption = $derived(
 			</form>
 		</Card.Content>
 	</Card.Root>
-</div>
+</PageFormShell>
 
 <!-- Delete Confirmation Dialog -->
 <ConfirmDialog

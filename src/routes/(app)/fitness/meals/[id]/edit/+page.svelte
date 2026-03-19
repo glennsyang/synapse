@@ -4,6 +4,8 @@ import Trash2Icon from '@lucide/svelte/icons/trash-2';
 import { superForm } from 'sveltekit-superforms';
 
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
+import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
 import { Input } from '$lib/components/ui/input';
@@ -22,7 +24,7 @@ const { form, errors, enhance, submitting } = superForm(data.form, {
 let showDeleteDialog = $state(false);
 </script>
 
-<div class="container mx-auto max-w-2xl py-8">
+<PageFormShell>
 	<div class="mb-6">
 		<Button variant="ghost" href="/fitness?tab=meals" class="mb-4">
 			<ArrowLeftIcon class="mr-2 h-4 w-4" />
@@ -72,14 +74,13 @@ let showDeleteDialog = $state(false);
 
 				<div class="grid gap-2">
 					<Label for="meal-description">Description</Label>
-					<textarea
+					<LongTextInput
 						id="meal-description"
 						name="description"
 						bind:value={$form.description}
-						rows="3"
-						class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+						rows={3}
 						required
-					></textarea>
+					/>
 					{#if $errors.description}
 						<p class="text-sm text-destructive">{$errors.description}</p>
 					{/if}
@@ -108,7 +109,7 @@ let showDeleteDialog = $state(false);
 			</form>
 		</Card.Content>
 	</Card.Root>
-</div>
+</PageFormShell>
 
 <ConfirmDialog
 	bind:open={showDeleteDialog}

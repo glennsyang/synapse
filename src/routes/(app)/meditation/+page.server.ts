@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, or } from 'drizzle-orm';
+import { and, desc, eq, isNull, like, or } from 'drizzle-orm';
 
 import { routineFilterSchema } from '$lib/schemas/meditation';
 import { getDb } from '$lib/server/db';
@@ -37,15 +37,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		} else {
 			// 'all' - show both predefined and user-created
 			routineConditions.push(
-				// biome-ignore lint/style/noNonNullAssertion: I'll fix this later
-				or(isNull(meditationRoutines.userId), eq(meditationRoutines.userId, locals.user?.id))!
+				or(isNull(meditationRoutines.userId), eq(meditationRoutines.userId, locals.user?.id))
 			);
 		}
 
 		// Add mood filter if specified
 		if (mood) {
 			// Search for mood tag in JSON array
-			routineConditions.push(eq(meditationRoutines.moodTags, `%"${mood}"%`));
+			routineConditions.push(like(meditationRoutines.moodTags, `%"${mood}"%`));
 		}
 
 		// Fetch routines

@@ -31,6 +31,7 @@ import {
 	DAILY_AGENDA_DIGEST_NOTIFICATION_TYPE,
 	DAILY_AGENDA_DIGEST_TAGS,
 	DAILY_AGENDA_DIGEST_TIME,
+	DAILY_AGENDA_DIGEST_WINDOW_MINUTES,
 	isWithinDailyDigestWindow
 } from './daily-agenda-digest';
 import {
@@ -445,7 +446,7 @@ async function processDailyAgendaDigests(
 
 	if (!isWithinDailyDigestWindow(currentHour, currentMinute)) {
 		logger.debug(
-			`   ⏭️  Outside daily digest send window (${DAILY_AGENDA_DIGEST_TIME} PT through 10 minutes after)`
+			`   ⏭️  Outside daily digest send window (${DAILY_AGENDA_DIGEST_TIME} PT through ${DAILY_AGENDA_DIGEST_WINDOW_MINUTES} minutes after)`
 		);
 		return;
 	}

@@ -62,10 +62,11 @@ describe('daily-agenda-digest', () => {
 		expect(DAILY_MOTIVATION_PHRASES).toContain(phraseA);
 	});
 
-	it('fires only inside the 6:00-6:10 AM daily digest window', () => {
+	it('fires only inside the 6:00-6:20 AM daily digest window', () => {
 		expect(isWithinDailyDigestWindow('06', '00')).toBe(true);
 		expect(isWithinDailyDigestWindow('06', '10')).toBe(true);
+		expect(isWithinDailyDigestWindow('06', '15')).toBe(true);
 		expect(isWithinDailyDigestWindow('05', '59')).toBe(false);
-		expect(isWithinDailyDigestWindow('06', '11')).toBe(false);
+		expect(isWithinDailyDigestWindow('06', '21')).toBe(false);
 	});
 });

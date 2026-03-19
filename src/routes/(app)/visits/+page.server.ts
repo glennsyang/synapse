@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
@@ -23,44 +23,57 @@ export const load: PageServerLoad = async ({ locals }) => {
 			orderBy: [desc(people.createdAt)]
 		});
 
-		// For each person, get the latest visit and calculate status
-		const peopleWithStatus: PersonWithStatus[] = await Promise.all(
-			userPeople.map(async (person) => {
-				const personVisits = await db.query.visits.findMany({
-					where: eq(visits.personId, person.id),
-					orderBy: [desc(visits.date)]
-				});
+		const latestVisitsByPersonId = new Map<string, typeof visits.$inferSelect>();
 
-				const latestVisit = personVisits[0];
-				const latestFollowUpDate = latestVisit?.followUpDate ?? null;
-				const nextFollowUpDate =
-					latestFollowUpDate && latestFollowUpDate >= today ? latestFollowUpDate : null;
+		if (userPeople.length > 0) {
+			const orderedVisits = await db.query.visits.findMany({
+				where: and(
+					eq(visits.userId, locals.user?.id),
+					inArray(
+						visits.personId,
+						userPeople.map((person) => person.id)
+					)
+				),
+				orderBy: [asc(visits.personId), desc(visits.date), desc(visits.createdAt)]
+			});
 
-				const statusInfo = calculatePersonVisitStatus(
-					latestVisit?.date ?? null,
-					person.isExempt,
-					latestFollowUpDate,
-					today
-				);
+			for (const visit of orderedVisits) {
+				if (!latestVisitsByPersonId.has(visit.personId)) {
+					latestVisitsByPersonId.set(visit.personId, visit);
+				}
+			}
+		}
 
-				return {
-					id: person.id,
-					name: person.name,
-					isExempt: person.isExempt,
-					nextFollowUpDate,
-					lastVisit: latestVisit
-						? {
-								date: latestVisit.date,
-								companions: latestVisit.companions ? JSON.parse(latestVisit.companions) : null
-							}
-						: null,
-					status: statusInfo.status,
-					daysSinceLastVisit: statusInfo.daysSinceLastVisit,
-					daysUntilStatusChange: statusInfo.daysUntilStatusChange,
-					createdAt: person.createdAt
-				};
-			})
-		);
+		const peopleWithStatus: PersonWithStatus[] = userPeople.map((person) => {
+			const latestVisit = latestVisitsByPersonId.get(person.id);
+			const latestFollowUpDate = latestVisit?.followUpDate ?? null;
+			const nextFollowUpDate =
+				latestFollowUpDate && latestFollowUpDate >= today ? latestFollowUpDate : null;
+
+			const statusInfo = calculatePersonVisitStatus(
+				latestVisit?.date ?? null,
+				person.isExempt,
+				latestFollowUpDate,
+				today
+			);
+
+			return {
+				id: person.id,
+				name: person.name,
+				isExempt: person.isExempt,
+				nextFollowUpDate,
+				lastVisit: latestVisit
+					? {
+							date: latestVisit.date,
+							companions: latestVisit.companions ? JSON.parse(latestVisit.companions) : null
+						}
+					: null,
+				status: statusInfo.status,
+				daysSinceLastVisit: statusInfo.daysSinceLastVisit,
+				daysUntilStatusChange: statusInfo.daysUntilStatusChange,
+				createdAt: person.createdAt
+			};
+		});
 
 		// Sort by status priority, then by days since last visit
 		peopleWithStatus.sort((a, b) => {

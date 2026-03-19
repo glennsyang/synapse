@@ -3,6 +3,7 @@ import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 
+import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
 import { Input } from '$lib/components/ui/input';
@@ -27,7 +28,7 @@ const { form, errors, enhance, message } = superForm(data.form, {
 });
 </script>
 
-<div class="container mx-auto max-w-2xl py-8">
+<PageFormShell>
 	<div class="mb-6">
 		<Button href="/meditation" variant="ghost">
 			<ArrowLeftIcon class="mr-2 h-4 w-4" />
@@ -133,4 +134,4 @@ const { form, errors, enhance, message } = superForm(data.form, {
 			</form>
 		</Card.Content>
 	</Card.Root>
-</div>
+</PageFormShell>

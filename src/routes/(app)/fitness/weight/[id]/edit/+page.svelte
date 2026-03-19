@@ -4,6 +4,7 @@ import Trash2Icon from '@lucide/svelte/icons/trash-2';
 import { superForm } from 'sveltekit-superforms';
 
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
 import { Input } from '$lib/components/ui/input';
@@ -21,7 +22,7 @@ const { form, errors, enhance, submitting } = superForm(data.form, {
 let showDeleteDialog = $state(false);
 </script>
 
-<div class="container mx-auto max-w-2xl py-8">
+<PageFormShell>
 	<div class="mb-6">
 		<Button variant="ghost" href="/fitness?tab=weight" class="mb-4">
 			<ArrowLeftIcon class="mr-2 h-4 w-4" />
@@ -85,7 +86,7 @@ let showDeleteDialog = $state(false);
 			</form>
 		</Card.Content>
 	</Card.Root>
-</div>
+</PageFormShell>
 
 <ConfirmDialog
 	bind:open={showDeleteDialog}
