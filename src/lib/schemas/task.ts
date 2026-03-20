@@ -61,6 +61,13 @@ export const updateTaskStateSchema = z.object({
 	state: TaskStateEnum
 });
 
+export const moveTaskBoardSchema = z.object({
+	id: z.uuid(),
+	fromState: TaskStateEnum,
+	toState: TaskStateEnum,
+	toIndex: z.coerce.number().int().min(0)
+});
+
 export const deleteTaskSchema = z.object({
 	id: z.uuid()
 });

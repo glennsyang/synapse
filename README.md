@@ -145,8 +145,18 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ### Testing
 
-- `npm run test` - Run all tests
+- `npm run test` - Run unit tests in non-watch mode
 - `npm run test:unit` - Run unit tests only
+- `npm run test:e2e` - Run focused Playwright browser tests
+
+For Playwright runs, create a `.env.test` file with credentials for a local test user:
+
+```env
+E2E_USER_EMAIL=you@example.com
+E2E_USER_PASSWORD=your-password
+```
+
+If those variables are not set, the focused Playwright spec will be skipped.
 
 ## Project Structure
 

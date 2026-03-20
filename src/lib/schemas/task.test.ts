@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	createTaskSchema,
 	deleteTaskSchema,
+	moveTaskBoardSchema,
 	taskFilterSchema,
 	updateTaskSchema,
 	updateTaskStateSchema
@@ -61,6 +62,33 @@ describe('task schemas', () => {
 			id: '123e4567-e89b-12d3-a456-426614174000',
 			state: 'done'
 		});
+	});
+
+	it('validates board drag payloads for cross-column moves', () => {
+		const result = moveTaskBoardSchema.parse({
+			id: '123e4567-e89b-12d3-a456-426614174000',
+			fromState: 'new',
+			toState: 'in_progress',
+			toIndex: 2
+		});
+
+		expect(result).toEqual({
+			id: '123e4567-e89b-12d3-a456-426614174000',
+			fromState: 'new',
+			toState: 'in_progress',
+			toIndex: 2
+		});
+	});
+
+	it('rejects negative board drop indices', () => {
+		const result = moveTaskBoardSchema.safeParse({
+			id: '123e4567-e89b-12d3-a456-426614174000',
+			fromState: 'blocked',
+			toState: 'done',
+			toIndex: -1
+		});
+
+		expect(result.success).toBe(false);
 	});
 
 	it('validates delete payloads with task UUIDs', () => {

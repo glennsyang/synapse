@@ -13,7 +13,7 @@ Synapse is a modern second-brain application providing journaling, todo manageme
 
 ### Database
 
-- The SQLite database file (`synapse.db`) in the repo is for local development and testing only.
+- The SQLite database file (`./data/synapse.db`) in the repo is for local development and testing only.
   - Database schema/migrations can be found in `/src/lib/server/db/migrations/`.
 
 ## Libraries and Frameworks

@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
@@ -46,8 +46,16 @@ async function createTaskWithTaskNumber(
 					})
 					.from(tasks);
 
+				const [sortOrderRow] = await tx
+					.select({
+						maxSortOrder: sql<number>`coalesce(max(${tasks.sortOrder}), -1)`
+					})
+					.from(tasks)
+					.where(and(eq(tasks.userId, userId), eq(tasks.state, input.state)));
+
 				const timestamp = new Date().toISOString();
 				const nextTaskNumber = taskNumberRow?.nextTaskNumber ?? 1;
+				const nextSortOrder = (sortOrderRow?.maxSortOrder ?? -1) + 1;
 
 				const [newTask] = await tx
 					.insert(tasks)
@@ -60,6 +68,7 @@ async function createTaskWithTaskNumber(
 						dueDate: input.dueDate,
 						priority: input.priority,
 						state: input.state,
+						sortOrder: nextSortOrder,
 						createdAt: timestamp,
 						updatedAt: timestamp
 					})
