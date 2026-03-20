@@ -8,6 +8,7 @@ export type TaskSummary = {
 	title: string;
 	description: string | null;
 	state: TaskState;
+	sortOrder: number;
 	dueDate: string | null;
 	priority: number;
 	tags: string[] | null;

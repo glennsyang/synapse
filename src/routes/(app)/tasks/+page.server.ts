@@ -14,7 +14,12 @@ import {
 	updateDailyAgendaTemplateSchema
 } from '$lib/schemas/daily-agenda';
 import type { TaskState } from '$lib/schemas/task';
-import { deleteTaskSchema, taskFilterSchema, updateTaskStateSchema } from '$lib/schemas/task';
+import {
+	deleteTaskSchema,
+	moveTaskBoardSchema,
+	taskFilterSchema,
+	updateTaskStateSchema
+} from '$lib/schemas/task';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import {
 	createDailyAgendaCustomEntry,
@@ -165,6 +170,139 @@ function parseStoredTags(rawTags: string | null): string[] | null {
 	}
 }
 
+type TaskBoardClient = Pick<ReturnType<typeof getDb>, 'query' | 'update'>;
+
+function clampBoardIndex(index: number, maxLength: number): number {
+	if (index < 0) {
+		return 0;
+	}
+
+	if (index > maxLength) {
+		return maxLength;
+	}
+
+	return index;
+}
+
+function moveTaskIdToIndex(taskIds: string[], taskId: string, targetIndex: number): string[] {
+	const reorderedTaskIds = taskIds.filter((id) => id !== taskId);
+	const safeIndex = clampBoardIndex(targetIndex, reorderedTaskIds.length);
+	reorderedTaskIds.splice(safeIndex, 0, taskId);
+	return reorderedTaskIds;
+}
+
+function getCompletedAtForTaskStateChange(
+	fromState: TaskState,
+	toState: TaskState,
+	timestamp: string
+): string | null | undefined {
+	if (fromState !== 'done' && toState === 'done') {
+		return timestamp;
+	}
+
+	if (fromState === 'done' && toState !== 'done') {
+		return null;
+	}
+
+	return undefined;
+}
+
+async function loadTaskIdsByState(
+	db: TaskBoardClient,
+	userId: string,
+	state: TaskState
+): Promise<string[]> {
+	const rows = await db.query.tasks.findMany({
+		where: and(eq(tasks.userId, userId), eq(tasks.state, state)),
+		columns: { id: true },
+		orderBy: [tasks.sortOrder, tasks.taskNumber]
+	});
+
+	return rows.map((row) => row.id);
+}
+
+async function applyTaskSortOrder(
+	db: TaskBoardClient,
+	userId: string,
+	taskIds: string[],
+	timestamp: string
+): Promise<void> {
+	for (let index = 0; index < taskIds.length; index += 1) {
+		await db
+			.update(tasks)
+			.set({
+				sortOrder: index,
+				updatedAt: timestamp
+			})
+			.where(and(eq(tasks.id, taskIds[index]), eq(tasks.userId, userId)));
+	}
+}
+
+type MoveTaskWithinBoardResult = {
+	fromState: TaskState;
+	toState: TaskState;
+};
+
+async function moveTaskWithinBoard(
+	db: TaskBoardClient,
+	userId: string,
+	taskId: string,
+	toState: TaskState,
+	toIndex: number,
+	timestamp: string
+): Promise<MoveTaskWithinBoardResult | null> {
+	const existing = await db.query.tasks.findFirst({
+		where: and(eq(tasks.id, taskId), eq(tasks.userId, userId)),
+		columns: {
+			id: true,
+			state: true
+		}
+	});
+
+	if (!existing) {
+		return null;
+	}
+
+	const fromState = existing.state as TaskState;
+
+	if (fromState === toState) {
+		const columnTaskIds = await loadTaskIdsByState(db, userId, toState);
+		const reorderedTaskIds = moveTaskIdToIndex(columnTaskIds, taskId, toIndex);
+		await applyTaskSortOrder(db, userId, reorderedTaskIds, timestamp);
+		return { fromState, toState };
+	}
+
+	const sourceTaskIds = await loadTaskIdsByState(db, userId, fromState);
+	const targetTaskIds = await loadTaskIdsByState(db, userId, toState);
+
+	const nextSourceTaskIds = sourceTaskIds.filter((id) => id !== taskId);
+	const nextTargetTaskIds = moveTaskIdToIndex(targetTaskIds, taskId, toIndex);
+
+	const completedAt = getCompletedAtForTaskStateChange(fromState, toState, timestamp);
+	const stateUpdate: {
+		state: TaskState;
+		updatedAt: string;
+		completedAt?: string | null;
+	} = {
+		state: toState,
+		updatedAt: timestamp
+	};
+
+	if (completedAt !== undefined) {
+		stateUpdate.completedAt = completedAt;
+	}
+
+	await db
+		.update(tasks)
+		.set(stateUpdate)
+		.where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
+
+	await applyTaskSortOrder(db, userId, nextSourceTaskIds, timestamp);
+	await applyTaskSortOrder(db, userId, nextTargetTaskIds, timestamp);
+
+	return { fromState, toState };
+}
+
 async function loadTaskBoardData(
 	userId: string,
 	filters: {
@@ -207,7 +345,7 @@ async function loadTaskBoardData(
 
 	const taskRows = await getDb().query.tasks.findMany({
 		where: and(...conditions),
-		orderBy: [tasks.priority, tasks.dueDate, tasks.taskNumber]
+		orderBy: [tasks.state, tasks.sortOrder, tasks.priority, tasks.dueDate, tasks.taskNumber]
 	});
 
 	return taskRows.map((task) => ({
@@ -269,6 +407,34 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
+	moveBoardTask: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(moveTaskBoardSchema));
+		if (!form.valid) return fail(400, { form });
+
+		try {
+			const timestamp = new Date().toISOString();
+			const moveResult = await getDb().transaction(async (tx) =>
+				moveTaskWithinBoard(
+					tx,
+					user.id,
+					form.data.id,
+					form.data.toState,
+					form.data.toIndex,
+					timestamp
+				)
+			);
+
+			if (!moveResult) {
+				return fail(404, { form, error: 'Task not found' });
+			}
+
+			return { form };
+		} catch (error) {
+			logger.error('Failed to move task on board', { error, form, userId: user.id });
+			return fail(500, { form, error: 'Failed to move task' });
+		}
+	}),
+
 	/**
 	 * Update task state from the kanban board
 	 */
@@ -278,29 +444,36 @@ export const actions: Actions = {
 
 		try {
 			const existing = await getDb().query.tasks.findFirst({
-				where: and(eq(tasks.id, form.data.id), eq(tasks.userId, user.id))
+				where: and(eq(tasks.id, form.data.id), eq(tasks.userId, user.id)),
+				columns: {
+					id: true,
+					state: true
+				}
 			});
 
 			if (!existing) {
 				return fail(404, { form, error: 'Task not found' });
 			}
 
-			// Update state and completedAt if changing to done
-			const updateData: Record<string, unknown> = {
-				state: form.data.state,
-				updatedAt: new Date().toISOString()
-			};
-
-			if (form.data.state === 'done' && existing.state !== 'done') {
-				updateData.completedAt = new Date().toISOString();
-			} else if (form.data.state !== 'done' && existing.state === 'done') {
-				updateData.completedAt = null;
+			if (existing.state === form.data.state) {
+				return { form };
 			}
 
-			await getDb()
-				.update(tasks)
-				.set(updateData)
-				.where(and(eq(tasks.id, form.data.id), eq(tasks.userId, user.id)));
+			const timestamp = new Date().toISOString();
+			const moveResult = await getDb().transaction(async (tx) =>
+				moveTaskWithinBoard(
+					tx,
+					user.id,
+					form.data.id,
+					form.data.state,
+					Number.MAX_SAFE_INTEGER,
+					timestamp
+				)
+			);
+
+			if (!moveResult) {
+				return fail(404, { form, error: 'Task not found' });
+			}
 
 			return { form };
 		} catch (error) {

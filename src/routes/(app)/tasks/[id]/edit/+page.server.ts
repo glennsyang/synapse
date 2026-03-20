@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
@@ -100,12 +100,64 @@ export const actions: Actions = {
 				return fail(404, { form, error: 'Task not found' });
 			}
 
-			const updateData = buildTaskUpdateData(form.data, existing.state);
+			const nextState = (form.data.state ?? existing.state) as TaskState;
 
-			await getDb()
-				.update(tasks)
-				.set(updateData)
-				.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)));
+			if (nextState === existing.state) {
+				const updateData = buildTaskUpdateData(form.data, existing.state);
+
+				await getDb()
+					.update(tasks)
+					.set(updateData)
+					.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)));
+			} else {
+				const timestamp = new Date().toISOString();
+
+				await getDb().transaction(async (tx) => {
+					const [targetSortOrderRow] = await tx
+						.select({
+							maxSortOrder: sql<number>`coalesce(max(${tasks.sortOrder}), -1)`
+						})
+						.from(tasks)
+						.where(and(eq(tasks.userId, user.id), eq(tasks.state, nextState)));
+
+					const sourceRows = await tx.query.tasks.findMany({
+						where: and(eq(tasks.userId, user.id), eq(tasks.state, existing.state as TaskState)),
+						columns: { id: true },
+						orderBy: [tasks.sortOrder, tasks.taskNumber]
+					});
+
+					const sourceTaskIds = sourceRows
+						.map((row) => row.id)
+						.filter((sourceTaskId) => sourceTaskId !== taskId);
+
+					const updateData = buildTaskUpdateData(
+						{
+							...form.data,
+							state: nextState
+						},
+						existing.state
+					);
+
+					await tx
+						.update(tasks)
+						.set({
+							...updateData,
+							sortOrder: (targetSortOrderRow?.maxSortOrder ?? -1) + 1,
+							updatedAt: timestamp
+						})
+						.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)));
+
+					for (let index = 0; index < sourceTaskIds.length; index += 1) {
+						await tx
+							.update(tasks)
+							.set({
+								sortOrder: index,
+								updatedAt: timestamp
+							})
+							.where(and(eq(tasks.id, sourceTaskIds[index]), eq(tasks.userId, user.id)));
+					}
+				});
+			}
 
 			logger.info('Task updated', { taskId, userId: user.id });
 		} catch (error) {
