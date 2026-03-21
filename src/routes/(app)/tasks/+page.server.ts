@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { and, eq, like, or } from 'drizzle-orm';
+import { and, asc, eq, like, or } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
@@ -170,7 +170,7 @@ function parseStoredTags(rawTags: string | null): string[] | null {
 	}
 }
 
-type TaskBoardClient = Pick<ReturnType<typeof getDb>, 'query' | 'update'>;
+type TaskBoardClient = Pick<ReturnType<typeof getDb>, 'select' | 'update'>;
 
 function clampBoardIndex(index: number, maxLength: number): number {
 	if (index < 0) {
@@ -207,34 +207,31 @@ function getCompletedAtForTaskStateChange(
 	return undefined;
 }
 
-async function loadTaskIdsByState(
-	db: TaskBoardClient,
-	userId: string,
-	state: TaskState
-): Promise<string[]> {
-	const rows = await db.query.tasks.findMany({
-		where: and(eq(tasks.userId, userId), eq(tasks.state, state)),
-		columns: { id: true },
-		orderBy: [tasks.sortOrder, tasks.taskNumber]
-	});
+function loadTaskIdsByState(db: TaskBoardClient, userId: string, state: TaskState): string[] {
+	const rows = db
+		.select({ id: tasks.id })
+		.from(tasks)
+		.where(and(eq(tasks.userId, userId), eq(tasks.state, state)))
+		.orderBy(asc(tasks.sortOrder), asc(tasks.taskNumber))
+		.all();
 
 	return rows.map((row) => row.id);
 }
 
-async function applyTaskSortOrder(
+function applyTaskSortOrder(
 	db: TaskBoardClient,
 	userId: string,
 	taskIds: string[],
 	timestamp: string
-): Promise<void> {
+): void {
 	for (let index = 0; index < taskIds.length; index += 1) {
-		await db
-			.update(tasks)
+		db.update(tasks)
 			.set({
 				sortOrder: index,
 				updatedAt: timestamp
 			})
-			.where(and(eq(tasks.id, taskIds[index]), eq(tasks.userId, userId)));
+			.where(and(eq(tasks.id, taskIds[index]), eq(tasks.userId, userId)))
+			.run();
 	}
 }
 
@@ -243,21 +240,19 @@ type MoveTaskWithinBoardResult = {
 	toState: TaskState;
 };
 
-async function moveTaskWithinBoard(
+function moveTaskWithinBoard(
 	db: TaskBoardClient,
 	userId: string,
 	taskId: string,
 	toState: TaskState,
 	toIndex: number,
 	timestamp: string
-): Promise<MoveTaskWithinBoardResult | null> {
-	const existing = await db.query.tasks.findFirst({
-		where: and(eq(tasks.id, taskId), eq(tasks.userId, userId)),
-		columns: {
-			id: true,
-			state: true
-		}
-	});
+): MoveTaskWithinBoardResult | null {
+	const existing = db
+		.select({ id: tasks.id, state: tasks.state })
+		.from(tasks)
+		.where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+		.get();
 
 	if (!existing) {
 		return null;
@@ -266,14 +261,14 @@ async function moveTaskWithinBoard(
 	const fromState = existing.state as TaskState;
 
 	if (fromState === toState) {
-		const columnTaskIds = await loadTaskIdsByState(db, userId, toState);
+		const columnTaskIds = loadTaskIdsByState(db, userId, toState);
 		const reorderedTaskIds = moveTaskIdToIndex(columnTaskIds, taskId, toIndex);
-		await applyTaskSortOrder(db, userId, reorderedTaskIds, timestamp);
+		applyTaskSortOrder(db, userId, reorderedTaskIds, timestamp);
 		return { fromState, toState };
 	}
 
-	const sourceTaskIds = await loadTaskIdsByState(db, userId, fromState);
-	const targetTaskIds = await loadTaskIdsByState(db, userId, toState);
+	const sourceTaskIds = loadTaskIdsByState(db, userId, fromState);
+	const targetTaskIds = loadTaskIdsByState(db, userId, toState);
 
 	const nextSourceTaskIds = sourceTaskIds.filter((id) => id !== taskId);
 	const nextTargetTaskIds = moveTaskIdToIndex(targetTaskIds, taskId, toIndex);
@@ -292,13 +287,13 @@ async function moveTaskWithinBoard(
 		stateUpdate.completedAt = completedAt;
 	}
 
-	await db
-		.update(tasks)
+	db.update(tasks)
 		.set(stateUpdate)
-		.where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
+		.where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+		.run();
 
-	await applyTaskSortOrder(db, userId, nextSourceTaskIds, timestamp);
-	await applyTaskSortOrder(db, userId, nextTargetTaskIds, timestamp);
+	applyTaskSortOrder(db, userId, nextSourceTaskIds, timestamp);
+	applyTaskSortOrder(db, userId, nextTargetTaskIds, timestamp);
 
 	return { fromState, toState };
 }
@@ -413,7 +408,7 @@ export const actions: Actions = {
 
 		try {
 			const timestamp = new Date().toISOString();
-			const moveResult = await getDb().transaction(async (tx) =>
+			const moveResult = getDb().transaction((tx) =>
 				moveTaskWithinBoard(
 					tx,
 					user.id,
@@ -430,7 +425,7 @@ export const actions: Actions = {
 
 			return { form };
 		} catch (error) {
-			logger.error('Failed to move task on board', { error, form, userId: user.id });
+			logger.error('Failed to move task on board', error, { form, userId: user.id });
 			return fail(500, { form, error: 'Failed to move task' });
 		}
 	}),
@@ -460,7 +455,7 @@ export const actions: Actions = {
 			}
 
 			const timestamp = new Date().toISOString();
-			const moveResult = await getDb().transaction(async (tx) =>
+			const moveResult = getDb().transaction((tx) =>
 				moveTaskWithinBoard(
 					tx,
 					user.id,
@@ -477,7 +472,7 @@ export const actions: Actions = {
 
 			return { form };
 		} catch (error) {
-			logger.error('Failed to update task state', { error, form });
+			logger.error('Failed to update task state', error, { form, userId: user.id });
 			return fail(500, { form, error: 'Failed to update task state' });
 		}
 	}),

@@ -43,11 +43,11 @@ export const actions: Actions = {
 
 			throw redirect(302, '/dashboard');
 		} catch (error) {
-			logger.error('Sign-in failed', error);
 			const errorMessage = mapAuthActionError(
 				error,
 				'An error occurred during sign-in. Please try again.'
 			);
+			logger.error('Sign-in failed', error);
 
 			return message(form, { type: 'error', text: errorMessage }, { status: 400 });
 		}

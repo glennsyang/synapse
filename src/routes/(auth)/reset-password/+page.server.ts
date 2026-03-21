@@ -50,8 +50,8 @@ export const actions: Actions = {
 
 			throw redirect(302, '/sign-in?message=Password reset successful! Please sign in.');
 		} catch (error) {
-			logger.error('Password reset failed', error);
 			const errorMessage = mapAuthActionError(error, 'Failed to reset password. Please try again.');
+			logger.error('Password reset failed', error);
 
 			return message(form, { type: 'error', text: errorMessage }, { status: 400 });
 		}
