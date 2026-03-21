@@ -45,8 +45,8 @@ export const actions: Actions = {
 			// Redirect to verify-email page with user's email
 			throw redirect(302, `/verify-email?email=${encodeURIComponent(form.data.email)}`);
 		} catch (error) {
-			logger.error('Registration failed', error);
 			const errorMessage = mapAuthActionError(error, 'Registration failed. Please try again.');
+			logger.error('Registration failed', error);
 
 			return message(form, { type: 'error', text: errorMessage }, { status: 400 });
 		}
