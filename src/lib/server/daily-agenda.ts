@@ -387,8 +387,8 @@ export async function createDailyAgendaTemplate(
 	const timestamp = new Date().toISOString();
 	const serializedDays = serializeTemplateDays(daysOfWeek);
 
-	await db.transaction(async (tx) => {
-		const [sortOrderRow] = await tx
+	db.transaction((tx) => {
+		const sortOrderRow = tx
 			.select({
 				maxSortOrder: sql<number>`coalesce(max(${dailyAgendaTemplates.sortOrder}), -1)`
 			})
@@ -399,20 +399,23 @@ export async function createDailyAgendaTemplate(
 					lte(dailyAgendaTemplates.startsOn, today),
 					or(isNull(dailyAgendaTemplates.endsOn), gte(dailyAgendaTemplates.endsOn, today))
 				)
-			);
+			)
+			.get();
 
 		const templateGroupId = generateId();
-		await tx.insert(dailyAgendaTemplates).values({
-			id: generateId(),
-			templateGroupId,
-			userId,
-			title,
-			sortOrder: (sortOrderRow?.maxSortOrder ?? -1) + 1,
-			daysOfWeek: serializedDays,
-			startsOn: today,
-			createdAt: timestamp,
-			updatedAt: timestamp
-		});
+		tx.insert(dailyAgendaTemplates)
+			.values({
+				id: generateId(),
+				templateGroupId,
+				userId,
+				title,
+				sortOrder: (sortOrderRow?.maxSortOrder ?? -1) + 1,
+				daysOfWeek: serializedDays,
+				startsOn: today,
+				createdAt: timestamp,
+				updatedAt: timestamp
+			})
+			.run();
 	});
 }
 
@@ -428,46 +431,52 @@ export async function updateDailyAgendaTemplate(
 	const normalizedDays = normalizeTemplateDays(daysOfWeek);
 	const serializedDays = JSON.stringify(normalizedDays);
 
-	await db.transaction(async (tx) => {
-		const existing = await tx.query.dailyAgendaTemplates.findFirst({
-			where: and(
-				eq(dailyAgendaTemplates.id, templateId),
-				eq(dailyAgendaTemplates.userId, userId),
-				lte(dailyAgendaTemplates.startsOn, today),
-				or(isNull(dailyAgendaTemplates.endsOn), gte(dailyAgendaTemplates.endsOn, today))
+	db.transaction((tx) => {
+		const existing = tx
+			.select()
+			.from(dailyAgendaTemplates)
+			.where(
+				and(
+					eq(dailyAgendaTemplates.id, templateId),
+					eq(dailyAgendaTemplates.userId, userId),
+					lte(dailyAgendaTemplates.startsOn, today),
+					or(isNull(dailyAgendaTemplates.endsOn), gte(dailyAgendaTemplates.endsOn, today))
+				)
 			)
-		});
+			.get();
 
 		if (!existing) {
 			throw new DailyAgendaMutationError('Default item not found', 'not_found');
 		}
 
 		if (existing.startsOn === today) {
-			await tx
-				.update(dailyAgendaTemplates)
+			tx.update(dailyAgendaTemplates)
 				.set({ title, daysOfWeek: serializedDays, updatedAt: timestamp })
-				.where(eq(dailyAgendaTemplates.id, existing.id));
+				.where(eq(dailyAgendaTemplates.id, existing.id))
+				.run();
 
-			const futureDefaultEntries = await tx.query.dailyAgendaEntries.findMany({
-				where: and(
-					eq(dailyAgendaEntries.userId, userId),
-					eq(dailyAgendaEntries.templateGroupId, existing.templateGroupId),
-					eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
-					gte(dailyAgendaEntries.date, today)
-				),
-				columns: {
-					id: true,
-					date: true
-				}
-			});
+			const futureDefaultEntries = tx
+				.select({
+					id: dailyAgendaEntries.id,
+					date: dailyAgendaEntries.date
+				})
+				.from(dailyAgendaEntries)
+				.where(
+					and(
+						eq(dailyAgendaEntries.userId, userId),
+						eq(dailyAgendaEntries.templateGroupId, existing.templateGroupId),
+						eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
+						gte(dailyAgendaEntries.date, today)
+					)
+				)
+				.all();
 
 			const entriesToDelete = getEntriesToDeleteForDays(futureDefaultEntries, normalizedDays);
 			if (entriesToDelete.length > 0) {
-				await tx.delete(dailyAgendaEntries).where(inArray(dailyAgendaEntries.id, entriesToDelete));
+				tx.delete(dailyAgendaEntries).where(inArray(dailyAgendaEntries.id, entriesToDelete)).run();
 			}
 
-			await tx
-				.update(dailyAgendaEntries)
+			tx.update(dailyAgendaEntries)
 				.set({ title, updatedAt: timestamp })
 				.where(
 					and(
@@ -476,49 +485,54 @@ export async function updateDailyAgendaTemplate(
 						eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
 						gte(dailyAgendaEntries.date, today)
 					)
-				);
+				)
+				.run();
 
 			return;
 		}
 
 		const nextVersionId = generateId();
-		await tx
-			.update(dailyAgendaTemplates)
+		tx.update(dailyAgendaTemplates)
 			.set({ endsOn: addDaysToDateString(today, -1), updatedAt: timestamp })
-			.where(eq(dailyAgendaTemplates.id, existing.id));
+			.where(eq(dailyAgendaTemplates.id, existing.id))
+			.run();
 
-		await tx.insert(dailyAgendaTemplates).values({
-			id: nextVersionId,
-			templateGroupId: existing.templateGroupId,
-			userId,
-			title,
-			sortOrder: existing.sortOrder,
-			daysOfWeek: serializedDays,
-			startsOn: today,
-			createdAt: timestamp,
-			updatedAt: timestamp
-		});
+		tx.insert(dailyAgendaTemplates)
+			.values({
+				id: nextVersionId,
+				templateGroupId: existing.templateGroupId,
+				userId,
+				title,
+				sortOrder: existing.sortOrder,
+				daysOfWeek: serializedDays,
+				startsOn: today,
+				createdAt: timestamp,
+				updatedAt: timestamp
+			})
+			.run();
 
-		const futureDefaultEntries = await tx.query.dailyAgendaEntries.findMany({
-			where: and(
-				eq(dailyAgendaEntries.userId, userId),
-				eq(dailyAgendaEntries.templateGroupId, existing.templateGroupId),
-				eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
-				gte(dailyAgendaEntries.date, today)
-			),
-			columns: {
-				id: true,
-				date: true
-			}
-		});
+		const futureDefaultEntries = tx
+			.select({
+				id: dailyAgendaEntries.id,
+				date: dailyAgendaEntries.date
+			})
+			.from(dailyAgendaEntries)
+			.where(
+				and(
+					eq(dailyAgendaEntries.userId, userId),
+					eq(dailyAgendaEntries.templateGroupId, existing.templateGroupId),
+					eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
+					gte(dailyAgendaEntries.date, today)
+				)
+			)
+			.all();
 
 		const entriesToDelete = getEntriesToDeleteForDays(futureDefaultEntries, normalizedDays);
 		if (entriesToDelete.length > 0) {
-			await tx.delete(dailyAgendaEntries).where(inArray(dailyAgendaEntries.id, entriesToDelete));
+			tx.delete(dailyAgendaEntries).where(inArray(dailyAgendaEntries.id, entriesToDelete)).run();
 		}
 
-		await tx
-			.update(dailyAgendaEntries)
+		tx.update(dailyAgendaEntries)
 			.set({
 				templateId: nextVersionId,
 				title,
@@ -532,7 +546,8 @@ export async function updateDailyAgendaTemplate(
 					eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
 					gte(dailyAgendaEntries.date, today)
 				)
-			);
+			)
+			.run();
 	});
 }
 
@@ -541,22 +556,25 @@ export async function deleteDailyAgendaTemplate(userId: string, templateId: stri
 	const today = getTodayString();
 	const timestamp = new Date().toISOString();
 
-	await db.transaction(async (tx) => {
-		const existing = await tx.query.dailyAgendaTemplates.findFirst({
-			where: and(
-				eq(dailyAgendaTemplates.id, templateId),
-				eq(dailyAgendaTemplates.userId, userId),
-				lte(dailyAgendaTemplates.startsOn, today),
-				or(isNull(dailyAgendaTemplates.endsOn), gte(dailyAgendaTemplates.endsOn, today))
+	db.transaction((tx) => {
+		const existing = tx
+			.select()
+			.from(dailyAgendaTemplates)
+			.where(
+				and(
+					eq(dailyAgendaTemplates.id, templateId),
+					eq(dailyAgendaTemplates.userId, userId),
+					lte(dailyAgendaTemplates.startsOn, today),
+					or(isNull(dailyAgendaTemplates.endsOn), gte(dailyAgendaTemplates.endsOn, today))
+				)
 			)
-		});
+			.get();
 
 		if (!existing) {
 			throw new DailyAgendaMutationError('Default item not found', 'not_found');
 		}
 
-		await tx
-			.delete(dailyAgendaEntries)
+		tx.delete(dailyAgendaEntries)
 			.where(
 				and(
 					eq(dailyAgendaEntries.userId, userId),
@@ -564,17 +582,18 @@ export async function deleteDailyAgendaTemplate(userId: string, templateId: stri
 					eq(dailyAgendaEntries.sourceType, DEFAULT_SOURCE),
 					gte(dailyAgendaEntries.date, today)
 				)
-			);
+			)
+			.run();
 
 		if (existing.startsOn === today) {
-			await tx.delete(dailyAgendaTemplates).where(eq(dailyAgendaTemplates.id, existing.id));
+			tx.delete(dailyAgendaTemplates).where(eq(dailyAgendaTemplates.id, existing.id)).run();
 			return;
 		}
 
-		await tx
-			.update(dailyAgendaTemplates)
+		tx.update(dailyAgendaTemplates)
 			.set({ endsOn: addDaysToDateString(today, -1), updatedAt: timestamp })
-			.where(eq(dailyAgendaTemplates.id, existing.id));
+			.where(eq(dailyAgendaTemplates.id, existing.id))
+			.run();
 	});
 }
 
@@ -587,25 +606,28 @@ export async function createDailyAgendaCustomEntry(
 	const db = getDb();
 	const timestamp = new Date().toISOString();
 
-	await db.transaction(async (tx) => {
-		const [sortOrderRow] = await tx
+	db.transaction((tx) => {
+		const sortOrderRow = tx
 			.select({
 				maxSortOrder: sql<number>`coalesce(max(${dailyAgendaEntries.sortOrder}), -1)`
 			})
 			.from(dailyAgendaEntries)
-			.where(and(eq(dailyAgendaEntries.userId, userId), eq(dailyAgendaEntries.date, input.date)));
+			.where(and(eq(dailyAgendaEntries.userId, userId), eq(dailyAgendaEntries.date, input.date)))
+			.get();
 
-		await tx.insert(dailyAgendaEntries).values({
-			id: generateId(),
-			userId,
-			date: input.date,
-			title: input.title,
-			sourceType: CUSTOM_SOURCE,
-			sortOrder: (sortOrderRow?.maxSortOrder ?? -1) + 1,
-			completed: false,
-			createdAt: timestamp,
-			updatedAt: timestamp
-		});
+		tx.insert(dailyAgendaEntries)
+			.values({
+				id: generateId(),
+				userId,
+				date: input.date,
+				title: input.title,
+				sourceType: CUSTOM_SOURCE,
+				sortOrder: (sortOrderRow?.maxSortOrder ?? -1) + 1,
+				completed: false,
+				createdAt: timestamp,
+				updatedAt: timestamp
+			})
+			.run();
 	});
 }
 

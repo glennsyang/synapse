@@ -111,8 +111,7 @@ function failAgendaMutation(
 		);
 	}
 
-	logger.error(context.logMessage, {
-		error,
+	logger.error(context.logMessage, error, {
 		userId: context.userId,
 		entityId: context.entityId,
 		date: context.date

@@ -15,6 +15,7 @@ import { toast } from 'svelte-sonner';
 import { applyAction, enhance } from '$app/forms';
 import { invalidateAll } from '$app/navigation';
 import { page } from '$app/state';
+import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 import * as Alert from '$lib/components/ui/alert';
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
@@ -31,6 +32,14 @@ interface Props {
 	defaultsDialogOpen?: boolean;
 }
 
+type AgendaDeleteDialogState = {
+	id: string;
+	title: string;
+	message: string;
+	actionUrl: string;
+	confirmButtonText: string;
+};
+
 let { agenda, defaultsDialogOpen = $bindable(false) }: Props = $props();
 
 const templateDayOptions = [...daysOfWeek.slice(1), daysOfWeek[0]];
@@ -45,6 +54,8 @@ let newEntryDate = $state<string | null>(null);
 let newEntryTitle = $state('');
 let editingEntryId = $state<string | null>(null);
 let editingEntryTitle = $state('');
+let agendaDeleteDialogOpen = $state(false);
+let pendingAgendaDelete = $state<AgendaDeleteDialogState | null>(null);
 
 function normalizeTemplateDays(days: number[]): number[] {
 	const selected = new Set(days);
@@ -338,10 +349,9 @@ function cancelEntryEdit() {
 	editingEntryTitle = '';
 }
 
-function confirmDelete(event: MouseEvent, message: string) {
-	if (!window.confirm(message)) {
-		event.preventDefault();
-	}
+function openAgendaDeleteDialog(config: AgendaDeleteDialogState) {
+	pendingAgendaDelete = config;
+	agendaDeleteDialogOpen = true;
 }
 
 function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
@@ -676,31 +686,23 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 											>
 												<Pencil class="size-4" />
 											</Button>
-											<form
-												method="POST"
-												action={buildAgendaActionHref('deleteAgendaEntry')}
-												use:enhance={createAgendaEnhance({
-													successMessage: 'Agenda item deleted.',
-													errorMessage: 'Unable to delete agenda item.',
-													afterSuccess: () => {
-														if (editingEntryId === entry.id) {
-															cancelEntryEdit();
-														}
-													}
-												})}
+											<Button
+												type="button"
+												variant="destructive"
+												size="icon"
+												class="size-7"
+												aria-label="Delete day-only agenda item"
+												onclick={() =>
+													openAgendaDeleteDialog({
+														id: entry.id,
+														title: 'Delete agenda item',
+														message: `Delete "${entry.title}"? This action cannot be undone.`,
+														actionUrl: buildAgendaActionHref('deleteAgendaEntry'),
+														confirmButtonText: 'Delete'
+													})}
 											>
-												<input type="hidden" name="id" value={entry.id}>
-												<Button
-													type="submit"
-													variant="destructive"
-													size="icon"
-													class="size-7"
-													aria-label="Delete day-only agenda item"
-													onclick={(event) => confirmDelete(event, 'Delete this day-only agenda item?')}
-												>
-													<Trash2 class="size-4" />
-												</Button>
-											</form>
+												<Trash2 class="size-4" />
+											</Button>
 										</div>
 									{/if}
 								</div>
@@ -941,26 +943,23 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 										>
 											<Pencil class="size-4" />
 										</Button>
-										<form
-											method="POST"
-											action={buildAgendaActionHref('deleteAgendaTemplate')}
-											use:enhance={createAgendaEnhance({
-												successMessage: 'Default item deleted.',
-												errorMessage: 'Unable to delete default item.'
-											})}
+										<Button
+											type="button"
+											variant="destructive"
+											size="icon"
+											class="size-8"
+											aria-label="Delete default agenda item"
+											onclick={() =>
+												openAgendaDeleteDialog({
+													id: template.id,
+													title: 'Delete default item',
+													message: `Delete "${template.title}" for today and future days? This action cannot be undone.`,
+													actionUrl: buildAgendaActionHref('deleteAgendaTemplate'),
+													confirmButtonText: 'Delete'
+												})}
 										>
-											<input type="hidden" name="id" value={template.id}>
-											<Button
-												type="submit"
-												variant="destructive"
-												size="icon"
-												class="size-8"
-												aria-label="Delete default agenda item"
-												onclick={(event) => confirmDelete(event, 'Delete this default item for today and future days?')}
-											>
-												<Trash2 class="size-4" />
-											</Button>
-										</form>
+											<Trash2 class="size-4" />
+										</Button>
 									</div>
 								</div>
 							{/if}
@@ -982,4 +981,13 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 			</Dialog.Footer>
 		</Dialog.Content>
 	</Dialog.Root>
+
+	<ConfirmDialog
+		bind:open={agendaDeleteDialogOpen}
+		title={pendingAgendaDelete?.title ?? 'Delete item'}
+		message={pendingAgendaDelete?.message ?? ''}
+		confirmButtonText={pendingAgendaDelete?.confirmButtonText ?? 'Delete'}
+		id={pendingAgendaDelete?.id}
+		actionUrl={pendingAgendaDelete?.actionUrl}
+	/>
 </div>

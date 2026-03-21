@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { ActionResult } from '@sveltejs/kit';
 import { toast } from 'svelte-sonner';
 
 import { enhance } from '$app/forms';
@@ -26,6 +27,27 @@ let {
 	actionUrl,
 	hiddenFields
 }: Props = $props();
+
+type ConfirmDialogActionData = {
+	error?: string;
+	agendaAction?: {
+		text?: string;
+	};
+};
+
+function getResultMessage(
+	result: ActionResult<ConfirmDialogActionData, ConfirmDialogActionData>
+): string | undefined {
+	if (result.type !== 'success' && result.type !== 'failure') {
+		return undefined;
+	}
+
+	if (typeof result.data?.agendaAction?.text === 'string') {
+		return result.data.agendaAction.text;
+	}
+
+	return typeof result.data?.error === 'string' ? result.data.error : undefined;
+}
 </script>
 
 <Dialog.Root bind:open>
@@ -41,10 +63,12 @@ let {
 				open = false;
 
 				return async ({ result, update }) => {
+					const resultMessage = getResultMessage(result);
+
 					if (result.type === 'success' || result.type === 'redirect') {
-						toast.success(`${title} successful!`);
-					} else if (result.type === 'failure' && result.data?.error) {
-						toast.error((result.data.error as string) || `${title} failed!`);
+						toast.success(resultMessage ?? `${title} successful!`);
+					} else if (result.type === 'failure') {
+						toast.error(resultMessage ?? `${title} failed!`);
 					} else {
 						toast.error(`${title} failed!`);
 					}
