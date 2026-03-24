@@ -21,6 +21,7 @@ import {
 	formatTimestampMedium,
 	formatTimestampShort
 } from '$lib/utils/date';
+import { createMarkdownExcerpt } from '$lib/utils/markdown';
 
 import { navItems } from './../sidebar';
 
@@ -52,12 +53,6 @@ const chartData = $derived(
 		total: d.journal + d.meditation + d.workouts
 	}))
 );
-
-// Truncate text
-function truncate(text: string | null | undefined, length: number) {
-	if (!text) return '';
-	return text.length > length ? `${text.substring(0, length)}...` : text;
-}
 </script>
 
 <svelte:head> <title>Dashboard - Synapse</title> </svelte:head>
@@ -203,7 +198,7 @@ function truncate(text: string | null | undefined, length: number) {
 										<div class="flex items-start justify-between gap-2">
 											<div class="flex-1 space-y-1">
 												<p class="text-sm leading-relaxed font-medium">
-													{truncate(entry.content, 80)}
+													{createMarkdownExcerpt(entry.content, 80)}
 												</p>
 												<p class="text-xs text-muted-foreground">
 													{formatTimestampShort(entry.createdAt)}

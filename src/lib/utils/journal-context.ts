@@ -16,14 +16,6 @@ const weatherMap: Record<number, { label: string; icon: string }> = {
 	// Add more codes as needed from WMO standards
 };
 
-type ReverseGeocodeResponse = {
-	address?: {
-		city?: string;
-		town?: string;
-		village?: string;
-	};
-};
-
 type CurrentWeatherResponse = {
 	current_weather?: {
 		temperature?: number;
@@ -44,32 +36,6 @@ function getCurrentPosition(): Promise<GeolocationPosition> {
 	return new Promise((resolve, reject) => {
 		navigator.geolocation.getCurrentPosition(resolve, reject);
 	});
-}
-
-export async function getCurrentLocationCity(): Promise<string> {
-	try {
-		const position = await getCurrentPosition();
-		const { latitude, longitude } = position.coords;
-
-		const response = await fetch(
-			`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
-			{
-				headers: {
-					'User-Agent': 'Synapse/1.0'
-				}
-			}
-		);
-
-		if (!response.ok) {
-			throw new TypeError('Unable to process your current location.');
-		}
-
-		const data = (await response.json()) as ReverseGeocodeResponse;
-		return data.address?.city ?? data.address?.town ?? data.address?.village ?? 'Unknown location';
-	} catch (error) {
-		logger.error('Failed to get location and/or city name', { error: JSON.stringify(error) });
-		throw new TypeError('Unable to retrieve your location. You can still enter it manually.');
-	}
 }
 
 export async function getCurrentWeather(): Promise<JournalWeather> {

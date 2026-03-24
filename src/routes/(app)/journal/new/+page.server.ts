@@ -18,6 +18,7 @@ export const load: PageServerLoad = async () => {
 
 	// Set default date to today, use local timezone
 	form.data.date = getTodayString();
+	form.data.location = 'Home';
 
 	return { form };
 };
@@ -33,6 +34,7 @@ export const actions: Actions = {
 
 		try {
 			const tags = toCommaSeparatedJson(form.data.tags);
+			const location = form.data.location?.trim() || 'Home';
 
 			const weather =
 				form.data.weatherTemp || form.data.weatherCondition
@@ -44,19 +46,17 @@ export const actions: Actions = {
 
 			const entryId = generateId();
 
-			await getDb()
-				.insert(journalEntries)
-				.values({
-					id: entryId,
-					userId: user.id,
-					date: form.data.date,
-					content: form.data.content,
-					tags,
-					location: form.data.location || null,
-					weather,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
-				});
+			await getDb().insert(journalEntries).values({
+				id: entryId,
+				userId: user.id,
+				date: form.data.date,
+				content: form.data.content,
+				tags,
+				location,
+				weather,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString()
+			});
 
 			logger.info('Journal entry created', { entryId, userId: user.id });
 		} catch (error) {
