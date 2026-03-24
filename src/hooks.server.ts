@@ -83,6 +83,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		"img-src 'self' data: https:",
 		"font-src 'self' https://fonts.gstatic.com", // Google Fonts
 		"connect-src 'self' https://nominatim.openstreetmap.org https://api.open-meteo.com",
+		"manifest-src 'self'",
+		"worker-src 'self'",
 		"frame-ancestors 'none'",
 		"frame-src 'none'",
 		"object-src 'none'",
