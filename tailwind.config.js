@@ -112,7 +112,8 @@ const config = {
 				sans: ['Inter', 'system-ui', ...fontFamily.sans]
 			}
 		}
-	}
+	},
+	plugins: [require('@tailwindcss/typography')]
 };
 
 export default config;

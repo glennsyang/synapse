@@ -46,12 +46,17 @@ async function clearFilters() {
 	<PageSkeleton color="blue" />
 {:else}
 	<PageShell class="space-y-6 sm:py-6">
-		<div class="mobile-stack justify-between">
-			<h1 class="font-display text-2xl font-bold sm:text-3xl">Journal</h1>
-			<Button href="/journal/new" class="w-full bg-blue-600 hover:bg-blue-700 sm:w-auto">
-				<Plus class="mr-2 h-4 w-4" />
-				New Entry
-			</Button>
+		<div class="space-y-3">
+			<div class="mobile-stack justify-between">
+				<h1 class="font-display text-2xl font-bold sm:text-3xl">Journal</h1>
+				<Button href="/journal/new" class="w-full bg-blue-600 hover:bg-blue-700 sm:w-auto">
+					<Plus class="mr-2 h-4 w-4" />
+					New Entry
+				</Button>
+			</div>
+			<p class="max-w-2xl text-sm text-muted-foreground sm:text-base">
+				Markdown-friendly entries designed for low-friction reflection and focused review.
+			</p>
 		</div>
 
 		<Collapsible.Root bind:open={filtersOpen}>
@@ -70,8 +75,8 @@ async function clearFilters() {
 				>
 					<div class="responsive-grid-3">
 						<div class="space-y-2">
-							<Label for="tag">Tag</Label>
-							<Input id="tag" type="text" bind:value={tagFilter} placeholder="e.g., anxious" />
+							<Label for="tag">Mood Tag</Label>
+							<Input id="tag" type="text" bind:value={tagFilter} placeholder="e.g., calm" />
 						</div>
 						<div class="space-y-2">
 							<Label for="startDate">Start Date</Label>

@@ -31,7 +31,7 @@ const colorClasses = {
 };
 </script>
 
-<div class={cn('mb-6', className)} {...restProps}>
+<div class={cn('mb-0', className)} {...restProps}>
 	<!-- Breadcrumbs if provided -->
 	{#if breadcrumbs.length > 0}
 		<Breadcrumb.Root class="mb-4">
@@ -55,7 +55,7 @@ const colorClasses = {
 	<div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
 		<!-- Title and Description -->
 		<div class="space-y-2">
-			<div class="flex items-center gap-3">
+			<div>
 				<div class={cn('h-1 w-12 rounded-full', colorClasses[color])}></div>
 				<h1 class="font-display text-3xl font-bold tracking-tight md:text-4xl">{title}</h1>
 			</div>

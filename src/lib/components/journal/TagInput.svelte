@@ -54,10 +54,11 @@ function handleKeydown(e: KeyboardEvent) {
 		<div class="flex items-center justify-between">
 			<div class="flex items-center gap-2 text-sm font-medium">
 				<Sparkles class="h-4 w-4 text-[oklch(var(--color-blue))]" />
-				Quick tags
+				Mood Tags
 			</div>
 			<Badge variant="blue">{tags.length} selected</Badge>
 		</div>
+		<p class="text-xs text-muted-foreground">Choose one or more feelings that match your day.</p>
 		<div class="flex flex-wrap gap-2">
 			{#each quickFeelings as feeling (feeling)}
 				<Button
@@ -82,10 +83,10 @@ function handleKeydown(e: KeyboardEvent) {
 			<Input
 				bind:value={inputValue}
 				onkeydown={handleKeydown}
-				placeholder="Add your own tag and press Enter"
+				placeholder="Add a custom mood tag and press Enter"
 				class="flex-1 bg-background"
 			/>
-			<Button type="button" variant="gradient-blue" onclick={() => addTag()}>Add</Button>
+			<Button type="button" variant="gradient-blue" onclick={() => addTag()}>Add Mood</Button>
 		</div>
 
 		{#if tags.length > 0}
