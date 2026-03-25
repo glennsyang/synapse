@@ -135,14 +135,7 @@ export async function sendWorkoutReminderEmail(
 ) {
 	logger.debug('📧 Sending Workout Reminder Email to:', { to });
 
-	const workoutEmojis: Record<string, string> = {
-		strength: '💪',
-		cardio: '🏃',
-		yoga: '🧘',
-		other: '🏋️'
-	};
-
-	const emoji = workoutEmojis[workoutType.toLowerCase()] || '🏋️';
+	const emoji = getWorkoutEmoji(workoutType);
 
 	try {
 		await resend.emails.send({
@@ -312,4 +305,26 @@ export async function sendVisitWarningEmail(
 		logger.error('❌ Failed to send visit warning email:', { error });
 		return error;
 	}
+}
+
+function getWorkoutEmoji(workoutType: string): string {
+	const workoutEmojis: Record<string, string> = {
+		strength: '💪',
+		cardio: '🏃',
+		yoga: '🧘',
+		other: '🏋️'
+	};
+
+	return workoutEmojis[workoutType.toLowerCase()] || '🏋️';
+}
+
+export function getNotificationTag(workoutType: string): string {
+	const workoutTags: Record<string, string> = {
+		strength: 'muscle',
+		cardio: 'runner',
+		yoga: 'lotus_position_man',
+		other: 'weight_lifter'
+	};
+
+	return workoutTags[workoutType.toLowerCase()] || 'weight_lifter';
 }
