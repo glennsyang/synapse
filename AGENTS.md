@@ -139,6 +139,8 @@ $effect(() => {
 - **ALWAYS check `/src/lib/components/ui/` first** for existing shadcn-svelte components before creating new UI components. Available components include: Button, Dialog, Card, Table, Popover, Dropdown, Select, Input, Label, Checkbox, Tabs, Sheet, Sidebar, Avatar, Badge, Calendar, Chart, Command, Data Table, Navigation Menu, Progress, Separator, Skeleton, Sonner (Toast), Textarea, Tooltip, and more.
 - UI primitives in `/src/lib/components/ui/` (shadcn-svelte based) - reuse these extensively.
 - Business components in `/src/lib/components/app`: Header, Sidebar, etc.
+- Prefer buttons with icons over text-only buttons when the action remains clear and the UI benefits from the more compact treatment.
+- Every icon-only button must include a tooltip; keep an accessible label on the control as well.
 - Use `$bindable()` for two-way binding (Svelte 5 runes): `open = $bindable()`
 - Toast notifications via `svelte-sonner`: `import { toast } from 'svelte-sonner'`
 
