@@ -49,9 +49,7 @@ const { form, errors, enhance, message, submitting } = superForm(initialForm, {
 			<div class="space-y-2">
 				<Badge variant="outline">Daily mood</Badge>
 				<Card.Title class="font-display text-2xl">How are you feeling today?</Card.Title>
-				<Card.Description>
-					Log a single anchor mood for {formatDateLong($form.date)} to build your trend over time.
-				</Card.Description>
+				<Card.Description> Log a single mood to build your trend over time. </Card.Description>
 			</div>
 			{#if todayLog}
 				<div
