@@ -34,6 +34,7 @@ import {
 	isWithinDailyDigestWindow
 } from './daily-agenda-digest';
 import {
+	getNotificationTag,
 	sendMeditationReminderEmail,
 	sendVisitWarningEmail,
 	sendWorkoutReminderEmail
@@ -193,9 +194,9 @@ async function processWorkoutReminders(
 			);
 
 			await sendReminderNotification(
-				`Your ${reminder.workoutType} workout reminder is for ${reminder.time}.`,
-				'Synapse - Workout Reminder',
-				'muscle'
+				`You scheduled a ${reminder.workoutType} workout for today.`,
+				'Workout Reminder',
+				getNotificationTag(reminder.workoutType)
 			);
 
 			await logNotification(
@@ -282,8 +283,8 @@ async function processMeditationReminders(
 
 			await sendReminderNotification(
 				`Meditation reminder: ${routine.title} at ${schedule.time}.`,
-				'Synapse - Meditation Reminder',
-				'lotus_position_man'
+				'Meditation Reminder',
+				getNotificationTag('yoga')
 			);
 
 			await logNotification(
