@@ -147,6 +147,41 @@ export const journalEntriesRelations = relations(journalEntries, ({ one }) => ({
 }));
 
 /**
+ * Mood Logs
+ * One mood record per user per Pacific day for analytics and lightweight reflection.
+ */
+export const moodLogs = sqliteTable(
+	'mood_logs',
+	{
+		id: text('id').primaryKey().$defaultFn(generateId),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		date: text('date').notNull(),
+		mood: text('mood').notNull(),
+		customMood: text('custom_mood'),
+		notes: text('notes'),
+		createdAt: text('created_at')
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+		updatedAt: text('updated_at')
+			.notNull()
+			.$defaultFn(() => new Date().toISOString())
+	},
+	(table) => [
+		index('mood_logs_user_date_idx').on(table.userId, table.date),
+		uniqueIndex('mood_logs_user_date_unique_idx').on(table.userId, table.date)
+	]
+);
+
+export const moodLogsRelations = relations(moodLogs, ({ one }) => ({
+	user: one(user, {
+		fields: [moodLogs.userId],
+		references: [user.id]
+	})
+}));
+
+/**
  * Tasks
  * Kanban-focused task items with priority, state, and tags
  */

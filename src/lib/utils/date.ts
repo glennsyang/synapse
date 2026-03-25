@@ -133,6 +133,31 @@ export function addDaysToDateString(dateString: string, days: number): string {
 	return toLocalDateString(date);
 }
 
+export function getDateRange(startDate: string, endDate: string): string[] {
+	const range: string[] = [];
+	let currentDate = startDate;
+
+	while (currentDate <= endDate) {
+		range.push(currentDate);
+		currentDate = addDaysToDateString(currentDate, 1);
+	}
+
+	return range;
+}
+
+export function getStartOfMonth(dateString: string = getTodayString()): string {
+	const date = parseLocalDateString(dateString);
+	date.setDate(1);
+	return toLocalDateString(date);
+}
+
+export function getStartOfQuarter(dateString: string = getTodayString()): string {
+	const date = parseLocalDateString(dateString);
+	const quarterStartMonth = Math.floor(date.getMonth() / 3) * 3;
+	date.setMonth(quarterStartMonth, 1);
+	return toLocalDateString(date);
+}
+
 export function getStartOfWeek(dateString: string = getTodayString()): string {
 	const date = parseLocalDateString(dateString);
 	const mondayOffset = (date.getDay() + 6) % 7;
