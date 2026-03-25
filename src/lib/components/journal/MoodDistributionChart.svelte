@@ -55,7 +55,7 @@ const chartConfig = $derived.by(() => {
 			</div>
 		{:else}
 			<div class="space-y-5">
-				<div class="relative mx-auto flex h-64 w-full max-w-[260px] items-center justify-center">
+				<div class="relative mx-auto flex h-64 w-full max-w-65 items-center justify-center">
 					<Chart.Container config={chartConfig} class="h-full w-full">
 						<PieChart
 							data={distribution}

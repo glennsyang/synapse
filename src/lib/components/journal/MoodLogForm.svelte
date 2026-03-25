@@ -12,7 +12,6 @@ import * as Card from '$lib/components/ui/card';
 import { Input } from '$lib/components/ui/input';
 import { Label } from '$lib/components/ui/label';
 import type { MoodLogFormValues } from '$lib/schemas/mood';
-import { formatDateLong } from '$lib/utils/date';
 import { moodOptions } from '$lib/utils/mood';
 
 interface Props {

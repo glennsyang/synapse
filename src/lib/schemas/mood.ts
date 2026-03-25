@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { isMoodValue, moodPeriods } from '$lib/utils/mood';
 
-const localDateString = z.string().regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/, 'Invalid date format');
+const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format');
 
 export const moodLogSchema = z
 	.object({
