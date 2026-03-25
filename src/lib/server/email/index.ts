@@ -307,7 +307,7 @@ export async function sendVisitWarningEmail(
 	}
 }
 
-export function getWorkoutEmoji(workoutType: string): string {
+function getWorkoutEmoji(workoutType: string): string {
 	const workoutEmojis: Record<string, string> = {
 		strength: '💪',
 		cardio: '🏃',
