@@ -62,11 +62,12 @@ describe('daily-agenda-digest', () => {
 		expect(DAILY_MOTIVATION_PHRASES).toContain(phraseA);
 	});
 
-	it('fires only inside the 6:00-6:20 AM daily digest window', () => {
+	it('fires any time after 6:00 AM PT so delayed cron runs can still send', () => {
 		expect(isWithinDailyDigestWindow('06', '00')).toBe(true);
 		expect(isWithinDailyDigestWindow('06', '10')).toBe(true);
-		expect(isWithinDailyDigestWindow('06', '15')).toBe(true);
+		expect(isWithinDailyDigestWindow('06', '21')).toBe(true);
+		expect(isWithinDailyDigestWindow('14', '30')).toBe(true);
+		expect(isWithinDailyDigestWindow('23', '59')).toBe(true);
 		expect(isWithinDailyDigestWindow('05', '59')).toBe(false);
-		expect(isWithinDailyDigestWindow('06', '21')).toBe(false);
 	});
 });
