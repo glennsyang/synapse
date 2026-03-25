@@ -3,7 +3,7 @@ import { formatDateMedium } from '$lib/utils/date';
 
 export const DAILY_AGENDA_DIGEST_TIME = '06:00';
 // Allow delivery any time after 6:00 AM PT through the end of the same day.
-export const DAILY_AGENDA_DIGEST_WINDOW_MINUTES = 1079;
+const DAILY_AGENDA_DIGEST_WINDOW_MINUTES = 1079;
 export const DAILY_AGENDA_DIGEST_NOTIFICATION_TYPE = 'daily_agenda_digest';
 export const DAILY_AGENDA_DIGEST_TAGS = 'date,point_right';
 
