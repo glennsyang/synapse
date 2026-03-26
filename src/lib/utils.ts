@@ -10,21 +10,6 @@ export type WithoutChildren<T> = T extends { children?: unknown } ? Omit<T, 'chi
 export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
 export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
 
-// The 8 journaling feelings
-export const quickFeelings = [
-	'😊 Happy',
-	'🌟 Inspired',
-	'☁️ Peaceful',
-	'🌱 Grateful',
-	'🛡️ Confident',
-	'😢 Sad',
-	'😟 Anxious',
-	'😣 Stressed',
-	'🕯️ Reflective',
-	'🌊 Overwhelmed',
-	'🌫️ Disconnected'
-];
-
 /**
  * Extracts the error code from a better-auth error response.
  * Better-auth errors have a structure like: { body: { code: string, message: string } }
