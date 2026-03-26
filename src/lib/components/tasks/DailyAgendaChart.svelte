@@ -81,8 +81,8 @@ const shiftLabel = $derived(
 		<div class="space-y-3">
 			<div class="flex flex-wrap items-center gap-2">
 				<Badge
-					variant="orange"
-					class="rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]"
+					variant="secondary"
+					class="rounded-full px-3 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[oklch(var(--color-orange))] bg-[oklch(var(--color-orange)/0.1)] ring-1 ring-[oklch(var(--color-orange)/0.3)]"
 				>
 					14-day ribbon
 				</Badge>

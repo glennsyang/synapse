@@ -182,7 +182,11 @@ const chartData = $derived(
 						<div class="flex items-center gap-2">
 							<BookIcon class="size-4 text-[oklch(var(--color-blue))]" />
 							<span class="font-display font-semibold">Journal Entries</span>
-							<Badge variant="blue">{data.recentJournalEntries.length}</Badge>
+							<Badge
+								variant="secondary"
+								class="text-[oklch(var(--color-blue))] bg-[oklch(var(--color-blue)/0.1)] ring-1 ring-[oklch(var(--color-blue)/0.3)]"
+								>{data.recentJournalEntries.length}</Badge
+							>
 						</div>
 					</Accordion.Trigger>
 					<Accordion.Content>
@@ -219,7 +223,11 @@ const chartData = $derived(
 						<div class="flex items-center gap-2">
 							<DumbbellIcon class="size-4 text-[oklch(var(--color-green))]" />
 							<span class="font-display font-semibold">Workouts</span>
-							<Badge variant="green">{data.recentWorkouts.length}</Badge>
+							<Badge
+								variant="secondary"
+								class="text-[oklch(var(--color-green))] bg-[oklch(var(--color-green)/0.1)] ring-1 ring-[oklch(var(--color-green)/0.3)]"
+								>{data.recentWorkouts.length}</Badge
+							>
 						</div>
 					</Accordion.Trigger>
 					<Accordion.Content>
@@ -266,7 +274,11 @@ const chartData = $derived(
 						<div class="flex items-center gap-2">
 							<HeartIcon class="size-4 text-[oklch(var(--color-purple))]" />
 							<span class="font-display font-semibold">Meditation</span>
-							<Badge variant="purple">{data.recentMeditations.length}</Badge>
+							<Badge
+								variant="secondary"
+								class="text-[oklch(var(--color-purple))] bg-[oklch(var(--color-purple)/0.1)] ring-1 ring-[oklch(var(--color-purple)/0.3)]"
+								>{data.recentMeditations.length}</Badge
+							>
 						</div>
 					</Accordion.Trigger>
 					<Accordion.Content>

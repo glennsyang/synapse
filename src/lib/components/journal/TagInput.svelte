@@ -56,7 +56,12 @@ function handleKeydown(e: KeyboardEvent) {
 				<Sparkles class="h-4 w-4 text-[oklch(var(--color-blue))]" />
 				Mood Tags
 			</div>
-			<Badge variant="blue">{tags.length} selected</Badge>
+			<Badge
+				class="py-3 text-[oklch(var(--color-blue))] bg-[oklch(var(--color-blue)/0.1)] ring-1 ring-[oklch(var(--color-blue)/0.3)]"
+				variant="secondary"
+				>{tags.length}
+				selected</Badge
+			>
 		</div>
 		<p class="text-xs text-muted-foreground">Choose one or more feelings that match your day.</p>
 		<div class="flex flex-wrap gap-2">
@@ -86,13 +91,22 @@ function handleKeydown(e: KeyboardEvent) {
 				placeholder="Add a custom mood tag and press Enter"
 				class="flex-1 bg-background"
 			/>
-			<Button type="button" variant="gradient-blue" onclick={() => addTag()}>Add Mood</Button>
+			<Button
+				type="button"
+				variant="default"
+				class="bg-blue-600 hover:bg-blue-700"
+				onclick={() => addTag()}
+				>Add Mood</Button
+			>
 		</div>
 
 		{#if tags.length > 0}
 			<div class="flex flex-wrap gap-2">
 				{#each tags as tag (tag)}
-					<Badge variant="blue" class="gap-1.5 px-2.5 py-1 text-xs">
+					<Badge
+						variant="secondary"
+						class="gap-1.5 px-2.5 py-3 text-xs text-[oklch(var(--color-blue))] bg-[oklch(var(--color-blue)/0.1)] ring-1 ring-[oklch(var(--color-blue)/0.3)]"
+					>
 						{tag}
 						<Button
 							type="button"

@@ -156,9 +156,9 @@ async function getWeather() {
 						>
 						<Button
 							type="submit"
-							variant="gradient-blue"
+							class="bg-blue-600 hover:bg-blue-700 sm:min-w-40"
+							variant="default"
 							disabled={$submitting}
-							class="sm:min-w-40"
 						>
 							{$submitting ? 'Saving...' : 'Save'}
 						</Button>

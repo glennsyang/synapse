@@ -158,7 +158,7 @@ const comparisonSummary = $derived.by(() => {
 	return 'Holding steady against the prior 7 days.';
 });
 type TodayAlertState = {
-	variant: 'destructive' | 'warning' | 'success';
+	variant: 'destructive' | 'default' | undefined;
 	title: string;
 	description: string;
 	className: string;
@@ -171,7 +171,7 @@ const todayAlertState = $derived.by((): TodayAlertState | null => {
 
 	if (!todayAgendaDay || todayAgendaDay.totalCount === 0) {
 		return {
-			variant: 'warning',
+			variant: 'default',
 			title: 'Nothing queued yet',
 			description: 'Today is open. Add a task you want to get done.',
 			className:
@@ -187,30 +187,30 @@ const todayAlertState = $derived.by((): TodayAlertState | null => {
 	if (progress >= 80) {
 		if (doneCount === totalCount) {
 			return {
-				variant: 'success',
+				variant: 'default',
 				title: 'All done for today 🎉',
 				description: `You wrapped up all ${totalCount} ${taskLabel}. Nice finish.`,
 				className:
-					'border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-500/25 dark:bg-emerald-500/10'
+					'border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-500/25 dark:bg-emerald-500/10 text-[oklch(var(--color-green))]'
 			};
 		}
 
 		return {
-			variant: 'success',
+			variant: 'default',
 			title: 'Almost there 🎉',
 			description: `You have ${doneCount} of ${totalCount} ${taskLabel} done today. You're close to a clean sweep.`,
 			className:
-				'border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-500/25 dark:bg-emerald-500/10'
+				'border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-500/25 dark:bg-emerald-500/10 text-[oklch(var(--color-green))]'
 		};
 	}
 
 	if (progress >= 40) {
 		return {
-			variant: 'warning',
+			variant: 'default',
 			title: progress >= 50 ? 'Halfway there' : 'Good momentum',
 			description: `You have ${doneCount} of ${totalCount} ${taskLabel} done today. Keep going and this day ends strong.`,
 			className:
-				'border-orange-200/80 bg-orange-50/75 dark:border-orange-500/25 dark:bg-orange-500/10'
+				'border-orange-200/80 bg-orange-50/75 dark:border-orange-500/25 dark:bg-orange-500/10 text-[oklch(var(--color-orange))]'
 		};
 	}
 
@@ -551,11 +551,12 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 							</div>
 						</div>
 						<Badge
-							variant={day.completionPercentage >= 80
-								? 'green'
+							variant="secondary"
+							class={day.completionPercentage >= 80
+								? 'bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200 ring-1 ring-emerald-300/80 dark:ring-emerald-500/30'
 								: day.completionPercentage >= 40
-									? 'orange'
-									: 'outline'}
+									? 'bg-orange-500/10 text-orange-700 dark:bg-orange-500/20 dark:text-orange-200 ring-1 ring-orange-300/80 dark:ring-orange-500/30'
+									: 'bg-red-500/10 text-red-700 dark:bg-red-500/20 dark:text-red-200 ring-1 ring-red-300/80 dark:ring-red-500/30'}
 						>
 							{day.completionPercentage}%
 						</Badge>
@@ -777,7 +778,13 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 
 			<div class="space-y-4">
 				<div class="flex flex-wrap items-center gap-2">
-					<Badge variant="orange">{agenda.templates.length} defaults</Badge>
+					<Badge
+						variant="secondary"
+						class="text-[oklch(var(--color-orange))] bg-[oklch(var(--color-orange)/0.1)] ring-1 ring-[oklch(var(--color-orange)/0.3)]"
+					>
+						{agenda.templates.length}
+						defaults
+					</Badge>
 					<Badge variant="outline">Future days only</Badge>
 				</div>
 
