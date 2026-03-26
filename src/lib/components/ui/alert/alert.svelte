@@ -2,15 +2,11 @@
 	import { type VariantProps, tv } from "tailwind-variants";
 
 	export const alertVariants = tv({
-		base: "relative grid w-full grid-cols-[0_1fr] items-start gap-y-0.5 rounded-lg border px-4 py-3 text-sm has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] has-[>svg]:gap-x-3 [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
+		base: "grid gap-0.5 rounded-lg border px-2.5 py-2 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4 group/alert relative w-full",
 		variants: {
 			variant: {
 				default: "bg-card text-card-foreground",
-				destructive:
-					"text-destructive bg-card *:data-[slot=alert-description]:text-destructive/90 [&>svg]:text-current border-l-4 border-l-destructive",
-				info: "bg-[oklch(var(--color-blue)/0.05)] dark:bg-[oklch(var(--color-blue)/0.1)] text-foreground border-l-4 border-l-[oklch(var(--color-blue))] [&>svg]:text-[oklch(var(--color-blue))]",
-				warning: "bg-[oklch(var(--color-orange)/0.05)] dark:bg-[oklch(var(--color-orange)/0.1)] text-foreground border-l-4 border-l-[oklch(var(--color-orange))] [&>svg]:text-[oklch(var(--color-orange))]",
-				success: "bg-[oklch(var(--color-green)/0.05)] dark:bg-[oklch(var(--color-green)/0.1)] text-foreground border-l-4 border-l-[oklch(var(--color-green))] [&>svg]:text-[oklch(var(--color-green))]",
+				destructive: "text-destructive bg-card *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
 			},
 		},
 		defaultVariants: {
@@ -39,9 +35,9 @@
 <div
 	bind:this={ref}
 	data-slot="alert"
+	role="alert"
 	class={cn(alertVariants({ variant }), className)}
 	{...restProps}
-	role="alert"
 >
 	{@render children?.()}
 </div>

@@ -133,7 +133,12 @@ const { form, errors, enhance, message, submitting } = superForm(initialForm, {
 					<NotebookPen class="h-4 w-4" />
 					<span>One daily mood keeps the trend clean and easy to review.</span>
 				</div>
-				<Button type="submit" variant="gradient-blue" disabled={$submitting} class="sm:min-w-40">
+				<Button
+					type="submit"
+					class=" bg-blue-600 hover:bg-blue-700"
+					variant="default"
+					disabled={$submitting}
+				>
 					{$submitting ? 'Saving...' : todayLog ? 'Update mood' : 'Log mood'}
 				</Button>
 			</div>
