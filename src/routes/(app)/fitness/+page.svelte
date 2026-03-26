@@ -3,6 +3,8 @@ import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
 import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
 import BellIcon from '@lucide/svelte/icons/bell';
 import BellOffIcon from '@lucide/svelte/icons/bell-off';
+import BellRingIcon from '@lucide/svelte/icons/bell-ring';
+import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
 import MinusIcon from '@lucide/svelte/icons/minus';
 import PencilIcon from '@lucide/svelte/icons/pencil';
 import ScaleIcon from '@lucide/svelte/icons/scale';
@@ -10,6 +12,7 @@ import TargetIcon from '@lucide/svelte/icons/target';
 import Trash2Icon from '@lucide/svelte/icons/trash-2';
 import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
 import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+import UtensilsCrossedIcon from '@lucide/svelte/icons/utensils-crossed';
 import { SvelteSet } from 'svelte/reactivity';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
@@ -241,6 +244,14 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 				class="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
 			>
 				<Tabs.Trigger
+					value="workouts"
+					class="font-display flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-green-500"
+				>
+					<DumbbellIcon class="h-4 w-4" />
+					<span>Workouts</span>
+				</Tabs.Trigger>
+
+				<Tabs.Trigger
 					value="weight"
 					class="font-display flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-green-500"
 				>
@@ -248,70 +259,17 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 					<span>Weight</span>
 				</Tabs.Trigger>
 				<Tabs.Trigger
-					value="workouts"
-					class="font-display flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-green-500"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="h-4 w-4"
-					>
-						<title>Workouts</title>
-						<path d="m6.5 6.5 11 11" />
-						<path d="m21 21-1-1" />
-						<path d="m3 3 1 1" />
-						<path d="m18 22 4-4" />
-						<path d="m2 6 4-4" />
-						<path d="m3 10 7-7" />
-						<path d="m14 21 7-7" />
-					</svg>
-					<span>Workouts</span>
-				</Tabs.Trigger>
-				<Tabs.Trigger
 					value="meals"
 					class="font-display flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-green-500"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="h-4 w-4"
-					>
-						<title>Meals</title>
-						<path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8" />
-						<path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7" />
-						<path d="m2.1 21.8 6.4-6.3" />
-						<path d="m19 5-7 7" />
-					</svg>
+					<UtensilsCrossedIcon class="h-4 w-4" />
 					<span>Meals</span>
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="reminders"
 					class="font-display flex items-center gap-2 border-b-2 border-transparent data-[state=active]:border-green-500"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="h-4 w-4"
-					>
-						<title>Reminders</title>
-						<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-						<path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-					</svg>
+					<BellRingIcon class="h-4 w-4" />
 					<span>Reminders</span>
 				</Tabs.Trigger>
 			</Tabs.List>

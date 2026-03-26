@@ -6,7 +6,6 @@ import { z } from 'zod';
 export const journalEntrySchema = z.object({
 	date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (use YYYY-MM-DD)'),
 	content: z.string().min(1, 'Content is required'),
-	tags: z.string().optional(),
 	location: z.string().optional(),
 	weatherTemp: z.coerce.number().optional(),
 	weatherCondition: z.string().optional()
@@ -18,12 +17,8 @@ export type JournalEntryFormValues = z.infer<typeof journalEntrySchema>;
  * Schema for filtering journal entries
  */
 export const journalFilterSchema = z.object({
-	tag: z.string().optional(),
-	startDate: z
-		.string()
-		.regex(/^\d{4}-\d{2}-\d{2}$/)
-		.optional(),
-	endDate: z
+	content: z.string().optional(),
+	date: z
 		.string()
 		.regex(/^\d{4}-\d{2}-\d{2}$/)
 		.optional(),

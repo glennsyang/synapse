@@ -2,6 +2,7 @@
 import AlertCircle from '@lucide/svelte/icons/alert-circle';
 import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 import ChevronDown from '@lucide/svelte/icons/chevron-down';
+import Info from '@lucide/svelte/icons/info';
 import Thermometer from '@lucide/svelte/icons/thermometer';
 import { fromAction } from 'svelte/attachments';
 import { toast } from 'svelte-sonner';
@@ -10,7 +11,6 @@ import ContentSection from '$lib/components/app/ContentSection.svelte';
 import PageShell from '$lib/components/app/PageShell.svelte';
 import SectionHeader from '$lib/components/app/SectionHeader.svelte';
 import JournalEntryEditor from '$lib/components/journal/JournalEntryEditor.svelte';
-import TagInput from '$lib/components/journal/TagInput.svelte';
 import * as Alert from '$lib/components/ui/alert';
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
@@ -18,6 +18,7 @@ import * as Collapsible from '$lib/components/ui/collapsible';
 import { Input } from '$lib/components/ui/input';
 import { Label } from '$lib/components/ui/label';
 import { Separator } from '$lib/components/ui/separator';
+import * as Tooltip from '$lib/components/ui/tooltip';
 import type { JournalEntryFormValues } from '$lib/schemas/journal';
 import { getCurrentWeather } from '$lib/utils/journal-context';
 
@@ -38,13 +39,12 @@ interface Props {
 let { data, mode }: Props = $props();
 
 const isNewMode = $derived(mode === 'new');
+const isEditMode = $derived(mode === 'edit');
 const formAction = $derived(mode === 'edit' ? '?/update' : undefined);
 const pageTitle = $derived(mode === 'edit' ? 'Edit Journal Entry' : 'New Journal Entry');
-const starterPrompt = $derived(
-	isNewMode
-		? (starterPrompts[Math.floor(Math.random() * starterPrompts.length)] ?? starterPrompts[0])
-		: starterPrompts[0]
-);
+const starterPrompt =
+	starterPrompts[Math.floor(Math.random() * starterPrompts.length)] ?? starterPrompts[0];
+let metadataOpen = $state(false);
 
 // svelte-ignore state_referenced_locally
 const { form, errors, enhance, message, submitting } = superForm(data.form, {
@@ -55,7 +55,12 @@ const { form, errors, enhance, message, submitting } = superForm(data.form, {
 	}
 });
 let gettingWeather = $state(false);
-let weatherOpen = $state(false);
+
+$effect(() => {
+	if (isEditMode) {
+		metadataOpen = true;
+	}
+});
 
 async function getWeather() {
 	gettingWeather = true;
@@ -93,16 +98,11 @@ async function getWeather() {
 
 	<ContentSection color="blue" border={true} padding="lg" class="overflow-hidden">
 		<form method="POST" action={formAction} {@attach fromAction(enhance)} class="space-y-6">
-			<input type="hidden" name="location" bind:value={$form.location}>
 			<div
-				class="rounded-2xl border border-[oklch(var(--color-blue)/0.24)] bg-[radial-gradient(circle_at_top,oklch(var(--color-blue)/0.14),transparent_58%)] p-5 shadow-sm md:p-7"
+				class="rounded-2xl border border-[oklch(var(--color-blue)/0.2)] bg-white/88 p-5 shadow-sm dark:bg-slate-950/72 md:p-7"
 			>
 				<div class="space-y-2">
-					<h2
-						class="font-display bg-linear-to-r from-[oklch(var(--color-blue))] to-[oklch(var(--color-teal))] bg-clip-text text-2xl font-bold text-transparent md:text-3xl"
-					>
-						Today's Story
-					</h2>
+					<h2 class="font-display text-2xl font-bold text-foreground md:text-3xl">Today's Story</h2>
 					{#if isNewMode}
 						<p class="text-sm italic text-[oklch(var(--color-blue)/0.68)]">{starterPrompt}</p>
 					{/if}
@@ -112,27 +112,7 @@ async function getWeather() {
 
 				<div class="space-y-5">
 					<div class="space-y-2">
-						<Label for="date">Date</Label>
-						<Input
-							id="date"
-							name="date"
-							type="date"
-							bind:value={$form.date}
-							class={$errors.date ? 'border-destructive' : ''}
-							required
-						/>
-						{#if $errors.date}
-							<Alert.Root variant="destructive" class="mt-2">
-								<AlertCircle class="h-4 w-4" />
-								<Alert.Description>{$errors.date}</Alert.Description>
-							</Alert.Root>
-						{/if}
-					</div>
-
-					<div class="space-y-2">
-						<div class="flex items-center justify-between">
-							<Label for="content">Content</Label>
-						</div>
+						<Label for="content">Content</Label>
 						<JournalEntryEditor
 							bind:markdown={$form.content}
 							placeholder="Let the first sentence be simple. You can shape it after it's on the page."
@@ -145,54 +125,82 @@ async function getWeather() {
 						{/if}
 					</div>
 
-					<div class="space-y-2">
-						<Label for="tags">What best describes your mood?</Label>
-						<TagInput bind:value={$form.tags} />
-					</div>
-
-					<div class="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
-						<Button type="button" variant="outline" href="/journal" class="sm:min-w-32"
-							>Cancel</Button
-						>
-						<Button
-							type="submit"
-							class="bg-blue-600 hover:bg-blue-700 sm:min-w-40"
-							variant="default"
-							disabled={$submitting}
-						>
-							{$submitting ? 'Saving...' : 'Save'}
-						</Button>
-					</div>
-
-					<Collapsible.Root bind:open={weatherOpen}>
+					<Collapsible.Root bind:open={metadataOpen}>
 						<div
-							class="rounded-2xl border border-[oklch(var(--color-blue)/0.2)] bg-background/95 p-4 shadow-sm"
+							class="rounded-2xl border border-[oklch(var(--color-blue)/0.18)] bg-background/92 px-4 py-3 shadow-sm md:px-5"
 						>
-							<Collapsible.Trigger class="w-full">
-								<div class="flex w-full items-center justify-between text-left">
-									<Badge variant="outline">Weather context (optional)</Badge>
+							<Collapsible.Trigger class="w-full text-left">
+								<div class="flex items-center justify-between gap-4">
+									<div class="space-y-2">
+										<Badge variant="outline">Metadata</Badge>
+										<p class="text-sm leading-6 text-muted-foreground">
+											Capture the context around the entry without interrupting the writing flow.
+										</p>
+									</div>
 									<ChevronDown
-										class={`h-4 w-4 transition-transform ${weatherOpen ? 'rotate-180' : ''}`}
+										class={['h-4 w-4 shrink-0 text-muted-foreground transition-transform', metadataOpen && 'rotate-180']}
 									/>
 								</div>
 							</Collapsible.Trigger>
 
-							<Collapsible.Content class="mt-4 space-y-4">
-								<Separator class="bg-[oklch(var(--color-blue)/0.2)]" />
+							<Collapsible.Content class="pt-4">
+								<div class="mb-4 flex justify-end">
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											{#snippet child({ props })}
+												<Button
+													{...props}
+													type="button"
+													variant="outline"
+													size="icon-sm"
+													onclick={getWeather}
+													disabled={gettingWeather}
+													class="border-[oklch(var(--color-blue)/0.18)] bg-[oklch(var(--color-blue)/0.04)] hover:bg-[oklch(var(--color-blue)/0.1)]"
+													aria-label="Fetch current weather"
+												>
+													<Thermometer class="h-4 w-4" />
+												</Button>
+											{/snippet}
+										</Tooltip.Trigger>
+										<Tooltip.Content>
+											{gettingWeather ? 'Retrieving current weather...' : 'Get current weather'}
+										</Tooltip.Content>
+									</Tooltip.Root>
+								</div>
+
 								<div class="grid gap-4 sm:grid-cols-2">
 									<div class="space-y-2">
-										<div class="flex items-center justify-between">
+										<Label for="date">Date</Label>
+										<Input
+											id="date"
+											name="date"
+											type="date"
+											bind:value={$form.date}
+											class={$errors.date ? 'border-destructive' : ''}
+											required
+										/>
+										{#if $errors.date}
+											<Alert.Root variant="destructive" class="mt-2">
+												<AlertCircle class="h-4 w-4" />
+												<Alert.Description>{$errors.date}</Alert.Description>
+											</Alert.Root>
+										{/if}
+									</div>
+
+									<div class="space-y-2">
+										<Label for="location">Location</Label>
+										<Input
+											id="location"
+											name="location"
+											bind:value={$form.location}
+											placeholder="Home, cafe, shoreline, studio"
+										/>
+									</div>
+
+									<div class="space-y-2">
+										<div class="flex items-center gap-2">
 											<Label for="weatherTemp">Temperature (°C)</Label>
-											<Button
-												type="button"
-												variant="outline"
-												size="sm"
-												onclick={getWeather}
-												disabled={gettingWeather}
-												aria-label="Get current weather"
-											>
-												<Thermometer class="h-4 w-4" />
-											</Button>
+											<Info class="h-3.5 w-3.5 text-muted-foreground" />
 										</div>
 										<Input
 											id="weatherTemp"
@@ -209,13 +217,27 @@ async function getWeather() {
 											id="weatherCondition"
 											name="weatherCondition"
 											bind:value={$form.weatherCondition}
-											placeholder="Partly cloudy, sunny, etc."
+											placeholder="Partly cloudy, sunny, foggy"
 										/>
 									</div>
 								</div>
 							</Collapsible.Content>
 						</div>
 					</Collapsible.Root>
+
+					<div class="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
+						<Button type="button" variant="outline" size="sm" href="/journal" class="sm:min-w-28">
+							Cancel
+						</Button>
+						<Button
+							type="submit"
+							size="sm"
+							disabled={$submitting}
+							class="bg-blue-600 text-white hover:bg-blue-700 sm:min-w-32"
+						>
+							{$submitting ? 'Saving...' : 'Save'}
+						</Button>
+					</div>
 				</div>
 			</div>
 		</form>

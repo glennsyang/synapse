@@ -20,7 +20,6 @@ export type JournalEntry = {
 	userId: string;
 	date: string;
 	content: string;
-	tags: string[] | null;
 	location: string | null;
 	weather: {
 		temp?: number;

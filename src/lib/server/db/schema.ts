@@ -119,7 +119,7 @@ export const emailNotificationsRelations = relations(emailNotifications, ({ one 
 
 /**
  * Journal Entries
- * Daily journal entries with optional metadata (tags, location, weather)
+ * Daily journal entries with optional metadata (location, weather)
  */
 export const journalEntries = sqliteTable('journal_entries', {
 	id: text('id').primaryKey().$defaultFn(generateId),
@@ -128,7 +128,6 @@ export const journalEntries = sqliteTable('journal_entries', {
 		.references(() => user.id, { onDelete: 'cascade' }),
 	date: text('date').notNull(), // YYYY-MM-DD format
 	content: text('content').notNull(),
-	tags: text('tags'), // JSON array of strings
 	location: text('location'), // Optional location string
 	weather: text('weather'), // Optional weather JSON object
 	createdAt: text('created_at')

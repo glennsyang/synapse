@@ -5,7 +5,6 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { journalEntrySchema } from '$lib/schemas/journal';
 import { requireAuth } from '$lib/server/actions/auth-guard';
-import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -21,14 +20,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, 'Entry not found');
 	}
 
-	const tags = entry.tags ? JSON.parse(entry.tags) : [];
 	const weather = entry.weather ? JSON.parse(entry.weather) : null;
 
 	const form = await superValidate(
 		{
 			date: entry.date,
 			content: entry.content,
-			tags: tags.join(', '),
 			location: entry.location || 'Home',
 			weatherTemp: weather?.temp,
 			weatherCondition: weather?.condition
@@ -51,7 +48,6 @@ export const actions: Actions = {
 
 		try {
 			const db = getDb();
-			const tags = toCommaSeparatedJson(form.data.tags);
 			const location = form.data.location?.trim() || 'Home';
 
 			const weather =
@@ -67,7 +63,6 @@ export const actions: Actions = {
 				.set({
 					date: form.data.date as string,
 					content: form.data.content as string,
-					tags,
 					location,
 					weather,
 					updatedAt: new Date().toISOString()

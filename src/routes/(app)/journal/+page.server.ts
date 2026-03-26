@@ -58,9 +58,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const moodRangeDates = getDateRange(moodRangeStart, today);
 
 	const filters = journalFilterSchema.safeParse({
-		tag: url.searchParams.get('tag') ?? undefined,
-		startDate: url.searchParams.get('startDate') ?? undefined,
-		endDate: url.searchParams.get('endDate') ?? undefined,
+		content: url.searchParams.get('content') ?? undefined,
+		date: url.searchParams.get('date') ?? undefined,
 		limit: url.searchParams.get('limit') ?? undefined
 	});
 
@@ -81,9 +80,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		return {
 			entries: [],
 			filters: {
-				tag: '',
-				startDate: '',
-				endDate: ''
+				content: '',
+				date: ''
 			},
 			selectedTab,
 			moodForm: await buildMoodForm(),
@@ -106,20 +104,17 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		};
 	}
 
-	const { tag, startDate, endDate, limit } = filters.data;
+	const { content, date, limit } = filters.data;
 
 	try {
 		const db = getDb();
 		const conditions = [eq(journalEntries.userId, locals.user?.id)];
 
-		if (startDate) {
-			conditions.push(gte(journalEntries.date, startDate));
+		if (date) {
+			conditions.push(eq(journalEntries.date, date));
 		}
-		if (endDate) {
-			conditions.push(lte(journalEntries.date, endDate));
-		}
-		if (tag) {
-			conditions.push(like(journalEntries.tags, `"%${tag}%"`));
+		if (content?.trim()) {
+			conditions.push(like(journalEntries.content, `%${content.trim()}%`));
 		}
 
 		const [entries, moodEntries] = await Promise.all([
@@ -140,7 +135,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 		const parsedEntries = entries.map((entry: typeof journalEntries.$inferSelect) => ({
 			...entry,
-			tags: entry.tags ? JSON.parse(entry.tags) : null,
 			weather: entry.weather ? JSON.parse(entry.weather) : null
 		}));
 
@@ -197,9 +191,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		return {
 			entries: parsedEntries,
 			filters: {
-				tag: tag ?? '',
-				startDate: startDate ?? '',
-				endDate: endDate ?? ''
+				content: content ?? '',
+				date: date ?? ''
 			},
 			selectedTab,
 			moodForm: await buildMoodForm(todayLog),
@@ -235,9 +228,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		return {
 			entries: [],
 			filters: {
-				tag: tag ?? '',
-				startDate: startDate ?? '',
-				endDate: endDate ?? ''
+				content: content ?? '',
+				date: date ?? ''
 			},
 			selectedTab,
 			moodForm: await buildMoodForm(),

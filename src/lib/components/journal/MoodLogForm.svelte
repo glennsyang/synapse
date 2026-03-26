@@ -139,7 +139,7 @@ const { form, errors, enhance, message, submitting } = superForm(initialForm, {
 					variant="default"
 					disabled={$submitting}
 				>
-					{$submitting ? 'Saving...' : todayLog ? 'Update mood' : 'Log mood'}
+					{$submitting ? 'Saving...' : todayLog ? 'Update' : 'Log'}
 				</Button>
 			</div>
 		</form>

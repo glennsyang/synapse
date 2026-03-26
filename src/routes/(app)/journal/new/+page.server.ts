@@ -4,7 +4,6 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { journalEntrySchema } from '$lib/schemas/journal';
 import { requireAuth } from '$lib/server/actions/auth-guard';
-import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
@@ -33,7 +32,6 @@ export const actions: Actions = {
 		}
 
 		try {
-			const tags = toCommaSeparatedJson(form.data.tags);
 			const location = form.data.location?.trim() || 'Home';
 
 			const weather =
@@ -51,7 +49,6 @@ export const actions: Actions = {
 				userId: user.id,
 				date: form.data.date,
 				content: form.data.content,
-				tags,
 				location,
 				weather,
 				createdAt: new Date().toISOString(),
