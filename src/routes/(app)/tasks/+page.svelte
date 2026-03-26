@@ -1,5 +1,5 @@
 <script lang="ts">
-import { CalendarCog, CalendarDays, ListFilter, Plus, SquareKanban } from '@lucide/svelte';
+import { CalendarCog, CalendarDays, ListFilter, Plus, Search, SquareKanban } from '@lucide/svelte';
 import { onDestroy } from 'svelte';
 
 import { goto } from '$app/navigation';
@@ -13,9 +13,10 @@ import TaskTagFilter from '$lib/components/tasks/TaskTagFilter.svelte';
 import { Button } from '$lib/components/ui/button';
 import * as Collapsible from '$lib/components/ui/collapsible';
 import { Input } from '$lib/components/ui/input';
+import { Root } from '$lib/components/ui/skeleton';
 import * as Tabs from '$lib/components/ui/tabs';
+import * as Tooltip from '$lib/components/ui/tooltip';
 import type { TaskPageTab } from '$lib/types';
-
 import type { PageData } from './$types';
 
 let { data }: { data: PageData } = $props();
@@ -117,7 +118,7 @@ async function applyKeywordFilter() {
 			<div class="min-w-0 flex-1">
 				<h1 class="font-display text-2xl font-bold sm:text-3xl">Tasks</h1>
 				<p class="text-sm text-muted-foreground sm:text-base">
-					Switch between your kanban board and your weekly Daily Agenda.
+					Switch between your kanban board and your weekly Daily Agenda
 				</p>
 			</div>
 			<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
@@ -139,22 +140,27 @@ async function applyKeywordFilter() {
 						<Plus class="mr-2 h-4 w-4" />
 						New Task
 					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						size="icon"
-						onclick={() => (filtersOpen = !filtersOpen)}
-						aria-label="Toggle task filters"
-						aria-controls="tasks-filter-bar"
-						aria-expanded={filtersOpen}
-						class={[
-							'shrink-0',
-							(filtersOpen || hasActiveFilters) &&
-								'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-200 dark:hover:bg-orange-500/15 dark:hover:text-orange-100'
-						]}
-					>
-						<ListFilter class="size-4" />
-					</Button>
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon"
+								onclick={() => (filtersOpen = !filtersOpen)}
+								aria-label="Toggle task filters"
+								aria-controls="tasks-filter-bar"
+								aria-expanded={filtersOpen}
+								class={[
+									'shrink-0',
+									(filtersOpen || hasActiveFilters) &&
+										'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-200 dark:hover:bg-orange-500/15 dark:hover:text-orange-100'
+								]}
+							>
+								<ListFilter class="size-4" />
+							</Button>
+						</Tooltip.Trigger>
+						<Tooltip.Content>Filter tasks</Tooltip.Content>
+					</Tooltip.Root>
 				{/if}
 			</div>
 		</div>
@@ -197,16 +203,21 @@ async function applyKeywordFilter() {
 								class="grid gap-4 rounded-3xl border border-orange-200/80 bg-orange-50/55 p-4 shadow-sm dark:border-orange-500/25 dark:bg-orange-500/8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
 							>
 								<div class="min-w-0 w-full">
-									<Input
-										id="task-keyword-filter"
-										type="search"
-										value={keywordDirty ? keyword : urlKeyword}
-										oninput={handleKeywordInput}
-										aria-label="Search tasks by keyword"
-										placeholder="Search title or description"
-										maxlength={200}
-										class="bg-background/90"
-									/>
+									<div class="relative">
+										<Search
+											class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+										/>
+										<Input
+											id="task-keyword-filter"
+											type="search"
+											value={keywordDirty ? keyword : urlKeyword}
+											oninput={handleKeywordInput}
+											aria-label="Search tasks by keyword"
+											placeholder="Search title or description"
+											maxlength={200}
+											class="h-10 bg-background/90 pl-9"
+										/>
+									</div>
 								</div>
 
 								<div class="flex flex-col gap-4 lg:flex-row lg:flex-nowrap lg:justify-self-end">

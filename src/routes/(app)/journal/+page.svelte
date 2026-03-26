@@ -1,10 +1,6 @@
 <script lang="ts">
-import CalendarIcon from '@lucide/svelte/icons/calendar';
-import ChartArea from '@lucide/svelte/icons/chart-area';
-import ChevronDown from '@lucide/svelte/icons/chevron-down';
-import FilterIcon from '@lucide/svelte/icons/filter';
-import Plus from '@lucide/svelte/icons/plus';
-import SmilePlus from '@lucide/svelte/icons/smile-plus';
+import { Calendar, ChartArea, CircleX, ListFilter, Plus, Search, SmilePlus } from '@lucide/svelte';
+import { onDestroy } from 'svelte';
 import type { SuperValidated } from 'sveltekit-superforms';
 import { goto, replaceState } from '$app/navigation';
 import { navigating, page } from '$app/state';
@@ -18,12 +14,12 @@ import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
 import * as Collapsible from '$lib/components/ui/collapsible';
 import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
 import * as Select from '$lib/components/ui/select';
+import { Root } from '$lib/components/ui/skeleton';
 import * as Tabs from '$lib/components/ui/tabs';
+import * as Tooltip from '$lib/components/ui/tooltip';
 import type { MoodLogFormValues } from '$lib/schemas/mood';
 import { type MoodPeriod, moodPeriods } from '$lib/utils/mood';
-
 import type { PageData } from './$types';
 
 type JournalTab = 'journal' | 'mood';
@@ -69,9 +65,8 @@ type JournalMoodData = {
 type JournalPageData = PageData & {
 	selectedTab: JournalTab;
 	filters: {
-		tag: string;
-		startDate: string;
-		endDate: string;
+		content: string;
+		date: string;
 	};
 	moodForm: SuperValidated<MoodLogFormValues>;
 	mood: JournalMoodData;
@@ -85,7 +80,19 @@ const periodLabels: Record<MoodPeriod, string> = {
 	quarter: 'This quarter'
 };
 
-let filtersOpen = $state(false);
+let filtersOpen = $state(
+	Boolean(page.url.searchParams.get('content')?.trim()) ||
+		Boolean(page.url.searchParams.get('date'))
+);
+let contentFilter = $state(page.url.searchParams.get('content') ?? '');
+let contentDebounce = $state<ReturnType<typeof setTimeout> | null>(null);
+let contentDirty = $state(false);
+
+const activeJournalContent = $derived(page.url.searchParams.get('content') ?? '');
+const activeJournalDate = $derived(page.url.searchParams.get('date') ?? '');
+const hasActiveFilters = $derived(
+	Boolean(activeJournalContent.trim()) || Boolean(activeJournalDate)
+);
 
 const activeTab = $derived.by<JournalTab>(() =>
 	page.url.searchParams.get('tab') === 'mood' ? 'mood' : 'journal'
@@ -98,12 +105,17 @@ const selectedPeriod = $derived.by<MoodPeriod>(() => {
 
 const clearFiltersHref = $derived.by(() => {
 	const nextUrl = buildNextUrl((searchParams) => {
-		searchParams.delete('tag');
-		searchParams.delete('startDate');
-		searchParams.delete('endDate');
+		searchParams.delete('content');
+		searchParams.delete('date');
 	});
 
 	return nextUrl.toString();
+});
+
+onDestroy(() => {
+	if (contentDebounce) {
+		clearTimeout(contentDebounce);
+	}
 });
 
 function buildNextUrl(update: (searchParams: URLSearchParams) => void) {
@@ -136,6 +148,72 @@ function handleTabChange(value: string) {
 	replaceState(nextUrl, page.state);
 }
 
+function handleContentInput(event: Event) {
+	const currentTarget = event.currentTarget;
+	if (!(currentTarget instanceof HTMLInputElement)) {
+		return;
+	}
+
+	contentFilter = currentTarget.value;
+	queueContentFilterUpdate();
+}
+
+function queueContentFilterUpdate() {
+	contentDirty = true;
+	if (contentDebounce) {
+		clearTimeout(contentDebounce);
+	}
+
+	contentDebounce = setTimeout(() => {
+		void applyContentFilter();
+	}, 250);
+}
+
+async function applyContentFilter() {
+	if (contentDebounce) {
+		clearTimeout(contentDebounce);
+		contentDebounce = null;
+	}
+
+	const normalizedContent = contentFilter.trim();
+	if (normalizedContent === activeJournalContent) {
+		contentDirty = false;
+		return;
+	}
+
+	const nextUrl = buildNextUrl((searchParams) => {
+		if (normalizedContent) {
+			searchParams.set('content', normalizedContent);
+		} else {
+			searchParams.delete('content');
+		}
+	});
+
+	try {
+		await goto(nextUrl.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+	} finally {
+		contentDirty = false;
+	}
+}
+
+async function handleDateChange(event: Event) {
+	const currentTarget = event.currentTarget;
+	if (!(currentTarget instanceof HTMLInputElement)) {
+		return;
+	}
+
+	const nextDate = currentTarget.value;
+	const nextUrl = buildNextUrl((searchParams) => {
+		if (nextDate) {
+			searchParams.set('date', nextDate);
+		} else {
+			searchParams.delete('date');
+		}
+	});
+
+	await goto(nextUrl.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+}
+
 async function handlePeriodChange(nextPeriod: string) {
 	if (!moodPeriods.includes(nextPeriod as MoodPeriod)) {
 		return;
@@ -159,18 +237,50 @@ async function handlePeriodChange(nextPeriod: string) {
 {#if navigating.to?.url.pathname === '/journal'}
 	<PageSkeleton color="blue" />
 {:else}
-	<PageShell class="space-y-6 sm:py-6">
-		<div class="space-y-3">
-			<div class="mobile-stack justify-between">
+	<PageShell class="min-w-0 overflow-x-hidden">
+		<div class="mobile-stack mb-4 justify-between gap-3 sm:mb-5 sm:flex-wrap lg:flex-nowrap">
+			<div class="min-w-0 flex-1">
 				<h1 class="font-display text-2xl font-bold sm:text-3xl">Journal</h1>
-				<Button href="/journal/new" class="w-full bg-blue-600 hover:bg-blue-700 sm:w-auto">
-					<Plus class="mr-2 h-4 w-4" />
-					New Entry
-				</Button>
+				<p class="text-sm text-muted-foreground sm:text-base">
+					A reflective archive of days, fragments, and fully formed thoughts, arranged like a living
+					stack of pages
+				</p>
 			</div>
-			<p class="max-w-2xl text-sm text-muted-foreground sm:text-base">
-				Markdown-friendly entries and daily mood tracking designed for low-friction reflection.
-			</p>
+			<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+				{#if activeTab === 'journal'}
+					<Button
+						href="/journal/new"
+						class="min-w-0 flex-1 bg-blue-600 hover:bg-blue-700 sm:flex-none"
+					>
+						<Plus class="mr-2 h-4 w-4" />
+						New Entry
+					</Button>
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							{#snippet child({ props })}
+								<Button
+									{...props}
+									type="button"
+									variant="outline"
+									size="icon"
+									onclick={() => (filtersOpen = !filtersOpen)}
+									aria-label="Toggle journal filters"
+									aria-controls="journal-filter-bar"
+									aria-expanded={filtersOpen}
+									class={[
+										'shrink-0',
+										(filtersOpen || hasActiveFilters) &&
+											'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 dark:border-blue-400/40 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20'
+									]}
+								>
+									<ListFilter class="size-4" />
+								</Button>
+							{/snippet}
+						</Tooltip.Trigger>
+						<Tooltip.Content>Toggle filters</Tooltip.Content>
+					</Tooltip.Root>
+				{/if}
+			</div>
 		</div>
 
 		<Tabs.Root value={activeTab} onValueChange={handleTabChange} class="w-full gap-3">
@@ -179,94 +289,111 @@ async function handlePeriodChange(nextPeriod: string) {
 			>
 				<Tabs.Trigger
 					value="journal"
-					class="w-full justify-center border-b-2 border-transparent font-display data-[state=active]:border-blue-500"
+					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-blue-500"
 				>
-					<CalendarIcon class="h-4 w-4" />
+					<Calendar class="h-4 w-4" />
 					<span>Journal</span>
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="mood"
-					class="w-full justify-center border-b-2 border-transparent font-display data-[state=active]:border-blue-500"
+					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-blue-500"
 				>
 					<SmilePlus class="h-4 w-4" />
 					<span>Mood</span>
 				</Tabs.Trigger>
 			</Tabs.List>
 
-			<Tabs.Content value="journal" class="mt-6 space-y-4">
-				<Collapsible.Root bind:open={filtersOpen}>
-					<Collapsible.Trigger>
-						<Button variant="outline" class="w-full sm:w-auto">
-							<FilterIcon class="mr-2 h-4 w-4" />
-							Filters
-							<ChevronDown
-								class="ml-2 h-4 w-4 transition-transform duration-200 {filtersOpen ? 'rotate-180' : ''}"
-							/>
-						</Button>
-					</Collapsible.Trigger>
-					<Collapsible.Content class="mt-4">
-						<form
-							method="GET"
-							action="/journal"
-							class="space-y-4 rounded-lg border border-blue-200 bg-blue-500/5 p-4 dark:border-blue-800"
-						>
-							{#if selectedPeriod !== 'week'}
-								<input type="hidden" name="period" value={selectedPeriod}>
-							{/if}
-							<div class="responsive-grid-3">
-								<div class="space-y-2">
-									<Label for="tag">Mood Tag</Label>
-									<Input
-										id="tag"
-										name="tag"
-										type="text"
-										value={data.filters.tag}
-										placeholder="e.g., calm"
-									/>
+			<Tabs.Content value="journal" class="mt-0 space-y-4">
+				{#if activeTab === 'journal'}
+					<Collapsible.Root bind:open={filtersOpen}>
+						<Collapsible.Content class="w-full">
+							<div
+								id="journal-filter-bar"
+								class="grid gap-4 rounded-3xl border border-blue-200/80 bg-blue-50/55 p-4 shadow-[0_18px_60px_-42px_rgba(59,130,246,0.35)] backdrop-blur-xl dark:border-blue-500/25 dark:bg-blue-500/8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
+							>
+								<div class="min-w-0 w-full">
+									<div class="relative">
+										<Search
+											class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+										/>
+										<Input
+											id="journal-content-filter"
+											type="search"
+											value={contentDirty ? contentFilter : activeJournalContent}
+											oninput={handleContentInput}
+											aria-label="Search journal entries by content"
+											placeholder="Search the words inside your entries"
+											maxlength={200}
+											class="h-11 bg-background/90 pl-9"
+										/>
+									</div>
 								</div>
-								<div class="space-y-2">
-									<Label for="startDate">Start Date</Label>
+
+								<div class="flex flex-col gap-3 sm:flex-row lg:justify-self-end">
 									<Input
-										id="startDate"
-										name="startDate"
+										id="journal-date-filter"
 										type="date"
-										value={data.filters.startDate}
+										value={activeJournalDate}
+										onchange={handleDateChange}
+										aria-label="Filter journal entries by date"
+										class="h-11 min-w-44"
 									/>
-								</div>
-								<div class="space-y-2">
-									<Label for="endDate">End Date</Label>
-									<Input id="endDate" name="endDate" type="date" value={data.filters.endDate} />
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											{#snippet child({ props })}
+												<Button
+													{...props}
+													type="button"
+													variant="outline"
+													size="icon"
+													href={clearFiltersHref}
+													class="h-10 border-blue-200/70 bg-blue-50 text-blue-800 hover:bg-blue-100"
+													aria-label="Clear journal filters"
+												>
+													<CircleX class="h-4 w-4" />
+												</Button>
+											{/snippet}
+										</Tooltip.Trigger>
+										<Tooltip.Content>Clear filters</Tooltip.Content>
+									</Tooltip.Root>
 								</div>
 							</div>
-							<div class="mobile-stack">
-								<Button type="submit" class="w-full sm:w-auto">Apply Filters</Button>
-								<Button variant="outline" href={clearFiltersHref} class="w-full sm:w-auto"
-									>Clear</Button
-								>
-							</div>
-						</form>
-					</Collapsible.Content>
-				</Collapsible.Root>
+						</Collapsible.Content>
+					</Collapsible.Root>
+				{/if}
 
 				<div class="space-y-4">
 					{#if data.entries.length === 0}
-						<div class="rounded-lg border border-dashed p-8 text-center">
-							<CalendarIcon class="mx-auto h-12 w-12 text-muted-foreground" />
-							<p class="mt-4 text-muted-foreground">No journal entries found. Start writing!</p>
-							<Button href="/journal/new" class="mt-4" variant="outline">
+						<div
+							class="rounded-3xl border border-dashed border-blue-200/80 bg-white/82 p-10 text-center shadow-[0_18px_60px_-48px_rgba(59,130,246,0.35)] backdrop-blur-xl dark:border-blue-400/20 dark:bg-slate-950/62"
+						>
+							<Calendar class="mx-auto h-12 w-12 text-[oklch(var(--color-blue)/0.75)]" />
+							<p class="font-display mt-4 text-2xl font-semibold tracking-tight">
+								No pages in this slice of the archive yet.
+							</p>
+							<p class="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+								Try a different phrase or date, or start a new entry to keep the chronicle moving.
+							</p>
+							<Button
+								href="/journal/new"
+								class="mt-5 border-blue-200/70 bg-blue-50 text-blue-800 hover:bg-blue-100"
+								variant="outline"
+							>
 								<Plus class="mr-2 h-4 w-4" />
 								Create First Entry
 							</Button>
 						</div>
 					{:else}
-						{#each data.entries as entry (entry.id)}
-							<JournalEntryCard {entry} />
-						{/each}
+						<div class="columns-1 gap-4 sm:columns-2">
+							{#each data.entries as entry (entry.id)}
+								<div class="mb-4 break-inside-avoid"><JournalEntryCard {entry} /></div>
+							{/each}
+						</div>
 					{/if}
 				</div>
 			</Tabs.Content>
 
-			<Tabs.Content value="mood" class="mt-6 space-y-6">
+			<Tabs.Content value="mood" class="mt-4 min-w-0">
 				<div class="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)] md:items-start">
 					<div class="space-y-6">
 						<MoodLogForm form={data.moodForm} todayLog={data.mood.todayLog} />
