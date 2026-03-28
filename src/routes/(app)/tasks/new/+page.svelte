@@ -175,9 +175,11 @@ let selectedStateOption = $derived(
 					<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{$message}</div>
 				{/if}
 
-				<div class="flex gap-4">
-					<Button type="submit" class="flex-1">Create Task</Button>
-					<Button type="button" variant="outline" href="/tasks" class="flex-1">Cancel</Button>
+				<div class="flex gap-2">
+					<Button type="submit" class="text-white bg-orange-600 hover:bg-orange-700">
+						Create
+					</Button>
+					<Button type="button" variant="outline" href="/tasks">Cancel</Button>
 				</div>
 			</form>
 		</Card.Content>

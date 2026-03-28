@@ -1,24 +1,19 @@
 <script lang="ts">
-import ChevronDown from '@lucide/svelte/icons/chevron-down';
+import { ListFilter } from '@lucide/svelte';
 import ClockIcon from '@lucide/svelte/icons/clock';
-import FilterIcon from '@lucide/svelte/icons/filter';
 import PlayCircleIcon from '@lucide/svelte/icons/play-circle';
 import PlusIcon from '@lucide/svelte/icons/plus';
 import SparklesIcon from '@lucide/svelte/icons/sparkles';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
-
 import { navigating, page } from '$app/state';
 import PageShell from '$lib/components/app/PageShell.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
-import * as Collapsible from '$lib/components/ui/collapsible';
-import { Label } from '$lib/components/ui/label';
-import * as Select from '$lib/components/ui/select';
 import * as Tabs from '$lib/components/ui/tabs';
+import * as Tooltip from '$lib/components/ui/tooltip';
 import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
-
 import type { PageData } from './$types';
 
 let { data }: { data: PageData } = $props();
@@ -35,6 +30,13 @@ let selectedMood = $state<string | undefined>(undefined);
 let selectedType = $state<string>('all');
 let filtersOpen = $state(false);
 
+const activeTab = $derived.by(() =>
+	page.url.searchParams.get('tab') === 'history' ? 'history' : 'routines'
+);
+const showPageSkeleton = $derived(
+	navigating.to?.url.pathname === '/meditation' && navigating.from?.url.pathname !== '/meditation'
+);
+
 function applyFilters() {
 	const params = new SvelteURLSearchParams(page.url.searchParams);
 	if (selectedMood) {
@@ -47,100 +49,71 @@ function applyFilters() {
 }
 </script>
 
-{#if navigating.to?.url.pathname === '/meditation'}
+{#if showPageSkeleton}
 	<PageSkeleton color="purple" />
 {:else}
-	<PageShell>
-		<div class="mb-6 flex items-center justify-between">
-			<div>
-				<h1 class="font-display text-3xl font-bold">Meditation</h1>
-				<p class="text-muted-foreground">Manage routines and track your practice</p>
+	<PageShell class="min-w-0 overflow-x-hidden">
+		<div
+			class="mobile-stack mb-4 flex items-center justify-between gap-3 sm:mb-5 sm:flex-wrap lg:flex-nowrap"
+		>
+			<div class="min-w-0 flex-1">
+				<h1 class="font-display text-2xl font-bold sm:text-3xl">Meditation</h1>
+				<p class="text-sm text-muted-foreground sm:text-base">
+					Manage routines and track your practice
+				</p>
 			</div>
-			<Button href="/meditation/routines/new" class="bg-purple-600 hover:bg-purple-700">
-				<PlusIcon class="mr-2 h-4 w-4" />
-				New Routine
-			</Button>
+			<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+				<Button href="/meditation/routines/new" class="bg-purple-600 hover:bg-purple-700">
+					<PlusIcon class="mr-2 h-4 w-4" />
+					New Routine
+				</Button>
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								type="button"
+								variant="outline"
+								size="icon"
+								onclick={() => (filtersOpen = !filtersOpen)}
+								aria-label="Toggle journal filters"
+								aria-controls="journal-filter-bar"
+								aria-expanded={filtersOpen}
+								class={[
+										'shrink-0',
+										(filtersOpen) &&
+											'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 dark:border-blue-400/40 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20'
+									]}
+							>
+								<ListFilter class="size-4" />
+							</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content>Toggle filters</Tooltip.Content>
+				</Tooltip.Root>
+			</div>
 		</div>
 
-		<Tabs.Root value="routines" class="w-full">
+		<Tabs.Root value={activeTab} class="w-full gap-3">
 			<Tabs.List
-				class="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
+				class="grid h-11 w-full grid-cols-2 rounded-xl bg-muted/75 p-1 text-muted-foreground"
 			>
 				<Tabs.Trigger
 					value="routines"
 					class="font-display border-b-2 border-transparent data-[state=active]:border-purple-500"
-					>Routines</Tabs.Trigger
 				>
+					Routines
+				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="history"
 					class="font-display border-b-2 border-transparent data-[state=active]:border-purple-500"
-					>History</Tabs.Trigger
 				>
+					History
+				</Tabs.Trigger>
 			</Tabs.List>
 
 			<!-- Routines Tab -->
 			<Tabs.Content value="routines" class="w-full space-y-4">
-				<!-- Filters -->
-				<Collapsible.Root bind:open={filtersOpen}>
-					<Collapsible.Trigger>
-						<Button variant="outline" class="w-full sm:w-auto">
-							<FilterIcon class="mr-2 h-4 w-4" />
-							Filters
-							<ChevronDown
-								class="ml-2 h-4 w-4 transition-transform duration-200 {filtersOpen
-									? 'rotate-180'
-									: ''}"
-							/>
-						</Button>
-					</Collapsible.Trigger>
-					<Collapsible.Content class="mt-4">
-						<div
-							class="space-y-4 rounded-lg border border-purple-200 bg-purple-500/5 p-4 dark:border-purple-800"
-						>
-							<div class="grid gap-4 md:grid-cols-3">
-								<div>
-									<Label for="mood-filter" class="mb-2 block text-sm font-medium">Mood</Label>
-									<Select.Root type="single" bind:value={selectedMood}>
-										<Select.Trigger id="mood-filter">
-											{selectedMood || 'All moods'}
-										</Select.Trigger>
-										<Select.Content>
-											<Select.Item value="">All moods</Select.Item>
-											<Select.Item value="Anxious">Anxious</Select.Item>
-											<Select.Item value="Low Energy">Low Energy</Select.Item>
-											<Select.Item value="Focused">Focused</Select.Item>
-											<Select.Item value="Pre-Sleep">Pre-Sleep</Select.Item>
-											<Select.Item value="General">General</Select.Item>
-										</Select.Content>
-									</Select.Root>
-								</div>
-								<div>
-									<Label for="type-filter" class="mb-2 block text-sm font-medium">Type</Label>
-									<Select.Root type="single" bind:value={selectedType}>
-										<Select.Trigger id="type-filter">
-											{selectedType === 'all'
-												? 'All'
-												: selectedType === 'predefined'
-													? 'Predefined'
-													: 'User Created'}
-										</Select.Trigger>
-										<Select.Content>
-											<Select.Item value="all">All</Select.Item>
-											<Select.Item value="predefined">Predefined</Select.Item>
-											<Select.Item value="user-created">User Created</Select.Item>
-										</Select.Content>
-									</Select.Root>
-								</div>
-								<div class="flex items-end">
-									<Button onclick={applyFilters} class="w-full bg-purple-600 hover:bg-purple-700"
-										>Apply Filters</Button
-									>
-								</div>
-							</div>
-						</div>
-					</Collapsible.Content>
-				</Collapsible.Root>
-
 				<!-- Routines List -->
 				<div class="grid w-full gap-4 sm:min-h-80 md:grid-cols-2 lg:grid-cols-3">
 					{#each data.routines as routine (routine.id)}

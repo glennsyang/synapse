@@ -125,7 +125,7 @@ async function applyKeywordFilter() {
 				{#if data.activeTab === 'agenda'}
 					<Button
 						type="button"
-						class="min-w-0 flex-1 bg-orange-600 hover:bg-orange-700 sm:flex-none"
+						class="min-w-0 flex-1 text-white bg-orange-600 hover:bg-orange-700 sm:flex-none"
 						onclick={() => (defaultsDialogOpen = true)}
 					>
 						<CalendarCog class="mr-2 h-4 w-4" />
@@ -134,8 +134,9 @@ async function applyKeywordFilter() {
 				{/if}
 				{#if data.activeTab === 'kanban'}
 					<Button
+						type="button"
 						href="/tasks/new"
-						class="min-w-0 flex-1 bg-orange-600 hover:bg-orange-700 sm:w-auto sm:flex-none"
+						class="min-w-0 flex-1 text-white bg-orange-600 hover:bg-orange-700 sm:w-auto sm:flex-none"
 					>
 						<Plus class="mr-2 h-4 w-4" />
 						New Task

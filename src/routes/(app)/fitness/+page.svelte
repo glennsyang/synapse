@@ -5,11 +5,11 @@ import BellIcon from '@lucide/svelte/icons/bell';
 import BellOffIcon from '@lucide/svelte/icons/bell-off';
 import BellRingIcon from '@lucide/svelte/icons/bell-ring';
 import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
+import Edit from '@lucide/svelte/icons/edit';
 import MinusIcon from '@lucide/svelte/icons/minus';
-import PencilIcon from '@lucide/svelte/icons/pencil';
 import ScaleIcon from '@lucide/svelte/icons/scale';
 import TargetIcon from '@lucide/svelte/icons/target';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import Trash2 from '@lucide/svelte/icons/trash-2';
 import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
 import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
 import UtensilsCrossedIcon from '@lucide/svelte/icons/utensils-crossed';
@@ -31,6 +31,7 @@ import { Input } from '$lib/components/ui/input';
 import { Label } from '$lib/components/ui/label';
 import * as Select from '$lib/components/ui/select';
 import * as Tabs from '$lib/components/ui/tabs';
+import * as Tooltip from '$lib/components/ui/tooltip';
 import type { Exercise } from '$lib/types';
 import {
 	daysOfWeek,
@@ -167,7 +168,7 @@ let reminderToToggle = $state<{
 	enabled: boolean;
 } | null>(null);
 let showToggleReminderDialog = $state(false);
-let activeTab = $state('weight');
+let activeTab = $state('workouts');
 const handledNotices = new SvelteSet<string>();
 
 $effect(() => {
@@ -273,6 +274,229 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 					<span>Reminders</span>
 				</Tabs.Trigger>
 			</Tabs.List>
+
+			<Tabs.Content value="workouts" class="mt-6 w-full space-y-6">
+				<!-- Log Workout Form -->
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Log Workout</Card.Title>
+						<Card.Description>Record your workout session</Card.Description>
+					</Card.Header>
+					<Card.Content>
+						<form method="POST" action="?/logWorkout" use:workoutEnhance>
+							<div class="grid gap-4">
+								<div class="grid grid-cols-2 gap-4">
+									<div class="grid gap-2">
+										<Label for="workout-date">Date</Label>
+										<Input
+											id="workout-date"
+											name="date"
+											type="date"
+											bind:value={$workoutForm.date}
+											required
+										/>
+										{#if $workoutErrors.date}
+											<p class="text-sm text-destructive">{$workoutErrors.date}</p>
+										{/if}
+									</div>
+									<div class="grid gap-2">
+										<Label for="workout-time">Time (optional)</Label>
+										<Input
+											id="workout-time"
+											name="time"
+											type="time"
+											bind:value={$workoutForm.time}
+										/>
+										{#if $workoutErrors.time}
+											<p class="text-sm text-destructive">{$workoutErrors.time}</p>
+										{/if}
+									</div>
+								</div>
+
+								<div class="grid gap-2">
+									<Label for="workout-type">Workout Type</Label>
+									<Select.Root type="single" name="type" bind:value={$workoutForm.type}>
+										<Select.Trigger id="workout-type">
+											{$workoutForm.type || 'Select workout type'}
+										</Select.Trigger>
+										<Select.Content>
+											<Select.Item value="strength" label="Strength">Strength</Select.Item>
+											<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
+											<Select.Item value="yoga" label="Yoga">Yoga</Select.Item>
+											<Select.Item value="other" label="Other">Other</Select.Item>
+										</Select.Content>
+									</Select.Root>
+									{#if $workoutErrors.type}
+										<p class="text-sm text-destructive">{$workoutErrors.type}</p>
+									{/if}
+								</div>
+
+								<div class="grid gap-2">
+									<Label for="workout-duration">Duration (minutes)</Label>
+									<Input
+										id="workout-duration"
+										name="durationMinutes"
+										type="number"
+										bind:value={$workoutForm.durationMinutes}
+										placeholder="60"
+									/>
+									{#if $workoutErrors.durationMinutes}
+										<p class="text-sm text-destructive">{$workoutErrors.durationMinutes}</p>
+									{/if}
+								</div>
+
+								{#if $workoutForm.type === 'strength'}
+									<ExerciseInput bind:exercises={workoutExercises} />
+									<Input type="hidden" name="exercises" value={JSON.stringify(workoutExercises)} />
+									{#if $workoutErrors.exercises}
+										<p class="text-sm text-destructive">{$workoutErrors.exercises}</p>
+									{/if}
+								{/if}
+
+								<div class="grid gap-2">
+									<Label for="workout-notes">Notes (optional)</Label>
+									<LongTextInput
+										id="workout-notes"
+										name="notes"
+										bind:value={$workoutForm.notes}
+										rows={3}
+										placeholder="How did the workout feel?"
+									/>
+									{#if $workoutErrors.notes}
+										<p class="text-sm text-destructive">{$workoutErrors.notes}</p>
+									{/if}
+								</div>
+
+								<Button type="submit" class="text-white bg-green-600 hover:bg-green-700">
+									Log Workout
+								</Button>
+							</div>
+						</form>
+					</Card.Content>
+				</Card.Root>
+
+				<!-- Recent Workouts -->
+				{#if data.workouts.length > 0}
+					<Card.Root>
+						<Card.Header> <Card.Title>Recent Workouts</Card.Title> </Card.Header>
+						<Card.Content>
+							<div class="space-y-3">
+								{#each data.workouts.slice(0, 10) as workout (workout.id)}
+									<div class="rounded-lg border p-4">
+										<div class="flex items-start justify-between">
+											<div class="space-y-1">
+												<div class="flex items-center gap-2">
+													<span
+														class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize"
+														class:bg-orange-100={workout.type === 'strength'}
+														class:text-orange-800={workout.type === 'strength'}
+														class:bg-blue-100={workout.type === 'cardio'}
+														class:text-blue-800={workout.type === 'cardio'}
+														class:bg-purple-100={workout.type === 'yoga'}
+														class:text-purple-800={workout.type === 'yoga'}
+														class:bg-gray-100={workout.type === 'other'}
+														class:text-gray-800={workout.type === 'other'}
+													>
+														{workout.type}
+													</span>
+													{#if workout.durationMinutes}
+														<span class="text-sm text-muted-foreground">
+															{workout.durationMinutes}
+															min
+														</span>
+													{/if}
+												</div>
+												<p class="text-sm text-muted-foreground">
+													{formatDateMedium(workout.date)}
+													{#if workout.time}
+														@ {formatTime12Hour(workout.time)}
+													{/if}
+												</p>
+												{#if workout.notes}
+													<p class="mt-2 text-sm">{workout.notes}</p>
+												{/if}
+												{#if workout.exercises && workout.exercises.length > 0}
+													<div class="mt-3 space-y-2">
+														<p class="text-sm font-medium">Exercises:</p>
+														{#each workout.exercises as exercise (exercise.exerciseName)}
+															<div class="ml-4 text-sm text-muted-foreground">
+																• {exercise.exerciseName}
+																{#if exercise.sets || exercise.reps || exercise.weightLbs}
+																	<span class="ml-2">
+																		{#if exercise.sets}
+																			{exercise.sets}
+																			sets
+																		{/if}
+																		{#if exercise.reps}
+																			× {exercise.reps} reps
+																		{/if}
+																		{#if exercise.weightLbs}
+																			@ {exercise.weightLbs} lbs
+																		{/if}
+																	</span>
+																{/if}
+															</div>
+														{/each}
+													</div>
+												{/if}
+											</div>
+											<div class="mt-3 flex items-center gap-2">
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														{#snippet child({ props })}
+															<Button
+																{...props}
+																variant="outline"
+																size="icon"
+																href="/fitness/workouts/{workout.id}/edit"
+																aria-label="Edit workout"
+															>
+																<Edit class="h-4 w-4" />
+															</Button>
+														{/snippet}
+													</Tooltip.Trigger>
+													<Tooltip.Content>Edit</Tooltip.Content>
+												</Tooltip.Root>
+
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														{#snippet child({ props })}
+															<Button
+																{...props}
+																type="button"
+																variant="destructive"
+																size="icon"
+																onclick={() => {
+																	workoutToDelete = workout.id;
+																	showDeleteWorkoutDialog = true;
+																}}
+																aria-label="Delete workout"
+															>
+																<Trash2 class="h-4 w-4" />
+															</Button>
+														{/snippet}
+													</Tooltip.Trigger>
+													<Tooltip.Content>Delete</Tooltip.Content>
+												</Tooltip.Root>
+											</div>
+										</div>
+									</div>
+								{/each}
+							</div>
+							{#if workoutToDelete}
+								<ConfirmDialog
+									bind:open={showDeleteWorkoutDialog}
+									title="Delete Workout"
+									message="Are you sure you want to delete this workout? This action cannot be undone."
+									confirmButtonText="Delete"
+									actionUrl="/fitness/workouts/{workoutToDelete}/edit?/delete"
+									id={workoutToDelete}
+								/>
+							{/if}
+						</Card.Content>
+					</Card.Root>
+				{/if}
+			</Tabs.Content>
 
 			<Tabs.Content value="weight" class="mt-6 w-full space-y-6">
 				<!-- Stats Cards -->
@@ -383,7 +607,9 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 										{#if $weightErrors.weightLbs}
 											<p class="text-sm text-destructive">{$weightErrors.weightLbs}</p>
 										{/if}
-										<Button type="submit" class="w-full">Log Weight</Button>
+										<Button type="submit" class="w-full text-white bg-green-600 hover:bg-green-700"
+											>Log Weight</Button
+										>
 									</div>
 								</div>
 							</form>
@@ -413,7 +639,9 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 											<p class="text-sm text-destructive">{$goalErrors.targetWeightLbs}</p>
 										{/if}
 									</div>
-									<Button type="submit" class="w-full">Set Goal</Button>
+									<Button type="submit" class="w-full text-white bg-green-600 hover:bg-green-700"
+										>Set Goal</Button
+									>
 								</div>
 							</form>
 						</Card.Content>
@@ -454,28 +682,43 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 											</p>
 										</div>
 										<div class="flex items-center gap-2">
-											<Button
-												variant="outline"
-												size="icon"
-												href="/fitness/weight/{entry.id}/edit"
-												aria-label="Edit weight entry"
-												title="Edit"
-											>
-												<PencilIcon class="h-4 w-4" />
-											</Button>
-											<Button
-												type="button"
-												variant="destructive"
-												size="icon"
-												onclick={() => {
-													weightEntryToDelete = entry.id;
-													showDeleteWeightDialog = true;
-												}}
-												aria-label="Delete weight entry"
-												title="Delete"
-											>
-												<Trash2Icon class="h-4 w-4" />
-											</Button>
+											<Tooltip.Root>
+												<Tooltip.Trigger>
+													{#snippet child({ props })}
+														<Button
+															{...props}
+															variant="outline"
+															size="icon"
+															href="/fitness/weight/{entry.id}/edit"
+															aria-label="Edit weight entry"
+														>
+															<Edit class="h-4 w-4" />
+														</Button>
+													{/snippet}
+												</Tooltip.Trigger>
+												<Tooltip.Content>Edit</Tooltip.Content>
+											</Tooltip.Root>
+
+											<Tooltip.Root>
+												<Tooltip.Trigger>
+													{#snippet child({ props })}
+														<Button
+															{...props}
+															type="button"
+															variant="destructive"
+															size="icon"
+															onclick={() => {
+																weightEntryToDelete = entry.id;
+																showDeleteWeightDialog = true;
+															}}
+															aria-label="Delete weight entry"
+														>
+															<Trash2 class="h-4 w-4" />
+														</Button>
+													{/snippet}
+												</Tooltip.Trigger>
+												<Tooltip.Content>Delete</Tooltip.Content>
+											</Tooltip.Root>
 										</div>
 									</div>
 								{/each}
@@ -488,212 +731,6 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 									confirmButtonText="Delete"
 									actionUrl="/fitness/weight/{weightEntryToDelete}/edit?/delete"
 									id={weightEntryToDelete}
-								/>
-							{/if}
-						</Card.Content>
-					</Card.Root>
-				{/if}
-			</Tabs.Content>
-
-			<Tabs.Content value="workouts" class="mt-6 w-full space-y-6">
-				<!-- Log Workout Form -->
-				<Card.Root>
-					<Card.Header>
-						<Card.Title>Log Workout</Card.Title>
-						<Card.Description>Record your workout session</Card.Description>
-					</Card.Header>
-					<Card.Content>
-						<form method="POST" action="?/logWorkout" use:workoutEnhance>
-							<div class="grid gap-4">
-								<div class="grid grid-cols-2 gap-4">
-									<div class="grid gap-2">
-										<Label for="workout-date">Date</Label>
-										<Input
-											id="workout-date"
-											name="date"
-											type="date"
-											bind:value={$workoutForm.date}
-											required
-										/>
-										{#if $workoutErrors.date}
-											<p class="text-sm text-destructive">{$workoutErrors.date}</p>
-										{/if}
-									</div>
-									<div class="grid gap-2">
-										<Label for="workout-time">Time (optional)</Label>
-										<Input
-											id="workout-time"
-											name="time"
-											type="time"
-											bind:value={$workoutForm.time}
-										/>
-										{#if $workoutErrors.time}
-											<p class="text-sm text-destructive">{$workoutErrors.time}</p>
-										{/if}
-									</div>
-								</div>
-
-								<div class="grid gap-2">
-									<Label for="workout-type">Workout Type</Label>
-									<Select.Root type="single" name="type" bind:value={$workoutForm.type}>
-										<Select.Trigger id="workout-type">
-											{$workoutForm.type || 'Select workout type'}
-										</Select.Trigger>
-										<Select.Content>
-											<Select.Item value="strength" label="Strength">Strength</Select.Item>
-											<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
-											<Select.Item value="yoga" label="Yoga">Yoga</Select.Item>
-											<Select.Item value="other" label="Other">Other</Select.Item>
-										</Select.Content>
-									</Select.Root>
-									{#if $workoutErrors.type}
-										<p class="text-sm text-destructive">{$workoutErrors.type}</p>
-									{/if}
-								</div>
-
-								<div class="grid gap-2">
-									<Label for="workout-duration">Duration (minutes)</Label>
-									<Input
-										id="workout-duration"
-										name="durationMinutes"
-										type="number"
-										bind:value={$workoutForm.durationMinutes}
-										placeholder="60"
-									/>
-									{#if $workoutErrors.durationMinutes}
-										<p class="text-sm text-destructive">{$workoutErrors.durationMinutes}</p>
-									{/if}
-								</div>
-
-								{#if $workoutForm.type === 'strength'}
-									<ExerciseInput bind:exercises={workoutExercises} />
-									<Input type="hidden" name="exercises" value={JSON.stringify(workoutExercises)} />
-									{#if $workoutErrors.exercises}
-										<p class="text-sm text-destructive">{$workoutErrors.exercises}</p>
-									{/if}
-								{/if}
-
-								<div class="grid gap-2">
-									<Label for="workout-notes">Notes (optional)</Label>
-									<LongTextInput
-										id="workout-notes"
-										name="notes"
-										bind:value={$workoutForm.notes}
-										rows={3}
-										placeholder="How did the workout feel?"
-									/>
-									{#if $workoutErrors.notes}
-										<p class="text-sm text-destructive">{$workoutErrors.notes}</p>
-									{/if}
-								</div>
-
-								<Button type="submit" class="w-full">Log Workout</Button>
-							</div>
-						</form>
-					</Card.Content>
-				</Card.Root>
-
-				<!-- Recent Workouts -->
-				{#if data.workouts.length > 0}
-					<Card.Root>
-						<Card.Header> <Card.Title>Recent Workouts</Card.Title> </Card.Header>
-						<Card.Content>
-							<div class="space-y-3">
-								{#each data.workouts.slice(0, 10) as workout (workout.id)}
-									<div class="rounded-lg border p-4">
-										<div class="flex items-start justify-between">
-											<div class="space-y-1">
-												<div class="flex items-center gap-2">
-													<span
-														class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize"
-														class:bg-orange-100={workout.type === 'strength'}
-														class:text-orange-800={workout.type === 'strength'}
-														class:bg-blue-100={workout.type === 'cardio'}
-														class:text-blue-800={workout.type === 'cardio'}
-														class:bg-purple-100={workout.type === 'yoga'}
-														class:text-purple-800={workout.type === 'yoga'}
-														class:bg-gray-100={workout.type === 'other'}
-														class:text-gray-800={workout.type === 'other'}
-													>
-														{workout.type}
-													</span>
-													{#if workout.durationMinutes}
-														<span class="text-sm text-muted-foreground">
-															{workout.durationMinutes}
-															min
-														</span>
-													{/if}
-												</div>
-												<p class="text-sm text-muted-foreground">
-													{formatDateMedium(workout.date)}
-													{#if workout.time}
-														@ {formatTime12Hour(workout.time)}
-													{/if}
-												</p>
-												{#if workout.notes}
-													<p class="mt-2 text-sm">{workout.notes}</p>
-												{/if}
-												{#if workout.exercises && workout.exercises.length > 0}
-													<div class="mt-3 space-y-2">
-														<p class="text-sm font-medium">Exercises:</p>
-														{#each workout.exercises as exercise (exercise.exerciseName)}
-															<div class="ml-4 text-sm text-muted-foreground">
-																• {exercise.exerciseName}
-																{#if exercise.sets || exercise.reps || exercise.weightLbs}
-																	<span class="ml-2">
-																		{#if exercise.sets}
-																			{exercise.sets}
-																			sets
-																		{/if}
-																		{#if exercise.reps}
-																			× {exercise.reps} reps
-																		{/if}
-																		{#if exercise.weightLbs}
-																			@ {exercise.weightLbs} lbs
-																		{/if}
-																	</span>
-																{/if}
-															</div>
-														{/each}
-													</div>
-												{/if}
-											</div>
-											<div class="mt-3 flex items-center gap-2">
-												<Button
-													variant="outline"
-													size="icon"
-													href="/fitness/workouts/{workout.id}/edit"
-													aria-label="Edit workout"
-													title="Edit"
-												>
-													<PencilIcon class="h-4 w-4" />
-												</Button>
-												<Button
-													type="button"
-													variant="destructive"
-													size="icon"
-													onclick={() => {
-														workoutToDelete = workout.id;
-														showDeleteWorkoutDialog = true;
-													}}
-													aria-label="Delete workout"
-													title="Delete"
-												>
-													<Trash2Icon class="h-4 w-4" />
-												</Button>
-											</div>
-										</div>
-									</div>
-								{/each}
-							</div>
-							{#if workoutToDelete}
-								<ConfirmDialog
-									bind:open={showDeleteWorkoutDialog}
-									title="Delete Workout"
-									message="Are you sure you want to delete this workout? This action cannot be undone."
-									confirmButtonText="Delete"
-									actionUrl="/fitness/workouts/{workoutToDelete}/edit?/delete"
-									id={workoutToDelete}
 								/>
 							{/if}
 						</Card.Content>
@@ -775,7 +812,9 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 											<p class="text-sm text-destructive">{$mealErrors.caloriesEstimate}</p>
 										{/if}
 									</div>
-									<Button type="submit" class="w-full">Log Meal</Button>
+									<Button type="submit" class="w-full text-white bg-green-600 hover:bg-green-700"
+										>Log Meal</Button
+									>
 								</div>
 							</form>
 						</Card.Content>
@@ -810,7 +849,9 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 											{$calorieMessage}
 										</div>
 									{/if}
-									<Button type="submit" class="w-full">Set Target</Button>
+									<Button type="submit" class="w-full text-white bg-green-600 hover:bg-green-700"
+										>Set Target</Button
+									>
 								</div>
 							</form>
 						</Card.Content>
@@ -849,28 +890,43 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 												<p class="mt-2 text-sm">{meal.description}</p>
 											</div>
 											<div class="mt-3 flex items-center gap-2">
-												<Button
-													variant="outline"
-													size="icon"
-													href="/fitness/meals/{meal.id}/edit"
-													aria-label="Edit meal"
-													title="Edit"
-												>
-													<PencilIcon class="h-4 w-4" />
-												</Button>
-												<Button
-													type="button"
-													variant="destructive"
-													size="icon"
-													onclick={() => {
-														mealToDelete = meal.id;
-														showDeleteMealDialog = true;
-													}}
-													aria-label="Delete meal"
-													title="Delete"
-												>
-													<Trash2Icon class="h-4 w-4" />
-												</Button>
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														{#snippet child({ props })}
+															<Button
+																{...props}
+																variant="outline"
+																size="icon"
+																href="/fitness/meals/{meal.id}/edit"
+																aria-label="Edit meal"
+															>
+																<Edit class="h-4 w-4" />
+															</Button>
+														{/snippet}
+													</Tooltip.Trigger>
+													<Tooltip.Content>Edit</Tooltip.Content>
+												</Tooltip.Root>
+
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														{#snippet child({ props })}
+															<Button
+																{...props}
+																type="button"
+																variant="destructive"
+																size="icon"
+																onclick={() => {
+																	mealToDelete = meal.id;
+																	showDeleteMealDialog = true;
+																}}
+																aria-label="Delete meal"
+															>
+																<Trash2 class="h-4 w-4" />
+															</Button>
+														{/snippet}
+													</Tooltip.Trigger>
+													<Tooltip.Content>Delete</Tooltip.Content>
+												</Tooltip.Root>
 											</div>
 										</div>
 									</div>
@@ -999,7 +1055,11 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 								{/if}
 							</div>
 
-							<div class="mt-4"><Button type="submit">Create Reminder</Button></div>
+							<div class="mt-4">
+								<Button type="submit" class="text-white bg-green-600 hover:bg-green-700"
+									>Create Reminder</Button
+								>
+							</div>
 						</form>
 					</Card.Content>
 				</Card.Root>
@@ -1048,43 +1108,59 @@ let toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enabl
 												</p>
 											</div>
 											<div class="flex gap-2">
-												<Button
-													type="button"
-													variant="outline"
-													size="icon"
-													onclick={() => {
-														reminderToToggle = {
-															id: reminder.id,
-															workoutType: reminder.workoutType,
-															cadence: reminder.cadence,
-															time: reminder.time,
-															daysOfWeek: reminder.daysOfWeek || '',
-															enabled: !reminder.enabled
-														};
-														showToggleReminderDialog = true;
-													}}
-													aria-label={reminder.enabled ? 'Disable reminder' : 'Enable reminder'}
-													title={reminder.enabled ? 'Disable' : 'Enable'}
-												>
-													{#if reminder.enabled}
-														<BellOffIcon class="h-4 w-4" />
-													{:else}
-														<BellIcon class="h-4 w-4" />
-													{/if}
-												</Button>
-												<Button
-													type="button"
-													variant="destructive"
-													size="icon"
-													onclick={() => {
-														reminderToDelete = reminder.id;
-														showDeleteReminderDialog = true;
-													}}
-													aria-label="Delete reminder"
-													title="Delete"
-												>
-													<Trash2Icon class="h-4 w-4" />
-												</Button>
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														{#snippet child({ props })}
+															<Button
+																{...props}
+																type="button"
+																variant="outline"
+																size="icon"
+																onclick={() => {
+																	reminderToToggle = {
+																		id: reminder.id,
+																		workoutType: reminder.workoutType,
+																		cadence: reminder.cadence,
+																		time: reminder.time,
+																		daysOfWeek: reminder.daysOfWeek || '',
+																		enabled: !reminder.enabled
+																	};
+																	showToggleReminderDialog = true;
+																}}
+																aria-label={reminder.enabled ? 'Disable reminder' : 'Enable reminder'}
+																title={reminder.enabled ? 'Disable' : 'Enable'}
+															>
+																{#if reminder.enabled}
+																	<BellOffIcon class="h-4 w-4" />
+																{:else}
+																	<BellIcon class="h-4 w-4" />
+																{/if}
+															</Button>
+														{/snippet}
+													</Tooltip.Trigger>
+													<Tooltip.Content>Disable</Tooltip.Content>
+												</Tooltip.Root>
+
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														{#snippet child({ props })}
+															<Button
+																{...props}
+																type="button"
+																variant="destructive"
+																size="icon"
+																onclick={() => {
+																	reminderToDelete = reminder.id;
+																	showDeleteReminderDialog = true;
+																}}
+																aria-label="Delete reminder"
+															>
+																<Trash2 class="h-4 w-4" />
+															</Button>
+														{/snippet}
+													</Tooltip.Trigger>
+													<Tooltip.Content>Delete</Tooltip.Content>
+												</Tooltip.Root>
 											</div>
 										</div>
 									</div>
