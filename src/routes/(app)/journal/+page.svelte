@@ -2,7 +2,7 @@
 import { Calendar, ChartArea, CircleX, ListFilter, Plus, Search, SmilePlus } from '@lucide/svelte';
 import { onDestroy } from 'svelte';
 import type { SuperValidated } from 'sveltekit-superforms';
-import { goto, replaceState } from '$app/navigation';
+import { goto } from '$app/navigation';
 import { navigating, page } from '$app/state';
 import PageShell from '$lib/components/app/PageShell.svelte';
 import JournalEntryCard from '$lib/components/journal/JournalEntryCard.svelte';
@@ -15,7 +15,6 @@ import * as Card from '$lib/components/ui/card';
 import * as Collapsible from '$lib/components/ui/collapsible';
 import { Input } from '$lib/components/ui/input';
 import * as Select from '$lib/components/ui/select';
-import { Root } from '$lib/components/ui/skeleton';
 import * as Tabs from '$lib/components/ui/tabs';
 import * as Tooltip from '$lib/components/ui/tooltip';
 import type { MoodLogFormValues } from '$lib/schemas/mood';
@@ -93,9 +92,11 @@ const activeJournalDate = $derived(page.url.searchParams.get('date') ?? '');
 const hasActiveFilters = $derived(
 	Boolean(activeJournalContent.trim()) || Boolean(activeJournalDate)
 );
-
 const activeTab = $derived.by<JournalTab>(() =>
 	page.url.searchParams.get('tab') === 'mood' ? 'mood' : 'journal'
+);
+const showPageSkeleton = $derived(
+	navigating.to?.url.pathname === '/journal' && navigating.from?.url.pathname !== '/journal'
 );
 
 const selectedPeriod = $derived.by<MoodPeriod>(() => {
@@ -129,23 +130,17 @@ function buildNextUrl(update: (searchParams: URLSearchParams) => void) {
 	return nextUrl;
 }
 
-function handleTabChange(value: string) {
-	const nextTab: JournalTab = value === 'mood' ? 'mood' : 'journal';
-
-	if (typeof window === 'undefined') {
-		return;
-	}
-
+async function openJournalTab(tab: JournalTab) {
 	const nextUrl = buildNextUrl((searchParams) => {
-		if (nextTab === 'journal') {
+		if (tab === 'journal') {
 			searchParams.delete('tab');
 			return;
 		}
 
-		searchParams.set('tab', nextTab);
+		searchParams.set('tab', tab);
 	});
 
-	replaceState(nextUrl, page.state);
+	await goto(nextUrl.toString(), { replaceState: true, noScroll: true, keepFocus: true });
 }
 
 function handleContentInput(event: Event) {
@@ -234,7 +229,7 @@ async function handlePeriodChange(nextPeriod: string) {
 }
 </script>
 
-{#if navigating.to?.url.pathname === '/journal'}
+{#if showPageSkeleton}
 	<PageSkeleton color="blue" />
 {:else}
 	<PageShell class="min-w-0 overflow-x-hidden">
@@ -247,14 +242,14 @@ async function handlePeriodChange(nextPeriod: string) {
 				</p>
 			</div>
 			<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+				<Button
+					href="/journal/new"
+					class="min-w-0 flex-1 bg-blue-600 hover:bg-blue-700 sm:flex-none"
+				>
+					<Plus class="mr-2 h-4 w-4" />
+					New Entry
+				</Button>
 				{#if activeTab === 'journal'}
-					<Button
-						href="/journal/new"
-						class="min-w-0 flex-1 bg-blue-600 hover:bg-blue-700 sm:flex-none"
-					>
-						<Plus class="mr-2 h-4 w-4" />
-						New Entry
-					</Button>
 					<Tooltip.Root>
 						<Tooltip.Trigger>
 							{#snippet child({ props })}
@@ -283,13 +278,18 @@ async function handlePeriodChange(nextPeriod: string) {
 			</div>
 		</div>
 
-		<Tabs.Root value={activeTab} onValueChange={handleTabChange} class="w-full gap-3">
+		<Tabs.Root value={activeTab} class="w-full gap-3">
 			<Tabs.List
 				class="grid h-11 w-full grid-cols-2 rounded-xl bg-muted/75 p-1 text-muted-foreground"
 			>
 				<Tabs.Trigger
 					value="journal"
 					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-blue-500"
+					onclick={() => {
+						if (activeTab !== 'journal') {
+							void openJournalTab('journal');
+						}
+					}}
 				>
 					<Calendar class="h-4 w-4" />
 					<span>Journal</span>
@@ -297,6 +297,11 @@ async function handlePeriodChange(nextPeriod: string) {
 				<Tabs.Trigger
 					value="mood"
 					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-blue-500"
+					onclick={() => {
+						if (activeTab !== 'mood') {
+							void openJournalTab('mood');
+						}
+					}}
 				>
 					<SmilePlus class="h-4 w-4" />
 					<span>Mood</span>

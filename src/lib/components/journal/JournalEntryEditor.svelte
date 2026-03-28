@@ -31,8 +31,6 @@ const markdownOptions = {
 } as const;
 let previewHtml = $derived(marked.parse(markdown, markdownOptions));
 
-$inspect('markdown:', markdown);
-
 function getLineStart(content: string, index: number): number {
 	const previousNewline = content.lastIndexOf('\n', Math.max(0, index - 1));
 	return previousNewline === -1 ? 0 : previousNewline + 1;

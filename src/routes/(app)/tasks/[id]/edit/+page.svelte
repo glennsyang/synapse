@@ -196,10 +196,14 @@ let selectedStateOption = $derived(
 					<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{$message}</div>
 				{/if}
 
-				<div class="flex gap-4">
-					<Button type="submit" disabled={$submitting}
-						>{$submitting ? 'Saving...' : 'Update'}</Button
+				<div class="flex gap-2">
+					<Button
+						type="submit"
+						class="text-white bg-orange-600 hover:bg-orange-700"
+						disabled={$submitting}
 					>
+						{$submitting ? 'Saving...' : 'Update'}
+					</Button>
 					<Button type="button" variant="outline" href="/tasks">Cancel</Button>
 				</div>
 			</form>

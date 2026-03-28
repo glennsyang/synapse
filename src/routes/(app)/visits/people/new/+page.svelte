@@ -56,8 +56,12 @@ const { form, errors, enhance, submitting } = $derived(formState);
 					</div>
 
 					<div class="flex gap-2">
-						<Button type="submit" disabled={$submitting}>
-							{$submitting ? 'Adding...' : 'Add Person'}
+						<Button
+							type="submit"
+							class="text-white bg-pink-600 hover:bg-pink-700"
+							disabled={$submitting}
+						>
+							{$submitting ? 'Adding...' : 'Add'}
 						</Button>
 						<Button type="button" variant="outline" href="/visits">Cancel</Button>
 					</div>

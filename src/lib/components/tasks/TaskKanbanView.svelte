@@ -492,7 +492,6 @@ const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
 					class="flex flex-col items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-600 dark:text-slate-300"
 				>
 					<ChevronRightIcon class="size-4 transition-transform group-hover:translate-x-0.5" />
-					Show
 				</span>
 			</button>
 		{/if}

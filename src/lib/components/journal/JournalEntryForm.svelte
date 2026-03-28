@@ -56,12 +56,6 @@ const { form, errors, enhance, message, submitting } = superForm(data.form, {
 });
 let gettingWeather = $state(false);
 
-$effect(() => {
-	if (isEditMode) {
-		metadataOpen = true;
-	}
-});
-
 async function getWeather() {
 	gettingWeather = true;
 
@@ -143,31 +137,7 @@ async function getWeather() {
 								</div>
 							</Collapsible.Trigger>
 
-							<Collapsible.Content class="pt-4">
-								<div class="mb-4 flex justify-end">
-									<Tooltip.Root>
-										<Tooltip.Trigger>
-											{#snippet child({ props })}
-												<Button
-													{...props}
-													type="button"
-													variant="outline"
-													size="icon-sm"
-													onclick={getWeather}
-													disabled={gettingWeather}
-													class="border-[oklch(var(--color-blue)/0.18)] bg-[oklch(var(--color-blue)/0.04)] hover:bg-[oklch(var(--color-blue)/0.1)]"
-													aria-label="Fetch current weather"
-												>
-													<Thermometer class="h-4 w-4" />
-												</Button>
-											{/snippet}
-										</Tooltip.Trigger>
-										<Tooltip.Content>
-											{gettingWeather ? 'Retrieving current weather...' : 'Get current weather'}
-										</Tooltip.Content>
-									</Tooltip.Root>
-								</div>
-
+							<Collapsible.Content class="pt-6">
 								<div class="grid gap-4 sm:grid-cols-2">
 									<div class="space-y-2">
 										<Label for="date">Date</Label>
@@ -202,13 +172,36 @@ async function getWeather() {
 											<Label for="weatherTemp">Temperature (°C)</Label>
 											<Info class="h-3.5 w-3.5 text-muted-foreground" />
 										</div>
-										<Input
-											id="weatherTemp"
-											name="weatherTemp"
-											type="number"
-											bind:value={$form.weatherTemp}
-											placeholder="10, 22, etc."
-										/>
+										<div class="flex items-center gap-2">
+											<Input
+												id="weatherTemp"
+												name="weatherTemp"
+												type="number"
+												bind:value={$form.weatherTemp}
+												placeholder="10, 22, etc."
+											/>
+											<Tooltip.Root>
+												<Tooltip.Trigger>
+													{#snippet child({ props })}
+														<Button
+															{...props}
+															type="button"
+															variant="outline"
+															size="icon-sm"
+															onclick={getWeather}
+															disabled={gettingWeather}
+															class="border-[oklch(var(--color-blue)/0.18)] hover:bg-[oklch(var(--color-blue)/0.1)]"
+															aria-label="Fetch current weather"
+														>
+															<Thermometer class="h-4 w-4" />
+														</Button>
+													{/snippet}
+												</Tooltip.Trigger>
+												<Tooltip.Content>
+													{gettingWeather ? 'Retrieving current weather...' : 'Get current weather'}
+												</Tooltip.Content>
+											</Tooltip.Root>
+										</div>
 									</div>
 
 									<div class="space-y-2">
@@ -226,9 +219,6 @@ async function getWeather() {
 					</Collapsible.Root>
 
 					<div class="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
-						<Button type="button" variant="outline" size="sm" href="/journal" class="sm:min-w-28">
-							Cancel
-						</Button>
 						<Button
 							type="submit"
 							size="sm"
@@ -236,6 +226,9 @@ async function getWeather() {
 							class="bg-blue-600 text-white hover:bg-blue-700 sm:min-w-32"
 						>
 							{$submitting ? 'Saving...' : 'Save'}
+						</Button>
+						<Button type="button" variant="outline" size="sm" href="/journal" class="sm:min-w-28">
+							Cancel
 						</Button>
 					</div>
 				</div>

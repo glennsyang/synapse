@@ -15,6 +15,7 @@ import * as Dialog from '$lib/components/ui/dialog';
 import { Input } from '$lib/components/ui/input';
 import { Label } from '$lib/components/ui/label';
 import { Textarea } from '$lib/components/ui/textarea';
+import * as Tooltip from '$lib/components/ui/tooltip';
 import { personSchema, visitSchema } from '$lib/schemas/visits';
 import { formatDateLong, formatDateShort } from '$lib/utils/date';
 import { getStatusLabel } from '$lib/utils/visit-status';
@@ -170,41 +171,72 @@ function getEditStatusDescription(isExempt: boolean): string {
 				</div>
 			</div>
 			<div class="flex gap-2">
-				<Button
-					size="icon"
-					aria-label="Log Visit"
-					title="Log Visit"
-					onclick={openLogVisitDialogForCreate}
-				>
-					<CalendarIcon class="h-4 w-4" />
-				</Button>
-				<Button
-					size="icon"
-					variant="outline"
-					aria-label="Edit Person"
-					title="Edit Person"
-					onclick={() => (showEditPersonDialog = true)}
-				>
-					<EditIcon class="h-4 w-4" />
-				</Button>
-				<Button
-					size="icon"
-					variant="secondary"
-					aria-label="Archive Person"
-					title="Archive Person"
-					onclick={() => (showArchivePersonDialog = true)}
-				>
-					<ArchiveIcon class="h-4 w-4" />
-				</Button>
-				<Button
-					size="icon"
-					variant="destructive"
-					aria-label="Delete Person"
-					title="Delete Person"
-					onclick={() => (showDeletePersonDialog = true)}
-				>
-					<Trash2Icon class="h-4 w-4" />
-				</Button>
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								size="icon"
+								aria-label="Log Visit"
+								onclick={openLogVisitDialogForCreate}
+							>
+								<CalendarIcon class="h-4 w-4" />
+							</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content>Log Visit</Tooltip.Content>
+				</Tooltip.Root>
+
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								size="icon"
+								variant="outline"
+								aria-label="Edit Person"
+								onclick={() => (showEditPersonDialog = true)}
+							>
+								<EditIcon class="h-4 w-4" />
+							</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content>Edit</Tooltip.Content>
+				</Tooltip.Root>
+
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								size="icon"
+								variant="secondary"
+								aria-label="Archive Person"
+								onclick={() => (showArchivePersonDialog = true)}
+							>
+								<ArchiveIcon class="h-4 w-4" />
+							</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content>Archive</Tooltip.Content>
+				</Tooltip.Root>
+
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								size="icon"
+								variant="destructive"
+								aria-label="Delete Person"
+								onclick={() => (showDeletePersonDialog = true)}
+							>
+								<Trash2Icon class="h-4 w-4" />
+							</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content>Delete</Tooltip.Content>
+				</Tooltip.Root>
 			</div>
 		</div>
 	</div>
@@ -250,27 +282,43 @@ function getEditStatusDescription(isExempt: boolean): string {
 								</div>
 
 								<div class="flex items-center gap-2">
-									<Button
-										size="icon"
-										variant="outline"
-										aria-label="Edit Visit"
-										title="Edit Visit"
-										onclick={() => openLogVisitDialogForEdit(visit)}
-									>
-										<EditIcon class="h-4 w-4" />
-									</Button>
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											{#snippet child({ props })}
+												<Button
+													{...props}
+													size="icon"
+													variant="outline"
+													aria-label="Edit Visit"
+													onclick={() => openLogVisitDialogForEdit(visit)}
+												>
+													<EditIcon class="h-4 w-4" />
+												</Button>
+											{/snippet}
+										</Tooltip.Trigger>
+										<Tooltip.Content>Edit</Tooltip.Content>
+									</Tooltip.Root>
+
 									<form method="POST" action="?/deleteVisit">
 										<Input type="hidden" name="visitId" value={visit.id} />
-										<Button
-											size="icon"
-											type="button"
-											variant="destructive"
-											aria-label="Delete Visit"
-											title="Delete Visit"
-											onclick={() => (visitToDelete = visit.id)}
-										>
-											<Trash2Icon class="h-4 w-4" />
-										</Button>
+
+										<Tooltip.Root>
+											<Tooltip.Trigger>
+												{#snippet child({ props })}
+													<Button
+														{...props}
+														size="icon"
+														type="button"
+														variant="destructive"
+														aria-label="Delete Visit"
+														onclick={() => (visitToDelete = visit.id)}
+													>
+														<Trash2Icon class="h-4 w-4" />
+													</Button>
+												{/snippet}
+											</Tooltip.Trigger>
+											<Tooltip.Content>Delete</Tooltip.Content>
+										</Tooltip.Root>
 									</form>
 								</div>
 							</div>

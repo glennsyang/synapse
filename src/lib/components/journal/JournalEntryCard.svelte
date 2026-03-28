@@ -59,7 +59,7 @@ let hasMetadata = $derived(
 								variant="ghost"
 								size="icon-sm"
 								class="border border-white/55 bg-white/68 text-slate-700 shadow-sm backdrop-blur-xl hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
-								aria-label="Edit journal entry"
+								aria-label="Edit entry"
 							>
 								<Edit class="h-4 w-4" />
 							</Button>
@@ -78,7 +78,7 @@ let hasMetadata = $derived(
 								size="icon-sm"
 								onclick={() => (openDeleteModal = true)}
 								class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
-								aria-label="Delete journal entry"
+								aria-label="Delete entry"
 							>
 								<Trash2 class="h-4 w-4" />
 							</Button>
