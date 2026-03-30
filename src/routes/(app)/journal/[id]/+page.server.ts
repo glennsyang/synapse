@@ -76,5 +76,36 @@ export const actions: Actions = {
 		}
 
 		throw redirect(303, '/journal');
+	}),
+
+	delete: requireAuth(async ({ request, params }, user) => {
+		const entryId = params.id as string;
+		const formData = await request.formData();
+		const submittedId = formData.get('id');
+
+		if (typeof submittedId !== 'string' || submittedId !== entryId) {
+			return fail(400, { error: 'Invalid journal entry id' });
+		}
+
+		try {
+			const existingEntry = await getDb().query.journalEntries.findFirst({
+				where: and(eq(journalEntries.id, entryId), eq(journalEntries.userId, user.id))
+			});
+
+			if (!existingEntry) {
+				return fail(404, { error: 'Journal entry not found' });
+			}
+
+			await getDb()
+				.delete(journalEntries)
+				.where(and(eq(journalEntries.id, entryId), eq(journalEntries.userId, user.id)));
+
+			logger.info('Journal entry deleted', { entryId, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to delete journal entry', { error, entryId });
+			return fail(500, { error: 'Failed to delete journal entry' });
+		}
+
+		throw redirect(303, '/journal');
 	})
 };
