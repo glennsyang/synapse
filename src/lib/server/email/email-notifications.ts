@@ -6,6 +6,7 @@
  * - Meditation reminders (based on meditation_schedules table)
  * - Visit warnings (for people in yellow/red visit status)
  * - Daily agenda digests at 6:00 AM PT (based on daily_agenda_entries)
+ * - Kanban due-today digests at 6:00 AM PT (based on tasks.due_date)
  *
  * Logs all sent emails in email_notifications table to prevent duplicates.
  */
@@ -20,6 +21,7 @@ import {
 	meditationRoutines,
 	meditationSchedules,
 	people,
+	tasks,
 	user,
 	visits,
 	workoutReminders
@@ -35,10 +37,18 @@ import {
 } from './daily-agenda-digest';
 import {
 	getNotificationTag,
+	sendKanbanDueTodayEmail,
 	sendMeditationReminderEmail,
 	sendVisitWarningEmail,
 	sendWorkoutReminderEmail
 } from './index';
+import {
+	buildKanbanDueTodayDigestMessage,
+	buildKanbanDueTodayDigestTitle,
+	KANBAN_DUE_TODAY_DIGEST_TAGS,
+	KANBAN_DUE_TODAY_NOTIFICATION_TYPE,
+	type KanbanDueTodayTaskSummary
+} from './kanban-due-today-digest';
 import {
 	buildVisitWarningEntityId,
 	buildVisitWarningSubject,
@@ -434,6 +444,56 @@ async function alreadySentDailyAgendaDigest(userId: string, dateString: string):
 	return !!existing;
 }
 
+async function alreadySentKanbanDueTodayDigest(
+	userId: string,
+	dateString: string
+): Promise<boolean> {
+	const existing = db
+		.select({ id: emailNotifications.id })
+		.from(emailNotifications)
+		.where(
+			and(
+				eq(emailNotifications.userId, userId),
+				eq(emailNotifications.notificationType, KANBAN_DUE_TODAY_NOTIFICATION_TYPE),
+				eq(emailNotifications.entityId, dateString)
+			)
+		)
+		.get();
+
+	return !!existing;
+}
+
+async function loadKanbanDueTodayTasks(
+	userId: string,
+	dateString: string
+): Promise<KanbanDueTodayTaskSummary[]> {
+	const dueTodayTasks = await db.query.tasks.findMany({
+		where: and(
+			eq(tasks.userId, userId),
+			eq(tasks.dueDate, dateString),
+			sql`${tasks.state} != 'done'`
+		),
+		columns: {
+			id: true,
+			taskNumber: true,
+			title: true,
+			priority: true,
+			dueDate: true,
+			state: true
+		},
+		orderBy: [tasks.priority, tasks.taskNumber]
+	});
+
+	return dueTodayTasks.map((task) => ({
+		id: task.id,
+		taskNumber: task.taskNumber,
+		title: task.title,
+		priority: task.priority,
+		dueDate: task.dueDate,
+		state: task.state
+	}));
+}
+
 /**
  * Process daily agenda digest notifications
  */
@@ -499,6 +559,72 @@ async function processDailyAgendaDigests(
 	logger.debug(`   📊 Sent ${sentCount} daily agenda digests`);
 }
 
+async function processKanbanDueTodayDigests(
+	currentHour: string,
+	currentMinute: string,
+	todayPacific: string
+): Promise<void> {
+	logger.debug('\n🗂️ Processing Kanban due-today digests...');
+
+	if (!isWithinDailyDigestWindow(currentHour, currentMinute)) {
+		logger.debug(`   ⏭️  Before Kanban digest start time (${DAILY_AGENDA_DIGEST_TIME} PT)`);
+		return;
+	}
+
+	const allUsers = db
+		.select({
+			id: user.id,
+			email: user.email,
+			name: user.name
+		})
+		.from(user)
+		.all();
+
+	logger.debug(`   Found ${allUsers.length} users for Kanban due-today digests`);
+
+	let sentCount = 0;
+
+	for (const userData of allUsers) {
+		if (await alreadySentKanbanDueTodayDigest(userData.id, todayPacific)) {
+			logger.debug(
+				`   ⏭️  Already sent Kanban due-today digest to ${userData.email} for ${todayPacific}`
+			);
+			continue;
+		}
+
+		const dueTodayTasks = await loadKanbanDueTodayTasks(userData.id, todayPacific);
+		if (dueTodayTasks.length === 0) {
+			logger.debug(`   ⏭️  No Kanban tasks due today for ${userData.email}`);
+			continue;
+		}
+
+		const title = buildKanbanDueTodayDigestTitle(todayPacific);
+		const message = buildKanbanDueTodayDigestMessage(dueTodayTasks, todayPacific);
+
+		logger.debug(
+			`   📧 Sending Kanban due-today digest to ${userData.email} (${dueTodayTasks.length} tasks)`
+		);
+
+		try {
+			await sendKanbanDueTodayEmail(userData.email, userData.name, dueTodayTasks, todayPacific);
+
+			await sendReminderNotification(message, title, KANBAN_DUE_TODAY_DIGEST_TAGS);
+
+			await logNotification(userData.id, KANBAN_DUE_TODAY_NOTIFICATION_TYPE, todayPacific, title);
+
+			sentCount++;
+			logger.debug('   ✅ Sent successfully');
+		} catch (error) {
+			logger.error('   ❌ Failed to send Kanban due-today digest', {
+				error,
+				userId: userData.id
+			});
+		}
+	}
+
+	logger.debug(`   📊 Sent ${sentCount} Kanban due-today digests`);
+}
+
 /**
  * Main execution
  */
@@ -545,6 +671,7 @@ export async function runEmailNotifications(): Promise<{ ok: true } | { ok: fals
 
 	try {
 		await processDailyAgendaDigests(currentHour, currentMinute, todayPacific);
+		await processKanbanDueTodayDigests(currentHour, currentMinute, todayPacific);
 		await processWorkoutReminders(currentDay, currentHour, currentMinute);
 		await processMeditationReminders(currentDay, currentHour, currentMinute);
 		await processVisitWarnings();
