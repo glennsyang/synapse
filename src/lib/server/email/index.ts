@@ -1,5 +1,10 @@
 import { Resend } from 'resend';
 
+import {
+	buildKanbanDueTodayDigestTitle,
+	buildKanbanDueTodayEmailHtml,
+	type KanbanDueTodayTaskSummary
+} from '$lib/server/email/kanban-due-today-digest';
 import { logger } from '$lib/utils/logger';
 
 import { getEnv } from '../../../env';
@@ -303,6 +308,28 @@ export async function sendVisitWarningEmail(
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send visit warning email:', { error });
+		return error;
+	}
+}
+
+export async function sendKanbanDueTodayEmail(
+	to: string,
+	name: string,
+	tasks: KanbanDueTodayTaskSummary[],
+	dateString: string
+) {
+	logger.debug('📧 Sending Kanban Due Today Email to:', { to, taskCount: tasks.length });
+	const title = buildKanbanDueTodayDigestTitle(dateString);
+
+	try {
+		await resend.emails.send({
+			from: env.RESEND_FROM_ADDRESS,
+			to,
+			subject: title,
+			html: buildKanbanDueTodayEmailHtml(name, tasks, dateString)
+		});
+	} catch (error) {
+		logger.error('❌ Failed to send Kanban due today email:', { error });
 		return error;
 	}
 }
