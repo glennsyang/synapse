@@ -1,0 +1,112 @@
+<script lang="ts">
+import BellIcon from '@lucide/svelte/icons/bell';
+import BellOffIcon from '@lucide/svelte/icons/bell-off';
+import Trash2Icon from '@lucide/svelte/icons/trash-2';
+
+import { Badge } from '$lib/components/ui/badge';
+import { Button } from '$lib/components/ui/button';
+import * as Tooltip from '$lib/components/ui/tooltip';
+import { daysOfWeek, formatTime12Hour } from '$lib/utils/date';
+
+interface Reminder {
+	id: string;
+	workoutType: string;
+	cadence: string;
+	time: string;
+	daysOfWeek: string | null;
+	enabled: boolean;
+}
+
+let {
+	reminder,
+	onToggle,
+	onDelete
+}: {
+	reminder: Reminder;
+	onToggle: (reminder: Reminder) => void;
+	onDelete: (id: string) => void;
+} = $props();
+
+const typeStyles: Record<string, string> = {
+	strength: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+	cardio: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+	yoga: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+	other: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300'
+};
+
+const badgeStyle = $derived(typeStyles[reminder.workoutType] ?? typeStyles.other);
+
+const scheduleText = $derived(
+	reminder.cadence === 'daily'
+		? 'Every day'
+		: `Weekly on ${
+				reminder.daysOfWeek
+					? JSON.parse(reminder.daysOfWeek)
+							.map((d: number) => daysOfWeek[d].shortName)
+							.join(', ')
+					: 'Not configured'
+			}`
+);
+</script>
+
+<div
+	class="flex items-center justify-between rounded-lg border p-3 transition-colors"
+	class:opacity-60={!reminder.enabled}
+>
+	<div class="flex items-center gap-3">
+		<Badge class={badgeStyle}>{reminder.workoutType}</Badge>
+		<div>
+			<p class="text-sm font-medium">{formatTime12Hour(reminder.time)}</p>
+			<p class="text-xs text-muted-foreground">
+				{scheduleText}
+				{#if !reminder.enabled}
+					<span class="ml-1 text-muted-foreground">(Disabled)</span>
+				{/if}
+			</p>
+		</div>
+	</div>
+
+	<div class="flex items-center gap-1">
+		<Tooltip.Root>
+			<Tooltip.Trigger>
+				{#snippet child({ props })}
+					<Button
+						{...props}
+						type="button"
+						variant="ghost"
+						size="icon"
+						class="h-7 w-7"
+						onclick={() => onToggle({ ...reminder, enabled: !reminder.enabled })}
+						aria-label={reminder.enabled ? 'Disable reminder' : 'Enable reminder'}
+					>
+						{#if reminder.enabled}
+							<BellOffIcon class="h-3.5 w-3.5" />
+						{:else}
+							<BellIcon class="h-3.5 w-3.5" />
+						{/if}
+					</Button>
+				{/snippet}
+			</Tooltip.Trigger>
+			<Tooltip.Content>{reminder.enabled ? 'Disable' : 'Enable'}</Tooltip.Content>
+		</Tooltip.Root>
+
+		<Tooltip.Root>
+			<Tooltip.Trigger>
+				{#snippet child({ props })}
+					<Button
+						{...props}
+						type="button"
+						variant="ghost"
+						size="icon"
+						class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+						onclick={() => onDelete(reminder.id)}
+						aria-label="Delete reminder"
+					>
+						<Trash2Icon class="h-3.5 w-3.5" />
+					</Button>
+				{/snippet}
+			</Tooltip.Trigger>
+			<Tooltip.Content>Delete</Tooltip.Content>
+		</Tooltip.Root>
+	</div>
+</div>

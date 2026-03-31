@@ -1,0 +1,13 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(ls /Users/glennsheppard/Development/Personal/synapse/src/routes/\\\\\\(app\\\\\\)/fitness/workouts/)",
+			"Bash(ls /Users/glennsheppard/Development/Personal/synapse/src/routes/\\\\\\(app\\\\\\)/fitness/weight/)",
+			"Bash(ls /Users/glennsheppard/Development/Personal/synapse/src/routes/\\\\\\(app\\\\\\)/fitness/meals/)",
+			"Bash(grep -r \"from-green\\\\|to-emerald\\\\|bg-gradient\" /Users/glennsheppard/Development/Personal/synapse/src --include=*.svelte -l)",
+			"Bash(npm run:*)",
+			"Bash(grep -v \"^$\")",
+			"Bash(npx biome:*)"
+		]
+	}
+}

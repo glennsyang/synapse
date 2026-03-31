@@ -1,7 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
+import { z } from 'zod';
 
 import {
 	deleteEntrySchema,
@@ -10,7 +11,11 @@ import {
 	logWorkoutSchema,
 	setCalorieTargetSchema,
 	setGoalWeightSchema,
+	updateMealSchema,
+	updateWeightSchema,
 	updateWorkoutReminderSchema,
+	updateWorkoutSchema,
+	workoutExerciseSchema,
 	workoutReminderSchema
 } from '$lib/schemas/fitness';
 import { requireAuth } from '$lib/server/actions/auth-guard';
@@ -20,6 +25,7 @@ import {
 	goalWeights,
 	mealLogs,
 	weightEntries,
+	workoutExercises,
 	workoutLogs,
 	workoutReminders
 } from '$lib/server/db/schema';
@@ -552,5 +558,253 @@ export const actions: Actions = {
 		}
 
 		throw redirect(303, '/fitness?tab=reminders&notice=reminder-deleted');
+	}),
+
+	updateWeight: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(updateWeightSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		try {
+			const db = getDb();
+			const existing = await db.query.weightEntries.findFirst({
+				where: and(eq(weightEntries.id, form.data.id), eq(weightEntries.userId, user.id))
+			});
+
+			if (!existing) {
+				return message(form, { type: 'error', text: 'Weight entry not found.' }, { status: 404 });
+			}
+
+			await db
+				.update(weightEntries)
+				.set({
+					date: form.data.date,
+					time: form.data.time || null,
+					weightLbs: form.data.weightLbs,
+					updatedAt: new Date().toISOString()
+				})
+				.where(and(eq(weightEntries.id, form.data.id), eq(weightEntries.userId, user.id)));
+
+			logger.info('Weight entry updated', { entryId: form.data.id, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to update weight entry', { error });
+			return message(
+				form,
+				{ type: 'error', text: 'Failed to update weight entry. Please try again.' },
+				{ status: 500 }
+			);
+		}
+
+		return message(form, { type: 'success', text: 'Weight updated successfully!' });
+	}),
+
+	deleteWeight: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(deleteEntrySchema));
+
+		if (!form.valid) {
+			return fail(400, { error: 'Invalid weight entry id' });
+		}
+
+		try {
+			const db = getDb();
+			const existing = await db.query.weightEntries.findFirst({
+				where: and(eq(weightEntries.id, form.data.id), eq(weightEntries.userId, user.id))
+			});
+
+			if (!existing) {
+				return fail(404, { error: 'Weight entry not found' });
+			}
+
+			await db
+				.delete(weightEntries)
+				.where(and(eq(weightEntries.id, form.data.id), eq(weightEntries.userId, user.id)));
+
+			logger.info('Weight entry deleted', { entryId: form.data.id, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to delete weight entry', { error });
+			return fail(500, { error: 'Failed to delete weight entry' });
+		}
+
+		return { success: true };
+	}),
+
+	updateWorkout: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(updateWorkoutSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		try {
+			const db = getDb();
+			const existing = await db.query.workoutLogs.findFirst({
+				where: and(eq(workoutLogs.id, form.data.id), eq(workoutLogs.userId, user.id))
+			});
+
+			if (!existing) {
+				return message(form, { type: 'error', text: 'Workout not found.' }, { status: 404 });
+			}
+
+			const exercisesArraySchema = z.array(workoutExerciseSchema);
+			let parsedExercises: Array<z.infer<typeof workoutExerciseSchema>> = [];
+			if (form.data.type === 'strength' && form.data.exercises) {
+				try {
+					const exercisesInput = JSON.parse(form.data.exercises);
+					const parsed = exercisesArraySchema.safeParse(exercisesInput);
+					if (parsed.success) {
+						parsedExercises = parsed.data.filter(
+							(exercise) => exercise.exerciseName.trim().length > 0
+						);
+					}
+				} catch (parseError) {
+					logger.warn('Invalid exercises JSON during workout update', { error: parseError });
+				}
+			}
+
+			await db.transaction(async (tx) => {
+				await tx
+					.update(workoutLogs)
+					.set({
+						date: form.data.date,
+						time: form.data.time || null,
+						type: form.data.type,
+						durationMinutes: form.data.durationMinutes || null,
+						notes: form.data.notes || null,
+						updatedAt: new Date().toISOString()
+					})
+					.where(and(eq(workoutLogs.id, form.data.id), eq(workoutLogs.userId, user.id)));
+
+				await tx.delete(workoutExercises).where(eq(workoutExercises.workoutLogId, form.data.id));
+
+				if (form.data.type === 'strength' && parsedExercises.length > 0) {
+					await tx.insert(workoutExercises).values(
+						parsedExercises.map((exercise) => ({
+							id: generateId(),
+							workoutLogId: form.data.id,
+							exerciseName: exercise.exerciseName,
+							sets: exercise.sets || null,
+							reps: exercise.reps || null,
+							weightLbs: exercise.weightLbs || null,
+							createdAt: new Date().toISOString(),
+							updatedAt: new Date().toISOString()
+						}))
+					);
+				}
+			});
+
+			logger.info('Workout updated', { workoutId: form.data.id, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to update workout', { error });
+			return message(
+				form,
+				{ type: 'error', text: 'Failed to update workout. Please try again.' },
+				{ status: 500 }
+			);
+		}
+
+		return message(form, { type: 'success', text: 'Workout updated successfully!' });
+	}),
+
+	deleteWorkout: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(deleteEntrySchema));
+
+		if (!form.valid) {
+			return fail(400, { error: 'Invalid workout id' });
+		}
+
+		try {
+			const db = getDb();
+			const existing = await db.query.workoutLogs.findFirst({
+				where: and(eq(workoutLogs.id, form.data.id), eq(workoutLogs.userId, user.id))
+			});
+
+			if (!existing) {
+				return fail(404, { error: 'Workout not found' });
+			}
+
+			await db
+				.delete(workoutLogs)
+				.where(and(eq(workoutLogs.id, form.data.id), eq(workoutLogs.userId, user.id)));
+
+			logger.info('Workout deleted', { workoutId: form.data.id, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to delete workout', { error });
+			return fail(500, { error: 'Failed to delete workout' });
+		}
+
+		return { success: true };
+	}),
+
+	updateMeal: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(updateMealSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		try {
+			const db = getDb();
+			const existing = await db.query.mealLogs.findFirst({
+				where: and(eq(mealLogs.id, form.data.id), eq(mealLogs.userId, user.id))
+			});
+
+			if (!existing) {
+				return message(form, { type: 'error', text: 'Meal not found.' }, { status: 404 });
+			}
+
+			await db
+				.update(mealLogs)
+				.set({
+					date: form.data.date,
+					timeOfDay: form.data.timeOfDay,
+					description: form.data.description,
+					caloriesEstimate: form.data.caloriesEstimate || null,
+					updatedAt: new Date().toISOString()
+				})
+				.where(and(eq(mealLogs.id, form.data.id), eq(mealLogs.userId, user.id)));
+
+			logger.info('Meal updated', { mealId: form.data.id, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to update meal', { error });
+			return message(
+				form,
+				{ type: 'error', text: 'Failed to update meal. Please try again.' },
+				{ status: 500 }
+			);
+		}
+
+		return message(form, { type: 'success', text: 'Meal updated successfully!' });
+	}),
+
+	deleteMeal: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(deleteEntrySchema));
+
+		if (!form.valid) {
+			return fail(400, { error: 'Invalid meal id' });
+		}
+
+		try {
+			const db = getDb();
+			const existing = await db.query.mealLogs.findFirst({
+				where: and(eq(mealLogs.id, form.data.id), eq(mealLogs.userId, user.id))
+			});
+
+			if (!existing) {
+				return fail(404, { error: 'Meal not found' });
+			}
+
+			await db
+				.delete(mealLogs)
+				.where(and(eq(mealLogs.id, form.data.id), eq(mealLogs.userId, user.id)));
+
+			logger.info('Meal deleted', { mealId: form.data.id, userId: user.id });
+		} catch (error) {
+			logger.error('Failed to delete meal', { error });
+			return fail(500, { error: 'Failed to delete meal' });
+		}
+
+		return { success: true };
 	})
 };
