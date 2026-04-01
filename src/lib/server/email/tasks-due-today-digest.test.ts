@@ -34,9 +34,7 @@ describe('tasks-due-today-digest', () => {
 
 		const message = buildTasksDueTodayDigestMessage(tasks, '2026-03-30');
 
-		expect(message).toContain('Task #12');
 		expect(message).toContain('Review weekly training plan');
-		expect(message).toContain('Task #14');
 		expect(message).toContain('Submit grocery list');
 		expect(message).toContain('due today');
 	});

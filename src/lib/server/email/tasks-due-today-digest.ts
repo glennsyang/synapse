@@ -28,7 +28,7 @@ function getPriorityLabel(priority: number): string {
 }
 
 function toTaskBullet(task: TasksDueTodayTaskSummary): string {
-	return `• Task #${task.taskNumber}: ${task.title}`;
+	return `• ${task.title}`;
 }
 
 export function buildTasksDueTodayDigestMessage(
