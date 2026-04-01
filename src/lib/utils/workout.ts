@@ -48,10 +48,6 @@ export const workoutTypeOptions = [
 // Optimized lookup following mood.ts pattern
 const workoutOptionsByValue = new Map(workoutTypeOptions.map((option) => [option.value, option]));
 
-export function isWorkoutType(value: string): value is WorkoutType {
-	return workoutOptionsByValue.has(value as WorkoutType);
-}
-
 function getWorkoutOption(type: string) {
 	return workoutOptionsByValue.get(type as WorkoutType);
 }
@@ -74,6 +70,3 @@ export function getWorkoutBadgeClass(type: string): string {
 export function getWorkoutChartColor(type: string): string {
 	return getWorkoutOption(type)?.chartColor ?? 'var(--chart-3)';
 }
-
-// Re-export for convenience
-export type { WorkoutType } from '$lib/schemas/fitness';
