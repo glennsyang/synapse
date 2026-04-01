@@ -44,7 +44,7 @@ export const workoutExerciseSchema = z.object({
 	weightLbs: z.coerce.number().int().positive().optional().nullable()
 });
 
-const WorkoutTypeEnum = z.enum(['strength', 'cardio', 'yoga', 'other']);
+const WorkoutTypeEnum = z.enum(['strength', 'cardio', 'hiit', 'walk', 'stretch', 'other']);
 
 export type WorkoutType = z.infer<typeof WorkoutTypeEnum>;
 
@@ -60,6 +60,7 @@ export const logWorkoutSchema = z.object({
 		.nullable(),
 	type: WorkoutTypeEnum,
 	durationMinutes: z.coerce.number().int().positive().optional().nullable(),
+	steps: z.coerce.number().int().positive().optional().nullable(), // For walk workouts
 	notes: z.string().optional().nullable(),
 	exercises: z.string().optional().nullable() // JSON string for strength workouts
 });

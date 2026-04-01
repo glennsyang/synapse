@@ -30,6 +30,7 @@ interface EditWorkout {
 	time: string | null;
 	type: string;
 	durationMinutes: number | null;
+	steps: number | null;
 	notes: string | null;
 	exercises: WorkoutExercise[];
 }
@@ -84,6 +85,7 @@ $effect(() => {
 		$form.time = editEntry.time;
 		$form.type = editEntry.type as WorkoutType;
 		$form.durationMinutes = editEntry.durationMinutes;
+		$form.steps = editEntry.steps;
 		$form.notes = editEntry.notes;
 		if (editEntry.exercises && editEntry.exercises.length > 0) {
 			workoutExercises = editEntry.exercises.map((e) => ({
@@ -152,37 +154,56 @@ function handleOpenChange(isOpen: boolean) {
 					</div>
 				</div>
 
-				<div class="grid gap-2">
-					<Label for="workout-type">Workout Type</Label>
-					<Select.Root type="single" name="type" bind:value={$form.type}>
-						<Select.Trigger id="workout-type">
-							{$form.type || 'Select workout type'}
-						</Select.Trigger>
-						<Select.Content>
-							<Select.Item value="strength" label="Strength">Strength</Select.Item>
-							<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
-							<Select.Item value="yoga" label="Yoga">Yoga</Select.Item>
-							<Select.Item value="other" label="Other">Other</Select.Item>
-						</Select.Content>
-					</Select.Root>
-					{#if $errors.type}
-						<p class="text-sm text-destructive">{$errors.type}</p>
-					{/if}
+				<div class="grid grid-cols-2 gap-4">
+					<div class="grid gap-2">
+						<Label for="workout-type">Workout Type</Label>
+						<Select.Root type="single" name="type" bind:value={$form.type}>
+							<Select.Trigger id="workout-type" class="w-full">
+								{$form.type || 'Select workout type'}
+							</Select.Trigger>
+							<Select.Content>
+								<Select.Item value="strength" label="Strength">Strength</Select.Item>
+								<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
+								<Select.Item value="hiit" label="HIIT">HIIT</Select.Item>
+								<Select.Item value="walk" label="Walk">Walk</Select.Item>
+								<Select.Item value="stretch" label="Stretch">Stretch</Select.Item>
+								<Select.Item value="other" label="Other">Other</Select.Item>
+							</Select.Content>
+						</Select.Root>
+						{#if $errors.type}
+							<p class="text-sm text-destructive">{$errors.type}</p>
+						{/if}
+					</div>
+					<div class="grid gap-2">
+						<Label for="workout-duration">Duration (minutes)</Label>
+						<Input
+							id="workout-duration"
+							name="durationMinutes"
+							type="number"
+							bind:value={$form.durationMinutes}
+							placeholder="60"
+						/>
+						{#if $errors.durationMinutes}
+							<p class="text-sm text-destructive">{$errors.durationMinutes}</p>
+						{/if}
+					</div>
 				</div>
 
-				<div class="grid gap-2">
-					<Label for="workout-duration">Duration (minutes)</Label>
-					<Input
-						id="workout-duration"
-						name="durationMinutes"
-						type="number"
-						bind:value={$form.durationMinutes}
-						placeholder="60"
-					/>
-					{#if $errors.durationMinutes}
-						<p class="text-sm text-destructive">{$errors.durationMinutes}</p>
-					{/if}
-				</div>
+				{#if $form.type === 'walk'}
+					<div class="grid gap-2">
+						<Label for="workout-steps">Steps</Label>
+						<Input
+							id="workout-steps"
+							name="steps"
+							type="number"
+							bind:value={$form.steps}
+							placeholder="10000"
+						/>
+						{#if $errors.steps}
+							<p class="text-sm text-destructive">{$errors.steps}</p>
+						{/if}
+					</div>
+				{/if}
 
 				{#if $form.type === 'strength'}
 					<ExerciseInput bind:exercises={workoutExercises} />

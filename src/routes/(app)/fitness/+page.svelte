@@ -60,6 +60,7 @@ let workoutToEdit = $state<{
 	time: string | null;
 	type: string;
 	durationMinutes: number | null;
+	steps: number | null;
 	notes: string | null;
 	exercises: {
 		exerciseName: string;

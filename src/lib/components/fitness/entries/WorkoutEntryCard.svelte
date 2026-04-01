@@ -19,6 +19,7 @@ interface Workout {
 	time: string | null;
 	type: string;
 	durationMinutes: number | null;
+	steps: number | null;
 	notes: string | null;
 	exercises: Exercise[];
 }
@@ -44,7 +45,15 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 		border: 'border-l-blue-500',
 		badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
 	},
-	yoga: {
+	hiit: {
+		border: 'border-l-red-500',
+		badge: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+	},
+	walk: {
+		border: 'border-l-green-500',
+		badge: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+	},
+	stretch: {
 		border: 'border-l-purple-500',
 		badge: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
 	},
@@ -55,6 +64,18 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 };
 
 const style = $derived(typeStyles[workout.type] ?? typeStyles.other);
+
+const capitalizeWorkoutType = (type: string): string => {
+	const typeMap: Record<string, string> = {
+		strength: 'Strength',
+		cardio: 'Cardio',
+		hiit: 'HIIT',
+		walk: 'Walk',
+		stretch: 'Stretch',
+		other: 'Other'
+	};
+	return typeMap[type] ?? 'Other';
+};
 </script>
 
 <div
@@ -63,8 +84,10 @@ const style = $derived(typeStyles[workout.type] ?? typeStyles.other);
 	<div class="flex items-start justify-between gap-2">
 		<div class="min-w-0 flex-1 space-y-1">
 			<div class="flex flex-wrap items-center gap-2">
-				<Badge class={style.badge}>{workout.type}</Badge>
-				{#if workout.durationMinutes}
+				<Badge class={style.badge}>{capitalizeWorkoutType(workout.type)}</Badge>
+				{#if workout.type === 'walk' && workout.steps}
+					<span class="text-xs text-muted-foreground">{workout.steps.toLocaleString()} steps</span>
+				{:else if workout.durationMinutes}
 					<span class="text-xs text-muted-foreground">{workout.durationMinutes} min</span>
 				{/if}
 			</div>

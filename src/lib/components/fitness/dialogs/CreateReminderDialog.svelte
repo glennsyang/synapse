@@ -61,7 +61,9 @@ const { form, errors, enhance } = superForm(formData, {
 							<Select.Content>
 								<Select.Item value="strength" label="Strength">Strength</Select.Item>
 								<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
-								<Select.Item value="yoga" label="Yoga">Yoga</Select.Item>
+								<Select.Item value="hiit" label="HIIT">HIIT</Select.Item>
+								<Select.Item value="walk" label="Walk">Walk</Select.Item>
+								<Select.Item value="stretch" label="Stretch">Stretch</Select.Item>
 								<Select.Item value="other" label="Other">Other</Select.Item>
 							</Select.Content>
 						</Select.Root>

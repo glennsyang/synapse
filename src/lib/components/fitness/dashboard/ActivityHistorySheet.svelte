@@ -20,6 +20,7 @@ interface Workout {
 	time: string | null;
 	type: string;
 	durationMinutes: number | null;
+	steps: number | null;
 	notes: string | null;
 	exercises: Exercise[];
 }
