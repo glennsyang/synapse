@@ -63,8 +63,8 @@ const { form, errors, enhance, message, submitting } = superForm(initialForm, {
 
 	<Card.Content>
 		<form method="POST" action="?/upsertMood" {@attach fromAction(enhance)} class="space-y-5">
-			<input type="hidden" name="date" bind:value={$form.date}>
-			<input type="hidden" name="mood" bind:value={$form.mood}>
+			<Input type="hidden" name="date" bind:value={$form.date} />
+			<Input type="hidden" name="mood" bind:value={$form.mood} />
 
 			<div class="space-y-3">
 				<Label for="mood-grid">Primary mood</Label>

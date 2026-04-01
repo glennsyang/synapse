@@ -92,7 +92,7 @@ function handleOpenChange(isOpen: boolean) {
 		</Dialog.Header>
 		<form method="POST" action={isEditing ? '?/updateWeight' : '?/logWeight'} use:enhance>
 			{#if isEditing && editEntry}
-				<input type="hidden" name="id" value={editEntry.id}>
+				<Input type="hidden" name="id" value={editEntry.id} />
 			{/if}
 			<div class="grid gap-4 py-4">
 				<div class="grid gap-2">
