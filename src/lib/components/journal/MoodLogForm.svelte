@@ -1,6 +1,5 @@
 <script lang="ts">
-import AlertCircle from '@lucide/svelte/icons/alert-circle';
-import NotebookPen from '@lucide/svelte/icons/notebook-pen';
+import { CircleAlert, NotebookPen } from '@lucide/svelte/icons';
 import { fromAction } from 'svelte/attachments';
 import { toast } from 'svelte-sonner';
 import { type SuperValidated, superForm } from 'sveltekit-superforms';
@@ -86,7 +85,7 @@ const { form, errors, enhance, message, submitting } = superForm(initialForm, {
 				</div>
 				{#if $errors.mood}
 					<Alert.Root variant="destructive">
-						<AlertCircle class="h-4 w-4" />
+						<CircleAlert class="h-4 w-4" />
 						<Alert.Description>{$errors.mood}</Alert.Description>
 					</Alert.Root>
 				{/if}
@@ -103,7 +102,7 @@ const { form, errors, enhance, message, submitting } = superForm(initialForm, {
 					/>
 					{#if $errors.customMood}
 						<Alert.Root variant="destructive">
-							<AlertCircle class="h-4 w-4" />
+							<CircleAlert class="h-4 w-4" />
 							<Alert.Description>{$errors.customMood}</Alert.Description>
 						</Alert.Root>
 					{/if}
@@ -120,7 +119,7 @@ const { form, errors, enhance, message, submitting } = superForm(initialForm, {
 				/>
 				{#if $errors.notes}
 					<Alert.Root variant="destructive">
-						<AlertCircle class="h-4 w-4" />
+						<CircleAlert class="h-4 w-4" />
 						<Alert.Description>{$errors.notes}</Alert.Description>
 					</Alert.Root>
 				{/if}

@@ -1,8 +1,5 @@
 <script lang="ts">
-import ClockIcon from '@lucide/svelte/icons/clock';
-import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-import FlameIcon from '@lucide/svelte/icons/flame';
-import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+import { Clock, Dumbbell, Flame, TrendingUp } from '@lucide/svelte/icons';
 
 interface Workout {
 	id: string;
@@ -55,25 +52,25 @@ const cards = $derived([
 		label: 'Last 30 Days',
 		value: stats.last30Count,
 		unit: 'workouts',
-		icon: DumbbellIcon
+		icon: Dumbbell
 	},
 	{
 		label: 'This Week',
 		value: stats.thisWeekCount,
 		unit: 'workouts',
-		icon: TrendingUpIcon
+		icon: TrendingUp
 	},
 	{
 		label: 'Day Streak',
 		value: stats.streak,
 		unit: 'days',
-		icon: FlameIcon
+		icon: Flame
 	},
 	{
 		label: 'Longest Session',
 		value: stats.longestSession,
 		unit: 'min',
-		icon: ClockIcon
+		icon: Clock
 	}
 ]);
 </script>

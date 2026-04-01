@@ -1,6 +1,5 @@
 <script lang="ts">
-import EditIcon from '@lucide/svelte/icons/edit';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { Pencil, Trash2 } from '@lucide/svelte/icons';
 
 import { Button } from '$lib/components/ui/button';
 import * as Tooltip from '$lib/components/ui/tooltip';
@@ -82,7 +81,7 @@ const badgeStyle = $derived(mealBadgeStyles[meal.timeOfDay] ?? '');
 							onclick={() => onEdit(meal)}
 							aria-label="Edit meal"
 						>
-							<EditIcon class="h-3.5 w-3.5" />
+							<Pencil class="h-3.5 w-3.5" />
 						</Button>
 					{/snippet}
 				</Tooltip.Trigger>
@@ -101,7 +100,7 @@ const badgeStyle = $derived(mealBadgeStyles[meal.timeOfDay] ?? '');
 							onclick={() => onDelete(meal.id)}
 							aria-label="Delete meal"
 						>
-							<Trash2Icon class="h-3.5 w-3.5" />
+							<Trash2 class="h-3.5 w-3.5" />
 						</Button>
 					{/snippet}
 				</Tooltip.Trigger>

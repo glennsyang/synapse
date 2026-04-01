@@ -1,8 +1,5 @@
 <script lang="ts">
-import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
-import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-import EditIcon from '@lucide/svelte/icons/edit';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { ChevronDown, ChevronRight, Pencil, Trash2 } from '@lucide/svelte/icons';
 
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
@@ -88,9 +85,9 @@ const style = $derived(typeStyles[workout.type] ?? typeStyles.other);
 					onclick={() => (expanded = !expanded)}
 				>
 					{#if expanded}
-						<ChevronDownIcon class="h-3 w-3" />
+						<ChevronDown class="h-3 w-3" />
 					{:else}
-						<ChevronRightIcon class="h-3 w-3" />
+						<ChevronRight class="h-3 w-3" />
 					{/if}
 					{workout.exercises.length}
 					{workout.exercises.length === 1 ? 'exercise' : 'exercises'}
@@ -134,7 +131,7 @@ const style = $derived(typeStyles[workout.type] ?? typeStyles.other);
 							onclick={() => onEdit(workout)}
 							aria-label="Edit workout"
 						>
-							<EditIcon class="h-3.5 w-3.5" />
+							<Pencil class="h-3.5 w-3.5" />
 						</Button>
 					{/snippet}
 				</Tooltip.Trigger>
@@ -153,7 +150,7 @@ const style = $derived(typeStyles[workout.type] ?? typeStyles.other);
 							onclick={() => onDelete(workout.id)}
 							aria-label="Delete workout"
 						>
-							<Trash2Icon class="h-3.5 w-3.5" />
+							<Trash2 class="h-3.5 w-3.5" />
 						</Button>
 					{/snippet}
 				</Tooltip.Trigger>

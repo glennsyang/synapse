@@ -1,9 +1,5 @@
 <script lang="ts">
-import EditIcon from '@lucide/svelte/icons/edit';
-import MinusIcon from '@lucide/svelte/icons/minus';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
-import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
-import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+import { Minus, Pencil, Trash2, TrendingDown, TrendingUp } from '@lucide/svelte/icons';
 
 import { Button } from '$lib/components/ui/button';
 import * as Tooltip from '$lib/components/ui/tooltip';
@@ -48,13 +44,13 @@ const delta = $derived(previousEntry != null ? entry.weightLbs - previousEntry.w
 		{#if delta !== null}
 			<div class="flex items-center gap-1">
 				{#if delta < 0}
-					<TrendingDownIcon class="h-4 w-4 text-green-600" />
+					<TrendingDown class="h-4 w-4 text-green-600" />
 					<span class="text-xs font-medium text-green-600">{Math.abs(delta).toFixed(1)} lbs</span>
 				{:else if delta > 0}
-					<TrendingUpIcon class="h-4 w-4 text-destructive" />
+					<TrendingUp class="h-4 w-4 text-destructive" />
 					<span class="text-xs font-medium text-destructive">+{delta.toFixed(1)} lbs</span>
 				{:else}
-					<MinusIcon class="h-4 w-4 text-muted-foreground" />
+					<Minus class="h-4 w-4 text-muted-foreground" />
 				{/if}
 			</div>
 		{/if}
@@ -73,7 +69,7 @@ const delta = $derived(previousEntry != null ? entry.weightLbs - previousEntry.w
 						onclick={() => onEdit(entry)}
 						aria-label="Edit weight entry"
 					>
-						<EditIcon class="h-3.5 w-3.5" />
+						<Pencil class="h-3.5 w-3.5" />
 					</Button>
 				{/snippet}
 			</Tooltip.Trigger>
@@ -92,7 +88,7 @@ const delta = $derived(previousEntry != null ? entry.weightLbs - previousEntry.w
 						onclick={() => onDelete(entry.id)}
 						aria-label="Delete weight entry"
 					>
-						<Trash2Icon class="h-3.5 w-3.5" />
+						<Trash2 class="h-3.5 w-3.5" />
 					</Button>
 				{/snippet}
 			</Tooltip.Trigger>

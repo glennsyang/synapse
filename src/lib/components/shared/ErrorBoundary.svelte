@@ -1,6 +1,5 @@
 <script lang="ts">
-import AlertTriangleIcon from '@lucide/svelte/icons/alert-triangle';
-import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
+import { RefreshCwIcon, TriangleAlert } from '@lucide/svelte/icons';
 
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
@@ -52,7 +51,7 @@ $effect(() => {
 	<Card.Root class="border-destructive">
 		<Card.Header>
 			<Card.Title class="flex items-center gap-2 text-destructive">
-				<AlertTriangleIcon class="h-5 w-5" />
+				<TriangleAlert class="h-5 w-5" />
 				{title}
 			</Card.Title>
 			<Card.Description>{errorMessage}</Card.Description>

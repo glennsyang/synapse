@@ -1,7 +1,5 @@
 <script lang="ts">
-import BookIcon from '@lucide/svelte/icons/book';
-import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-import HeartIcon from '@lucide/svelte/icons/heart';
+import { Book, Dumbbell, Heart } from '@lucide/svelte/icons';
 import { scaleTime } from 'd3-scale';
 import { LineChart } from 'layerchart';
 import { fade } from 'svelte/transition';
@@ -80,7 +78,7 @@ const chartData = $derived(
 			<StatCard
 				label="Journal Entries"
 				value={data.stats.journalThisWeek}
-				icon={BookIcon}
+				icon={Book}
 				color="blue"
 				trend="this week"
 				trendDirection={data.stats.journalThisWeek > data.stats.journalLastWeek
@@ -92,7 +90,7 @@ const chartData = $derived(
 			<StatCard
 				label="Workouts Completed"
 				value={data.stats.workoutsThisWeek}
-				icon={DumbbellIcon}
+				icon={Dumbbell}
 				color="green"
 				trend="this week"
 				trendDirection={data.stats.workoutsThisWeek > data.stats.workoutsLastWeek
@@ -104,7 +102,7 @@ const chartData = $derived(
 			<StatCard
 				label="Meditation Sessions"
 				value={data.stats.meditationThisWeek}
-				icon={HeartIcon}
+				icon={Heart}
 				color="purple"
 				trend="this week"
 				trendDirection={data.stats.meditationThisWeek > data.stats.meditationLastWeek
@@ -180,7 +178,7 @@ const chartData = $derived(
 				<Accordion.Item value="journal">
 					<Accordion.Trigger class="hover:no-underline">
 						<div class="flex items-center gap-2">
-							<BookIcon class="size-4 text-[oklch(var(--color-blue))]" />
+							<Book class="size-4 text-[oklch(var(--color-blue))]" />
 							<span class="font-display font-semibold">Journal Entries</span>
 							<Badge
 								variant="secondary"
@@ -221,7 +219,7 @@ const chartData = $derived(
 				<Accordion.Item value="workouts">
 					<Accordion.Trigger class="hover:no-underline">
 						<div class="flex items-center gap-2">
-							<DumbbellIcon class="size-4 text-[oklch(var(--color-green))]" />
+							<Dumbbell class="size-4 text-[oklch(var(--color-green))]" />
 							<span class="font-display font-semibold">Workouts</span>
 							<Badge
 								variant="secondary"
@@ -272,7 +270,7 @@ const chartData = $derived(
 				<Accordion.Item value="meditation">
 					<Accordion.Trigger class="hover:no-underline">
 						<div class="flex items-center gap-2">
-							<HeartIcon class="size-4 text-[oklch(var(--color-purple))]" />
+							<Heart class="size-4 text-[oklch(var(--color-purple))]" />
 							<span class="font-display font-semibold">Meditation</span>
 							<Badge
 								variant="secondary"

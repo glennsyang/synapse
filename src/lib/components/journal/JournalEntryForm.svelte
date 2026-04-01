@@ -1,9 +1,5 @@
 <script lang="ts">
-import AlertCircle from '@lucide/svelte/icons/alert-circle';
-import ArrowLeft from '@lucide/svelte/icons/arrow-left';
-import ChevronDown from '@lucide/svelte/icons/chevron-down';
-import Info from '@lucide/svelte/icons/info';
-import Thermometer from '@lucide/svelte/icons/thermometer';
+import { ArrowLeft, ChevronDown, CircleAlert, Info, Thermometer } from '@lucide/svelte/icons';
 import { fromAction } from 'svelte/attachments';
 import { toast } from 'svelte-sonner';
 import { type SuperValidated, superForm } from 'sveltekit-superforms';
@@ -113,7 +109,7 @@ async function getWeather() {
 						/>
 						{#if $errors.content}
 							<Alert.Root variant="destructive" class="mt-2">
-								<AlertCircle class="h-4 w-4" />
+								<CircleAlert class="h-4 w-4" />
 								<Alert.Description>{$errors.content}</Alert.Description>
 							</Alert.Root>
 						{/if}
@@ -151,7 +147,7 @@ async function getWeather() {
 										/>
 										{#if $errors.date}
 											<Alert.Root variant="destructive" class="mt-2">
-												<AlertCircle class="h-4 w-4" />
+												<CircleAlert class="h-4 w-4" />
 												<Alert.Description>{$errors.date}</Alert.Description>
 											</Alert.Root>
 										{/if}

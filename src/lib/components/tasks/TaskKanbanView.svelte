@@ -1,7 +1,5 @@
 <script lang="ts">
-import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
-import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-import PlusIcon from '@lucide/svelte/icons/plus';
+import { ChevronLeft, ChevronRight, Plus } from '@lucide/svelte/icons';
 import { flip } from 'svelte/animate';
 import type { DndEvent } from 'svelte-dnd-action';
 import { dndzone } from 'svelte-dnd-action';
@@ -294,7 +292,7 @@ const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
 								aria-expanded={showDone}
 								class="h-7 rounded-full bg-white/80 px-2 text-[11px] font-semibold text-slate-600 shadow-sm hover:bg-white hover:text-slate-950 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-slate-950"
 							>
-								<ChevronLeftIcon class="mr-1 size-4" />
+								<ChevronLeft class="mr-1 size-4" />
 							</Button>
 						{/if}
 					</div>
@@ -307,7 +305,7 @@ const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
 							variant="outline"
 							class="h-9 w-full justify-start rounded-xl border border-dashed border-orange-300/80 bg-orange-50/75 px-3.5 text-[13px] font-semibold text-orange-700 shadow-none hover:bg-orange-100/80 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-200 dark:hover:bg-orange-500/15"
 						>
-							<PlusIcon class="mr-2 size-4" />
+							<Plus class="mr-2 size-4" />
 							Add task
 						</Button>
 					{/if}
@@ -371,7 +369,7 @@ const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
 					class="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 dark:text-slate-300"
 				>
 					Show
-					<ChevronRightIcon class="size-4" />
+					<ChevronRight class="size-4" />
 				</span>
 			</Button>
 		{/if}
@@ -416,7 +414,7 @@ const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
 								aria-expanded={showDone}
 								class="h-7 rounded-full bg-white/80 px-2 text-[11px] font-semibold text-slate-600 shadow-sm hover:bg-white hover:text-slate-950 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-slate-950"
 							>
-								<ChevronLeftIcon class="mr-1 size-4" />
+								<ChevronLeft class="mr-1 size-4" />
 							</Button>
 						{/if}
 					</div>
@@ -429,7 +427,7 @@ const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
 							variant="outline"
 							class="h-9 w-full justify-start rounded-xl border border-dashed border-orange-300/80 bg-orange-50/75 px-3.5 text-[13px] font-semibold text-orange-700 shadow-none hover:bg-orange-100/80 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-200 dark:hover:bg-orange-500/15"
 						>
-							<PlusIcon class="mr-2 size-4" />
+							<Plus class="mr-2 size-4" />
 							Add task
 						</Button>
 					{/if}
@@ -491,7 +489,7 @@ const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
 				<span
 					class="flex flex-col items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-600 dark:text-slate-300"
 				>
-					<ChevronRightIcon class="size-4 transition-transform group-hover:translate-x-0.5" />
+					<ChevronRight class="size-4 transition-transform group-hover:translate-x-0.5" />
 				</span>
 			</button>
 		{/if}

@@ -1,6 +1,5 @@
 <script lang="ts">
-import CalendarCheckIcon from '@lucide/svelte/icons/calendar-check';
-import PlusIcon from '@lucide/svelte/icons/plus';
+import { CalendarCheck, Plus } from '@lucide/svelte';
 
 import { replaceState } from '$app/navigation';
 import { navigating, page } from '$app/state';
@@ -121,7 +120,7 @@ function formatTimeSince(days: number): string {
 				href="/visits/people/new"
 				class="bg-pink-600 hover:bg-pink-700"
 			>
-				<PlusIcon class="mr-2 h-4 w-4" />
+				<Plus class="mr-2 h-4 w-4" />
 				Add Person
 			</Button>
 		</div>
@@ -250,7 +249,7 @@ function formatTimeSince(days: number): string {
 												<div class="text-sm text-muted-foreground">
 													{#if isScheduledTab && person.nextFollowUpDate}
 														<Alert.Root variant="destructive" class="mb-2">
-															<CalendarCheckIcon class="h-4 w-4" />
+															<CalendarCheck class="h-4 w-4" />
 															<Alert.Title>Follow-up scheduled:</Alert.Title>
 															<Alert.Description>
 																{formatDateShort(person.nextFollowUpDate)}

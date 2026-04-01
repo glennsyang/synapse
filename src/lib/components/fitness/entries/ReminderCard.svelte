@@ -1,7 +1,5 @@
 <script lang="ts">
-import BellIcon from '@lucide/svelte/icons/bell';
-import BellOffIcon from '@lucide/svelte/icons/bell-off';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { Bell, BellOff, Trash2 } from '@lucide/svelte/icons';
 
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
@@ -80,9 +78,9 @@ const scheduleText = $derived(
 						aria-label={reminder.enabled ? 'Disable reminder' : 'Enable reminder'}
 					>
 						{#if reminder.enabled}
-							<BellOffIcon class="h-3.5 w-3.5" />
+							<BellOff class="h-3.5 w-3.5" />
 						{:else}
-							<BellIcon class="h-3.5 w-3.5" />
+							<Bell class="h-3.5 w-3.5" />
 						{/if}
 					</Button>
 				{/snippet}
@@ -102,7 +100,7 @@ const scheduleText = $derived(
 						onclick={() => onDelete(reminder.id)}
 						aria-label="Delete reminder"
 					>
-						<Trash2Icon class="h-3.5 w-3.5" />
+						<Trash2 class="h-3.5 w-3.5" />
 					</Button>
 				{/snippet}
 			</Tooltip.Trigger>

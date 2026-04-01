@@ -1,9 +1,5 @@
 <script lang="ts">
-import Calendar from '@lucide/svelte/icons/calendar';
-import Cloud from '@lucide/svelte/icons/cloud';
-import Edit from '@lucide/svelte/icons/edit';
-import MapPin from '@lucide/svelte/icons/map-pin';
-import Trash2 from '@lucide/svelte/icons/trash-2';
+import { Calendar, Cloud, MapPin, Pencil, Trash2 } from '@lucide/svelte/icons';
 import { marked } from 'marked';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
@@ -61,7 +57,7 @@ let hasMetadata = $derived(
 								class="border border-white/55 bg-white/68 text-slate-700 shadow-sm backdrop-blur-xl hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
 								aria-label="Edit entry"
 							>
-								<Edit class="h-4 w-4" />
+								<Pencil class="h-4 w-4" />
 							</Button>
 						{/snippet}
 					</Tooltip.Trigger>

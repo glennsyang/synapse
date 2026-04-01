@@ -1,11 +1,5 @@
 <script lang="ts">
-import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-import CalendarIcon from '@lucide/svelte/icons/calendar';
-import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
-import ClockIcon from '@lucide/svelte/icons/clock';
-import EditIcon from '@lucide/svelte/icons/edit';
-import PlayCircleIcon from '@lucide/svelte/icons/play-circle';
-import TrashIcon from '@lucide/svelte/icons/trash';
+import { ArrowLeft, Calendar, CircleCheck, CirclePlay, Clock, Pencil, Trash } from '@lucide/svelte';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 
@@ -98,7 +92,7 @@ function getDayName(dayNumber: number) {
 <div class="container mx-auto max-w-4xl py-8">
 	<div class="mb-6">
 		<Button href="/meditation" variant="ghost">
-			<ArrowLeftIcon class="mr-2 h-4 w-4" />
+			<ArrowLeft class="mr-2 h-4 w-4" />
 			Back to Meditation
 		</Button>
 	</div>
@@ -116,10 +110,10 @@ function getDayName(dayNumber: number) {
 				{#if !data.routine.isPredefined}
 					<div class="flex gap-2">
 						<Button variant="outline" size="icon" onclick={() => (showEditDialog = true)}>
-							<EditIcon class="h-4 w-4" />
+							<Pencil class="h-4 w-4" />
 						</Button>
 						<Button variant="outline" size="icon" onclick={() => (showDeleteConfirm = true)}>
-							<TrashIcon class="h-4 w-4" />
+							<Trash class="h-4 w-4" />
 						</Button>
 					</div>
 				{/if}
@@ -128,7 +122,7 @@ function getDayName(dayNumber: number) {
 		<Card.Content class="space-y-4">
 			<div class="flex items-center gap-4">
 				<div class="flex items-center gap-2 text-muted-foreground">
-					<ClockIcon class="h-5 w-5" />
+					<Clock class="h-5 w-5" />
 					<span>{data.routine.durationMinutes} minutes</span>
 				</div>
 			</div>
@@ -140,11 +134,11 @@ function getDayName(dayNumber: number) {
 		</Card.Content>
 		<Card.Footer class="flex gap-2">
 			<Button href={data.routine.linkUrl} target="_blank" rel="noopener noreferrer" class="flex-1">
-				<PlayCircleIcon class="mr-2 h-4 w-4" />
+				<CirclePlay class="mr-2 h-4 w-4" />
 				Start Practice
 			</Button>
 			<Button variant="outline" onclick={() => (showSessionDialog = true)}>
-				<CheckCircleIcon class="mr-2 h-4 w-4" />
+				<CircleCheck class="mr-2 h-4 w-4" />
 				Log Session
 			</Button>
 		</Card.Footer>
@@ -155,7 +149,7 @@ function getDayName(dayNumber: number) {
 		<Card.Root>
 			<Card.Header>
 				<Card.Title class="flex items-center gap-2">
-					<CalendarIcon class="h-5 w-5" />
+					<Calendar class="h-5 w-5" />
 					Schedule
 				</Card.Title>
 			</Card.Header>
@@ -193,9 +187,7 @@ function getDayName(dayNumber: number) {
 				</Button>
 				{#if data.schedule}
 					<form method="POST" action="?/deleteSchedule" class="inline">
-						<Button type="submit" variant="ghost" size="icon">
-							<TrashIcon class="h-4 w-4" />
-						</Button>
+						<Button type="submit" variant="ghost" size="icon"> <Trash class="h-4 w-4" /> </Button>
 					</form>
 				{/if}
 			</Card.Footer>

@@ -1,7 +1,5 @@
 <script lang="ts">
-import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-import ScaleIcon from '@lucide/svelte/icons/scale';
-import UtensilsCrossedIcon from '@lucide/svelte/icons/utensils-crossed';
+import { Dumbbell, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
 
 import * as Card from '$lib/components/ui/card';
 import { getTodayString, parseLocalDateString } from '$lib/utils/date';
@@ -145,7 +143,7 @@ const calAdherenceClass = (calories: number | null): string => {
 		<!-- Lane 1: Workout activity -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<DumbbellIcon class="h-3 w-3 text-stone-400" />
+				<Dumbbell class="h-3 w-3 text-stone-400" />
 				<span class="text-xs font-medium text-stone-500 dark:text-stone-400">Activity</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
@@ -165,7 +163,7 @@ const calAdherenceClass = (calories: number | null): string => {
 		<!-- Lane 2: Weight check-ins -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<ScaleIcon class="h-3 w-3 text-stone-400" />
+				<Scale class="h-3 w-3 text-stone-400" />
 				<span class="text-xs font-medium text-stone-500 dark:text-stone-400">Weight</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
@@ -185,7 +183,7 @@ const calAdherenceClass = (calories: number | null): string => {
 		<!-- Lane 3: Calorie adherence -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<UtensilsCrossedIcon class="h-3 w-3 text-stone-400" />
+				<UtensilsCrossed class="h-3 w-3 text-stone-400" />
 				<span class="text-xs font-medium text-stone-500 dark:text-stone-400">Calories</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">

@@ -1,11 +1,5 @@
 <script lang="ts">
-import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
-import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
-import EditIcon from '@lucide/svelte/icons/edit';
-import LockIcon from '@lucide/svelte/icons/lock';
-import SaveIcon from '@lucide/svelte/icons/save';
-import UserIcon from '@lucide/svelte/icons/user';
-import XIcon from '@lucide/svelte/icons/x';
+import { CircleAlert, CircleCheck, Lock, Pencil, Save, User, X } from '@lucide/svelte';
 import { superForm } from 'sveltekit-superforms';
 
 import { Button } from '$lib/components/ui/button';
@@ -95,12 +89,12 @@ function resetPasswordForm() {
 			<div class="p-6">
 				<div class="mb-4 flex items-center justify-between">
 					<div class="flex items-center gap-2">
-						<UserIcon class="h-5 w-5" />
+						<User class="h-5 w-5" />
 						<h2 class="text-xl font-semibold">Profile Information</h2>
 					</div>
 					{#if !isEditingProfile}
 						<Button size="sm" variant="outline" onclick={() => (isEditingProfile = true)}>
-							<EditIcon class="mr-2 h-4 w-4" />
+							<Pencil class="mr-2 h-4 w-4" />
 							Edit
 						</Button>
 					{/if}
@@ -117,9 +111,9 @@ function resetPasswordForm() {
 									: 'border border-red-200 bg-red-50 text-red-700'}"
 							>
 								{#if $profileMessage.includes('successfully')}
-									<CheckCircleIcon class="h-4 w-4" />
+									<CircleCheck class="h-4 w-4" />
 								{:else}
-									<AlertCircleIcon class="h-4 w-4" />
+									<CircleAlert class="h-4 w-4" />
 								{/if}
 								<span class="text-sm">{$profileMessage}</span>
 							</div>
@@ -163,7 +157,7 @@ function resetPasswordForm() {
 											class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"
 										></div>
 									{:else}
-										<SaveIcon class="mr-2 h-4 w-4" />
+										<Save class="mr-2 h-4 w-4" />
 									{/if}
 									Save Changes
 								</Button>
@@ -174,7 +168,7 @@ function resetPasswordForm() {
 									onclick={resetProfileForm}
 									disabled={$profileSubmitting}
 								>
-									<XIcon class="mr-2 h-4 w-4" />
+									<X class="mr-2 h-4 w-4" />
 									Cancel
 								</Button>
 							</div>
@@ -191,12 +185,12 @@ function resetPasswordForm() {
 			<div class="p-6">
 				<div class="mb-4 flex items-center justify-between">
 					<div class="flex items-center gap-2">
-						<LockIcon class="h-5 w-5" />
+						<Lock class="h-5 w-5" />
 						<h2 class="text-xl font-semibold">Change Password</h2>
 					</div>
 					{#if !isEditingPassword}
 						<Button size="sm" variant="outline" onclick={() => (isEditingPassword = true)}>
-							<EditIcon class="mr-2 h-4 w-4" />
+							<Pencil class="mr-2 h-4 w-4" />
 							Change Password
 						</Button>
 					{/if}
@@ -214,9 +208,9 @@ function resetPasswordForm() {
 										: 'border border-red-200 bg-red-50 text-red-700'}"
 								>
 									{#if $passwordMessage.includes('successfully')}
-										<CheckCircleIcon class="h-4 w-4" />
+										<CircleCheck class="h-4 w-4" />
 									{:else}
-										<AlertCircleIcon class="h-4 w-4" />
+										<CircleAlert class="h-4 w-4" />
 									{/if}
 									<span class="text-sm">{$passwordMessage}</span>
 								</div>
@@ -280,7 +274,7 @@ function resetPasswordForm() {
 											class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"
 										></div>
 									{:else}
-										<SaveIcon class="mr-2 h-4 w-4" />
+										<Save class="mr-2 h-4 w-4" />
 									{/if}
 									Change Password
 								</Button>
@@ -291,7 +285,7 @@ function resetPasswordForm() {
 									onclick={resetPasswordForm}
 									disabled={$passwordSubmitting}
 								>
-									<XIcon class="mr-2 h-4 w-4" />
+									<X class="mr-2 h-4 w-4" />
 									Cancel
 								</Button>
 							</div>

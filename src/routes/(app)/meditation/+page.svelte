@@ -1,9 +1,5 @@
 <script lang="ts">
-import { ListFilter } from '@lucide/svelte';
-import ClockIcon from '@lucide/svelte/icons/clock';
-import PlayCircleIcon from '@lucide/svelte/icons/play-circle';
-import PlusIcon from '@lucide/svelte/icons/plus';
-import SparklesIcon from '@lucide/svelte/icons/sparkles';
+import { CirclePlay, Clock, ListFilter, Plus, Sparkles } from '@lucide/svelte';
 import { SvelteURLSearchParams } from 'svelte/reactivity';
 import { navigating, page } from '$app/state';
 import PageShell from '$lib/components/app/PageShell.svelte';
@@ -64,7 +60,7 @@ function applyFilters() {
 			</div>
 			<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
 				<Button href="/meditation/routines/new" class="bg-purple-600 hover:bg-purple-700">
-					<PlusIcon class="mr-2 h-4 w-4" />
+					<Plus class="mr-2 h-4 w-4" />
 					New Routine
 				</Button>
 				<Tooltip.Root>
@@ -133,7 +129,7 @@ function applyFilters() {
 											variant="secondary"
 											class="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
 										>
-											<SparklesIcon class="mr-1 h-3 w-3" />
+											<Sparkles class="mr-1 h-3 w-3" />
 											Predefined
 										</Badge>
 									{/if}
@@ -141,7 +137,7 @@ function applyFilters() {
 							</Card.Header>
 							<Card.Content class="space-y-3">
 								<div class="flex items-center gap-2 text-sm text-muted-foreground">
-									<ClockIcon class="h-4 w-4" />
+									<Clock class="h-4 w-4" />
 									<span>{routine.durationMinutes} minutes</span>
 								</div>
 								<div class="flex flex-wrap gap-1">
@@ -159,7 +155,7 @@ function applyFilters() {
 									rel="noopener noreferrer"
 									class="flex-1 bg-purple-600 hover:bg-purple-700"
 								>
-									<PlayCircleIcon class="mr-2 h-4 w-4" />
+									<CirclePlay class="mr-2 h-4 w-4" />
 									Practice
 								</Button>
 								<Button href="/meditation/routines/{routine.id}" variant="outline">Details</Button>

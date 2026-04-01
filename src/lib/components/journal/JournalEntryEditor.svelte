@@ -1,13 +1,15 @@
 <script lang="ts">
-import Bold from '@lucide/svelte/icons/bold';
-import Heading from '@lucide/svelte/icons/heading';
-import Italic from '@lucide/svelte/icons/italic';
-import Link2 from '@lucide/svelte/icons/link-2';
-import List from '@lucide/svelte/icons/list';
-import ListOrdered from '@lucide/svelte/icons/list-ordered';
-import Pilcrow from '@lucide/svelte/icons/pilcrow';
-import Quote from '@lucide/svelte/icons/quote';
-import Underline from '@lucide/svelte/icons/underline';
+import {
+	Bold,
+	Heading,
+	Italic,
+	Link2,
+	List,
+	ListOrdered,
+	Pilcrow,
+	Quote,
+	Underline
+} from '@lucide/svelte/icons';
 import { marked } from 'marked';
 import { Button } from '$lib/components/ui/button';
 import * as DropdownMenu from '$lib/components/ui/dropdown-menu';

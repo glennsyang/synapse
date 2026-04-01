@@ -1,10 +1,6 @@
 <script lang="ts">
-import ActivityIcon from '@lucide/svelte/icons/activity';
-import BellIcon from '@lucide/svelte/icons/bell';
-import ClockIcon from '@lucide/svelte/icons/clock';
-import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-import FlameIcon from '@lucide/svelte/icons/flame';
-import ScaleIcon from '@lucide/svelte/icons/scale';
+import { Activity, Bell, Clock, Dumbbell, Flame, Scale } from '@lucide/svelte/icons';
+
 import { SvelteSet } from 'svelte/reactivity';
 import { toast } from 'svelte-sonner';
 
@@ -169,7 +165,7 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 				label="This Week"
 				value={weeklySessionCount}
 				unit="sessions"
-				icon={DumbbellIcon}
+				icon={Dumbbell}
 				trend={weeklySessionCount >= 3 ? 'positive' : weeklySessionCount >= 1 ? 'neutral' : 'negative'}
 				trendLabel={weeklySessionCount >= 3
 					? 'Strong week'
@@ -181,7 +177,7 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 				label="Day Streak"
 				value={dayStreak}
 				unit={dayStreak === 1 ? 'day' : 'days'}
-				icon={FlameIcon}
+				icon={Flame}
 				trend={dayStreak >= 3 ? 'positive' : dayStreak > 0 ? 'neutral' : 'negative'}
 				trendLabel={dayStreak >= 5
 					? 'Excellent consistency'
@@ -195,7 +191,7 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 				label="Weight"
 				value={data.weightStats.currentWeight ?? '—'}
 				unit={data.weightStats.currentWeight ? 'lbs' : ''}
-				icon={ScaleIcon}
+				icon={Scale}
 				trend={weightDelta == null
 					? 'neutral'
 					: weightDelta < -0.5
@@ -215,7 +211,7 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 				label="Today's Cal"
 				value={todayCalories}
 				unit="cal"
-				icon={ActivityIcon}
+				icon={Activity}
 				trend={calorieAdherence == null
 					? 'neutral'
 					: calorieAdherence >= 85 && calorieAdherence <= 110
@@ -228,7 +224,7 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 			<FitnessStatusCard
 				label="Next Reminder"
 				value={nextReminder ? formatTime12Hour(nextReminder.time) : '—'}
-				icon={BellIcon}
+				icon={Bell}
 				trendLabel={nextReminder
 					? `${nextReminder.workoutType} · ${nextReminder.cadence}`
 					: 'No reminders set'}
@@ -237,7 +233,7 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 				label="Reminders"
 				value={data.reminders.filter((r) => r.enabled).length}
 				unit="active"
-				icon={ClockIcon}
+				icon={Clock}
 				trendLabel={data.reminders.length > 0
 					? `${data.reminders.length} total`
 					: 'Create a reminder'}

@@ -1,6 +1,5 @@
 <script lang="ts">
-import TrendingDown from '@lucide/svelte/icons/trending-down';
-import TrendingUp from '@lucide/svelte/icons/trending-up';
+import { TrendingDown, TrendingUp } from '@lucide/svelte/icons';
 import type { Component } from 'svelte';
 
 import { cn } from '$lib/utils.js';

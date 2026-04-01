@@ -1,10 +1,4 @@
-import BookIcon from '@lucide/svelte/icons/book';
-import CheckSquareIcon from '@lucide/svelte/icons/check-square';
-import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-import HeartIcon from '@lucide/svelte/icons/heart';
-import HouseIcon from '@lucide/svelte/icons/house';
-import UsersIcon from '@lucide/svelte/icons/users';
-
+import { Book, Dumbbell, Heart, House, SquareCheck, Users } from '@lucide/svelte/icons';
 import type { SidebarNav } from '$lib/types';
 
 export const navItems: SidebarNav = {
@@ -13,42 +7,42 @@ export const navItems: SidebarNav = {
 			title: 'Dashboard',
 			description: 'Overview of your activities and stats',
 			url: '/dashboard',
-			icon: HouseIcon,
+			icon: House,
 			color: 'text-teal-600 dark:text-teal-400'
 		},
 		{
 			title: 'Journal',
 			description: 'Capture your daily thoughts and experiences',
 			url: '/journal',
-			icon: BookIcon,
+			icon: Book,
 			color: 'text-blue-600 dark:text-blue-400'
 		},
 		{
 			title: 'Tasks',
 			description: 'Track work on a kanban board with priorities and states',
 			url: '/tasks',
-			icon: CheckSquareIcon,
+			icon: SquareCheck,
 			color: 'text-orange-600 dark:text-orange-400'
 		},
 		{
 			title: 'Fitness',
 			description: 'Track workouts, meals, and weight progress',
 			url: '/fitness',
-			icon: DumbbellIcon,
+			icon: Dumbbell,
 			color: 'text-green-600 dark:text-green-400'
 		},
 		{
 			title: 'Meditation',
 			description: 'Build mindfulness habits with guided routines',
 			url: '/meditation',
-			icon: HeartIcon,
+			icon: Heart,
 			color: 'text-purple-600 dark:text-purple-400'
 		},
 		{
 			title: 'Visits',
 			description: 'Keep track of meaningful connections',
 			url: '/visits',
-			icon: UsersIcon,
+			icon: Users,
 			color: 'text-pink-600 dark:text-pink-400'
 		}
 	]

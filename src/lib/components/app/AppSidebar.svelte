@@ -1,5 +1,5 @@
 <script lang="ts">
-import BrainIcon from '@lucide/svelte/icons/brain';
+import { Brain } from '@lucide/svelte/icons';
 
 import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 import type { SidebarNav, User } from '$lib/types';
@@ -25,7 +25,7 @@ let { user, navItems, ...restProps }: Props = $props();
 							<div
 								class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
 							>
-								<BrainIcon class="size-5!" />
+								<Brain class="size-5!" />
 							</div>
 							<div class="flex flex-col gap-0.5 leading-none">
 								<span class="font-display font-extrabold">Synapse</span>
