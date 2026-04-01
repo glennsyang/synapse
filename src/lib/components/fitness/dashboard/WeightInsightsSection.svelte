@@ -1,11 +1,13 @@
 <script lang="ts">
-import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
-import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
-import MinusIcon from '@lucide/svelte/icons/minus';
-import ScaleIcon from '@lucide/svelte/icons/scale';
-import TargetIcon from '@lucide/svelte/icons/target';
-import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
-import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+import {
+	ArrowDown,
+	ArrowUp,
+	Minus,
+	Scale,
+	Target,
+	TrendingDown,
+	TrendingUp
+} from '@lucide/svelte/icons';
 import type { Infer, SuperValidated } from 'sveltekit-superforms';
 import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
 import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
@@ -72,11 +74,7 @@ const weeksToGoal = $derived.by(() => {
 });
 
 const trendIcon = $derived(
-	weightStats.trend === 'down'
-		? TrendingDownIcon
-		: weightStats.trend === 'up'
-			? TrendingUpIcon
-			: MinusIcon
+	weightStats.trend === 'down' ? TrendingDown : weightStats.trend === 'up' ? TrendingUp : Minus
 );
 
 const remainingTrend = $derived(
@@ -108,13 +106,13 @@ const remainingTrend = $derived(
 			label="Current"
 			value={weightStats.currentWeight ?? '—'}
 			unit={weightStats.currentWeight ? 'lbs' : ''}
-			icon={ScaleIcon}
+			icon={Scale}
 		/>
 		<FitnessStatusCard
 			label="Goal"
 			value={goalWeight?.targetWeightLbs ?? '—'}
 			unit={goalWeight ? 'lbs' : ''}
-			icon={TargetIcon}
+			icon={Target}
 			trendLabel={goalWeight ? 'Target set' : 'Set a goal'}
 		/>
 		<FitnessStatusCard
@@ -124,10 +122,10 @@ const remainingTrend = $derived(
 				: '—'}
 			unit={weightStats.remainingToGoal != null ? 'lbs' : ''}
 			icon={weightStats.remainingToGoal && weightStats.remainingToGoal > 0
-				? ArrowDownIcon
+				? ArrowDown
 				: weightStats.remainingToGoal && weightStats.remainingToGoal < 0
-					? ArrowUpIcon
-					: MinusIcon}
+					? ArrowUp
+					: Minus}
 			trend={remainingTrend}
 			trendLabel={weightStats.remainingToGoal && weightStats.remainingToGoal < 0
 				? 'Past goal weight'

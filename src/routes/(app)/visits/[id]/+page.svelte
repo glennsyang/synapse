@@ -1,9 +1,5 @@
 <script lang="ts">
-import ArchiveIcon from '@lucide/svelte/icons/archive';
-import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-import CalendarIcon from '@lucide/svelte/icons/calendar';
-import EditIcon from '@lucide/svelte/icons/edit';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { Archive, ArrowLeft, Calendar, Pencil, Trash2 } from '@lucide/svelte';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -148,7 +144,7 @@ function getEditStatusDescription(isExempt: boolean): string {
 <div class="container mx-auto p-6">
 	<div class="mb-6">
 		<Button variant="ghost" href="/visits" class="mb-4">
-			<ArrowLeftIcon class="mr-2 h-4 w-4" />
+			<ArrowLeft class="mr-2 h-4 w-4" />
 			Back to Visits
 		</Button>
 
@@ -180,7 +176,7 @@ function getEditStatusDescription(isExempt: boolean): string {
 								aria-label="Log Visit"
 								onclick={openLogVisitDialogForCreate}
 							>
-								<CalendarIcon class="h-4 w-4" />
+								<Calendar class="h-4 w-4" />
 							</Button>
 						{/snippet}
 					</Tooltip.Trigger>
@@ -197,7 +193,7 @@ function getEditStatusDescription(isExempt: boolean): string {
 								aria-label="Edit Person"
 								onclick={() => (showEditPersonDialog = true)}
 							>
-								<EditIcon class="h-4 w-4" />
+								<Pencil class="h-4 w-4" />
 							</Button>
 						{/snippet}
 					</Tooltip.Trigger>
@@ -214,7 +210,7 @@ function getEditStatusDescription(isExempt: boolean): string {
 								aria-label="Archive Person"
 								onclick={() => (showArchivePersonDialog = true)}
 							>
-								<ArchiveIcon class="h-4 w-4" />
+								<Archive class="h-4 w-4" />
 							</Button>
 						{/snippet}
 					</Tooltip.Trigger>
@@ -231,7 +227,7 @@ function getEditStatusDescription(isExempt: boolean): string {
 								aria-label="Delete Person"
 								onclick={() => (showDeletePersonDialog = true)}
 							>
-								<Trash2Icon class="h-4 w-4" />
+								<Trash2 class="h-4 w-4" />
 							</Button>
 						{/snippet}
 					</Tooltip.Trigger>
@@ -292,7 +288,7 @@ function getEditStatusDescription(isExempt: boolean): string {
 													aria-label="Edit Visit"
 													onclick={() => openLogVisitDialogForEdit(visit)}
 												>
-													<EditIcon class="h-4 w-4" />
+													<Pencil class="h-4 w-4" />
 												</Button>
 											{/snippet}
 										</Tooltip.Trigger>
@@ -313,7 +309,7 @@ function getEditStatusDescription(isExempt: boolean): string {
 														aria-label="Delete Visit"
 														onclick={() => (visitToDelete = visit.id)}
 													>
-														<Trash2Icon class="h-4 w-4" />
+														<Trash2 class="h-4 w-4" />
 													</Button>
 												{/snippet}
 											</Tooltip.Trigger>

@@ -1,10 +1,10 @@
 import { Resend } from 'resend';
 
 import {
-	buildKanbanDueTodayDigestTitle,
-	buildKanbanDueTodayEmailHtml,
-	type KanbanDueTodayTaskSummary
-} from '$lib/server/email/kanban-due-today-digest';
+	buildTasksDueTodayDigestTitle,
+	buildTasksDueTodayEmailHtml,
+	type TasksDueTodayTaskSummary
+} from '$lib/server/email/tasks-due-today-digest';
 import { logger } from '$lib/utils/logger';
 
 import { getEnv } from '../../../env';
@@ -312,24 +312,24 @@ export async function sendVisitWarningEmail(
 	}
 }
 
-export async function sendKanbanDueTodayEmail(
+export async function sendTasksDueTodayEmail(
 	to: string,
 	name: string,
-	tasks: KanbanDueTodayTaskSummary[],
+	tasks: TasksDueTodayTaskSummary[],
 	dateString: string
 ) {
-	logger.debug('📧 Sending Kanban Due Today Email to:', { to, taskCount: tasks.length });
-	const title = buildKanbanDueTodayDigestTitle(dateString);
+	logger.debug('📧 Sending Tasks Due Today Email to:', { to, taskCount: tasks.length });
+	const title = buildTasksDueTodayDigestTitle(dateString);
 
 	try {
 		await resend.emails.send({
 			from: env.RESEND_FROM_ADDRESS,
 			to,
 			subject: title,
-			html: buildKanbanDueTodayEmailHtml(name, tasks, dateString)
+			html: buildTasksDueTodayEmailHtml(name, tasks, dateString)
 		});
 	} catch (error) {
-		logger.error('❌ Failed to send Kanban due today email:', { error });
+		logger.error('❌ Failed to send Tasks Due Today email:', { error });
 		return error;
 	}
 }

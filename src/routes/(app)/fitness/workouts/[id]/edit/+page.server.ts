@@ -43,6 +43,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			time: workout.time,
 			type: workout.type as WorkoutType,
 			durationMinutes: workout.durationMinutes,
+			steps: workout.steps,
 			notes: workout.notes,
 			exercises:
 				workout.type === 'strength'
@@ -119,6 +120,7 @@ export const actions: Actions = {
 						time: form.data.time || null,
 						type: form.data.type,
 						durationMinutes: form.data.durationMinutes || null,
+						steps: form.data.steps || null,
 						notes: form.data.notes || null,
 						updatedAt: new Date().toISOString()
 					})

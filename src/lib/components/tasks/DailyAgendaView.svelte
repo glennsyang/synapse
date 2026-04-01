@@ -598,7 +598,7 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 									})}
 									class="rounded-lg border border-orange-200/80 bg-background/90 p-2.5 shadow-xs dark:border-orange-500/20"
 								>
-									<input type="hidden" name="id" value={entry.id}>
+									<Input type="hidden" name="id" value={entry.id} />
 									<Input
 										name="title"
 										bind:value={editingEntryTitle}
@@ -642,19 +642,19 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 										})}
 										class="shrink-0"
 									>
-										<input type="hidden" name="id" value={entry.id}>
-										<input
+										<Input type="hidden" name="id" value={entry.id} />
+										<Input
 											type="hidden"
 											name="completed"
 											value={entry.completed ? 'false' : 'true'}
-										>
-										<input
+										/>
+										<Input
 											type="checkbox"
 											checked={entry.completed}
 											disabled={!day.isEditable}
 											class="h-3.5 w-3.5 rounded border-orange-300 text-orange-600 focus:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50"
 											onchange={(event) => event.currentTarget.form?.requestSubmit()}
-										>
+										/>
 									</form>
 									<div class="min-w-0 flex-1">
 										<div class="flex min-h-3.5 items-center">
@@ -721,7 +721,7 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 								})}
 								class="rounded-lg border border-orange-200/80 bg-background/92 p-2.5 shadow-xs dark:border-orange-500/20"
 							>
-								<input type="hidden" name="date" value={day.date}>
+								<Input type="hidden" name="date" value={day.date} />
 								<Input
 									name="title"
 									bind:value={newEntryTitle}
@@ -801,7 +801,7 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 					})}
 					class="rounded-2xl border border-orange-200/80 bg-orange-50/50 p-4 dark:border-orange-500/20 dark:bg-orange-500/6"
 				>
-					<input type="hidden" name="daysOfWeek" value={serializeTemplateDays(newTemplateDays)}>
+					<Input type="hidden" name="daysOfWeek" value={serializeTemplateDays(newTemplateDays)} />
 					<div class="space-y-3">
 						<div class="flex flex-col gap-2 sm:flex-row">
 							<Input
@@ -836,12 +836,12 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 												: 'border-border/70'
 										)}
 									>
-										<input
+										<Input
 											type="checkbox"
 											checked={newTemplateDays.includes(day.id)}
 											class="size-3.5 rounded border-orange-300 text-orange-600 focus:ring-orange-500"
 											onchange={() => toggleNewTemplateDay(day.id)}
-										>
+										/>
 										<span>{day.shortName}</span>
 									</label>
 								{/each}
@@ -867,12 +867,12 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 									})}
 									class="space-y-3"
 								>
-									<input type="hidden" name="id" value={template.id}>
-									<input
+									<Input type="hidden" name="id" value={template.id} />
+									<Input
 										type="hidden"
 										name="daysOfWeek"
 										value={serializeTemplateDays(editingTemplateDays)}
-									>
+									/>
 									<div class="flex flex-col gap-2 sm:flex-row">
 										<Input
 											name="title"
@@ -912,12 +912,12 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 															: 'border-border/70'
 													)}
 												>
-													<input
+													<Input
 														type="checkbox"
 														checked={editingTemplateDays.includes(day.id)}
 														class="size-3.5 rounded border-orange-300 text-orange-600 focus:ring-orange-500"
 														onchange={() => toggleEditingTemplateDay(day.id)}
-													>
+													/>
 													<span>{day.shortName}</span>
 												</label>
 											{/each}

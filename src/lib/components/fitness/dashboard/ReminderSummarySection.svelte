@@ -1,6 +1,5 @@
 <script lang="ts">
-import BellIcon from '@lucide/svelte/icons/bell';
-import BellOffIcon from '@lucide/svelte/icons/bell-off';
+import { Bell, BellOff } from '@lucide/svelte/icons';
 import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
@@ -48,7 +47,7 @@ const disabledCount = $derived(reminders.filter((r) => !r.enabled).length);
 			class="border-dashed border-stone-300 bg-stone-50 dark:border-stone-700 dark:bg-stone-900/40"
 		>
 			<Card.Content class="flex flex-col items-center gap-2 py-8 text-center">
-				<BellOffIcon class="h-8 w-8 text-stone-400" />
+				<BellOff class="h-8 w-8 text-stone-400" />
 				<p class="text-sm font-medium text-stone-600 dark:text-stone-400">No reminders set</p>
 				<p class="text-xs text-stone-500 dark:text-stone-500">
 					Create a reminder to get email nudges on your schedule
@@ -65,14 +64,14 @@ const disabledCount = $derived(reminders.filter((r) => !r.enabled).length);
 					<div class="flex items-center gap-3 text-xs text-stone-500 dark:text-stone-400">
 						{#if activeCount > 0}
 							<span class="flex items-center gap-1">
-								<BellIcon class="h-3 w-3 text-emerald-500" />
+								<Bell class="h-3 w-3 text-emerald-500" />
 								{activeCount}
 								active
 							</span>
 						{/if}
 						{#if disabledCount > 0}
 							<span class="flex items-center gap-1">
-								<BellOffIcon class="h-3 w-3" />
+								<BellOff class="h-3 w-3" />
 								{disabledCount}
 								paused
 							</span>

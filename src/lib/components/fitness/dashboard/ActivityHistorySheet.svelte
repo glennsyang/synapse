@@ -1,9 +1,5 @@
 <script lang="ts">
-import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-import EditIcon from '@lucide/svelte/icons/edit';
-import ScaleIcon from '@lucide/svelte/icons/scale';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
-import UtensilsCrossedIcon from '@lucide/svelte/icons/utensils-crossed';
+import { Dumbbell, Pencil, Scale, Trash2, UtensilsCrossed } from '@lucide/svelte/icons';
 
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
@@ -24,6 +20,7 @@ interface Workout {
 	time: string | null;
 	type: string;
 	durationMinutes: number | null;
+	steps: number | null;
 	notes: string | null;
 	exercises: Exercise[];
 }
@@ -200,7 +197,7 @@ const filters: { value: FilterKind; label: string }[] = [
 								<li
 									class="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-2.5 dark:border-stone-800 dark:bg-stone-900"
 								>
-									<DumbbellIcon class="h-4 w-4 shrink-0 text-stone-400" />
+									<Dumbbell class="h-4 w-4 shrink-0 text-stone-400" />
 									<div class="min-w-0 flex-1">
 										<div class="flex items-center gap-2">
 											<Badge class="text-xs {style.badge}">{item.data.type}</Badge>
@@ -232,7 +229,7 @@ const filters: { value: FilterKind; label: string }[] = [
 														class="h-7 w-7"
 														onclick={() => { onEditWorkout(item.data); open = false; }}
 													>
-														<EditIcon class="h-3.5 w-3.5" />
+														<Pencil class="h-3.5 w-3.5" />
 													</Button>
 												{/snippet}
 											</Tooltip.Trigger>
@@ -249,7 +246,7 @@ const filters: { value: FilterKind; label: string }[] = [
 														class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
 														onclick={() => { onDeleteWorkout(item.data.id); open = false; }}
 													>
-														<Trash2Icon class="h-3.5 w-3.5" />
+														<Trash2 class="h-3.5 w-3.5" />
 													</Button>
 												{/snippet}
 											</Tooltip.Trigger>
@@ -261,7 +258,7 @@ const filters: { value: FilterKind; label: string }[] = [
 								<li
 									class="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-2.5 dark:border-stone-800 dark:bg-stone-900"
 								>
-									<ScaleIcon class="h-4 w-4 shrink-0 text-emerald-500" />
+									<Scale class="h-4 w-4 shrink-0 text-emerald-500" />
 									<div class="min-w-0 flex-1">
 										<span
 											class="font-display text-sm font-semibold text-stone-900 dark:text-stone-100"
@@ -285,7 +282,7 @@ const filters: { value: FilterKind; label: string }[] = [
 														class="h-7 w-7"
 														onclick={() => { onEditWeight(item.data); open = false; }}
 													>
-														<EditIcon class="h-3.5 w-3.5" />
+														<Pencil class="h-3.5 w-3.5" />
 													</Button>
 												{/snippet}
 											</Tooltip.Trigger>
@@ -302,7 +299,7 @@ const filters: { value: FilterKind; label: string }[] = [
 														class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
 														onclick={() => { onDeleteWeight(item.data.id); open = false; }}
 													>
-														<Trash2Icon class="h-3.5 w-3.5" />
+														<Trash2 class="h-3.5 w-3.5" />
 													</Button>
 												{/snippet}
 											</Tooltip.Trigger>
@@ -314,7 +311,7 @@ const filters: { value: FilterKind; label: string }[] = [
 								<li
 									class="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-2.5 dark:border-stone-800 dark:bg-stone-900"
 								>
-									<UtensilsCrossedIcon class="h-4 w-4 shrink-0 text-amber-500" />
+									<UtensilsCrossed class="h-4 w-4 shrink-0 text-amber-500" />
 									<div class="min-w-0 flex-1">
 										<p class="truncate text-sm text-stone-800 dark:text-stone-200">
 											{item.data.description}
@@ -338,7 +335,7 @@ const filters: { value: FilterKind; label: string }[] = [
 														class="h-7 w-7"
 														onclick={() => { onEditMeal(item.data); open = false; }}
 													>
-														<EditIcon class="h-3.5 w-3.5" />
+														<Pencil class="h-3.5 w-3.5" />
 													</Button>
 												{/snippet}
 											</Tooltip.Trigger>
@@ -355,7 +352,7 @@ const filters: { value: FilterKind; label: string }[] = [
 														class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
 														onclick={() => { onDeleteMeal(item.data.id); open = false; }}
 													>
-														<Trash2Icon class="h-3.5 w-3.5" />
+														<Trash2 class="h-3.5 w-3.5" />
 													</Button>
 												{/snippet}
 											</Tooltip.Trigger>

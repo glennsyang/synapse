@@ -1,9 +1,5 @@
 <script lang="ts">
-import FlameIcon from '@lucide/svelte/icons/flame';
-import TargetIcon from '@lucide/svelte/icons/target';
-import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
-import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
-import UtensilsCrossedIcon from '@lucide/svelte/icons/utensils-crossed';
+import { Flame, Target, TrendingDown, TrendingUp, UtensilsCrossed } from '@lucide/svelte/icons';
 import { BarChart } from 'layerchart';
 import type { Infer, SuperValidated } from 'sveltekit-superforms';
 import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
@@ -130,7 +126,7 @@ const chartConfig = {
 			label="Today"
 			value={todayCalories}
 			unit="cal"
-			icon={FlameIcon}
+			icon={Flame}
 			trend={todayPercentage != null
 				? todayPercentage >= 85 && todayPercentage <= 110
 					? 'positive'
@@ -146,7 +142,7 @@ const chartConfig = {
 			label="Remaining"
 			value={todayOver != null ? `+${todayOver}` : (todayRemaining ?? '—')}
 			unit={target ? 'cal' : ''}
-			icon={TargetIcon}
+			icon={Target}
 			trend={todayOver != null ? 'negative' : 'positive'}
 			trendLabel={todayOver != null ? 'Over target' : todayRemaining != null ? 'Under target' : 'Set a target'}
 		/>
@@ -154,7 +150,7 @@ const chartConfig = {
 			label="7-Day Avg"
 			value={sevenDayAvg ?? '—'}
 			unit={sevenDayAvg ? 'cal/day' : ''}
-			icon={UtensilsCrossedIcon}
+			icon={UtensilsCrossed}
 			trendLabel={avgDelta != null
 				? avgDelta > 0
 					? `${avgDelta} cal over target avg`
@@ -165,7 +161,7 @@ const chartConfig = {
 		<FitnessStatusCard
 			label="Top Meal"
 			value={topMealPeriod ? topMealPeriod.charAt(0).toUpperCase() + topMealPeriod.slice(1) : '—'}
-			icon={avgDelta != null && avgDelta < 0 ? TrendingDownIcon : TrendingUpIcon}
+			icon={avgDelta != null && avgDelta < 0 ? TrendingDown : TrendingUp}
 			trendLabel={topMealPeriod ? 'Most logged meal' : 'Log meals to see'}
 		/>
 	</div>

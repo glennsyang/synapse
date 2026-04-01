@@ -1,12 +1,14 @@
 <script lang="ts">
-import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-import EditIcon from '@lucide/svelte/icons/edit';
-import ScaleIcon from '@lucide/svelte/icons/scale';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
-import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
-import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
-import UtensilsCrossedIcon from '@lucide/svelte/icons/utensils-crossed';
+import {
+	ChevronRight,
+	Dumbbell,
+	Pencil,
+	Scale,
+	Trash2,
+	TrendingDown,
+	TrendingUp,
+	UtensilsCrossed
+} from '@lucide/svelte/icons';
 
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
@@ -27,6 +29,7 @@ interface Workout {
 	time: string | null;
 	type: string;
 	durationMinutes: number | null;
+	steps: number | null;
 	notes: string | null;
 	exercises: Exercise[];
 }
@@ -144,7 +147,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 			class="gap-1 text-stone-600 dark:text-stone-400"
 		>
 			View all
-			<ChevronRightIcon class="h-4 w-4" />
+			<ChevronRight class="h-4 w-4" />
 		</Button>
 	</div>
 
@@ -166,7 +169,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 							<li
 								class="group flex items-center gap-3 border-l-4 px-4 py-3 transition-colors hover:bg-stone-100/60 dark:hover:bg-stone-800/40 {style.border}"
 							>
-								<DumbbellIcon class="h-4 w-4 shrink-0 text-stone-400" />
+								<Dumbbell class="h-4 w-4 shrink-0 text-stone-400" />
 								<div class="min-w-0 flex-1">
 									<div class="flex items-center gap-2">
 										<Badge class="text-xs {style.badge}">{item.data.type}</Badge>
@@ -198,7 +201,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 													class="h-7 w-7"
 													onclick={() => onEditWorkout(item.data)}
 												>
-													<EditIcon class="h-3.5 w-3.5" />
+													<Pencil class="h-3.5 w-3.5" />
 												</Button>
 											{/snippet}
 										</Tooltip.Trigger>
@@ -215,7 +218,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 													class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
 													onclick={() => onDeleteWorkout(item.data.id)}
 												>
-													<Trash2Icon class="h-3.5 w-3.5" />
+													<Trash2 class="h-3.5 w-3.5" />
 												</Button>
 											{/snippet}
 										</Tooltip.Trigger>
@@ -227,7 +230,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 							<li
 								class="group flex items-center gap-3 border-l-4 border-l-emerald-400 px-4 py-3 transition-colors hover:bg-stone-100/60 dark:hover:bg-stone-800/40"
 							>
-								<ScaleIcon class="h-4 w-4 shrink-0 text-stone-400" />
+								<Scale class="h-4 w-4 shrink-0 text-stone-400" />
 								<div class="min-w-0 flex-1">
 									<div class="flex items-center gap-2">
 										<span
@@ -258,7 +261,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 													class="h-7 w-7"
 													onclick={() => onEditWeight(item.data)}
 												>
-													<EditIcon class="h-3.5 w-3.5" />
+													<Pencil class="h-3.5 w-3.5" />
 												</Button>
 											{/snippet}
 										</Tooltip.Trigger>
@@ -275,7 +278,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 													class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
 													onclick={() => onDeleteWeight(item.data.id)}
 												>
-													<Trash2Icon class="h-3.5 w-3.5" />
+													<Trash2 class="h-3.5 w-3.5" />
 												</Button>
 											{/snippet}
 										</Tooltip.Trigger>
@@ -287,7 +290,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 							<li
 								class="group flex items-center gap-3 border-l-4 border-l-amber-400 px-4 py-3 transition-colors hover:bg-stone-100/60 dark:hover:bg-stone-800/40"
 							>
-								<UtensilsCrossedIcon class="h-4 w-4 shrink-0 text-stone-400" />
+								<UtensilsCrossed class="h-4 w-4 shrink-0 text-stone-400" />
 								<div class="min-w-0 flex-1">
 									<p class="truncate text-sm text-stone-800 dark:text-stone-200">
 										{item.data.description}
@@ -314,7 +317,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 													class="h-7 w-7"
 													onclick={() => onEditMeal(item.data)}
 												>
-													<EditIcon class="h-3.5 w-3.5" />
+													<Pencil class="h-3.5 w-3.5" />
 												</Button>
 											{/snippet}
 										</Tooltip.Trigger>
@@ -331,7 +334,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 													class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
 													onclick={() => onDeleteMeal(item.data.id)}
 												>
-													<Trash2Icon class="h-3.5 w-3.5" />
+													<Trash2 class="h-3.5 w-3.5" />
 												</Button>
 											{/snippet}
 										</Tooltip.Trigger>

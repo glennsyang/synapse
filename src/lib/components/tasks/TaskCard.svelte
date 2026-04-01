@@ -1,9 +1,5 @@
 <script lang="ts">
-import CalendarIcon from '@lucide/svelte/icons/calendar';
-import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
-import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
-import PencilIcon from '@lucide/svelte/icons/pencil';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { Calendar, CircleCheck, EllipsisVertical, Pencil, Trash2 } from '@lucide/svelte/icons';
 import { goto } from '$app/navigation';
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 import {
@@ -83,24 +79,24 @@ let dueDateClass = $derived(
 						class="size-7 rounded-full text-muted-foreground hover:text-foreground"
 						aria-label={`More actions for ${task.title}`}
 					>
-						<EllipsisVerticalIcon class="size-4" />
+						<EllipsisVertical class="size-4" />
 					</Button>
 				{/snippet}
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end" sideOffset={6} class="w-48 rounded-xl">
 				<DropdownMenu.Item onclick={() => goto(editHref)}>
-					<PencilIcon class="size-4" />
+					<Pencil class="size-4" />
 					<span>Edit task</span>
 				</DropdownMenu.Item>
 				{#if onStateChange && task.state !== 'done'}
 					<DropdownMenu.Item onclick={() => onStateChange?.('done')}>
-						<CircleCheckIcon class="size-4" />
+						<CircleCheck class="size-4" />
 						<span>Mark done</span>
 					</DropdownMenu.Item>
 				{/if}
 				<DropdownMenu.Separator />
 				<DropdownMenu.Item variant="destructive" onclick={() => (openDeleteTaskDialog = true)}>
-					<Trash2Icon class="size-4" />
+					<Trash2 class="size-4" />
 					<span>Delete task</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Content>
@@ -129,7 +125,7 @@ let dueDateClass = $derived(
 						dueDateClass
 					]}
 				>
-					<CalendarIcon class="size-3" />
+					<Calendar class="size-3" />
 					{dueDateLabel}
 				</span>
 			{/if}

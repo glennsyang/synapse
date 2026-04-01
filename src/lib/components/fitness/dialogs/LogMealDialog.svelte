@@ -96,7 +96,7 @@ function handleOpenChange(isOpen: boolean) {
 		</Dialog.Header>
 		<form method="POST" action={isEditing ? '?/updateMeal' : '?/logMeal'} use:enhance>
 			{#if isEditing && editEntry}
-				<input type="hidden" name="id" value={editEntry.id}>
+				<Input type="hidden" name="id" value={editEntry.id} />
 			{/if}
 			<div class="grid gap-4 py-4">
 				<div class="grid gap-2">
@@ -106,22 +106,37 @@ function handleOpenChange(isOpen: boolean) {
 						<p class="text-sm text-destructive">{$errors.date}</p>
 					{/if}
 				</div>
-				<div class="grid gap-2">
-					<Label for="meal-type">Meal Type</Label>
-					<Select.Root type="single" name="timeOfDay" bind:value={$form.timeOfDay}>
-						<Select.Trigger id="meal-type">
-							{$form.timeOfDay || 'Select meal type'}
-						</Select.Trigger>
-						<Select.Content>
-							<Select.Item value="breakfast" label="Breakfast">Breakfast</Select.Item>
-							<Select.Item value="lunch" label="Lunch">Lunch</Select.Item>
-							<Select.Item value="dinner" label="Dinner">Dinner</Select.Item>
-							<Select.Item value="snack" label="Snack">Snack</Select.Item>
-						</Select.Content>
-					</Select.Root>
-					{#if $errors.timeOfDay}
-						<p class="text-sm text-destructive">{$errors.timeOfDay}</p>
-					{/if}
+				<div class="grid grid-cols-2 gap-4">
+					<div class="grid gap-2">
+						<Label for="meal-type">Meal Type</Label>
+						<Select.Root type="single" name="timeOfDay" bind:value={$form.timeOfDay}>
+							<Select.Trigger id="meal-type" class="w-full">
+								{$form.timeOfDay || 'Select meal type'}
+							</Select.Trigger>
+							<Select.Content>
+								<Select.Item value="breakfast" label="Breakfast">Breakfast</Select.Item>
+								<Select.Item value="lunch" label="Lunch">Lunch</Select.Item>
+								<Select.Item value="dinner" label="Dinner">Dinner</Select.Item>
+								<Select.Item value="snack" label="Snack">Snack</Select.Item>
+							</Select.Content>
+						</Select.Root>
+						{#if $errors.timeOfDay}
+							<p class="text-sm text-destructive">{$errors.timeOfDay}</p>
+						{/if}
+					</div>
+					<div class="grid gap-2">
+						<Label for="meal-calories">Calories (estimate)</Label>
+						<Input
+							id="meal-calories"
+							name="caloriesEstimate"
+							type="number"
+							bind:value={$form.caloriesEstimate}
+							placeholder="500"
+						/>
+						{#if $errors.caloriesEstimate}
+							<p class="text-sm text-destructive">{$errors.caloriesEstimate}</p>
+						{/if}
+					</div>
 				</div>
 				<div class="grid gap-2">
 					<Label for="meal-description">Description</Label>
@@ -135,19 +150,6 @@ function handleOpenChange(isOpen: boolean) {
 					/>
 					{#if $errors.description}
 						<p class="text-sm text-destructive">{$errors.description}</p>
-					{/if}
-				</div>
-				<div class="grid gap-2">
-					<Label for="meal-calories">Calories (estimate)</Label>
-					<Input
-						id="meal-calories"
-						name="caloriesEstimate"
-						type="number"
-						bind:value={$form.caloriesEstimate}
-						placeholder="500"
-					/>
-					{#if $errors.caloriesEstimate}
-						<p class="text-sm text-destructive">{$errors.caloriesEstimate}</p>
 					{/if}
 				</div>
 			</div>

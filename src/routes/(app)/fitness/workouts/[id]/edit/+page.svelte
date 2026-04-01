@@ -1,6 +1,5 @@
 <script lang="ts">
-import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
 import { superForm } from 'sveltekit-superforms';
 
 import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
@@ -54,7 +53,7 @@ $effect(() => {
 <div class="container mx-auto max-w-3xl py-8">
 	<div class="mb-6">
 		<Button variant="ghost" href="/fitness?tab=workouts" class="mb-4">
-			<ArrowLeftIcon class="mr-2 h-4 w-4" />
+			<ArrowLeft class="mr-2 h-4 w-4" />
 			Back to Fitness
 		</Button>
 		<div class="flex items-start justify-between">
@@ -63,7 +62,7 @@ $effect(() => {
 				<p class="text-muted-foreground">Update workout details and exercises</p>
 			</div>
 			<Button variant="destructive" onclick={() => (showDeleteDialog = true)}>
-				<Trash2Icon class="mr-2 h-4 w-4" />
+				<Trash2 class="mr-2 h-4 w-4" />
 				Delete
 			</Button>
 		</div>

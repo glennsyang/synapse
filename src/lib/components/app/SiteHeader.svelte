@@ -1,6 +1,5 @@
 <script lang="ts">
-import MoonIcon from '@lucide/svelte/icons/moon';
-import SunIcon from '@lucide/svelte/icons/sun';
+import { Moon, Sun } from '@lucide/svelte/icons';
 import { toggleMode } from 'mode-watcher';
 
 import { page } from '$app/state';
@@ -105,10 +104,10 @@ let showBreadcrumbs = $derived(breadcrumbs.length > 1);
 		</div>
 		<div class="ms-auto flex items-center gap-2">
 			<Button onclick={toggleMode} variant="outline" size="icon" class="h-9 w-9">
-				<SunIcon
+				<Sun
 					class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
 				/>
-				<MoonIcon
+				<Moon
 					class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all! dark:scale-100 dark:rotate-0"
 				/>
 				<span class="sr-only">Toggle theme</span>

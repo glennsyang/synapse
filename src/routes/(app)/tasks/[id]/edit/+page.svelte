@@ -1,6 +1,5 @@
 <script lang="ts">
-import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import { ArrowLeft, Trash2 } from '@lucide/svelte';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
@@ -49,7 +48,7 @@ let selectedStateOption = $derived(
 <PageFormShell>
 	<div class="mb-6">
 		<Button variant="ghost" href="/tasks" class="mb-4">
-			<ArrowLeftIcon class="mr-2 h-4 w-4" />
+			<ArrowLeft class="mr-2 h-4 w-4" />
 			Back to Tasks
 		</Button>
 		<div class="flex items-start justify-between">
@@ -63,7 +62,7 @@ let selectedStateOption = $derived(
 				<p class="text-muted-foreground">Update the details, state, and priority for this task.</p>
 			</div>
 			<Button variant="destructive" onclick={() => (showDeleteDialog = true)}>
-				<Trash2Icon class="mr-2 h-4 w-4" />
+				<Trash2 class="mr-2 h-4 w-4" />
 				Delete
 			</Button>
 		</div>

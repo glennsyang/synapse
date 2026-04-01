@@ -1,6 +1,5 @@
 <script lang="ts">
-import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
-import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
+import { TrendingDown, TrendingUp } from '@lucide/svelte/icons';
 import { scaleUtc } from 'd3-scale';
 import { curveNatural } from 'd3-shape';
 import { LineChart } from 'layerchart';
@@ -105,10 +104,10 @@ const chartConfig = {
 								<span class="text-green-600"
 									>Trending down by {Math.abs(change).toFixed(1)} lbs</span
 								>
-								<TrendingDownIcon class="size-4 text-green-600" />
+								<TrendingDown class="size-4 text-green-600" />
 							{:else if change > 0}
 								<span class="text-destructive">Trending up by {change.toFixed(1)} lbs</span>
-								<TrendingUpIcon class="size-4 text-destructive" />
+								<TrendingUp class="size-4 text-destructive" />
 							{:else}
 								<span>No change</span>
 							{/if}

@@ -1,8 +1,5 @@
 <script lang="ts">
-import ActivityIcon from '@lucide/svelte/icons/activity';
-import ClockIcon from '@lucide/svelte/icons/clock';
-import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-import FlameIcon from '@lucide/svelte/icons/flame';
+import { Activity, Clock, Dumbbell, Flame } from '@lucide/svelte/icons';
 import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 import WorkoutFrequencyChart from '$lib/components/fitness/analytics/WorkoutFrequencyChart.svelte';
@@ -27,6 +24,7 @@ interface Workout {
 	time: string | null;
 	type: string;
 	durationMinutes: number | null;
+	steps: number | null;
 	notes: string | null;
 	exercises: Exercise[];
 }
@@ -117,7 +115,7 @@ const insights = $derived.by(() => {
 			label="This Week"
 			value={insights.thisWeekCount}
 			unit="sessions"
-			icon={DumbbellIcon}
+			icon={Dumbbell}
 			trend={insights.thisWeekCount >= 3 ? 'positive' : insights.thisWeekCount >= 1 ? 'neutral' : 'negative'}
 			trendLabel={insights.thisWeekCount >= 3 ? 'Strong week' : insights.thisWeekCount >= 1 ? 'Keep going' : 'Start your week'}
 		/>
@@ -125,7 +123,7 @@ const insights = $derived.by(() => {
 			label="Streak"
 			value={insights.streak}
 			unit={insights.streak === 1 ? 'day' : 'days'}
-			icon={FlameIcon}
+			icon={Flame}
 			trend={insights.streak >= 3 ? 'positive' : 'neutral'}
 			trendLabel={insights.streak >= 3 ? 'On a roll' : insights.streak > 0 ? 'Keep it up' : 'Start today'}
 		/>
@@ -133,12 +131,12 @@ const insights = $derived.by(() => {
 			label="Avg Session"
 			value={insights.avgDuration || '—'}
 			unit={insights.avgDuration ? 'min' : ''}
-			icon={ClockIcon}
+			icon={Clock}
 		/>
 		<FitnessStatusCard
 			label="Best Day"
 			value={insights.mostConsistentDay ?? '—'}
-			icon={ActivityIcon}
+			icon={Activity}
 			trendLabel={insights.mostConsistentDay ? 'Most active day' : 'Log workouts to see'}
 		/>
 	</div>

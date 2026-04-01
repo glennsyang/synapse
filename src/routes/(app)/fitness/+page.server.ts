@@ -274,6 +274,7 @@ export const actions: Actions = {
 				time: form.data.time || null,
 				type: form.data.type,
 				durationMinutes: form.data.durationMinutes || null,
+				steps: form.data.steps || null,
 				notes: form.data.notes || null,
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString()
@@ -671,6 +672,7 @@ export const actions: Actions = {
 						time: form.data.time || null,
 						type: form.data.type,
 						durationMinutes: form.data.durationMinutes || null,
+						steps: form.data.steps || null,
 						notes: form.data.notes || null,
 						updatedAt: new Date().toISOString()
 					})
