@@ -1,44 +1,36 @@
 <script lang="ts">
-import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
-import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
-import BellRingIcon from '@lucide/svelte/icons/bell-ring';
+import ActivityIcon from '@lucide/svelte/icons/activity';
+import BellIcon from '@lucide/svelte/icons/bell';
+import ClockIcon from '@lucide/svelte/icons/clock';
 import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
-import MinusIcon from '@lucide/svelte/icons/minus';
+import FlameIcon from '@lucide/svelte/icons/flame';
 import ScaleIcon from '@lucide/svelte/icons/scale';
-import TargetIcon from '@lucide/svelte/icons/target';
-import TrendingDownIcon from '@lucide/svelte/icons/trending-down';
-import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
-import UtensilsCrossedIcon from '@lucide/svelte/icons/utensils-crossed';
 import { SvelteSet } from 'svelte/reactivity';
 import { toast } from 'svelte-sonner';
 
 import { navigating, page } from '$app/state';
 import PageShell from '$lib/components/app/PageShell.svelte';
-import WorkoutFrequencyChart from '$lib/components/fitness/analytics/WorkoutFrequencyChart.svelte';
-import WorkoutStatsBar from '$lib/components/fitness/analytics/WorkoutStatsBar.svelte';
-import CalorieProgress from '$lib/components/fitness/CalorieProgress.svelte';
-import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
+import ActivityHistorySheet from '$lib/components/fitness/dashboard/ActivityHistorySheet.svelte';
+import FitnessDashboardHeader from '$lib/components/fitness/dashboard/FitnessDashboardHeader.svelte';
+import FitnessMomentumPanel from '$lib/components/fitness/dashboard/FitnessMomentumPanel.svelte';
+import FitnessStatusCard from '$lib/components/fitness/dashboard/FitnessStatusCard.svelte';
+import NutritionInsightsSection from '$lib/components/fitness/dashboard/NutritionInsightsSection.svelte';
+import RecentActivityPreview from '$lib/components/fitness/dashboard/RecentActivityPreview.svelte';
+import ReminderSummarySection from '$lib/components/fitness/dashboard/ReminderSummarySection.svelte';
+import WeightInsightsSection from '$lib/components/fitness/dashboard/WeightInsightsSection.svelte';
+import WorkoutInsightsSection from '$lib/components/fitness/dashboard/WorkoutInsightsSection.svelte';
 import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
 import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
 import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
-import SetCalorieTargetDialog from '$lib/components/fitness/dialogs/SetCalorieTargetDialog.svelte';
-import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
-import MealEntryCard from '$lib/components/fitness/entries/MealEntryCard.svelte';
-import ReminderCard from '$lib/components/fitness/entries/ReminderCard.svelte';
-import WeightEntryCard from '$lib/components/fitness/entries/WeightEntryCard.svelte';
-import WorkoutEntryCard from '$lib/components/fitness/entries/WorkoutEntryCard.svelte';
-import WeightChart from '$lib/components/fitness/WeightChart.svelte';
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-import * as Card from '$lib/components/ui/card';
-import * as Tabs from '$lib/components/ui/tabs';
-import { getTodayString } from '$lib/utils/date';
+import { formatTime12Hour, getTodayString, parseLocalDateString } from '$lib/utils/date';
 
 import type { PageData } from './$types.js';
 
 let { data }: { data: PageData } = $props();
 
-// Delete dialog state
+// ─── Delete state ─────────────────────────────────────────────────────────────
 let weightEntryToDelete = $state<string | null>(null);
 let workoutToDelete = $state<string | null>(null);
 let mealToDelete = $state<string | null>(null);
@@ -58,7 +50,7 @@ let reminderToToggle = $state<{
 } | null>(null);
 let showToggleReminderDialog = $state(false);
 
-// Edit state
+// ─── Edit state ───────────────────────────────────────────────────────────────
 let weightToEdit = $state<{
 	id: string;
 	date: string;
@@ -89,37 +81,63 @@ let mealToEdit = $state<{
 	caloriesEstimate: number | null;
 } | null>(null);
 
-let activeTab = $state('workouts');
+// ─── History sheet ─────────────────────────────────────────────────────────────
+let historySheetOpen = $state(false);
+
+// ─── Toast notices ─────────────────────────────────────────────────────────────
 const handledNotices = new SvelteSet<string>();
 
 $effect(() => {
-	const tab = page.url.searchParams.get('tab');
-	if (tab === 'workouts' || tab === 'meals' || tab === 'reminders' || tab === 'weight') {
-		activeTab = tab;
-	}
-});
-
-$effect(() => {
 	const notice = page.url.searchParams.get('notice');
-	if (!notice || handledNotices.has(notice)) {
-		return;
-	}
-
+	if (!notice || handledNotices.has(notice)) return;
 	handledNotices.add(notice);
-	if (notice === 'reminder-disabled') {
-		toast.success('Reminder disabled successfully!');
-	} else if (notice === 'reminder-deleted') {
-		toast.success('Reminder deleted successfully!');
+	if (notice === 'reminder-disabled') toast.success('Reminder updated successfully!');
+	else if (notice === 'reminder-deleted') toast.success('Reminder deleted successfully!');
+});
+
+// ─── Hero KPI derivations ──────────────────────────────────────────────────────
+const today = $derived(getTodayString());
+
+const todayCalories = $derived(
+	data.meals.filter((m) => m.date === today).reduce((s, m) => s + (m.caloriesEstimate ?? 0), 0)
+);
+
+const calorieAdherence = $derived(
+	data.calorieTarget ? Math.round((todayCalories / data.calorieTarget.targetCalories) * 100) : null
+);
+
+const weeklySessionCount = $derived.by(() => {
+	const todayDate = parseLocalDateString(today);
+	const startOfWeek = new Date(todayDate);
+	startOfWeek.setDate(todayDate.getDate() - ((todayDate.getDay() + 6) % 7));
+	startOfWeek.setHours(0, 0, 0, 0);
+	return data.workouts.filter((w) => parseLocalDateString(w.date) >= startOfWeek).length;
+});
+
+const dayStreak = $derived.by(() => {
+	const workoutDates = new Set(data.workouts.map((w) => w.date));
+	let streak = 0;
+	const d = new Date(parseLocalDateString(today));
+	while (true) {
+		const dateStr = d.toISOString().slice(0, 10);
+		if (workoutDates.has(dateStr)) {
+			streak++;
+			d.setDate(d.getDate() - 1);
+		} else {
+			break;
+		}
 	}
+	return streak;
 });
 
-const todayTotalCalories = $derived.by(() => {
-	const today = getTodayString();
-	return data.meals
-		.filter((meal) => meal.date === today)
-		.reduce((sum, meal) => sum + (meal.caloriesEstimate || 0), 0);
+const weightDelta = $derived.by(() => {
+	if (data.weightEntries.length < 2) return null;
+	return data.weightEntries[0].weightLbs - data.weightEntries[1].weightLbs;
 });
 
+const nextReminder = $derived(data.reminders.find((r) => r.enabled) ?? null);
+
+// ─── Toggle reminder ───────────────────────────────────────────────────────────
 const toggleReminderDialogTitle = $derived(
 	reminderToToggle?.enabled ? 'Enable Reminder' : 'Disable Reminder'
 );
@@ -135,373 +153,289 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 	<PageSkeleton color="green" />
 {:else}
 	<PageShell>
-		<!-- Page header -->
-		<div class="mb-8">
-			<h1
-				class="font-display bg-linear-to-r from-green-500 to-emerald-600 bg-clip-text text-3xl font-bold text-transparent"
-			>
-				Fitness & Nutrition
-			</h1>
-			<p class="mt-2 text-muted-foreground">
-				Track your weight, workouts, and meals to achieve your fitness goals
-			</p>
+		<!-- Header with unified action cluster -->
+		<FitnessDashboardHeader
+			workoutForm={data.workoutForm}
+			weightForm={data.weightForm}
+			mealForm={data.mealForm}
+			goalForm={data.goalForm}
+			calorieForm={data.calorieForm}
+			reminderForm={data.reminderForm}
+		/>
+
+		<!-- Daily Status Band: Hero KPI cards -->
+		<div class="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+			<FitnessStatusCard
+				label="This Week"
+				value={weeklySessionCount}
+				unit="sessions"
+				icon={DumbbellIcon}
+				trend={weeklySessionCount >= 3 ? 'positive' : weeklySessionCount >= 1 ? 'neutral' : 'negative'}
+				trendLabel={weeklySessionCount >= 3
+					? 'Strong week'
+					: weeklySessionCount >= 1
+						? 'Keep going'
+						: 'Start today'}
+			/>
+			<FitnessStatusCard
+				label="Day Streak"
+				value={dayStreak}
+				unit={dayStreak === 1 ? 'day' : 'days'}
+				icon={FlameIcon}
+				trend={dayStreak >= 3 ? 'positive' : dayStreak > 0 ? 'neutral' : 'negative'}
+				trendLabel={dayStreak >= 5
+					? 'Excellent consistency'
+					: dayStreak >= 2
+						? 'Building habit'
+						: dayStreak === 1
+							? 'Day one — keep it up'
+							: 'Start a new streak'}
+			/>
+			<FitnessStatusCard
+				label="Weight"
+				value={data.weightStats.currentWeight ?? '—'}
+				unit={data.weightStats.currentWeight ? 'lbs' : ''}
+				icon={ScaleIcon}
+				trend={weightDelta == null
+					? 'neutral'
+					: weightDelta < -0.5
+						? 'positive'
+						: weightDelta > 0.5
+							? 'negative'
+							: 'neutral'}
+				trendLabel={weightDelta != null
+					? weightDelta < 0
+						? `${Math.abs(weightDelta).toFixed(1)} lbs down`
+						: weightDelta > 0
+							? `${weightDelta.toFixed(1)} lbs up`
+							: 'No change'
+					: 'Start logging'}
+			/>
+			<FitnessStatusCard
+				label="Today's Cal"
+				value={todayCalories}
+				unit="cal"
+				icon={ActivityIcon}
+				trend={calorieAdherence == null
+					? 'neutral'
+					: calorieAdherence >= 85 && calorieAdherence <= 110
+						? 'positive'
+						: calorieAdherence > 110
+							? 'negative'
+							: 'neutral'}
+				trendLabel={calorieAdherence != null ? `${calorieAdherence}% of target` : 'No target set'}
+			/>
+			<FitnessStatusCard
+				label="Next Reminder"
+				value={nextReminder ? formatTime12Hour(nextReminder.time) : '—'}
+				icon={BellIcon}
+				trendLabel={nextReminder
+					? `${nextReminder.workoutType} · ${nextReminder.cadence}`
+					: 'No reminders set'}
+			/>
+			<FitnessStatusCard
+				label="Reminders"
+				value={data.reminders.filter((r) => r.enabled).length}
+				unit="active"
+				icon={ClockIcon}
+				trendLabel={data.reminders.length > 0
+					? `${data.reminders.length} total`
+					: 'Create a reminder'}
+			/>
 		</div>
 
-		<Tabs.Root bind:value={activeTab} class="w-full">
-			<Tabs.List
-				class="inline-flex h-10 w-full items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
-			>
-				<Tabs.Trigger
-					value="workouts"
-					class="font-display flex items-center gap-2 data-[state=active]:bg-green-500/15 data-[state=active]:text-green-700 dark:data-[state=active]:text-green-400"
-				>
-					<DumbbellIcon class="h-4 w-4" />
-					<span>Workouts</span>
-				</Tabs.Trigger>
-				<Tabs.Trigger
-					value="weight"
-					class="font-display flex items-center gap-2 data-[state=active]:bg-green-500/15 data-[state=active]:text-green-700 dark:data-[state=active]:text-green-400"
-				>
-					<ScaleIcon class="h-4 w-4" />
-					<span>Weight</span>
-				</Tabs.Trigger>
-				<Tabs.Trigger
-					value="meals"
-					class="font-display flex items-center gap-2 data-[state=active]:bg-green-500/15 data-[state=active]:text-green-700 dark:data-[state=active]:text-green-400"
-				>
-					<UtensilsCrossedIcon class="h-4 w-4" />
-					<span>Meals</span>
-				</Tabs.Trigger>
-				<Tabs.Trigger
-					value="reminders"
-					class="font-display flex items-center gap-2 data-[state=active]:bg-green-500/15 data-[state=active]:text-green-700 dark:data-[state=active]:text-green-400"
-				>
-					<BellRingIcon class="h-4 w-4" />
-					<span>Reminders</span>
-				</Tabs.Trigger>
-			</Tabs.List>
+		<!-- Momentum Panel: 14-day visual strip -->
+		<FitnessMomentumPanel
+			workouts={data.workouts}
+			weightEntries={data.weightEntries}
+			meals={data.meals}
+			calorieTarget={data.calorieTarget?.targetCalories ?? null}
+		/>
 
-			<!-- ─── WORKOUTS TAB ─────────────────────────────────────── -->
-			<Tabs.Content value="workouts" class="mt-6 w-full space-y-6">
-				<div class="flex items-center justify-between">
-					<div>
-						<h2 class="font-display text-xl font-bold">Workouts</h2>
-						<p class="text-sm text-muted-foreground">Your training history</p>
-					</div>
-					<LogWorkoutDialog formData={data.workoutForm} />
-				</div>
+		<!-- Workouts Section -->
+		<WorkoutInsightsSection
+			workouts={data.workouts}
+			workoutForm={data.workoutForm}
+			onEdit={(w) => (workoutToEdit = w)}
+			onDelete={(id) => {
+				workoutToDelete = id;
+				showDeleteWorkoutDialog = true;
+			}}
+		/>
 
-				<WorkoutStatsBar workouts={data.workouts} />
+		<!-- Weight Section -->
+		<WeightInsightsSection
+			weightEntries={data.weightEntries}
+			weightStats={data.weightStats}
+			goalWeight={data.goalWeight}
+			weightForm={data.weightForm}
+			goalForm={data.goalForm}
+			onEdit={(e) => (weightToEdit = e)}
+			onDelete={(id) => {
+				weightEntryToDelete = id;
+				showDeleteWeightDialog = true;
+			}}
+		/>
 
-				<WorkoutFrequencyChart workouts={data.workouts} />
+		<!-- Nutrition Section -->
+		<NutritionInsightsSection
+			meals={data.meals}
+			calorieTarget={data.calorieTarget}
+			mealForm={data.mealForm}
+			calorieForm={data.calorieForm}
+			onEdit={(m) => (mealToEdit = m)}
+			onDelete={(id) => {
+				mealToDelete = id;
+				showDeleteMealDialog = true;
+			}}
+		/>
 
-				{#if data.workouts.length > 0}
-					<Card.Root>
-						<Card.Header> <Card.Title>Recent Workouts</Card.Title> </Card.Header>
-						<Card.Content class="max-h-96 overflow-y-auto space-y-2 pr-1">
-							{#each data.workouts.slice(0, 10) as workout (workout.id)}
-								<WorkoutEntryCard
-									{workout}
-									onEdit={(w) => {
-										workoutToEdit = w;
-									}}
-									onDelete={(id) => {
-										workoutToDelete = id;
-										showDeleteWorkoutDialog = true;
-									}}
-								/>
-							{/each}
-						</Card.Content>
-					</Card.Root>
-				{/if}
+		<!-- Reminders Section -->
+		<ReminderSummarySection
+			reminders={data.reminders}
+			reminderForm={data.reminderForm}
+			onToggle={(r) => {
+				reminderToToggle = r;
+				showToggleReminderDialog = true;
+			}}
+			onDelete={(id) => {
+				reminderToDelete = id;
+				showDeleteReminderDialog = true;
+			}}
+		/>
 
-				{#if workoutToEdit}
-					<LogWorkoutDialog
-						formData={data.workoutForm}
-						editEntry={workoutToEdit}
-						onClose={() => {
-							workoutToEdit = null;
-						}}
-					/>
-				{/if}
+		<!-- Recent Activity Preview -->
+		<RecentActivityPreview
+			workouts={data.workouts}
+			weightEntries={data.weightEntries}
+			meals={data.meals}
+			onEditWorkout={(w) => (workoutToEdit = w)}
+			onDeleteWorkout={(id) => {
+				workoutToDelete = id;
+				showDeleteWorkoutDialog = true;
+			}}
+			onEditWeight={(e) => (weightToEdit = e)}
+			onDeleteWeight={(id) => {
+				weightEntryToDelete = id;
+				showDeleteWeightDialog = true;
+			}}
+			onEditMeal={(m) => (mealToEdit = m)}
+			onDeleteMeal={(id) => {
+				mealToDelete = id;
+				showDeleteMealDialog = true;
+			}}
+			onViewAll={() => (historySheetOpen = true)}
+		/>
 
-				{#if workoutToDelete}
-					<ConfirmDialog
-						bind:open={showDeleteWorkoutDialog}
-						title="Delete Workout"
-						message="Are you sure you want to delete this workout? This action cannot be undone."
-						confirmButtonText="Delete"
-						actionUrl="?/deleteWorkout"
-						id={workoutToDelete}
-					/>
-				{/if}
-			</Tabs.Content>
+		<!-- Full Activity History Sheet -->
+		<ActivityHistorySheet
+			bind:open={historySheetOpen}
+			workouts={data.workouts}
+			weightEntries={data.weightEntries}
+			meals={data.meals}
+			onEditWorkout={(w) => (workoutToEdit = w)}
+			onDeleteWorkout={(id) => {
+				workoutToDelete = id;
+				showDeleteWorkoutDialog = true;
+			}}
+			onEditWeight={(e) => (weightToEdit = e)}
+			onDeleteWeight={(id) => {
+				weightEntryToDelete = id;
+				showDeleteWeightDialog = true;
+			}}
+			onEditMeal={(m) => (mealToEdit = m)}
+			onDeleteMeal={(id) => {
+				mealToDelete = id;
+				showDeleteMealDialog = true;
+			}}
+		/>
 
-			<!-- ─── WEIGHT TAB ────────────────────────────────────────── -->
-			<Tabs.Content value="weight" class="mt-6 w-full space-y-6">
-				<div class="flex items-center justify-between">
-					<div>
-						<h2 class="font-display text-xl font-bold">Weight</h2>
-						<p class="text-sm text-muted-foreground">Track your progress toward your goal</p>
-					</div>
-					<div class="flex items-center gap-2">
-						<SetGoalWeightDialog formData={data.goalForm} />
-						<LogWeightDialog formData={data.weightForm} />
-					</div>
-				</div>
+		<!-- ─── Edit dialogs ──────────────────────────────────────────────────── -->
+		{#if workoutToEdit}
+			<LogWorkoutDialog
+				formData={data.workoutForm}
+				editEntry={workoutToEdit}
+				onClose={() => (workoutToEdit = null)}
+			/>
+		{/if}
 
-				<!-- Stats row -->
-				<div class="grid gap-4 md:grid-cols-4">
-					<Card.Root>
-						<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
-							<Card.Title class="text-sm font-medium">Current Weight</Card.Title>
-							<ScaleIcon class="h-4 w-4 text-muted-foreground" />
-						</Card.Header>
-						<Card.Content>
-							<div class="font-display text-2xl font-bold">
-								{data.weightStats.currentWeight ?? '-'}
-								lbs
-							</div>
-						</Card.Content>
-					</Card.Root>
+		{#if weightToEdit}
+			<LogWeightDialog
+				formData={data.weightForm}
+				editEntry={weightToEdit}
+				onClose={() => (weightToEdit = null)}
+			/>
+		{/if}
 
-					<Card.Root>
-						<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
-							<Card.Title class="text-sm font-medium">Goal Weight</Card.Title>
-							<TargetIcon class="h-4 w-4 text-muted-foreground" />
-						</Card.Header>
-						<Card.Content>
-							<div class="font-display text-2xl font-bold">
-								{data.goalWeight?.targetWeightLbs ?? '-'}
-								lbs
-							</div>
-						</Card.Content>
-					</Card.Root>
+		{#if mealToEdit}
+			<LogMealDialog
+				formData={data.mealForm}
+				editEntry={mealToEdit}
+				onClose={() => (mealToEdit = null)}
+			/>
+		{/if}
 
-					<Card.Root>
-						<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
-							<Card.Title class="text-sm font-medium">Remaining</Card.Title>
-							{#if data.weightStats.remainingToGoal && data.weightStats.remainingToGoal > 0}
-								<ArrowUpIcon class="h-4 w-4 text-destructive" />
-							{:else if data.weightStats.remainingToGoal && data.weightStats.remainingToGoal < 0}
-								<ArrowDownIcon class="h-4 w-4 text-green-600" />
-							{:else}
-								<MinusIcon class="h-4 w-4 text-muted-foreground" />
-							{/if}
-						</Card.Header>
-						<Card.Content>
-							<div class="font-display text-2xl font-bold">
-								{data.weightStats.remainingToGoal
-									? `${Math.abs(data.weightStats.remainingToGoal).toFixed(1)} lbs`
-									: '-'}
-							</div>
-						</Card.Content>
-					</Card.Root>
+		<!-- ─── Confirm dialogs ────────────────────────────────────────────────── -->
+		{#if workoutToDelete}
+			<ConfirmDialog
+				bind:open={showDeleteWorkoutDialog}
+				title="Delete Workout"
+				message="Are you sure you want to delete this workout? This action cannot be undone."
+				confirmButtonText="Delete"
+				actionUrl="?/deleteWorkout"
+				id={workoutToDelete}
+			/>
+		{/if}
 
-					<Card.Root>
-						<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
-							<Card.Title class="text-sm font-medium">Trend</Card.Title>
-							{#if data.weightStats.trend === 'down'}
-								<TrendingDownIcon class="h-4 w-4 text-green-600" />
-							{:else if data.weightStats.trend === 'up'}
-								<TrendingUpIcon class="h-4 w-4 text-destructive" />
-							{:else}
-								<MinusIcon class="h-4 w-4 text-muted-foreground" />
-							{/if}
-						</Card.Header>
-						<Card.Content>
-							<div class="font-display text-2xl font-bold capitalize">{data.weightStats.trend}</div>
-						</Card.Content>
-					</Card.Root>
-				</div>
+		{#if weightEntryToDelete}
+			<ConfirmDialog
+				bind:open={showDeleteWeightDialog}
+				title="Delete Weight Entry"
+				message="Are you sure you want to delete this weight entry? This action cannot be undone."
+				confirmButtonText="Delete"
+				actionUrl="?/deleteWeight"
+				id={weightEntryToDelete}
+			/>
+		{/if}
 
-				<!-- Weight chart -->
-				{#if data.weightEntries.length === 0}
-					<div class="flex h-48 items-center justify-center rounded-lg border border-dashed">
-						<p class="text-sm text-muted-foreground">
-							No weight data yet. Start logging to see your progress!
-						</p>
-					</div>
-				{:else}
-					<WeightChart
-						title="Weight Progress"
-						description="Track your weight over time"
-						entries={data.weightEntries}
-						goalWeight={data.goalWeight?.targetWeightLbs || null}
-					/>
-				{/if}
+		{#if mealToDelete}
+			<ConfirmDialog
+				bind:open={showDeleteMealDialog}
+				title="Delete Meal"
+				message="Are you sure you want to delete this meal entry? This action cannot be undone."
+				confirmButtonText="Delete"
+				actionUrl="?/deleteMeal"
+				id={mealToDelete}
+			/>
+		{/if}
 
-				<!-- Recent weight entries -->
-				{#if data.weightEntries.length > 0}
-					<Card.Root>
-						<Card.Header> <Card.Title>Recent Entries</Card.Title> </Card.Header>
-						<Card.Content class="max-h-96 overflow-y-auto space-y-2 pr-1">
-							{#each data.weightEntries.slice(0, 10) as entry, i (entry.id)}
-								<WeightEntryCard
-									{entry}
-									previousEntry={data.weightEntries[i + 1] ?? null}
-									onEdit={(e) => {
-										weightToEdit = e;
-									}}
-									onDelete={(id) => {
-										weightEntryToDelete = id;
-										showDeleteWeightDialog = true;
-									}}
-								/>
-							{/each}
-						</Card.Content>
-					</Card.Root>
-				{/if}
+		{#if reminderToToggle}
+			<ConfirmDialog
+				bind:open={showToggleReminderDialog}
+				title={toggleReminderDialogTitle || 'Update Reminder'}
+				message={toggleReminderDialogMessage || 'Are you sure you want to update this reminder?'}
+				confirmButtonText={toggleReminderDialogButtonText || 'Confirm'}
+				actionUrl="?/updateReminder"
+				id={reminderToToggle.id}
+				hiddenFields={{
+					workoutType: reminderToToggle.workoutType,
+					cadence: reminderToToggle.cadence,
+					time: reminderToToggle.time,
+					daysOfWeek: reminderToToggle.daysOfWeek ?? '',
+					enabled: reminderToToggle.enabled
+				}}
+			/>
+		{/if}
 
-				{#if weightToEdit}
-					<LogWeightDialog
-						formData={data.weightForm}
-						editEntry={weightToEdit}
-						onClose={() => {
-							weightToEdit = null;
-						}}
-					/>
-				{/if}
-
-				{#if weightEntryToDelete}
-					<ConfirmDialog
-						bind:open={showDeleteWeightDialog}
-						title="Delete Weight Entry"
-						message="Are you sure you want to delete this weight entry? This action cannot be undone."
-						confirmButtonText="Delete"
-						actionUrl="?/deleteWeight"
-						id={weightEntryToDelete}
-					/>
-				{/if}
-			</Tabs.Content>
-
-			<!-- ─── MEALS TAB ─────────────────────────────────────────── -->
-			<Tabs.Content value="meals" class="mt-6 w-full space-y-6">
-				<div class="flex items-center justify-between">
-					<div>
-						<h2 class="font-display text-xl font-bold">Meals</h2>
-						<p class="text-sm text-muted-foreground">Nutrition tracking and calorie goals</p>
-					</div>
-					<div class="flex items-center gap-2">
-						<SetCalorieTargetDialog formData={data.calorieForm} />
-						<LogMealDialog formData={data.mealForm} />
-					</div>
-				</div>
-
-				<CalorieProgress
-					consumed={todayTotalCalories}
-					target={data.calorieTarget?.targetCalories || null}
-				/>
-
-				{#if data.meals.length > 0}
-					<Card.Root>
-						<Card.Header> <Card.Title>Recent Meals</Card.Title> </Card.Header>
-						<Card.Content class="max-h-96 overflow-y-auto space-y-2 pr-1">
-							{#each data.meals.slice(0, 15) as meal (meal.id)}
-								<MealEntryCard
-									{meal}
-									onEdit={(m) => {
-										mealToEdit = m;
-									}}
-									onDelete={(id) => {
-										mealToDelete = id;
-										showDeleteMealDialog = true;
-									}}
-								/>
-							{/each}
-						</Card.Content>
-					</Card.Root>
-				{/if}
-
-				{#if mealToEdit}
-					<LogMealDialog
-						formData={data.mealForm}
-						editEntry={mealToEdit}
-						onClose={() => {
-							mealToEdit = null;
-						}}
-					/>
-				{/if}
-
-				{#if mealToDelete}
-					<ConfirmDialog
-						bind:open={showDeleteMealDialog}
-						title="Delete Meal"
-						message="Are you sure you want to delete this meal entry? This action cannot be undone."
-						confirmButtonText="Delete"
-						actionUrl="?/deleteMeal"
-						id={mealToDelete}
-					/>
-				{/if}
-			</Tabs.Content>
-
-			<!-- ─── REMINDERS TAB ─────────────────────────────────────── -->
-			<Tabs.Content value="reminders" class="mt-6 w-full space-y-6">
-				<div class="flex items-center justify-between">
-					<div>
-						<h2 class="font-display text-xl font-bold">Reminders</h2>
-						<p class="text-sm text-muted-foreground">Email reminders to keep you consistent</p>
-					</div>
-					<CreateReminderDialog formData={data.reminderForm} />
-				</div>
-
-				{#if data.reminders.length > 0}
-					<Card.Root>
-						<Card.Header> <Card.Title>Active Reminders</Card.Title> </Card.Header>
-						<Card.Content class="space-y-2">
-							{#each data.reminders as reminder (reminder.id)}
-								<ReminderCard
-									{reminder}
-									onToggle={(r) => {
-										reminderToToggle = r;
-										showToggleReminderDialog = true;
-									}}
-									onDelete={(id) => {
-										reminderToDelete = id;
-										showDeleteReminderDialog = true;
-									}}
-								/>
-							{/each}
-						</Card.Content>
-					</Card.Root>
-				{:else}
-					<Card.Root>
-						<Card.Content class="pt-6 text-center text-muted-foreground">
-							<p>No workout reminders scheduled yet.</p>
-							<p class="mt-1 text-sm">Create your first reminder above to get started!</p>
-						</Card.Content>
-					</Card.Root>
-				{/if}
-
-				{#if reminderToToggle}
-					<ConfirmDialog
-						bind:open={showToggleReminderDialog}
-						title={toggleReminderDialogTitle || 'Update Reminder'}
-						message={toggleReminderDialogMessage || 'Are you sure you want to update this reminder?'}
-						confirmButtonText={toggleReminderDialogButtonText || 'Confirm'}
-						actionUrl="?/updateReminder"
-						id={reminderToToggle.id}
-						hiddenFields={{
-							workoutType: reminderToToggle.workoutType,
-							cadence: reminderToToggle.cadence,
-							time: reminderToToggle.time,
-							daysOfWeek: reminderToToggle.daysOfWeek ?? '',
-							enabled: reminderToToggle.enabled
-						}}
-					/>
-				{/if}
-
-				{#if reminderToDelete}
-					<ConfirmDialog
-						bind:open={showDeleteReminderDialog}
-						title="Delete Reminder"
-						message="Are you sure you want to delete this reminder? This action cannot be undone."
-						confirmButtonText="Delete"
-						actionUrl="?/deleteReminder"
-						id={reminderToDelete}
-					/>
-				{/if}
-			</Tabs.Content>
-		</Tabs.Root>
+		{#if reminderToDelete}
+			<ConfirmDialog
+				bind:open={showDeleteReminderDialog}
+				title="Delete Reminder"
+				message="Are you sure you want to delete this reminder? This action cannot be undone."
+				confirmButtonText="Delete"
+				actionUrl="?/deleteReminder"
+				id={reminderToDelete}
+			/>
+		{/if}
 	</PageShell>
 {/if}

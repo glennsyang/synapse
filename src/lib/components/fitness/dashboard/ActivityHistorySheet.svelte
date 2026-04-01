@@ -1,0 +1,373 @@
+<script lang="ts">
+import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
+import EditIcon from '@lucide/svelte/icons/edit';
+import ScaleIcon from '@lucide/svelte/icons/scale';
+import Trash2Icon from '@lucide/svelte/icons/trash-2';
+import UtensilsCrossedIcon from '@lucide/svelte/icons/utensils-crossed';
+
+import { Badge } from '$lib/components/ui/badge';
+import { Button } from '$lib/components/ui/button';
+import * as Sheet from '$lib/components/ui/sheet';
+import * as Tooltip from '$lib/components/ui/tooltip';
+import { formatDateMedium, formatDateShort, formatTime12Hour } from '$lib/utils/date';
+
+interface Exercise {
+	exerciseName: string;
+	sets: number | null;
+	reps: number | null;
+	weightLbs: number | null;
+}
+
+interface Workout {
+	id: string;
+	date: string;
+	time: string | null;
+	type: string;
+	durationMinutes: number | null;
+	notes: string | null;
+	exercises: Exercise[];
+}
+
+interface WeightEntry {
+	id: string;
+	date: string;
+	time: string | null;
+	weightLbs: number;
+	createdAt: string;
+}
+
+interface Meal {
+	id: string;
+	date: string;
+	timeOfDay: string;
+	description: string;
+	caloriesEstimate: number | null;
+}
+
+type FilterKind = 'all' | 'workouts' | 'weight' | 'meals';
+
+type ActivityItem =
+	| { kind: 'workout'; data: Workout; sortKey: string }
+	| { kind: 'weight'; data: WeightEntry; sortKey: string }
+	| { kind: 'meal'; data: Meal; sortKey: string };
+
+interface Props {
+	open: boolean;
+	workouts: Workout[];
+	weightEntries: WeightEntry[];
+	meals: Meal[];
+	onEditWorkout: (w: Workout) => void;
+	onDeleteWorkout: (id: string) => void;
+	onEditWeight: (e: { id: string; date: string; time: string | null; weightLbs: number }) => void;
+	onDeleteWeight: (id: string) => void;
+	onEditMeal: (m: {
+		id: string;
+		date: string;
+		timeOfDay: string;
+		description: string;
+		caloriesEstimate: number | null;
+	}) => void;
+	onDeleteMeal: (id: string) => void;
+}
+
+let {
+	open = $bindable(false),
+	workouts,
+	weightEntries,
+	meals,
+	onEditWorkout,
+	onDeleteWorkout,
+	onEditWeight,
+	onDeleteWeight,
+	onEditMeal,
+	onDeleteMeal
+}: Props = $props();
+
+let filter = $state<FilterKind>('all');
+
+const allItems = $derived.by((): ActivityItem[] => {
+	const items: ActivityItem[] = [
+		...workouts.map((w) => ({
+			kind: 'workout' as const,
+			data: w,
+			sortKey: `${w.date}T${w.time ?? '23:59:59'}`
+		})),
+		...weightEntries.map((e) => ({
+			kind: 'weight' as const,
+			data: e,
+			sortKey: `${e.date}T${e.time ?? '12:00:00'}`
+		})),
+		...meals.map((m) => ({
+			kind: 'meal' as const,
+			data: m,
+			sortKey: `${m.date}T00:00:00`
+		}))
+	];
+	return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+});
+
+const filtered = $derived(
+	filter === 'all'
+		? allItems
+		: allItems.filter((item) => {
+				if (filter === 'workouts') return item.kind === 'workout';
+				if (filter === 'weight') return item.kind === 'weight';
+				if (filter === 'meals') return item.kind === 'meal';
+				return true;
+			})
+);
+
+// Group by date
+const grouped = $derived.by(() => {
+	const groups: { date: string; label: string; items: ActivityItem[] }[] = [];
+	let current: (typeof groups)[0] | null = null;
+
+	for (const item of filtered) {
+		const date = item.sortKey.slice(0, 10);
+		if (!current || current.date !== date) {
+			current = {
+				date,
+				label: formatDateMedium(date),
+				items: []
+			};
+			groups.push(current);
+		}
+		current.items.push(item);
+	}
+	return groups;
+});
+
+const typeStyles: Record<string, { badge: string }> = {
+	strength: { badge: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' },
+	cardio: { badge: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' },
+	yoga: { badge: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300' },
+	other: { badge: 'bg-stone-100 text-stone-700 dark:bg-stone-800/50 dark:text-stone-300' }
+};
+
+const filters: { value: FilterKind; label: string }[] = [
+	{ value: 'all', label: 'All' },
+	{ value: 'workouts', label: 'Workouts' },
+	{ value: 'weight', label: 'Weight' },
+	{ value: 'meals', label: 'Meals' }
+];
+</script>
+
+<Sheet.Root bind:open>
+	<Sheet.Content side="right" class="w-full overflow-y-auto sm:max-w-lg">
+		<Sheet.Header>
+			<Sheet.Title class="font-display text-stone-900 dark:text-stone-100">
+				Activity History
+			</Sheet.Title>
+			<Sheet.Description class="text-stone-500 dark:text-stone-400">
+				All logged workouts, weight entries, and meals
+			</Sheet.Description>
+		</Sheet.Header>
+
+		<!-- Filter tabs -->
+		<div
+			class="mt-4 flex gap-1 rounded-xl border border-stone-200 bg-stone-100 p-1 dark:border-stone-700 dark:bg-stone-800"
+		>
+			{#each filters as f (f.value)}
+				<button
+					type="button"
+					class="flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-all {filter === f.value
+						? 'bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-stone-100'
+						: 'text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200'}"
+					onclick={() => (filter = f.value)}
+				>
+					{f.label}
+				</button>
+			{/each}
+		</div>
+
+		<!-- Grouped history -->
+		<div class="mt-6 space-y-6">
+			{#if grouped.length === 0}
+				<p class="py-8 text-center text-sm text-stone-500 dark:text-stone-400">No entries found</p>
+			{/if}
+
+			{#each grouped as group (group.date)}
+				<div>
+					<h3
+						class="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400"
+					>
+						{group.label}
+					</h3>
+					<ul class="space-y-1.5">
+						{#each group.items as item (item.kind + item.data.id)}
+							{#if item.kind === 'workout'}
+								{@const style = typeStyles[item.data.type] ?? typeStyles.other}
+								<li
+									class="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-2.5 dark:border-stone-800 dark:bg-stone-900"
+								>
+									<DumbbellIcon class="h-4 w-4 shrink-0 text-stone-400" />
+									<div class="min-w-0 flex-1">
+										<div class="flex items-center gap-2">
+											<Badge class="text-xs {style.badge}">{item.data.type}</Badge>
+											{#if item.data.durationMinutes}
+												<span class="text-xs text-stone-500">{item.data.durationMinutes} min</span>
+											{/if}
+										</div>
+										{#if item.data.time}
+											<p class="mt-0.5 text-xs text-stone-400">
+												{formatTime12Hour(item.data.time)}
+											</p>
+										{/if}
+										{#if item.data.exercises?.length}
+											<p class="mt-0.5 text-xs text-stone-400">
+												{item.data.exercises.length}
+												exercises
+											</p>
+										{/if}
+									</div>
+									<div class="flex shrink-0 items-center gap-0.5">
+										<Tooltip.Root>
+											<Tooltip.Trigger>
+												{#snippet child({ props })}
+													<Button
+														{...props}
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="h-7 w-7"
+														onclick={() => { onEditWorkout(item.data); open = false; }}
+													>
+														<EditIcon class="h-3.5 w-3.5" />
+													</Button>
+												{/snippet}
+											</Tooltip.Trigger>
+											<Tooltip.Content>Edit workout entry</Tooltip.Content>
+										</Tooltip.Root>
+										<Tooltip.Root>
+											<Tooltip.Trigger>
+												{#snippet child({ props })}
+													<Button
+														{...props}
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+														onclick={() => { onDeleteWorkout(item.data.id); open = false; }}
+													>
+														<Trash2Icon class="h-3.5 w-3.5" />
+													</Button>
+												{/snippet}
+											</Tooltip.Trigger>
+											<Tooltip.Content>Delete workout entry</Tooltip.Content>
+										</Tooltip.Root>
+									</div>
+								</li>
+							{:else if item.kind === 'weight'}
+								<li
+									class="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-2.5 dark:border-stone-800 dark:bg-stone-900"
+								>
+									<ScaleIcon class="h-4 w-4 shrink-0 text-emerald-500" />
+									<div class="min-w-0 flex-1">
+										<span
+											class="font-display text-sm font-semibold text-stone-900 dark:text-stone-100"
+										>
+											{item.data.weightLbs}
+											lbs
+										</span>
+										{#if item.data.time}
+											<p class="text-xs text-stone-400">{formatTime12Hour(item.data.time)}</p>
+										{/if}
+									</div>
+									<div class="flex shrink-0 items-center gap-0.5">
+										<Tooltip.Root>
+											<Tooltip.Trigger>
+												{#snippet child({ props })}
+													<Button
+														{...props}
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="h-7 w-7"
+														onclick={() => { onEditWeight(item.data); open = false; }}
+													>
+														<EditIcon class="h-3.5 w-3.5" />
+													</Button>
+												{/snippet}
+											</Tooltip.Trigger>
+											<Tooltip.Content>Edit weight entry</Tooltip.Content>
+										</Tooltip.Root>
+										<Tooltip.Root>
+											<Tooltip.Trigger>
+												{#snippet child({ props })}
+													<Button
+														{...props}
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+														onclick={() => { onDeleteWeight(item.data.id); open = false; }}
+													>
+														<Trash2Icon class="h-3.5 w-3.5" />
+													</Button>
+												{/snippet}
+											</Tooltip.Trigger>
+											<Tooltip.Content>Delete weight entry</Tooltip.Content>
+										</Tooltip.Root>
+									</div>
+								</li>
+							{:else if item.kind === 'meal'}
+								<li
+									class="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-3 py-2.5 dark:border-stone-800 dark:bg-stone-900"
+								>
+									<UtensilsCrossedIcon class="h-4 w-4 shrink-0 text-amber-500" />
+									<div class="min-w-0 flex-1">
+										<p class="truncate text-sm text-stone-800 dark:text-stone-200">
+											{item.data.description}
+										</p>
+										<p class="mt-0.5 text-xs text-stone-400 capitalize">
+											{item.data.timeOfDay}
+											{#if item.data.caloriesEstimate}
+												· {item.data.caloriesEstimate} cal
+											{/if}
+										</p>
+									</div>
+									<div class="flex shrink-0 items-center gap-0.5">
+										<Tooltip.Root>
+											<Tooltip.Trigger>
+												{#snippet child({ props })}
+													<Button
+														{...props}
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="h-7 w-7"
+														onclick={() => { onEditMeal(item.data); open = false; }}
+													>
+														<EditIcon class="h-3.5 w-3.5" />
+													</Button>
+												{/snippet}
+											</Tooltip.Trigger>
+											<Tooltip.Content>Edit meal entry</Tooltip.Content>
+										</Tooltip.Root>
+										<Tooltip.Root>
+											<Tooltip.Trigger>
+												{#snippet child({ props })}
+													<Button
+														{...props}
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+														onclick={() => { onDeleteMeal(item.data.id); open = false; }}
+													>
+														<Trash2Icon class="h-3.5 w-3.5" />
+													</Button>
+												{/snippet}
+											</Tooltip.Trigger>
+											<Tooltip.Content>Delete meal entry</Tooltip.Content>
+										</Tooltip.Root>
+									</div>
+								</li>
+							{/if}
+						{/each}
+					</ul>
+				</div>
+			{/each}
+		</div>
+	</Sheet.Content>
+</Sheet.Root>
