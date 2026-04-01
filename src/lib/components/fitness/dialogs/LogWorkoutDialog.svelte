@@ -38,22 +38,25 @@ interface EditWorkout {
 let {
 	formData,
 	editEntry = null,
-	onClose
+	onClose,
+	open = $bindable(false)
 }: {
 	formData: SuperValidated<LogWorkoutData>;
 	editEntry?: EditWorkout | null;
 	onClose?: () => void;
+	open?: boolean;
 } = $props();
 
 const isEditing = $derived(editEntry !== null);
 
-let open = $state(false);
+let internalOpen = $state(false);
+const dialogOpen = $derived(open !== undefined ? open : internalOpen);
 let workoutExercises = $state<Exercise[]>([]);
 
 // Open dialog externally when editEntry is provided
 $effect(() => {
-	if (editEntry) {
-		open = true;
+	if (editEntry && open === undefined) {
+		internalOpen = true;
 	}
 });
 
@@ -100,22 +103,30 @@ $effect(() => {
 
 // Default the date to today when opening for new entry
 $effect(() => {
-	if (open && !isEditing && !$form.date) {
+	if (dialogOpen && !isEditing && !$form.date) {
 		$form.date = getTodayString();
 	}
 });
 
 function handleOpenChange(isOpen: boolean) {
-	open = isOpen;
-	if (!isOpen) {
-		workoutExercises = [];
-		onClose?.();
+	if (open !== undefined) {
+		// Externally controlled - notify via onClose
+		if (!isOpen && onClose) {
+			onClose();
+		}
+	} else {
+		// Internally controlled
+		internalOpen = isOpen;
+		if (!isOpen) {
+			workoutExercises = [];
+			onClose?.();
+		}
 	}
 }
 </script>
 
-<Dialog.Root {open} onOpenChange={handleOpenChange}>
-	{#if !isEditing}
+<Dialog.Root open={dialogOpen} onOpenChange={handleOpenChange}>
+	{#if !isEditing && open === undefined}
 		<Dialog.Trigger>
 			{#snippet child({ props })}
 				<Button {...props} class="bg-green-600 text-white hover:bg-green-700">

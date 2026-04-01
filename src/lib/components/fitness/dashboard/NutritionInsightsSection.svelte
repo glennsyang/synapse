@@ -4,7 +4,6 @@ import { BarChart } from 'layerchart';
 import type { Infer, SuperValidated } from 'sveltekit-superforms';
 import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
 import SetCalorieTargetDialog from '$lib/components/fitness/dialogs/SetCalorieTargetDialog.svelte';
-import MealEntryCard from '$lib/components/fitness/entries/MealEntryCard.svelte';
 import * as Card from '$lib/components/ui/card';
 import * as Chart from '$lib/components/ui/chart';
 import type { logMealSchema, setCalorieTargetSchema } from '$lib/schemas/fitness';
@@ -29,17 +28,9 @@ interface Props {
 	calorieTarget: CalorieTarget | null | undefined;
 	mealForm: SuperValidated<Infer<typeof logMealSchema>>;
 	calorieForm: SuperValidated<Infer<typeof setCalorieTargetSchema>>;
-	onEdit: (meal: {
-		id: string;
-		date: string;
-		timeOfDay: string;
-		description: string;
-		caloriesEstimate: number | null;
-	}) => void;
-	onDelete: (id: string) => void;
 }
 
-let { meals, calorieTarget, mealForm, calorieForm, onEdit, onDelete }: Props = $props();
+let { meals, calorieTarget, mealForm, calorieForm }: Props = $props();
 
 const target = $derived(calorieTarget?.targetCalories ?? null);
 
@@ -104,16 +95,8 @@ const chartConfig = {
 } satisfies Chart.ChartConfig;
 </script>
 
-<section class="mb-8 space-y-4">
+<section class="mb-2 space-y-4">
 	<div class="flex items-center justify-between">
-		<div>
-			<h2 class="font-display text-xl font-semibold text-stone-900 dark:text-stone-100">
-				Nutrition
-			</h2>
-			<p class="text-sm text-stone-500 dark:text-stone-400">
-				Calorie adherence and consistency over time
-			</p>
-		</div>
 		<div class="flex items-center gap-2">
 			<SetCalorieTargetDialog formData={calorieForm} />
 			<LogMealDialog formData={mealForm} />
@@ -168,12 +151,12 @@ const chartConfig = {
 
 	<!-- 7-day calorie adherence chart -->
 	{#if meals.length > 0}
-		<Card.Root class="border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900/40">
+		<Card.Root class="border-0 bg-white shadow-sm dark:bg-zinc-900 dark:shadow-zinc-800/50">
 			<Card.Header>
-				<Card.Title class="text-sm font-medium text-stone-700 dark:text-stone-300">
+				<Card.Title class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
 					7-Day Calorie Overview
 				</Card.Title>
-				<Card.Description class="text-xs text-stone-500 dark:text-stone-400">
+				<Card.Description class="text-xs text-zinc-500 dark:text-zinc-400">
 					Daily intake{target ? ` vs ${target} cal target` : ''}
 				</Card.Description>
 			</Card.Header>
@@ -189,22 +172,6 @@ const chartConfig = {
 						{/snippet}
 					</BarChart>
 				</Chart.Container>
-			</Card.Content>
-		</Card.Root>
-	{/if}
-
-	<!-- Recent meals -->
-	{#if meals.length > 0}
-		<Card.Root class="border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900/40">
-			<Card.Header class="pb-2">
-				<Card.Title class="text-sm font-medium text-stone-700 dark:text-stone-300">
-					Recent Meals
-				</Card.Title>
-			</Card.Header>
-			<Card.Content class="max-h-64 space-y-2 overflow-y-auto pr-1">
-				{#each meals.slice(0, 5) as meal (meal.id)}
-					<MealEntryCard {meal} {onEdit} {onDelete} />
-				{/each}
 			</Card.Content>
 		</Card.Root>
 	{/if}

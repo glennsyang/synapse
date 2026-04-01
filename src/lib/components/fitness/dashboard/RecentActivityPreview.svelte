@@ -5,8 +5,6 @@ import {
 	Pencil,
 	Scale,
 	Trash2,
-	TrendingDown,
-	TrendingUp,
 	UtensilsCrossed
 } from '@lucide/svelte/icons';
 
@@ -124,27 +122,20 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 		badge: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
 	},
 	other: {
-		border: 'border-l-stone-400',
-		badge: 'bg-stone-100 text-stone-700 dark:bg-stone-800/50 dark:text-stone-300'
+		border: 'border-l-zinc-400',
+		badge: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300'
 	}
 };
 </script>
 
-<section class="mb-8">
+<section class="mb-2">
 	<div class="mb-4 flex items-center justify-between">
-		<div>
-			<h2 class="font-display text-xl font-semibold text-stone-900 dark:text-stone-100">
-				Recent Activity
-			</h2>
-			<p class="text-sm text-stone-500 dark:text-stone-400">
-				Latest entries across workouts, weight, and meals
-			</p>
-		</div>
+		<div class="border-l-4 border-zinc-400 pl-3"></div>
 		<Button
 			variant="ghost"
 			size="sm"
 			onclick={onViewAll}
-			class="gap-1 text-stone-600 dark:text-stone-400"
+			class="gap-1 text-zinc-600 dark:text-zinc-400"
 		>
 			View all
 			<ChevronRight class="h-4 w-4" />
@@ -152,32 +143,30 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 	</div>
 
 	{#if feed.length === 0}
-		<Card.Root class="border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900/40">
-			<Card.Content class="py-8 text-center text-sm text-stone-500 dark:text-stone-400">
+		<Card.Root class="border-0 bg-white shadow-sm dark:bg-zinc-900">
+			<Card.Content class="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
 				No activity logged yet — start tracking to see your history here
 			</Card.Content>
 		</Card.Root>
 	{:else}
-		<Card.Root
-			class="overflow-hidden border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900/40"
-		>
+		<Card.Root class="overflow-hidden border-0 bg-white shadow-sm dark:bg-zinc-900">
 			<Card.Content class="p-0">
-				<ul class="divide-y divide-stone-100 dark:divide-stone-800">
+				<ul class="divide-y divide-zinc-100 dark:divide-zinc-800">
 					{#each feed as item (item.kind + item.data.id)}
 						{#if item.kind === 'workout'}
 							{@const style = typeStyles[item.data.type] ?? typeStyles.other}
 							<li
-								class="group flex items-center gap-3 border-l-4 px-4 py-3 transition-colors hover:bg-stone-100/60 dark:hover:bg-stone-800/40 {style.border}"
+								class="group flex items-center gap-3 border-l-4 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 {style.border}"
 							>
-								<Dumbbell class="h-4 w-4 shrink-0 text-stone-400" />
+								<Dumbbell class="h-4 w-4 shrink-0 text-zinc-400" />
 								<div class="min-w-0 flex-1">
 									<div class="flex items-center gap-2">
 										<Badge class="text-xs {style.badge}">{item.data.type}</Badge>
 										{#if item.data.durationMinutes}
-											<span class="text-xs text-stone-500">{item.data.durationMinutes} min</span>
+											<span class="text-xs text-zinc-500">{item.data.durationMinutes} min</span>
 										{/if}
 									</div>
-									<p class="mt-0.5 text-xs text-stone-500">
+									<p class="mt-0.5 text-xs text-zinc-500">
 										{formatDateShort(item.data.date)}
 										{#if item.data.time}
 											· {formatTime12Hour(item.data.time)}
@@ -228,19 +217,19 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 							</li>
 						{:else if item.kind === 'weight'}
 							<li
-								class="group flex items-center gap-3 border-l-4 border-l-emerald-400 px-4 py-3 transition-colors hover:bg-stone-100/60 dark:hover:bg-stone-800/40"
+								class="group flex items-center gap-3 border-l-4 border-l-emerald-400 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40"
 							>
-								<Scale class="h-4 w-4 shrink-0 text-stone-400" />
+								<Scale class="h-4 w-4 shrink-0 text-zinc-400" />
 								<div class="min-w-0 flex-1">
 									<div class="flex items-center gap-2">
 										<span
-											class="font-display text-sm font-semibold text-stone-900 dark:text-stone-100"
+											class="font-display text-sm font-semibold text-zinc-900 dark:text-zinc-100"
 										>
 											{item.data.weightLbs}
 											lbs
 										</span>
 									</div>
-									<p class="mt-0.5 text-xs text-stone-500">
+									<p class="mt-0.5 text-xs text-zinc-500">
 										{formatDateShort(item.data.date)}
 										{#if item.data.time}
 											· {formatTime12Hour(item.data.time)}
@@ -288,14 +277,14 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 							</li>
 						{:else if item.kind === 'meal'}
 							<li
-								class="group flex items-center gap-3 border-l-4 border-l-amber-400 px-4 py-3 transition-colors hover:bg-stone-100/60 dark:hover:bg-stone-800/40"
+								class="group flex items-center gap-3 border-l-4 border-l-amber-400 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40"
 							>
-								<UtensilsCrossed class="h-4 w-4 shrink-0 text-stone-400" />
+								<UtensilsCrossed class="h-4 w-4 shrink-0 text-zinc-400" />
 								<div class="min-w-0 flex-1">
-									<p class="truncate text-sm text-stone-800 dark:text-stone-200">
+									<p class="truncate text-sm text-zinc-800 dark:text-zinc-200">
 										{item.data.description}
 									</p>
-									<p class="mt-0.5 text-xs text-stone-500 capitalize">
+									<p class="mt-0.5 text-xs text-zinc-500 capitalize">
 										{item.data.timeOfDay}
 										· {formatDateShort(item.data.date)}
 										{#if item.data.caloriesEstimate}

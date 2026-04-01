@@ -25,21 +25,24 @@ interface EditMeal {
 let {
 	formData,
 	editEntry = null,
-	onClose
+	onClose,
+	open = $bindable(false)
 }: {
 	formData: SuperValidated<LogMealData>;
 	editEntry?: EditMeal | null;
 	onClose?: () => void;
+	open?: boolean;
 } = $props();
 
 const isEditing = $derived(editEntry !== null);
 
-let open = $state(false);
+let internalOpen = $state(false);
+const dialogOpen = $derived(open !== undefined ? open : internalOpen);
 
 // Open dialog externally when editEntry is provided
 $effect(() => {
-	if (editEntry) {
-		open = true;
+	if (editEntry && open === undefined) {
+		internalOpen = true;
 	}
 });
 
@@ -48,7 +51,11 @@ const { form, errors, enhance } = superForm(formData, {
 	resetForm: !isEditing,
 	onUpdate: ({ form }) => {
 		if (form.valid) {
-			open = false;
+			if (open !== undefined) {
+				onClose?.();
+			} else {
+				internalOpen = false;
+			}
 			toast.success(isEditing ? 'Meal updated successfully!' : 'Meal logged successfully!');
 			onClose?.();
 		}
@@ -69,15 +76,23 @@ $effect(() => {
 });
 
 function handleOpenChange(isOpen: boolean) {
-	open = isOpen;
-	if (!isOpen) {
-		onClose?.();
+	if (open !== undefined) {
+		// Externally controlled - notify via onClose
+		if (!isOpen && onClose) {
+			onClose();
+		}
+	} else {
+		// Internally controlled
+		internalOpen = isOpen;
+		if (!isOpen) {
+			onClose?.();
+		}
 	}
 }
 </script>
 
-<Dialog.Root {open} onOpenChange={handleOpenChange}>
-	{#if !isEditing}
+<Dialog.Root open={dialogOpen} onOpenChange={handleOpenChange}>
+	{#if !isEditing && open === undefined}
 		<Dialog.Trigger>
 			{#snippet child({ props })}
 				<Button {...props} class="bg-green-600 text-white hover:bg-green-700">

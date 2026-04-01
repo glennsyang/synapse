@@ -119,13 +119,11 @@ const calAdherenceClass = (calories: number | null): string => {
 </script>
 
 <Card.Root
-	class="mb-8 overflow-hidden border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900/40"
+	class="mb-8 overflow-hidden border-0 bg-gradient-to-br from-zinc-900 to-slate-800 text-white shadow-xl"
 >
 	<Card.Header class="pb-4">
-		<Card.Title class="font-display text-lg font-semibold text-stone-900 dark:text-stone-100">
-			14-Day Momentum
-		</Card.Title>
-		<Card.Description class="text-stone-500 dark:text-stone-400">
+		<Card.Title class="font-display text-lg font-semibold text-white">14-Day Momentum</Card.Title>
+		<Card.Description class="text-zinc-400">
 			Activity, weight check-ins, and calorie adherence across each day
 		</Card.Description>
 	</Card.Header>
@@ -134,24 +132,22 @@ const calAdherenceClass = (calories: number | null): string => {
 		<!-- Day labels -->
 		<div class="grid grid-cols-14 gap-1" style="grid-template-columns: repeat(14, 1fr);">
 			{#each dayData as day (day.date)}
-				<div class="text-center text-[10px] font-medium text-stone-400 dark:text-stone-500">
-					{day.shortLabel}
-				</div>
+				<div class="text-center text-[10px] font-medium text-zinc-500">{day.shortLabel}</div>
 			{/each}
 		</div>
 
 		<!-- Lane 1: Workout activity -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<Dumbbell class="h-3 w-3 text-stone-400" />
-				<span class="text-xs font-medium text-stone-500 dark:text-stone-400">Activity</span>
+				<Dumbbell class="h-3 w-3 text-zinc-400" />
+				<span class="text-xs font-medium text-zinc-400">Activity</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
 				{#each dayData as day (day.date)}
 					<div
 						class="h-6 rounded-sm transition-all {day.workoutTypes.length > 0
 							? workoutColor(day.workoutTypes)
-							: 'bg-stone-200 dark:bg-stone-700'}"
+							: 'bg-zinc-700'}"
 						title={day.workoutTypes.length > 0
 							? `${day.label}: ${day.workoutTypes.join(', ')}`
 							: day.label}
@@ -163,8 +159,8 @@ const calAdherenceClass = (calories: number | null): string => {
 		<!-- Lane 2: Weight check-ins -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<Scale class="h-3 w-3 text-stone-400" />
-				<span class="text-xs font-medium text-stone-500 dark:text-stone-400">Weight</span>
+				<Scale class="h-3 w-3 text-zinc-400" />
+				<span class="text-xs font-medium text-zinc-400">Weight</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
 				{#each dayData as day (day.date)}
@@ -172,7 +168,7 @@ const calAdherenceClass = (calories: number | null): string => {
 						<div
 							class="h-3 w-3 rounded-full transition-all {day.hasWeight
 								? 'bg-emerald-500'
-								: 'bg-stone-200 dark:bg-stone-700'}"
+								: 'bg-zinc-700'}"
 							title={day.hasWeight ? `${day.label}: weighed in` : day.label}
 						></div>
 					</div>
@@ -183,8 +179,8 @@ const calAdherenceClass = (calories: number | null): string => {
 		<!-- Lane 3: Calorie adherence -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<UtensilsCrossed class="h-3 w-3 text-stone-400" />
-				<span class="text-xs font-medium text-stone-500 dark:text-stone-400">Calories</span>
+				<UtensilsCrossed class="h-3 w-3 text-zinc-400" />
+				<span class="text-xs font-medium text-zinc-400">Calories</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
 				{#each dayData as day (day.date)}
@@ -199,37 +195,35 @@ const calAdherenceClass = (calories: number | null): string => {
 		</div>
 
 		<!-- Legend -->
-		<div class="flex flex-wrap gap-3 border-t border-stone-200 pt-3 dark:border-stone-700">
+		<div class="flex flex-wrap gap-3 border-t border-zinc-700 pt-3">
 			<div class="flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-orange-400"></div>
-				<span class="text-xs text-stone-500">Strength</span>
+				<span class="text-xs text-zinc-400">Strength</span>
 			</div>
 			<div class="flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-sky-400"></div>
-				<span class="text-xs text-stone-500">Cardio</span>
+				<span class="text-xs text-zinc-400">Cardio</span>
 			</div>
 			<div class="flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-violet-400"></div>
-				<span class="text-xs text-stone-500">Yoga</span>
+				<span class="text-xs text-zinc-400">Yoga</span>
 			</div>
 			<div class="ml-auto flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-emerald-400"></div>
-				<span class="text-xs text-stone-500">On target</span>
+				<span class="text-xs text-zinc-400">On target</span>
 			</div>
 			<div class="flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-amber-400"></div>
-				<span class="text-xs text-stone-500">Slightly over</span>
+				<span class="text-xs text-zinc-400">Slightly over</span>
 			</div>
 			<div class="flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-sky-300"></div>
-				<span class="text-xs text-stone-500">Under target</span>
+				<span class="text-xs text-zinc-400">Under target</span>
 			</div>
 		</div>
 	</Card.Content>
 
-	<Card.Footer
-		class="border-t border-stone-200 bg-stone-100/60 dark:border-stone-800 dark:bg-stone-900/60"
-	>
-		<p class="text-xs text-stone-600 dark:text-stone-400 italic">{interpretation}</p>
+	<Card.Footer class="border-t border-zinc-700 bg-zinc-900/60">
+		<p class="text-xs italic text-zinc-300">{interpretation}</p>
 	</Card.Footer>
 </Card.Root>
