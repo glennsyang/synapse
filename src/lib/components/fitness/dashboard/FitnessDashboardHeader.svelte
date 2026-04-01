@@ -1,11 +1,13 @@
 <script lang="ts">
-import BellPlus from '@lucide/svelte/icons/bell-plus';
-import Dumbbell from '@lucide/svelte/icons/dumbbell';
-import EllipsisVertical from '@lucide/svelte/icons/ellipsis-vertical';
-import Scale from '@lucide/svelte/icons/scale';
-import Settings from '@lucide/svelte/icons/settings';
-import Target from '@lucide/svelte/icons/target';
-import UtensilsCrossed from '@lucide/svelte/icons/utensils-crossed';
+import {
+	BellPlus,
+	Dumbbell,
+	EllipsisVertical,
+	Scale,
+	Settings,
+	Target,
+	UtensilsCrossed
+} from '@lucide/svelte/icons';
 import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
@@ -14,7 +16,7 @@ import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.sve
 import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
 import SetCalorieTargetDialog from '$lib/components/fitness/dialogs/SetCalorieTargetDialog.svelte';
 import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
-import { Button } from '$lib/components/ui/button';
+import { buttonVariants } from '$lib/components/ui/button';
 import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 import type {
 	logMealSchema,
@@ -46,22 +48,18 @@ let showCreateReminder = $state(false);
 </script>
 
 <div
-	class="mb-4 rounded-2xl bg-linear-to-br from-zinc-900 via-slate-800 to-zinc-900 p-8 text-white"
+	class="mb-4 rounded-2xl border border-green-200/75 bg-linear-to-br from-green-100/90 via-background to-green-50/85 p-6 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] dark:border-green-500/25 dark:from-green-500/12 dark:via-background dark:to-green-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)]"
 >
 	<div class="flex items-start justify-between">
 		<div>
-			<h1 class="font-display text-4xl font-bold tracking-tight text-white md:text-5xl">
-				Fitness Hub
-			</h1>
+			<h1 class="font-display text-3xl font-bold sm:text-3xl">Fitness Hub</h1>
 			<p class="mt-2 text-sm text-zinc-400">Your momentum, trends, and habits — at a glance</p>
 		</div>
 
 		<!-- Dropdown Menu in top right -->
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger>
-				<Button variant="ghost" class="text-white hover:bg-white/10">
-					<EllipsisVertical class="h-5 w-5" />
-				</Button>
+			<DropdownMenu.Trigger class={buttonVariants({ variant: "outline", size: "icon-sm" })}>
+				<EllipsisVertical />
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end" class="w-56">
 				<DropdownMenu.Item class="cursor-pointer" onclick={() => (showLogWorkout = true)}>
@@ -100,6 +98,7 @@ let showCreateReminder = $state(false);
 	<LogWorkoutDialog
 		formData={workoutForm}
 		bind:open={showLogWorkout}
+		instanceId="header"
 		onClose={() => (showLogWorkout = false)}
 	/>
 {/if}
@@ -108,6 +107,7 @@ let showCreateReminder = $state(false);
 	<LogWeightDialog
 		formData={weightForm}
 		bind:open={showLogWeight}
+		instanceId="header"
 		onClose={() => (showLogWeight = false)}
 	/>
 {/if}
@@ -116,6 +116,7 @@ let showCreateReminder = $state(false);
 	<LogMealDialog
 		formData={mealForm}
 		bind:open={showLogMeal}
+		instanceId="header"
 		onClose={() => (showLogMeal = false)}
 	/>
 {/if}

@@ -13,6 +13,7 @@ import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
 import * as Tooltip from '$lib/components/ui/tooltip';
 import { formatDateShort, formatTime12Hour } from '$lib/utils/date';
+import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
 
 interface Exercise {
 	exerciseName: string;
@@ -107,25 +108,6 @@ const feed = $derived.by((): ActivityItem[] => {
 
 	return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey)).slice(0, 7);
 });
-
-const typeStyles: Record<string, { border: string; badge: string }> = {
-	strength: {
-		border: 'border-l-orange-400',
-		badge: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-	},
-	cardio: {
-		border: 'border-l-sky-400',
-		badge: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
-	},
-	yoga: {
-		border: 'border-l-violet-400',
-		badge: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
-	},
-	other: {
-		border: 'border-l-zinc-400',
-		badge: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300'
-	}
-};
 </script>
 
 <section class="mb-2">
@@ -154,14 +136,15 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 				<ul class="divide-y divide-zinc-100 dark:divide-zinc-800">
 					{#each feed as item (item.kind + item.data.id)}
 						{#if item.kind === 'workout'}
-							{@const style = typeStyles[item.data.type] ?? typeStyles.other}
 							<li
-								class="group flex items-center gap-3 border-l-4 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 {style.border}"
+								class="group flex items-center gap-3 border-l-4 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 {getWorkoutBorderClass(item.data.type)}"
 							>
 								<Dumbbell class="h-4 w-4 shrink-0 text-zinc-400" />
 								<div class="min-w-0 flex-1">
 									<div class="flex items-center gap-2">
-										<Badge class="text-xs {style.badge}">{item.data.type}</Badge>
+										<Badge class="text-xs {getWorkoutBadgeClass(item.data.type)}"
+											>{getWorkoutLabel(item.data.type)}</Badge
+										>
 										{#if item.data.durationMinutes}
 											<span class="text-xs text-zinc-500">{item.data.durationMinutes} min</span>
 										{/if}
@@ -176,9 +159,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 										{/if}
 									</p>
 								</div>
-								<div
-									class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
-								>
+								<div class="flex shrink-0 items-center gap-0.5">
 									<Tooltip.Root>
 										<Tooltip.Trigger>
 											{#snippet child({ props })}
@@ -236,9 +217,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 										{/if}
 									</p>
 								</div>
-								<div
-									class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
-								>
+								<div class="flex shrink-0 items-center gap-0.5">
 									<Tooltip.Root>
 										<Tooltip.Trigger>
 											{#snippet child({ props })}
@@ -292,9 +271,7 @@ const typeStyles: Record<string, { border: string; badge: string }> = {
 										{/if}
 									</p>
 								</div>
-								<div
-									class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
-								>
+								<div class="flex shrink-0 items-center gap-0.5">
 									<Tooltip.Root>
 										<Tooltip.Trigger>
 											{#snippet child({ props })}

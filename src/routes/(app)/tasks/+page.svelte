@@ -13,7 +13,6 @@ import TaskTagFilter from '$lib/components/tasks/TaskTagFilter.svelte';
 import { Button } from '$lib/components/ui/button';
 import * as Collapsible from '$lib/components/ui/collapsible';
 import { Input } from '$lib/components/ui/input';
-import { Root } from '$lib/components/ui/skeleton';
 import * as Tabs from '$lib/components/ui/tabs';
 import * as Tooltip from '$lib/components/ui/tooltip';
 import type { TaskPageTab } from '$lib/types';

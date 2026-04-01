@@ -14,6 +14,7 @@ import * as Select from '$lib/components/ui/select';
 import type { logWorkoutSchema, WorkoutType } from '$lib/schemas/fitness';
 import type { Exercise } from '$lib/types';
 import { getTodayString } from '$lib/utils/date';
+import { workoutTypeOptions } from '$lib/utils/workout';
 
 type LogWorkoutData = Infer<typeof logWorkoutSchema>;
 
@@ -39,12 +40,14 @@ let {
 	formData,
 	editEntry = null,
 	onClose,
-	open = $bindable(false)
+	open = $bindable(false),
+	instanceId = 'default'
 }: {
 	formData: SuperValidated<LogWorkoutData>;
 	editEntry?: EditWorkout | null;
 	onClose?: () => void;
 	open?: boolean;
+	instanceId?: string;
 } = $props();
 
 const isEditing = $derived(editEntry !== null);
@@ -60,11 +63,20 @@ $effect(() => {
 	}
 });
 
+// Generate a unique form ID based on the editing context and instance
+const formId = $derived(editEntry ? `edit-workout-${editEntry.id}` : `log-workout-${instanceId}`);
+
 // svelte-ignore state_referenced_locally
 const { form, errors, enhance } = superForm(formData, {
+	id: formId,
+	resetForm: !isEditing,
 	onUpdate: ({ form }) => {
 		if (form.valid) {
-			open = false;
+			if (open !== undefined) {
+				onClose?.();
+			} else {
+				internalOpen = false;
+			}
 			workoutExercises = [];
 			toast.success(isEditing ? 'Workout updated successfully!' : 'Workout logged successfully!');
 			onClose?.();
@@ -75,11 +87,11 @@ const { form, errors, enhance } = superForm(formData, {
 	}
 });
 
-$effect(() => {
-	if (workoutExercises.length > 0) {
-		$form.exercises = JSON.stringify(workoutExercises);
-	}
-});
+// $effect(() => {
+// 	if (workoutExercises.length > 0) {
+// 		$form.exercises = JSON.stringify(workoutExercises);
+// 	}
+// });
 
 // Populate form fields when editing
 $effect(() => {
@@ -173,12 +185,11 @@ function handleOpenChange(isOpen: boolean) {
 								{$form.type || 'Select workout type'}
 							</Select.Trigger>
 							<Select.Content>
-								<Select.Item value="strength" label="Strength">Strength</Select.Item>
-								<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
-								<Select.Item value="hiit" label="HIIT">HIIT</Select.Item>
-								<Select.Item value="walk" label="Walk">Walk</Select.Item>
-								<Select.Item value="stretch" label="Stretch">Stretch</Select.Item>
-								<Select.Item value="other" label="Other">Other</Select.Item>
+								{#each workoutTypeOptions as option (option.value)}
+									<Select.Item value={option.value} label={option.label}
+										>{option.label}</Select.Item
+									>
+								{/each}
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.type}

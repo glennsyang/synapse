@@ -11,6 +11,7 @@ import { Label } from '$lib/components/ui/label';
 import * as Select from '$lib/components/ui/select';
 import type { workoutReminderSchema } from '$lib/schemas/fitness';
 import { daysOfWeek } from '$lib/utils/date';
+import { workoutTypeOptions } from '$lib/utils/workout';
 
 type WorkoutReminderData = Infer<typeof workoutReminderSchema>;
 
@@ -29,6 +30,7 @@ const dialogOpen = $derived(open !== undefined ? open : internalOpen);
 
 // svelte-ignore state_referenced_locally
 const { form, errors, enhance } = superForm(formData, {
+	id: 'create-reminder',
 	resetForm: true,
 	onUpdate: ({ form }) => {
 		if (form.valid) {
@@ -90,12 +92,11 @@ function handleOpenChange(isOpen: boolean) {
 								{$form.workoutType || 'Select type'}
 							</Select.Trigger>
 							<Select.Content>
-								<Select.Item value="strength" label="Strength">Strength</Select.Item>
-								<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
-								<Select.Item value="hiit" label="HIIT">HIIT</Select.Item>
-								<Select.Item value="walk" label="Walk">Walk</Select.Item>
-								<Select.Item value="stretch" label="Stretch">Stretch</Select.Item>
-								<Select.Item value="other" label="Other">Other</Select.Item>
+								{#each workoutTypeOptions as option (option.value)}
+									<Select.Item value={option.value} label={option.label}
+										>{option.label}</Select.Item
+									>
+								{/each}
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.workoutType}

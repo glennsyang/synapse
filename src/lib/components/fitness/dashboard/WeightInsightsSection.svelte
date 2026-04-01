@@ -88,7 +88,7 @@ const remainingTrend = $derived(
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-2">
 			<SetGoalWeightDialog formData={goalForm} />
-			<LogWeightDialog formData={weightForm} />
+			<LogWeightDialog formData={weightForm} instanceId="weight" />
 		</div>
 	</div>
 

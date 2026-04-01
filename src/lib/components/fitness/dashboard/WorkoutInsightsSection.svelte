@@ -92,7 +92,9 @@ const insights = $derived.by(() => {
 </script>
 
 <section class="mb-2 space-y-4">
-	<div class="flex items-center justify-between"><LogWorkoutDialog formData={workoutForm} /></div>
+	<div class="flex items-center justify-between">
+		<LogWorkoutDialog formData={workoutForm} instanceId="insights" />
+	</div>
 
 	<!-- Insight cards -->
 	<div class="grid grid-cols-2 gap-3 md:grid-cols-4">

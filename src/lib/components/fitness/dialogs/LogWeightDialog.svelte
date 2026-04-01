@@ -23,12 +23,14 @@ let {
 	formData,
 	editEntry = null,
 	onClose,
-	open = $bindable(false)
+	open = $bindable(false),
+	instanceId = 'default'
 }: {
 	formData: SuperValidated<LogWeightData>;
 	editEntry?: WeightEntry | null;
 	onClose?: () => void;
 	open?: boolean;
+	instanceId?: string;
 } = $props();
 
 const isEditing = $derived(editEntry !== null);
@@ -43,8 +45,12 @@ $effect(() => {
 	}
 });
 
+// Generate a unique form ID based on the editing context and instance
+const formId = $derived(editEntry ? `edit-weight-${editEntry.id}` : `log-weight-${instanceId}`);
+
 // svelte-ignore state_referenced_locally
 const { form, errors, enhance } = superForm(formData, {
+	id: formId,
 	resetForm: !isEditing,
 	onUpdate: ({ form }) => {
 		if (form.valid) {

@@ -5,6 +5,7 @@ import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import * as Tooltip from '$lib/components/ui/tooltip';
 import { formatDateMedium, formatTime12Hour } from '$lib/utils/date';
+import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
 
 interface Exercise {
 	exerciseName: string;
@@ -35,56 +36,15 @@ let {
 } = $props();
 
 let expanded = $state(false);
-
-const typeStyles: Record<string, { border: string; badge: string }> = {
-	strength: {
-		border: 'border-l-orange-500',
-		badge: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
-	},
-	cardio: {
-		border: 'border-l-blue-500',
-		badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-	},
-	hiit: {
-		border: 'border-l-red-500',
-		badge: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-	},
-	walk: {
-		border: 'border-l-green-500',
-		badge: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-	},
-	stretch: {
-		border: 'border-l-purple-500',
-		badge: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-	},
-	other: {
-		border: 'border-l-gray-400',
-		badge: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300'
-	}
-};
-
-const style = $derived(typeStyles[workout.type] ?? typeStyles.other);
-
-const capitalizeWorkoutType = (type: string): string => {
-	const typeMap: Record<string, string> = {
-		strength: 'Strength',
-		cardio: 'Cardio',
-		hiit: 'HIIT',
-		walk: 'Walk',
-		stretch: 'Stretch',
-		other: 'Other'
-	};
-	return typeMap[type] ?? 'Other';
-};
 </script>
 
 <div
-	class="rounded-lg border border-l-4 bg-card p-3 transition-colors hover:bg-accent/30 {style.border}"
+	class="rounded-lg border border-l-4 bg-card p-3 transition-colors hover:bg-accent/30 {getWorkoutBorderClass(workout.type)}"
 >
 	<div class="flex items-start justify-between gap-2">
 		<div class="min-w-0 flex-1 space-y-1">
 			<div class="flex flex-wrap items-center gap-2">
-				<Badge class={style.badge}>{capitalizeWorkoutType(workout.type)}</Badge>
+				<Badge class={getWorkoutBadgeClass(workout.type)}>{getWorkoutLabel(workout.type)}</Badge>
 				{#if workout.type === 'walk' && workout.steps}
 					<span class="text-xs text-muted-foreground">{workout.steps.toLocaleString()} steps</span>
 				{:else if workout.durationMinutes}

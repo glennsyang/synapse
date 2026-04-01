@@ -5,6 +5,7 @@ import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import * as Tooltip from '$lib/components/ui/tooltip';
 import { daysOfWeek, formatTime12Hour } from '$lib/utils/date';
+import { getWorkoutBadgeClass, getWorkoutLabel } from '$lib/utils/workout';
 
 interface Reminder {
 	id: string;
@@ -25,29 +26,6 @@ let {
 	onDelete: (id: string) => void;
 } = $props();
 
-const typeStyles: Record<string, string> = {
-	strength: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-	cardio: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-	hiit: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-	walk: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-	stretch: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-	other: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300'
-};
-
-const capitalizeWorkoutType = (type: string): string => {
-	const typeMap: Record<string, string> = {
-		strength: 'Strength',
-		cardio: 'Cardio',
-		hiit: 'HIIT',
-		walk: 'Walk',
-		stretch: 'Stretch',
-		other: 'Other'
-	};
-	return typeMap[type] ?? 'Other';
-};
-
-const badgeStyle = $derived(typeStyles[reminder.workoutType] ?? typeStyles.other);
-
 const scheduleText = $derived(
 	reminder.cadence === 'daily'
 		? 'Every day'
@@ -66,7 +44,9 @@ const scheduleText = $derived(
 	class:opacity-60={!reminder.enabled}
 >
 	<div class="flex items-center gap-3">
-		<Badge class={badgeStyle}>{capitalizeWorkoutType(reminder.workoutType)}</Badge>
+		<Badge class={getWorkoutBadgeClass(reminder.workoutType)}
+			>{getWorkoutLabel(reminder.workoutType)}</Badge
+		>
 		<div>
 			<p class="text-sm font-medium">{formatTime12Hour(reminder.time)}</p>
 			<p class="text-xs text-muted-foreground">

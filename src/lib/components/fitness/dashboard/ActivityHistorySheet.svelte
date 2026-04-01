@@ -5,7 +5,8 @@ import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import * as Sheet from '$lib/components/ui/sheet';
 import * as Tooltip from '$lib/components/ui/tooltip';
-import { formatDateMedium, formatDateShort, formatTime12Hour } from '$lib/utils/date';
+import { formatDateMedium, formatTime12Hour } from '$lib/utils/date';
+import { getWorkoutBadgeClass, getWorkoutLabel } from '$lib/utils/workout';
 
 interface Exercise {
 	exerciseName: string;
@@ -134,13 +135,6 @@ const grouped = $derived.by(() => {
 	return groups;
 });
 
-const typeStyles: Record<string, { badge: string }> = {
-	strength: { badge: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' },
-	cardio: { badge: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' },
-	yoga: { badge: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300' },
-	other: { badge: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300' }
-};
-
 const filters: { value: FilterKind; label: string }[] = [
 	{ value: 'all', label: 'All' },
 	{ value: 'workouts', label: 'Workouts' },
@@ -161,7 +155,7 @@ const filters: { value: FilterKind; label: string }[] = [
 		</Sheet.Header>
 
 		<!-- Filter tabs -->
-		<div class="mt-4 flex gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
+		<div class="mx-2 flex gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
 			{#each filters as f (f.value)}
 				<button
 					type="button"
@@ -176,7 +170,7 @@ const filters: { value: FilterKind; label: string }[] = [
 		</div>
 
 		<!-- Grouped history -->
-		<div class="mt-6 space-y-6">
+		<div class="mx-4 space-y-6">
 			{#if grouped.length === 0}
 				<p class="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">No entries found</p>
 			{/if}
@@ -191,14 +185,15 @@ const filters: { value: FilterKind; label: string }[] = [
 					<ul class="space-y-1.5">
 						{#each group.items as item (item.kind + item.data.id)}
 							{#if item.kind === 'workout'}
-								{@const style = typeStyles[item.data.type] ?? typeStyles.other}
 								<li
 									class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900"
 								>
 									<Dumbbell class="h-4 w-4 shrink-0 text-zinc-400" />
 									<div class="min-w-0 flex-1">
 										<div class="flex items-center gap-2">
-											<Badge class="text-xs {style.badge}">{item.data.type}</Badge>
+											<Badge class="text-xs {getWorkoutBadgeClass(item.data.type)}"
+												>{getWorkoutLabel(item.data.type)}</Badge
+											>
 											{#if item.data.durationMinutes}
 												<span class="text-xs text-zinc-500">{item.data.durationMinutes} min</span>
 											{/if}

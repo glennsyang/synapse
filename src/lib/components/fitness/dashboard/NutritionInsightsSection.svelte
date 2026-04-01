@@ -99,7 +99,7 @@ const chartConfig = {
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-2">
 			<SetCalorieTargetDialog formData={calorieForm} />
-			<LogMealDialog formData={mealForm} />
+			<LogMealDialog formData={mealForm} instanceId="nutrition" />
 		</div>
 	</div>
 

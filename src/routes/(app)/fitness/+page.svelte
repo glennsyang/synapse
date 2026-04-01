@@ -48,6 +48,10 @@ let reminderToToggle = $state<{
 let showToggleReminderDialog = $state(false);
 
 // ─── Edit state ───────────────────────────────────────────────────────────────
+let showEditWorkoutDialog = $state(false);
+let showEditWeightDialog = $state(false);
+let showEditMealDialog = $state(false);
+
 let weightToEdit = $state<{
 	id: string;
 	date: string;
@@ -78,6 +82,25 @@ let mealToEdit = $state<{
 	description: string;
 	caloriesEstimate: number | null;
 } | null>(null);
+
+// ─── Edit effects ───────────────────────────────────────────────────────────────
+$effect(() => {
+	if (workoutToEdit) {
+		showEditWorkoutDialog = true;
+	}
+});
+
+$effect(() => {
+	if (weightToEdit) {
+		showEditWeightDialog = true;
+	}
+});
+
+$effect(() => {
+	if (mealToEdit) {
+		showEditMealDialog = true;
+	}
+});
 
 // ─── History sheet ─────────────────────────────────────────────────────────────
 let historySheetOpen = $state(false);
@@ -353,29 +376,38 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 		/>
 
 		<!-- ─── Edit dialogs ──────────────────────────────────────────────────── -->
-		{#if workoutToEdit}
-			<LogWorkoutDialog
-				formData={data.workoutForm}
-				editEntry={workoutToEdit}
-				onClose={() => (workoutToEdit = null)}
-			/>
-		{/if}
+		<LogWorkoutDialog
+			formData={data.workoutForm}
+			editEntry={workoutToEdit}
+			bind:open={showEditWorkoutDialog}
+			instanceId="edit-main"
+			onClose={() => {
+				showEditWorkoutDialog = false;
+				workoutToEdit = null;
+			}}
+		/>
 
-		{#if weightToEdit}
-			<LogWeightDialog
-				formData={data.weightForm}
-				editEntry={weightToEdit}
-				onClose={() => (weightToEdit = null)}
-			/>
-		{/if}
+		<LogWeightDialog
+			formData={data.weightForm}
+			editEntry={weightToEdit}
+			bind:open={showEditWeightDialog}
+			instanceId="edit-main"
+			onClose={() => {
+				showEditWeightDialog = false;
+				weightToEdit = null;
+			}}
+		/>
 
-		{#if mealToEdit}
-			<LogMealDialog
-				formData={data.mealForm}
-				editEntry={mealToEdit}
-				onClose={() => (mealToEdit = null)}
-			/>
-		{/if}
+		<LogMealDialog
+			formData={data.mealForm}
+			editEntry={mealToEdit}
+			bind:open={showEditMealDialog}
+			instanceId="edit-main"
+			onClose={() => {
+				showEditMealDialog = false;
+				mealToEdit = null;
+			}}
+		/>
 
 		<!-- ─── Confirm dialogs ────────────────────────────────────────────────── -->
 		{#if workoutToDelete}
