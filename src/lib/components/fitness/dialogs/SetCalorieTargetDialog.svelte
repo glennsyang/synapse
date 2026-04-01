@@ -13,44 +13,75 @@ import type { setCalorieTargetSchema } from '$lib/schemas/fitness';
 
 type SetCalorieTargetData = Infer<typeof setCalorieTargetSchema>;
 
-let { formData }: { formData: SuperValidated<SetCalorieTargetData> } = $props();
+let {
+	formData,
+	onClose,
+	open = $bindable(false)
+}: {
+	formData: SuperValidated<SetCalorieTargetData>;
+	onClose?: () => void;
+	open?: boolean;
+} = $props();
 
-let open = $state(false);
+let internalOpen = $state(false);
+const dialogOpen = $derived(open !== undefined ? open : internalOpen);
 
 // svelte-ignore state_referenced_locally
 const { form, errors, enhance } = superForm(formData, {
 	onUpdate: ({ form }) => {
 		if (form.valid) {
-			open = false;
+			if (open !== undefined) {
+				onClose?.();
+			} else {
+				internalOpen = false;
+			}
 			toast.success('Calorie target set successfully!');
+			onClose?.();
 		}
 	},
 	onError: ({ result }) => {
 		toast.error(`Error setting calorie target: ${result.error.message}`);
 	}
 });
+
+function handleOpenChange(isOpen: boolean) {
+	if (open !== undefined) {
+		// Externally controlled - notify via onClose
+		if (!isOpen && onClose) {
+			onClose();
+		}
+	} else {
+		// Internally controlled
+		internalOpen = isOpen;
+		if (!isOpen) {
+			onClose?.();
+		}
+	}
+}
 </script>
 
-<Tooltip.Root>
-	<Tooltip.Trigger>
-		{#snippet child({ props })}
-			<Button
-				{...props}
-				type="button"
-				variant="ghost"
-				size="icon"
-				class="h-6 w-6 text-muted-foreground hover:text-foreground"
-				onclick={() => (open = true)}
-				aria-label="Set calorie target"
-			>
-				<SettingsIcon class="h-3.5 w-3.5" />
-			</Button>
-		{/snippet}
-	</Tooltip.Trigger>
-	<Tooltip.Content>Set calorie target</Tooltip.Content>
-</Tooltip.Root>
+{#if open === undefined}
+	<Tooltip.Root>
+		<Tooltip.Trigger>
+			{#snippet child({ props })}
+				<Button
+					{...props}
+					type="button"
+					variant="ghost"
+					size="icon"
+					class="h-6 w-6 text-muted-foreground hover:text-foreground"
+					onclick={() => (internalOpen = true)}
+					aria-label="Set calorie target"
+				>
+					<SettingsIcon class="h-3.5 w-3.5" />
+				</Button>
+			{/snippet}
+		</Tooltip.Trigger>
+		<Tooltip.Content>Set calorie target</Tooltip.Content>
+	</Tooltip.Root>
+{/if}
 
-<Dialog.Root bind:open>
+<Dialog.Root open={dialogOpen} onOpenChange={handleOpenChange}>
 	<Dialog.Content class="sm:max-w-sm">
 		<Dialog.Header>
 			<Dialog.Title>Set Calorie Target</Dialog.Title>

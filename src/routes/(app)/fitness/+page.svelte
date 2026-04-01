@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Activity, Bell, Clock, Dumbbell, Flame, Scale } from '@lucide/svelte/icons';
+import { Activity, Dumbbell, Flame, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
 
 import { SvelteSet } from 'svelte/reactivity';
 import { toast } from 'svelte-sonner';
@@ -20,7 +20,8 @@ import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.sve
 import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
 import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-import { formatTime12Hour, getTodayString, parseLocalDateString } from '$lib/utils/date';
+import * as Accordion from '$lib/components/ui/accordion';
+import { getTodayString, parseLocalDateString } from '$lib/utils/date';
 
 import type { PageData } from './$types.js';
 
@@ -47,6 +48,10 @@ let reminderToToggle = $state<{
 let showToggleReminderDialog = $state(false);
 
 // ─── Edit state ───────────────────────────────────────────────────────────────
+let showEditWorkoutDialog = $state(false);
+let showEditWeightDialog = $state(false);
+let showEditMealDialog = $state(false);
+
 let weightToEdit = $state<{
 	id: string;
 	date: string;
@@ -77,6 +82,25 @@ let mealToEdit = $state<{
 	description: string;
 	caloriesEstimate: number | null;
 } | null>(null);
+
+// ─── Edit effects ───────────────────────────────────────────────────────────────
+$effect(() => {
+	if (workoutToEdit) {
+		showEditWorkoutDialog = true;
+	}
+});
+
+$effect(() => {
+	if (weightToEdit) {
+		showEditWeightDialog = true;
+	}
+});
+
+$effect(() => {
+	if (mealToEdit) {
+		showEditMealDialog = true;
+	}
+});
 
 // ─── History sheet ─────────────────────────────────────────────────────────────
 let historySheetOpen = $state(false);
@@ -132,8 +156,6 @@ const weightDelta = $derived.by(() => {
 	return data.weightEntries[0].weightLbs - data.weightEntries[1].weightLbs;
 });
 
-const nextReminder = $derived(data.reminders.find((r) => r.enabled) ?? null);
-
 // ─── Toggle reminder ───────────────────────────────────────────────────────────
 const toggleReminderDialogTitle = $derived(
 	reminderToToggle?.enabled ? 'Enable Reminder' : 'Disable Reminder'
@@ -161,13 +183,13 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 		/>
 
 		<!-- Daily Status Band: Hero KPI cards -->
-		<div class="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+		<div class="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
 			<FitnessStatusCard
 				label="This Week"
 				value={weeklySessionCount}
 				unit="sessions"
 				icon={Dumbbell}
-				trend={weeklySessionCount >= 3 ? 'positive' : weeklySessionCount >= 1 ? 'neutral' : 'negative'}
+				gradient="from-orange-500 to-amber-400"
 				trendLabel={weeklySessionCount >= 3
 					? 'Strong week'
 					: weeklySessionCount >= 1
@@ -179,7 +201,7 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 				value={dayStreak}
 				unit={dayStreak === 1 ? 'day' : 'days'}
 				icon={Flame}
-				trend={dayStreak >= 3 ? 'positive' : dayStreak > 0 ? 'neutral' : 'negative'}
+				gradient="from-rose-500 to-orange-400"
 				trendLabel={dayStreak >= 5
 					? 'Excellent consistency'
 					: dayStreak >= 2
@@ -193,13 +215,7 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 				value={data.weightStats.currentWeight ?? '—'}
 				unit={data.weightStats.currentWeight ? 'lbs' : ''}
 				icon={Scale}
-				trend={weightDelta == null
-					? 'neutral'
-					: weightDelta < -0.5
-						? 'positive'
-						: weightDelta > 0.5
-							? 'negative'
-							: 'neutral'}
+				gradient="from-emerald-500 to-teal-400"
 				trendLabel={weightDelta != null
 					? weightDelta < 0
 						? `${Math.abs(weightDelta).toFixed(1)} lbs down`
@@ -212,32 +228,9 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 				label="Today's Cal"
 				value={todayCalories}
 				unit="cal"
-				icon={Activity}
-				trend={calorieAdherence == null
-					? 'neutral'
-					: calorieAdherence >= 85 && calorieAdherence <= 110
-						? 'positive'
-						: calorieAdherence > 110
-							? 'negative'
-							: 'neutral'}
+				icon={UtensilsCrossed}
+				gradient="from-sky-500 to-blue-400"
 				trendLabel={calorieAdherence != null ? `${calorieAdherence}% of target` : 'No target set'}
-			/>
-			<FitnessStatusCard
-				label="Next Reminder"
-				value={nextReminder ? formatTime12Hour(nextReminder.time) : '—'}
-				icon={Bell}
-				trendLabel={nextReminder
-					? `${nextReminder.workoutType} · ${nextReminder.cadence}`
-					: 'No reminders set'}
-			/>
-			<FitnessStatusCard
-				label="Reminders"
-				value={data.reminders.filter((r) => r.enabled).length}
-				unit="active"
-				icon={Clock}
-				trendLabel={data.reminders.length > 0
-					? `${data.reminders.length} total`
-					: 'Create a reminder'}
 			/>
 		</div>
 
@@ -249,80 +242,115 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 			calorieTarget={data.calorieTarget?.targetCalories ?? null}
 		/>
 
-		<!-- Workouts Section -->
-		<WorkoutInsightsSection
-			workouts={data.workouts}
-			workoutForm={data.workoutForm}
-			onEdit={(w) => (workoutToEdit = w)}
-			onDelete={(id) => {
-				workoutToDelete = id;
-				showDeleteWorkoutDialog = true;
-			}}
-		/>
+		<!-- Collapsible Sections -->
+		<Accordion.Root type="multiple" class="space-y-4">
+			<!-- Workouts Section -->
+			<Accordion.Item value="workouts" class="border-0 rounded-xl shadow-sm">
+				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
+					<div class="flex items-center gap-3">
+						<Dumbbell class="h-5 w-5 text-orange-500" />
+						<span class="font-semibold text-lg">Workouts</span>
+					</div>
+				</Accordion.Trigger>
+				<Accordion.Content class="px-6 pb-6">
+					<WorkoutInsightsSection workouts={data.workouts} workoutForm={data.workoutForm} />
+				</Accordion.Content>
+			</Accordion.Item>
 
-		<!-- Weight Section -->
-		<WeightInsightsSection
-			weightEntries={data.weightEntries}
-			weightStats={data.weightStats}
-			goalWeight={data.goalWeight}
-			weightForm={data.weightForm}
-			goalForm={data.goalForm}
-			onEdit={(e) => (weightToEdit = e)}
-			onDelete={(id) => {
-				weightEntryToDelete = id;
-				showDeleteWeightDialog = true;
-			}}
-		/>
+			<!-- Weight Section -->
+			<Accordion.Item value="weight" class="border-0 rounded-xl shadow-sm">
+				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
+					<div class="flex items-center gap-3">
+						<Scale class="h-5 w-5 text-emerald-500" />
+						<span class="font-semibold text-lg">Weight</span>
+					</div>
+				</Accordion.Trigger>
+				<Accordion.Content class="px-6 pb-6">
+					<WeightInsightsSection
+						weightEntries={data.weightEntries}
+						weightStats={data.weightStats}
+						goalWeight={data.goalWeight}
+						weightForm={data.weightForm}
+						goalForm={data.goalForm}
+					/>
+				</Accordion.Content>
+			</Accordion.Item>
 
-		<!-- Nutrition Section -->
-		<NutritionInsightsSection
-			meals={data.meals}
-			calorieTarget={data.calorieTarget}
-			mealForm={data.mealForm}
-			calorieForm={data.calorieForm}
-			onEdit={(m) => (mealToEdit = m)}
-			onDelete={(id) => {
-				mealToDelete = id;
-				showDeleteMealDialog = true;
-			}}
-		/>
+			<!-- Nutrition Section -->
+			<Accordion.Item value="nutrition" class="border-0 rounded-xl shadow-sm">
+				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
+					<div class="flex items-center gap-3">
+						<UtensilsCrossed class="h-5 w-5 text-sky-500" />
+						<span class="font-semibold text-lg">Nutrition</span>
+					</div>
+				</Accordion.Trigger>
+				<Accordion.Content class="px-6 pb-6">
+					<NutritionInsightsSection
+						meals={data.meals}
+						calorieTarget={data.calorieTarget}
+						mealForm={data.mealForm}
+						calorieForm={data.calorieForm}
+					/>
+				</Accordion.Content>
+			</Accordion.Item>
 
-		<!-- Reminders Section -->
-		<ReminderSummarySection
-			reminders={data.reminders}
-			reminderForm={data.reminderForm}
-			onToggle={(r) => {
-				reminderToToggle = r;
-				showToggleReminderDialog = true;
-			}}
-			onDelete={(id) => {
-				reminderToDelete = id;
-				showDeleteReminderDialog = true;
-			}}
-		/>
+			<!-- Habits & Reminders Section -->
+			<Accordion.Item value="reminders" class="border-0 rounded-xl shadow-sm">
+				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
+					<div class="flex items-center gap-3">
+						<Flame class="h-5 w-5 text-rose-500" />
+						<span class="font-semibold text-lg">Habits & Reminders</span>
+					</div>
+				</Accordion.Trigger>
+				<Accordion.Content class="px-6 pb-6">
+					<ReminderSummarySection
+						reminders={data.reminders}
+						reminderForm={data.reminderForm}
+						onToggle={(r) => {
+							reminderToToggle = r;
+							showToggleReminderDialog = true;
+						}}
+						onDelete={(id) => {
+							reminderToDelete = id;
+							showDeleteReminderDialog = true;
+						}}
+					/>
+				</Accordion.Content>
+			</Accordion.Item>
 
-		<!-- Recent Activity Preview -->
-		<RecentActivityPreview
-			workouts={data.workouts}
-			weightEntries={data.weightEntries}
-			meals={data.meals}
-			onEditWorkout={(w) => (workoutToEdit = w)}
-			onDeleteWorkout={(id) => {
-				workoutToDelete = id;
-				showDeleteWorkoutDialog = true;
-			}}
-			onEditWeight={(e) => (weightToEdit = e)}
-			onDeleteWeight={(id) => {
-				weightEntryToDelete = id;
-				showDeleteWeightDialog = true;
-			}}
-			onEditMeal={(m) => (mealToEdit = m)}
-			onDeleteMeal={(id) => {
-				mealToDelete = id;
-				showDeleteMealDialog = true;
-			}}
-			onViewAll={() => (historySheetOpen = true)}
-		/>
+			<!-- Recent Activity Section -->
+			<Accordion.Item value="recent-activity" class="border-0 rounded-xl shadow-sm">
+				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
+					<div class="flex items-center gap-3">
+						<Activity class="h-5 w-5 text-purple-500" />
+						<span class="font-semibold text-lg">Recent Activity</span>
+					</div>
+				</Accordion.Trigger>
+				<Accordion.Content class="px-6 pb-6">
+					<RecentActivityPreview
+						workouts={data.workouts}
+						weightEntries={data.weightEntries}
+						meals={data.meals}
+						onEditWorkout={(w) => (workoutToEdit = w)}
+						onDeleteWorkout={(id) => {
+							workoutToDelete = id;
+							showDeleteWorkoutDialog = true;
+						}}
+						onEditWeight={(e) => (weightToEdit = e)}
+						onDeleteWeight={(id) => {
+							weightEntryToDelete = id;
+							showDeleteWeightDialog = true;
+						}}
+						onEditMeal={(m) => (mealToEdit = m)}
+						onDeleteMeal={(id) => {
+							mealToDelete = id;
+							showDeleteMealDialog = true;
+						}}
+						onViewAll={() => (historySheetOpen = true)}
+					/>
+				</Accordion.Content>
+			</Accordion.Item>
+		</Accordion.Root>
 
 		<!-- Full Activity History Sheet -->
 		<ActivityHistorySheet
@@ -348,29 +376,38 @@ const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Ena
 		/>
 
 		<!-- ─── Edit dialogs ──────────────────────────────────────────────────── -->
-		{#if workoutToEdit}
-			<LogWorkoutDialog
-				formData={data.workoutForm}
-				editEntry={workoutToEdit}
-				onClose={() => (workoutToEdit = null)}
-			/>
-		{/if}
+		<LogWorkoutDialog
+			formData={data.workoutForm}
+			editEntry={workoutToEdit}
+			bind:open={showEditWorkoutDialog}
+			instanceId="edit-main"
+			onClose={() => {
+				showEditWorkoutDialog = false;
+				workoutToEdit = null;
+			}}
+		/>
 
-		{#if weightToEdit}
-			<LogWeightDialog
-				formData={data.weightForm}
-				editEntry={weightToEdit}
-				onClose={() => (weightToEdit = null)}
-			/>
-		{/if}
+		<LogWeightDialog
+			formData={data.weightForm}
+			editEntry={weightToEdit}
+			bind:open={showEditWeightDialog}
+			instanceId="edit-main"
+			onClose={() => {
+				showEditWeightDialog = false;
+				weightToEdit = null;
+			}}
+		/>
 
-		{#if mealToEdit}
-			<LogMealDialog
-				formData={data.mealForm}
-				editEntry={mealToEdit}
-				onClose={() => (mealToEdit = null)}
-			/>
-		{/if}
+		<LogMealDialog
+			formData={data.mealForm}
+			editEntry={mealToEdit}
+			bind:open={showEditMealDialog}
+			instanceId="edit-main"
+			onClose={() => {
+				showEditMealDialog = false;
+				mealToEdit = null;
+			}}
+		/>
 
 		<!-- ─── Confirm dialogs ────────────────────────────────────────────────── -->
 		{#if workoutToDelete}

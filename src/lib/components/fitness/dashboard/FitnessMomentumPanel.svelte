@@ -2,7 +2,9 @@
 import { Dumbbell, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
 
 import * as Card from '$lib/components/ui/card';
+import * as Tooltip from '$lib/components/ui/tooltip';
 import { getTodayString, parseLocalDateString } from '$lib/utils/date';
+import { getWorkoutChartColor, workoutTypeOptions } from '$lib/utils/workout';
 
 interface Workout {
 	id: string;
@@ -75,16 +77,19 @@ const dayData = $derived.by(() => {
 	return days;
 });
 
-const typeColors: Record<string, string> = {
-	strength: 'bg-orange-400',
-	cardio: 'bg-sky-400',
-	yoga: 'bg-violet-400',
-	other: 'bg-stone-400'
-};
-
 function workoutColor(types: string[]): string {
 	if (types.length === 0) return '';
-	return typeColors[types[0]] ?? typeColors.other;
+	// Convert chart color CSS variable to background class
+	const chartColor = getWorkoutChartColor(types[0]);
+	// Map chart colors to background classes for consistency
+	const colorMap: Record<string, string> = {
+		'var(--chart-1)': 'bg-orange-400', // strength
+		'var(--chart-2)': 'bg-sky-400', // cardio
+		'var(--chart-3)': 'bg-purple-400', // stretch/other
+		'var(--chart-4)': 'bg-green-400', // walk
+		'var(--chart-5)': 'bg-red-400' // hiit
+	};
+	return colorMap[chartColor] ?? 'bg-stone-400';
 }
 
 // Interpretation sentence
@@ -119,13 +124,11 @@ const calAdherenceClass = (calories: number | null): string => {
 </script>
 
 <Card.Root
-	class="mb-8 overflow-hidden border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900/40"
+	class="mb-6 overflow-hidden p-8 border border-green-200/75 bg-linear-to-br from-green-100/90 via-background to-green-50/85 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] dark:border-green-500/25 dark:from-green-500/12 dark:via-background dark:to-green-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)]"
 >
 	<Card.Header class="pb-4">
-		<Card.Title class="font-display text-lg font-semibold text-stone-900 dark:text-stone-100">
-			14-Day Momentum
-		</Card.Title>
-		<Card.Description class="text-stone-500 dark:text-stone-400">
+		<Card.Title class="font-display text-lg font-semibold">14-Day Momentum</Card.Title>
+		<Card.Description class="text-zinc-400">
 			Activity, weight check-ins, and calorie adherence across each day
 		</Card.Description>
 	</Card.Header>
@@ -134,28 +137,32 @@ const calAdherenceClass = (calories: number | null): string => {
 		<!-- Day labels -->
 		<div class="grid grid-cols-14 gap-1" style="grid-template-columns: repeat(14, 1fr);">
 			{#each dayData as day (day.date)}
-				<div class="text-center text-[10px] font-medium text-stone-400 dark:text-stone-500">
-					{day.shortLabel}
-				</div>
+				<div class="text-center text-[10px] font-medium text-zinc-500">{day.shortLabel}</div>
 			{/each}
 		</div>
 
 		<!-- Lane 1: Workout activity -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<Dumbbell class="h-3 w-3 text-stone-400" />
-				<span class="text-xs font-medium text-stone-500 dark:text-stone-400">Activity</span>
+				<Dumbbell class="h-3 w-3 text-zinc-400" />
+				<span class="text-xs font-medium text-zinc-400">Activity</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
 				{#each dayData as day (day.date)}
-					<div
-						class="h-6 rounded-sm transition-all {day.workoutTypes.length > 0
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							<div
+								class="h-6 rounded-sm transition-all {day.workoutTypes.length > 0
 							? workoutColor(day.workoutTypes)
-							: 'bg-stone-200 dark:bg-stone-700'}"
-						title={day.workoutTypes.length > 0
+							: 'bg-zinc-700'}"
+							></div>
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							{day.workoutTypes.length > 0
 							? `${day.label}: ${day.workoutTypes.join(', ')}`
 							: day.label}
-					></div>
+						</Tooltip.Content>
+					</Tooltip.Root>
 				{/each}
 			</div>
 		</div>
@@ -163,18 +170,24 @@ const calAdherenceClass = (calories: number | null): string => {
 		<!-- Lane 2: Weight check-ins -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<Scale class="h-3 w-3 text-stone-400" />
-				<span class="text-xs font-medium text-stone-500 dark:text-stone-400">Weight</span>
+				<Scale class="h-3 w-3 text-zinc-400" />
+				<span class="text-xs font-medium text-zinc-400">Weight</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
 				{#each dayData as day (day.date)}
 					<div class="flex items-center justify-center">
-						<div
-							class="h-3 w-3 rounded-full transition-all {day.hasWeight
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								<div
+									class="h-3 w-3 rounded-full transition-all {day.hasWeight
 								? 'bg-emerald-500'
-								: 'bg-stone-200 dark:bg-stone-700'}"
-							title={day.hasWeight ? `${day.label}: weighed in` : day.label}
-						></div>
+								: 'bg-zinc-700'}"
+								></div>
+							</Tooltip.Trigger>
+							<Tooltip.Content>
+								{day.hasWeight ? `${day.label}: weighed in` : day.label}
+							</Tooltip.Content>
+						</Tooltip.Root>
 					</div>
 				{/each}
 			</div>
@@ -183,53 +196,65 @@ const calAdherenceClass = (calories: number | null): string => {
 		<!-- Lane 3: Calorie adherence -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<UtensilsCrossed class="h-3 w-3 text-stone-400" />
-				<span class="text-xs font-medium text-stone-500 dark:text-stone-400">Calories</span>
+				<UtensilsCrossed class="h-3 w-3 text-zinc-400" />
+				<span class="text-xs font-medium text-zinc-400">Calories</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
 				{#each dayData as day (day.date)}
-					<div
-						class="h-6 rounded-sm transition-all {calAdherenceClass(day.calories)}"
-						title={day.calories !== null
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							<div class="h-6 rounded-sm transition-all {calAdherenceClass(day.calories)}"></div>
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							{day.calories !== null
 							? `${day.label}: ${day.calories} cal`
 							: `${day.label}: no data`}
-					></div>
+						</Tooltip.Content>
+					</Tooltip.Root>
 				{/each}
 			</div>
 		</div>
 
 		<!-- Legend -->
-		<div class="flex flex-wrap gap-3 border-t border-stone-200 pt-3 dark:border-stone-700">
+		<div class="flex flex-wrap gap-3 border-t border-zinc-700 pt-3">
+			<!-- Workout type legend items -->
 			<div class="flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-orange-400"></div>
-				<span class="text-xs text-stone-500">Strength</span>
+				<span class="text-xs text-zinc-400">Strength</span>
 			</div>
 			<div class="flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-sky-400"></div>
-				<span class="text-xs text-stone-500">Cardio</span>
+				<span class="text-xs text-zinc-400">Cardio</span>
 			</div>
 			<div class="flex items-center gap-1.5">
-				<div class="h-2.5 w-2.5 rounded-sm bg-violet-400"></div>
-				<span class="text-xs text-stone-500">Yoga</span>
+				<div class="h-2.5 w-2.5 rounded-sm bg-red-400"></div>
+				<span class="text-xs text-zinc-400">HIIT</span>
 			</div>
+			<div class="flex items-center gap-1.5">
+				<div class="h-2.5 w-2.5 rounded-sm bg-green-400"></div>
+				<span class="text-xs text-zinc-400">Walk</span>
+			</div>
+			<div class="flex items-center gap-1.5">
+				<div class="h-2.5 w-2.5 rounded-sm bg-purple-400"></div>
+				<span class="text-xs text-zinc-400">Stretch</span>
+			</div>
+			<!-- Calorie legend items -->
 			<div class="ml-auto flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-emerald-400"></div>
-				<span class="text-xs text-stone-500">On target</span>
+				<span class="text-xs text-zinc-400">On target</span>
 			</div>
 			<div class="flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-amber-400"></div>
-				<span class="text-xs text-stone-500">Slightly over</span>
+				<span class="text-xs text-zinc-400">Slightly over</span>
 			</div>
 			<div class="flex items-center gap-1.5">
 				<div class="h-2.5 w-2.5 rounded-sm bg-sky-300"></div>
-				<span class="text-xs text-stone-500">Under target</span>
+				<span class="text-xs text-zinc-400">Under target</span>
 			</div>
 		</div>
 	</Card.Content>
 
-	<Card.Footer
-		class="border-t border-stone-200 bg-stone-100/60 dark:border-stone-800 dark:bg-stone-900/60"
-	>
-		<p class="text-xs text-stone-600 dark:text-stone-400 italic">{interpretation}</p>
+	<Card.Footer class="border mb-6 bg-white">
+		<p class="text-xs italic text-foreground">{interpretation}</p>
 	</Card.Footer>
 </Card.Root>

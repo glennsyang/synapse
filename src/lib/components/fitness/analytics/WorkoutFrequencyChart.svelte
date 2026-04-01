@@ -3,6 +3,7 @@ import { BarChart } from 'layerchart';
 
 import * as Card from '$lib/components/ui/card';
 import * as Chart from '$lib/components/ui/chart';
+import { workoutTypeOptions } from '$lib/utils/workout';
 
 interface Workout {
 	id: string;
@@ -12,12 +13,13 @@ interface Workout {
 
 let { workouts }: { workouts: Workout[] } = $props();
 
-const chartConfig = {
-	strength: { label: 'Strength', color: 'var(--chart-1)' },
-	cardio: { label: 'Cardio', color: 'var(--chart-2)' },
-	yoga: { label: 'Yoga', color: 'var(--chart-4)' },
-	other: { label: 'Other', color: 'var(--chart-3)' }
-} satisfies Chart.ChartConfig;
+// Dynamic chart config based on workout type options
+const chartConfig = Object.fromEntries(
+	workoutTypeOptions.map((option) => [
+		option.value,
+		{ label: option.label, color: option.chartColor }
+	])
+) satisfies Chart.ChartConfig;
 
 // Build last 8 weeks of data
 const chartData = $derived.by(() => {
@@ -42,12 +44,17 @@ const chartData = $derived.by(() => {
 			return d >= startDate && d < endDate;
 		});
 
+		// Dynamically count workouts for each type
+		const weekData: Record<string, number> = Object.fromEntries(
+			workoutTypeOptions.map((option) => [
+				option.value,
+				weekWorkouts.filter((w) => w.type === option.value).length
+			])
+		);
+
 		return {
 			week: label,
-			strength: weekWorkouts.filter((w) => w.type === 'strength').length,
-			cardio: weekWorkouts.filter((w) => w.type === 'cardio').length,
-			yoga: weekWorkouts.filter((w) => w.type === 'yoga').length,
-			other: weekWorkouts.filter((w) => w.type === 'other').length,
+			...weekData,
 			total: weekWorkouts.length
 		};
 	});
@@ -86,12 +93,11 @@ const weeklyStreak = $derived.by(() => {
 				<BarChart
 					data={chartData}
 					x="week"
-					series={[
-						{ key: 'strength', label: 'Strength', color: chartConfig.strength.color },
-						{ key: 'cardio', label: 'Cardio', color: chartConfig.cardio.color },
-						{ key: 'yoga', label: 'Yoga', color: chartConfig.yoga.color },
-						{ key: 'other', label: 'Other', color: chartConfig.other.color }
-					]}
+					series={workoutTypeOptions.map(option => ({
+						key: option.value,
+						label: option.label,
+						color: chartConfig[option.value].color
+					}))}
 					seriesLayout="stack"
 					props={{
 						xAxis: {

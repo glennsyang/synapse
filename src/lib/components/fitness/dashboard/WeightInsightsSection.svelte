@@ -9,11 +9,10 @@ import {
 	TrendingUp
 } from '@lucide/svelte/icons';
 import type { Infer, SuperValidated } from 'sveltekit-superforms';
+
 import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
 import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
-import WeightEntryCard from '$lib/components/fitness/entries/WeightEntryCard.svelte';
 import WeightChart from '$lib/components/fitness/WeightChart.svelte';
-import * as Card from '$lib/components/ui/card';
 import type { logWeightSchema, setGoalWeightSchema } from '$lib/schemas/fitness';
 import { parseLocalDateString } from '$lib/utils/date';
 
@@ -44,14 +43,11 @@ interface Props {
 	goalWeight: GoalWeight | null | undefined;
 	weightForm: SuperValidated<Infer<typeof logWeightSchema>>;
 	goalForm: SuperValidated<Infer<typeof setGoalWeightSchema>>;
-	onEdit: (entry: { id: string; date: string; time: string | null; weightLbs: number }) => void;
-	onDelete: (id: string) => void;
 }
 
-let { weightEntries, weightStats, goalWeight, weightForm, goalForm, onEdit, onDelete }: Props =
-	$props();
+let { weightEntries, weightStats, goalWeight, weightForm, goalForm }: Props = $props();
 
-// Weekly rate of change (lbs/week) from last 2 entries
+// Weekly rate of change (lbs/week)
 const weeklyRate = $derived.by(() => {
 	if (weightEntries.length < 2) return null;
 	const newest = weightEntries[0];
@@ -88,15 +84,11 @@ const remainingTrend = $derived(
 );
 </script>
 
-<section class="mb-8 space-y-4">
+<section class="mb-2 space-y-4">
 	<div class="flex items-center justify-between">
-		<div>
-			<h2 class="font-display text-xl font-semibold text-stone-900 dark:text-stone-100">Weight</h2>
-			<p class="text-sm text-stone-500 dark:text-stone-400">Trend, pace, and distance to goal</p>
-		</div>
 		<div class="flex items-center gap-2">
 			<SetGoalWeightDialog formData={goalForm} />
-			<LogWeightDialog formData={weightForm} />
+			<LogWeightDialog formData={weightForm} instanceId="weight" />
 		</div>
 	</div>
 
@@ -144,9 +136,9 @@ const remainingTrend = $derived(
 	<!-- Weight chart -->
 	{#if weightEntries.length === 0}
 		<div
-			class="flex h-40 items-center justify-center rounded-2xl border border-dashed border-stone-300 dark:border-stone-700"
+			class="flex h-40 items-center justify-center rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700"
 		>
-			<p class="text-sm text-stone-500 dark:text-stone-400">
+			<p class="text-sm text-zinc-500 dark:text-zinc-400">
 				No weight data yet — start logging to see your trend
 			</p>
 		</div>
@@ -157,26 +149,5 @@ const remainingTrend = $derived(
 			entries={weightEntries}
 			goalWeight={goalWeight?.targetWeightLbs ?? null}
 		/>
-	{/if}
-
-	<!-- Recent weight entries -->
-	{#if weightEntries.length > 0}
-		<Card.Root class="border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900/40">
-			<Card.Header class="pb-2">
-				<Card.Title class="text-sm font-medium text-stone-700 dark:text-stone-300">
-					Recent Entries
-				</Card.Title>
-			</Card.Header>
-			<Card.Content class="max-h-64 space-y-2 overflow-y-auto pr-1">
-				{#each weightEntries.slice(0, 5) as entry, i (entry.id)}
-					<WeightEntryCard
-						{entry}
-						previousEntry={weightEntries[i + 1] ?? null}
-						{onEdit}
-						{onDelete}
-					/>
-				{/each}
-			</Card.Content>
-		</Card.Root>
 	{/if}
 </section>

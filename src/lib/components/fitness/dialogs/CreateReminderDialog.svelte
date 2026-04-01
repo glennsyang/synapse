@@ -11,37 +11,70 @@ import { Label } from '$lib/components/ui/label';
 import * as Select from '$lib/components/ui/select';
 import type { workoutReminderSchema } from '$lib/schemas/fitness';
 import { daysOfWeek } from '$lib/utils/date';
+import { workoutTypeOptions } from '$lib/utils/workout';
 
 type WorkoutReminderData = Infer<typeof workoutReminderSchema>;
 
-let { formData }: { formData: SuperValidated<WorkoutReminderData> } = $props();
+let {
+	formData,
+	onClose,
+	open = $bindable(false)
+}: {
+	formData: SuperValidated<WorkoutReminderData>;
+	onClose?: () => void;
+	open?: boolean;
+} = $props();
 
-let open = $state(false);
+let internalOpen = $state(false);
+const dialogOpen = $derived(open !== undefined ? open : internalOpen);
 
 // svelte-ignore state_referenced_locally
 const { form, errors, enhance } = superForm(formData, {
+	id: 'create-reminder',
 	resetForm: true,
 	onUpdate: ({ form }) => {
 		if (form.valid) {
-			open = false;
+			if (open !== undefined) {
+				onClose?.();
+			} else {
+				internalOpen = false;
+			}
 			toast.success('Reminder created successfully!');
+			onClose?.();
 		}
 	},
 	onError: ({ result }) => {
 		toast.error(`Error creating reminder: ${result.error.message}`);
 	}
 });
+
+function handleOpenChange(isOpen: boolean) {
+	if (open !== undefined) {
+		// Externally controlled - notify via onClose
+		if (!isOpen && onClose) {
+			onClose();
+		}
+	} else {
+		// Internally controlled
+		internalOpen = isOpen;
+		if (!isOpen) {
+			onClose?.();
+		}
+	}
+}
 </script>
 
-<Dialog.Root bind:open>
-	<Dialog.Trigger>
-		{#snippet child({ props })}
-			<Button {...props} class="bg-green-600 text-white hover:bg-green-700">
-				<BellPlusIcon class="mr-2 h-4 w-4" />
-				Add Reminder
-			</Button>
-		{/snippet}
-	</Dialog.Trigger>
+<Dialog.Root open={dialogOpen} onOpenChange={handleOpenChange}>
+	{#if open === undefined}
+		<Dialog.Trigger>
+			{#snippet child({ props })}
+				<Button {...props} class="bg-green-600 text-white hover:bg-green-700">
+					<BellPlusIcon class="mr-2 h-4 w-4" />
+					Create Reminder
+				</Button>
+			{/snippet}
+		</Dialog.Trigger>
+	{/if}
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title>Schedule Workout Reminder</Dialog.Title>
@@ -59,12 +92,11 @@ const { form, errors, enhance } = superForm(formData, {
 								{$form.workoutType || 'Select type'}
 							</Select.Trigger>
 							<Select.Content>
-								<Select.Item value="strength" label="Strength">Strength</Select.Item>
-								<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
-								<Select.Item value="hiit" label="HIIT">HIIT</Select.Item>
-								<Select.Item value="walk" label="Walk">Walk</Select.Item>
-								<Select.Item value="stretch" label="Stretch">Stretch</Select.Item>
-								<Select.Item value="other" label="Other">Other</Select.Item>
+								{#each workoutTypeOptions as option (option.value)}
+									<Select.Item value={option.value} label={option.label}
+										>{option.label}</Select.Item
+									>
+								{/each}
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.workoutType}

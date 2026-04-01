@@ -4,8 +4,6 @@ import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 import WorkoutFrequencyChart from '$lib/components/fitness/analytics/WorkoutFrequencyChart.svelte';
 import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
-import WorkoutEntryCard from '$lib/components/fitness/entries/WorkoutEntryCard.svelte';
-import * as Card from '$lib/components/ui/card';
 import type { logWorkoutSchema } from '$lib/schemas/fitness';
 import { getTodayString, parseLocalDateString } from '$lib/utils/date';
 
@@ -24,7 +22,6 @@ interface Workout {
 	time: string | null;
 	type: string;
 	durationMinutes: number | null;
-	steps: number | null;
 	notes: string | null;
 	exercises: Exercise[];
 }
@@ -32,11 +29,9 @@ interface Workout {
 interface Props {
 	workouts: Workout[];
 	workoutForm: SuperValidated<Infer<typeof logWorkoutSchema>>;
-	onEdit: (workout: Workout) => void;
-	onDelete: (id: string) => void;
 }
 
-let { workouts, workoutForm, onEdit, onDelete }: Props = $props();
+let { workouts, workoutForm }: Props = $props();
 
 const insights = $derived.by(() => {
 	if (workouts.length === 0) {
@@ -96,17 +91,9 @@ const insights = $derived.by(() => {
 });
 </script>
 
-<section class="mb-8 space-y-4">
+<section class="mb-2 space-y-4">
 	<div class="flex items-center justify-between">
-		<div>
-			<h2 class="font-display text-xl font-semibold text-stone-900 dark:text-stone-100">
-				Workouts
-			</h2>
-			<p class="text-sm text-stone-500 dark:text-stone-400">
-				Volume, consistency, and training history
-			</p>
-		</div>
-		<LogWorkoutDialog formData={workoutForm} />
+		<LogWorkoutDialog formData={workoutForm} instanceId="insights" />
 	</div>
 
 	<!-- Insight cards -->
@@ -143,20 +130,4 @@ const insights = $derived.by(() => {
 
 	<!-- Frequency chart (full width) -->
 	<WorkoutFrequencyChart {workouts} />
-
-	<!-- Latest workout callout -->
-	{#if workouts.length > 0}
-		<Card.Root class="border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900/40">
-			<Card.Header class="pb-2">
-				<Card.Title class="text-sm font-medium text-stone-700 dark:text-stone-300">
-					Recent Sessions
-				</Card.Title>
-			</Card.Header>
-			<Card.Content class="max-h-72 space-y-2 overflow-y-auto pr-1">
-				{#each workouts.slice(0, 5) as workout (workout.id)}
-					<WorkoutEntryCard {workout} {onEdit} {onDelete} />
-				{/each}
-			</Card.Content>
-		</Card.Root>
-	{/if}
 </section>

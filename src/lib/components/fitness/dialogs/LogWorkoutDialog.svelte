@@ -14,6 +14,7 @@ import * as Select from '$lib/components/ui/select';
 import type { logWorkoutSchema, WorkoutType } from '$lib/schemas/fitness';
 import type { Exercise } from '$lib/types';
 import { getTodayString } from '$lib/utils/date';
+import { workoutTypeOptions } from '$lib/utils/workout';
 
 type LogWorkoutData = Infer<typeof logWorkoutSchema>;
 
@@ -38,30 +39,44 @@ interface EditWorkout {
 let {
 	formData,
 	editEntry = null,
-	onClose
+	onClose,
+	open = $bindable(false),
+	instanceId = 'default'
 }: {
 	formData: SuperValidated<LogWorkoutData>;
 	editEntry?: EditWorkout | null;
 	onClose?: () => void;
+	open?: boolean;
+	instanceId?: string;
 } = $props();
 
 const isEditing = $derived(editEntry !== null);
 
-let open = $state(false);
+let internalOpen = $state(false);
+const dialogOpen = $derived(open !== undefined ? open : internalOpen);
 let workoutExercises = $state<Exercise[]>([]);
 
 // Open dialog externally when editEntry is provided
 $effect(() => {
-	if (editEntry) {
-		open = true;
+	if (editEntry && open === undefined) {
+		internalOpen = true;
 	}
 });
 
+// Generate a unique form ID based on the editing context and instance
+const formId = $derived(editEntry ? `edit-workout-${editEntry.id}` : `log-workout-${instanceId}`);
+
 // svelte-ignore state_referenced_locally
 const { form, errors, enhance } = superForm(formData, {
+	id: formId,
+	resetForm: !isEditing,
 	onUpdate: ({ form }) => {
 		if (form.valid) {
-			open = false;
+			if (open !== undefined) {
+				onClose?.();
+			} else {
+				internalOpen = false;
+			}
 			workoutExercises = [];
 			toast.success(isEditing ? 'Workout updated successfully!' : 'Workout logged successfully!');
 			onClose?.();
@@ -72,11 +87,11 @@ const { form, errors, enhance } = superForm(formData, {
 	}
 });
 
-$effect(() => {
-	if (workoutExercises.length > 0) {
-		$form.exercises = JSON.stringify(workoutExercises);
-	}
-});
+// $effect(() => {
+// 	if (workoutExercises.length > 0) {
+// 		$form.exercises = JSON.stringify(workoutExercises);
+// 	}
+// });
 
 // Populate form fields when editing
 $effect(() => {
@@ -100,22 +115,30 @@ $effect(() => {
 
 // Default the date to today when opening for new entry
 $effect(() => {
-	if (open && !isEditing && !$form.date) {
+	if (dialogOpen && !isEditing && !$form.date) {
 		$form.date = getTodayString();
 	}
 });
 
 function handleOpenChange(isOpen: boolean) {
-	open = isOpen;
-	if (!isOpen) {
-		workoutExercises = [];
-		onClose?.();
+	if (open !== undefined) {
+		// Externally controlled - notify via onClose
+		if (!isOpen && onClose) {
+			onClose();
+		}
+	} else {
+		// Internally controlled
+		internalOpen = isOpen;
+		if (!isOpen) {
+			workoutExercises = [];
+			onClose?.();
+		}
 	}
 }
 </script>
 
-<Dialog.Root {open} onOpenChange={handleOpenChange}>
-	{#if !isEditing}
+<Dialog.Root open={dialogOpen} onOpenChange={handleOpenChange}>
+	{#if !isEditing && open === undefined}
 		<Dialog.Trigger>
 			{#snippet child({ props })}
 				<Button {...props} class="bg-green-600 text-white hover:bg-green-700">
@@ -162,12 +185,11 @@ function handleOpenChange(isOpen: boolean) {
 								{$form.type || 'Select workout type'}
 							</Select.Trigger>
 							<Select.Content>
-								<Select.Item value="strength" label="Strength">Strength</Select.Item>
-								<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
-								<Select.Item value="hiit" label="HIIT">HIIT</Select.Item>
-								<Select.Item value="walk" label="Walk">Walk</Select.Item>
-								<Select.Item value="stretch" label="Stretch">Stretch</Select.Item>
-								<Select.Item value="other" label="Other">Other</Select.Item>
+								{#each workoutTypeOptions as option (option.value)}
+									<Select.Item value={option.value} label={option.label}
+										>{option.label}</Select.Item
+									>
+								{/each}
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.type}
