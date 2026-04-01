@@ -134,9 +134,7 @@ const { form, errors, enhance } = superForm(formData, {
 						<Button {...props} type="button" variant="outline">Cancel</Button>
 					{/snippet}
 				</Dialog.Close>
-				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700">
-					Create Reminder
-				</Button>
+				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700"> Create </Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

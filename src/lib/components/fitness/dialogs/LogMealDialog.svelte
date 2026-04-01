@@ -158,7 +158,7 @@ function handleOpenChange(isOpen: boolean) {
 					{/snippet}
 				</Dialog.Close>
 				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700">
-					{isEditing ? 'Save Changes' : 'Log Meal'}
+					{isEditing ? 'Update' : 'Save'}
 				</Button>
 			</Dialog.Footer>
 		</form>
