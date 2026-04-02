@@ -34,7 +34,7 @@ import {
 } from '$lib/server/daily-agenda';
 import { getDb } from '$lib/server/db';
 import { tasks } from '$lib/server/db/schema';
-import { getStartOfWeek } from '$lib/utils/date';
+import { getDateUrgencyStatus, getStartOfWeek, getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 
 import type { Actions, PageServerLoad } from './$types';
@@ -304,6 +304,7 @@ async function loadTaskBoardData(
 		priority: number[];
 		tag: string[];
 		state?: TaskState;
+		dueDate: ('overdue' | 'today' | 'upcoming')[];
 	}
 ) {
 	const conditions = [eq(tasks.userId, userId)];
@@ -337,10 +338,19 @@ async function loadTaskBoardData(
 		}
 	}
 
-	const taskRows = await getDb().query.tasks.findMany({
+	let taskRows = await getDb().query.tasks.findMany({
 		where: and(...conditions),
 		orderBy: [tasks.state, tasks.sortOrder, tasks.priority, tasks.dueDate, tasks.taskNumber]
 	});
+
+	// Apply due date filtering after database query since we need to calculate urgency status
+	if (filters.dueDate.length > 0) {
+		const today = getTodayString();
+		taskRows = taskRows.filter((task) => {
+			const urgencyStatus = getDateUrgencyStatus(task.dueDate, today);
+			return urgencyStatus && filters.dueDate.includes(urgencyStatus);
+		});
+	}
 
 	return taskRows.map((task) => ({
 		...task,
@@ -363,7 +373,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		keyword: url.searchParams.get('keyword') ?? undefined,
 		priority: url.searchParams.get('priority') ?? undefined,
 		tag: url.searchParams.get('tag') ?? undefined,
-		state: url.searchParams.get('state') ?? undefined
+		state: url.searchParams.get('state') ?? undefined,
+		dueDate: url.searchParams.get('dueDate') ?? undefined
 	});
 
 	if (!filters.success) {

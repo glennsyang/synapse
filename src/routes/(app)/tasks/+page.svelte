@@ -7,6 +7,7 @@ import { navigating, page } from '$app/state';
 import PageShell from '$lib/components/app/PageShell.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 import DailyAgendaView from '$lib/components/tasks/DailyAgendaView.svelte';
+import TaskDueDateFilter from '$lib/components/tasks/TaskDueDateFilter.svelte';
 import TaskKanbanView from '$lib/components/tasks/TaskKanbanView.svelte';
 import TaskPriorityFilter from '$lib/components/tasks/TaskPriorityFilter.svelte';
 import TaskTagFilter from '$lib/components/tasks/TaskTagFilter.svelte';
@@ -30,7 +31,8 @@ let urlKeyword = $derived(page.url.searchParams.get('keyword') ?? '');
 let hasActiveFilters = $derived(
 	Boolean(page.url.searchParams.get('keyword')?.trim()) ||
 		Boolean(page.url.searchParams.get('priority')) ||
-		Boolean(page.url.searchParams.get('tag'))
+		Boolean(page.url.searchParams.get('tag')) ||
+		Boolean(page.url.searchParams.get('dueDate'))
 );
 
 let showPageSkeleton = $derived(
@@ -221,6 +223,7 @@ async function applyKeywordFilter() {
 								</div>
 
 								<div class="flex flex-col gap-4 lg:flex-row lg:flex-nowrap lg:justify-self-end">
+									<div class="w-full lg:w-32 lg:shrink-0"><TaskDueDateFilter /></div>
 									<div class="w-full lg:w-32 lg:shrink-0"><TaskPriorityFilter /></div>
 									<div class="w-full lg:w-36 lg:shrink-0">
 										<TaskTagFilter allTags={data.allTags} />

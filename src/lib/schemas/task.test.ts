@@ -110,7 +110,8 @@ describe('task schemas', () => {
 			keyword: 'sprint board',
 			priority: [1, 2, 4],
 			tag: ['work', 'planning'],
-			state: undefined
+			state: undefined,
+			dueDate: []
 		});
 	});
 
@@ -125,7 +126,8 @@ describe('task schemas', () => {
 			keyword: undefined,
 			priority: [],
 			tag: [],
-			state: undefined
+			state: undefined,
+			dueDate: []
 		});
 	});
 

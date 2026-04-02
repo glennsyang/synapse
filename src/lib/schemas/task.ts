@@ -98,7 +98,27 @@ export const taskFilterSchema = z.object({
 		return uniqueValues(parsedValues);
 	}),
 	tag: commaSeparatedQueryParamSchema.transform((values): string[] => uniqueValues(values)),
-	state: TaskStateEnum.optional()
+	state: TaskStateEnum.optional(),
+	dueDate: commaSeparatedQueryParamSchema.transform(
+		(values, ctx): ('overdue' | 'today' | 'upcoming')[] => {
+			const validValues = ['overdue', 'today', 'upcoming'];
+			const parsedValues: ('overdue' | 'today' | 'upcoming')[] = [];
+
+			for (const value of values) {
+				if (!validValues.includes(value)) {
+					ctx.addIssue({
+						code: 'custom',
+						message: 'Due date filters must be one of: overdue, today, upcoming'
+					});
+					return z.NEVER;
+				}
+
+				parsedValues.push(value as 'overdue' | 'today' | 'upcoming');
+			}
+
+			return uniqueValues(parsedValues);
+		}
+	)
 });
 
 export type TaskState = z.infer<typeof TaskStateEnum>;
