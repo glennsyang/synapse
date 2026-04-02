@@ -42,6 +42,19 @@ export const scheduleSchema = z.object({
  * Schema for completing a meditation session
  */
 export const completeSessionSchema = z.object({
+	completed_at: z.string().min(1, 'Date and time is required'),
+	pre_mood_rating: z.coerce.number().int().min(1).max(5).optional(),
+	mood_rating: z.coerce.number().int().min(1).max(5).optional(),
+	notes: z.string().optional()
+});
+
+/**
+ * Schema for editing an existing meditation session
+ */
+export const editSessionSchema = z.object({
+	id: z.string().min(1),
+	completed_at: z.string().min(1, 'Date and time is required'),
+	pre_mood_rating: z.coerce.number().int().min(1).max(5).optional(),
 	mood_rating: z.coerce.number().int().min(1).max(5).optional(),
 	notes: z.string().optional()
 });
@@ -50,6 +63,7 @@ export const completeSessionSchema = z.object({
  * Schema for filtering meditation routines
  */
 export const routineFilterSchema = z.object({
-	mood: z.enum([...MOOD_TAGS]).optional(),
-	type: z.enum(['predefined', 'user-created', 'all']).optional().default('all')
+	moods: z.array(z.enum([...MOOD_TAGS])).optional(),
+	duration: z.coerce.number().int().optional(),
+	search: z.string().max(200).optional()
 });

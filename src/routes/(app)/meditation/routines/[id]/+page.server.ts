@@ -5,6 +5,7 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import {
 	completeSessionSchema,
+	editSessionSchema,
 	scheduleSchema,
 	updateRoutineSchema
 } from '$lib/schemas/meditation';
@@ -88,6 +89,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 		const sessionForm = await superValidate(zod4(completeSessionSchema));
 
+		const editSessionForm = await superValidate(zod4(editSessionSchema));
+
 		const updateForm = await superValidate(
 			{
 				title: routine.title,
@@ -105,6 +108,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			sessions,
 			scheduleForm,
 			sessionForm,
+			editSessionForm,
 			updateForm
 		};
 	} catch (err) {
@@ -134,12 +138,12 @@ export const actions: Actions = {
 		try {
 			const db = getDb();
 
-			// Parse days_of_week if provided
+			// Parse days_of_week if provided (stored as JSON array string e.g. "[0,1,6]")
 			const daysOfWeekJson = form.data.days_of_week
 				? JSON.stringify(
-						splitCommaSeparated(form.data.days_of_week)
-							.map((d) => Number.parseInt(d.trim(), 10))
+						(JSON.parse(form.data.days_of_week) as number[])
 							.filter((d) => !Number.isNaN(d) && d >= 0 && d <= 6)
+							.sort((a, b) => a - b)
 					)
 				: null;
 
@@ -253,7 +257,8 @@ export const actions: Actions = {
 					id: sessionId,
 					userId: user.id,
 					routineId: routineId,
-					completedAt: new Date().toISOString(),
+					completedAt: new Date(form.data.completed_at).toISOString(),
+					preMoodRating: form.data.pre_mood_rating || null,
 					moodRating: form.data.mood_rating || null,
 					notes: form.data.notes || null,
 					createdAt: new Date().toISOString(),
@@ -339,6 +344,71 @@ export const actions: Actions = {
 				},
 				{ status: 500 }
 			);
+		}
+	}),
+
+	updateSession: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(editSessionSchema));
+
+		if (!form.valid) {
+			logger.warn('Invalid edit session form data', { errors: form.errors });
+			return fail(400, { form });
+		}
+
+		try {
+			const db = getDb();
+
+			const session = await db.query.meditationSessions.findFirst({
+				where: and(eq(meditationSessions.id, form.data.id), eq(meditationSessions.userId, user.id))
+			});
+
+			if (!session) {
+				return fail(404, { form });
+			}
+
+			await db
+				.update(meditationSessions)
+				.set({
+					completedAt: new Date(form.data.completed_at).toISOString(),
+					preMoodRating: form.data.pre_mood_rating ?? null,
+					moodRating: form.data.mood_rating ?? null,
+					notes: form.data.notes || null,
+					updatedAt: new Date().toISOString()
+				})
+				.where(eq(meditationSessions.id, form.data.id));
+
+			logger.info('Meditation session updated', { sessionId: form.data.id, userId: user.id });
+			return message(form, { type: 'success', text: 'Session updated successfully!' });
+		} catch (err) {
+			logger.error('Failed to update session', { error: err });
+			return message(
+				form,
+				{ type: 'error', text: 'An error occurred while updating the session.' },
+				{ status: 500 }
+			);
+		}
+	}),
+
+	deleteSession: requireAuth(async ({ request }, user) => {
+		const formData = await request.formData();
+		const sessionId = formData.get('session_id') as string;
+
+		if (!sessionId) {
+			return fail(400, { error: 'Session ID is required' });
+		}
+
+		try {
+			const db = getDb();
+
+			await db
+				.delete(meditationSessions)
+				.where(and(eq(meditationSessions.id, sessionId), eq(meditationSessions.userId, user.id)));
+
+			logger.info('Meditation session deleted', { sessionId, userId: user.id });
+			return { success: true };
+		} catch (err) {
+			logger.error('Failed to delete session', { error: err });
+			return fail(500, { error: 'Failed to delete session' });
 		}
 	}),
 

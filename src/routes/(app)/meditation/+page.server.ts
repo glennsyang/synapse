@@ -1,16 +1,27 @@
-import { and, desc, eq, isNull, like, or } from 'drizzle-orm';
+import { fail } from '@sveltejs/kit';
+import { and, desc, eq, like, or } from 'drizzle-orm';
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
 
-import { routineFilterSchema } from '$lib/schemas/meditation';
+import { editSessionSchema, routineFilterSchema } from '$lib/schemas/meditation';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
 
-import type { PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
+	const moodParam = url.searchParams.get('mood');
 	const filters = routineFilterSchema.safeParse({
-		mood: url.searchParams.get('mood') ?? undefined,
-		type: url.searchParams.get('type') ?? undefined
+		moods: moodParam
+			? moodParam
+					.split(',')
+					.map((m) => m.trim())
+					.filter(Boolean)
+			: undefined,
+		duration: url.searchParams.get('duration') ?? undefined,
+		search: url.searchParams.get('search') ?? undefined
 	});
 
 	if (!filters.success) {
@@ -18,11 +29,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		return {
 			routines: [],
 			schedules: [],
-			sessions: []
+			sessions: [],
+			editSessionForm: await superValidate(zod4(editSessionSchema))
 		};
 	}
 
-	const { mood, type } = filters.data;
+	const { moods, duration, search } = filters.data;
 
 	try {
 		const db = getDb();
@@ -30,21 +42,26 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// Build conditions for routine query
 		const routineConditions = [];
 
-		if (type === 'predefined') {
-			routineConditions.push(isNull(meditationRoutines.userId));
-		} else if (type === 'user-created') {
-			routineConditions.push(eq(meditationRoutines.userId, locals.user.id));
-		} else {
-			// 'all' - show both predefined and user-created
+		// Add search filter (title or description)
+		if (search?.trim()) {
+			const searchTerm = `%${search.trim()}%`;
 			routineConditions.push(
-				or(isNull(meditationRoutines.userId), eq(meditationRoutines.userId, locals.user?.id))
+				or(
+					like(meditationRoutines.title, searchTerm),
+					like(meditationRoutines.description, searchTerm)
+				)
 			);
 		}
 
-		// Add mood filter if specified
-		if (mood) {
-			// Search for mood tag in JSON array
-			routineConditions.push(like(meditationRoutines.moodTags, `%"${mood}"%`));
+		// Add mood filter (multi-select OR)
+		if (moods && moods.length > 0) {
+			const moodConditions = moods.map((mood) => like(meditationRoutines.moodTags, `%"${mood}"%`));
+			routineConditions.push(or(...moodConditions));
+		}
+
+		// Add duration filter
+		if (duration) {
+			routineConditions.push(eq(meditationRoutines.durationMinutes, duration));
 		}
 
 		// Fetch routines
@@ -82,17 +99,88 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			}
 		});
 
+		const editSessionForm = await superValidate(zod4(editSessionSchema));
+
 		return {
 			routines: parsedRoutines,
 			schedules: parsedSchedules,
-			sessions
+			sessions,
+			editSessionForm
 		};
 	} catch (error) {
 		logger.error('Failed to load meditation data', { error });
 		return {
 			routines: [],
 			schedules: [],
-			sessions: []
+			sessions: [],
+			editSessionForm: await superValidate(zod4(editSessionSchema))
 		};
 	}
+};
+
+export const actions: Actions = {
+	updateSession: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(editSessionSchema));
+
+		if (!form.valid) {
+			logger.warn('Invalid edit session form data', { errors: form.errors });
+			return fail(400, { form });
+		}
+
+		try {
+			const db = getDb();
+
+			const session = await db.query.meditationSessions.findFirst({
+				where: and(eq(meditationSessions.id, form.data.id), eq(meditationSessions.userId, user.id))
+			});
+
+			if (!session) {
+				return fail(404, { form });
+			}
+
+			await db
+				.update(meditationSessions)
+				.set({
+					completedAt: new Date(form.data.completed_at).toISOString(),
+					preMoodRating: form.data.pre_mood_rating ?? null,
+					moodRating: form.data.mood_rating ?? null,
+					notes: form.data.notes || null,
+					updatedAt: new Date().toISOString()
+				})
+				.where(eq(meditationSessions.id, form.data.id));
+
+			logger.info('Meditation session updated', { sessionId: form.data.id, userId: user.id });
+			return message(form, { type: 'success', text: 'Session updated successfully!' });
+		} catch (err) {
+			logger.error('Failed to update session', { error: err });
+			return message(
+				form,
+				{ type: 'error', text: 'An error occurred while updating the session.' },
+				{ status: 500 }
+			);
+		}
+	}),
+
+	deleteSession: requireAuth(async ({ request }, user) => {
+		const formData = await request.formData();
+		const sessionId = formData.get('session_id') as string;
+
+		if (!sessionId) {
+			return fail(400, { error: 'Session ID is required' });
+		}
+
+		try {
+			const db = getDb();
+
+			await db
+				.delete(meditationSessions)
+				.where(and(eq(meditationSessions.id, sessionId), eq(meditationSessions.userId, user.id)));
+
+			logger.info('Meditation session deleted', { sessionId, userId: user.id });
+			return { success: true };
+		} catch (err) {
+			logger.error('Failed to delete session', { error: err });
+			return fail(500, { error: 'Failed to delete session' });
+		}
+	})
 };

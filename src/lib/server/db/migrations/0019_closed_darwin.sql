@@ -1,0 +1,1 @@
+ALTER TABLE `meditation_sessions` ADD `pre_mood_rating` integer;
