@@ -159,7 +159,7 @@ function resetPasswordForm() {
 									{:else}
 										<Save class="mr-2 h-4 w-4" />
 									{/if}
-									Save Changes
+									Save
 								</Button>
 								<Button
 									type="button"

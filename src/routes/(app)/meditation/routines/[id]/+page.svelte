@@ -13,6 +13,7 @@ import {
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 
+import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
 import * as Card from '$lib/components/ui/card';
@@ -32,6 +33,9 @@ let showScheduleDialog = $state(false);
 let showSessionDialog = $state(false);
 let showEditDialog = $state(false);
 let showDeleteConfirm = $state(false);
+let showDeleteScheduleConfirm = $state(false);
+let showDeleteSessionConfirm = $state(false);
+let sessionToDelete = $state<string | null>(null);
 let showEditSessionDialog = $state(false);
 
 // svelte-ignore state_referenced_locally
@@ -290,25 +294,23 @@ $effect(() => {
 					<Tooltip.Content>{data.schedule ? 'Edit Schedule' : 'Add Schedule'}</Tooltip.Content>
 				</Tooltip.Root>
 				{#if data.schedule}
-					<form method="POST" action="?/deleteSchedule" class="inline">
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<Button
-										{...props}
-										type="submit"
-										variant="ghost"
-										size="icon-sm"
-										class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
-										aria-label="Delete Schedule"
-									>
-										<Trash2 class="h-4 w-4" />
-									</Button>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content>Delete Schedule</Tooltip.Content>
-						</Tooltip.Root>
-					</form>
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							{#snippet child({ props })}
+								<Button
+									{...props}
+									variant="ghost"
+									size="icon-sm"
+									class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
+									aria-label="Delete Schedule"
+									onclick={() => (showDeleteScheduleConfirm = true)}
+								>
+									<Trash2 class="h-4 w-4" />
+								</Button>
+							{/snippet}
+						</Tooltip.Trigger>
+						<Tooltip.Content>Delete Schedule</Tooltip.Content>
+					</Tooltip.Root>
 				{/if}
 			</Card.Footer>
 		</Card.Root>
@@ -349,26 +351,23 @@ $effect(() => {
 										</Tooltip.Trigger>
 										<Tooltip.Content>Edit Session</Tooltip.Content>
 									</Tooltip.Root>
-									<form method="POST" action="?/deleteSession" class="inline">
-										<input type="hidden" name="session_id" value={session.id}>
-										<Tooltip.Root>
-											<Tooltip.Trigger>
-												{#snippet child({ props })}
-													<Button
-														{...props}
-														type="submit"
-														variant="ghost"
-														size="icon-sm"
-														class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
-														aria-label="Delete Session"
-													>
-														<Trash2 class="h-4 w-4" />
-													</Button>
-												{/snippet}
-											</Tooltip.Trigger>
-											<Tooltip.Content>Delete Session</Tooltip.Content>
-										</Tooltip.Root>
-									</form>
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											{#snippet child({ props })}
+												<Button
+													{...props}
+													variant="ghost"
+													size="icon-sm"
+													class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
+													aria-label="Delete Session"
+													onclick={() => { sessionToDelete = session.id; showDeleteSessionConfirm = true; }}
+												>
+													<Trash2 class="h-4 w-4" />
+												</Button>
+											{/snippet}
+										</Tooltip.Trigger>
+										<Tooltip.Content>Delete Session</Tooltip.Content>
+									</Tooltip.Root>
 								</div>
 							</div>
 						{/each}
@@ -643,24 +642,33 @@ $effect(() => {
 	</Dialog.Content>
 </Dialog.Root>
 
-<!-- Delete Confirm Dialog -->
-<Dialog.Root bind:open={showDeleteConfirm}>
-	<Dialog.Content>
-		<Dialog.Header>
-			<Dialog.Title>Delete Routine?</Dialog.Title>
-			<Dialog.Description>
-				This will permanently delete this routine and all associated schedules and sessions. This
-				action cannot be undone.
-			</Dialog.Description>
-		</Dialog.Header>
-		<Dialog.Footer>
-			<Button variant="outline" onclick={() => (showDeleteConfirm = false)}>Cancel</Button>
-			<form method="POST" action="?/deleteRoutine" class="inline">
-				<Button type="submit" variant="destructive">Delete</Button>
-			</form>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>
+<!-- Delete Routine Confirm Dialog -->
+<ConfirmDialog
+	bind:open={showDeleteConfirm}
+	title="Delete Routine?"
+	message="This will permanently delete this routine and all associated schedules and sessions. This action cannot be undone."
+	confirmButtonText="Delete"
+	actionUrl="?/deleteRoutine"
+/>
+
+<!-- Delete Schedule Confirm Dialog -->
+<ConfirmDialog
+	bind:open={showDeleteScheduleConfirm}
+	title="Delete Schedule?"
+	message="Are you sure you want to delete this schedule? This action cannot be undone."
+	confirmButtonText="Delete"
+	actionUrl="?/deleteSchedule"
+/>
+
+<!-- Delete Session Confirm Dialog -->
+<ConfirmDialog
+	bind:open={showDeleteSessionConfirm}
+	title="Delete Session?"
+	message="Are you sure you want to delete this session? This action cannot be undone."
+	confirmButtonText="Delete"
+	actionUrl="?/deleteSession"
+	hiddenFields={{ session_id: sessionToDelete ?? '' }}
+/>
 
 <!-- Edit Session Dialog -->
 <Dialog.Root bind:open={showEditSessionDialog}>
@@ -756,7 +764,7 @@ $effect(() => {
 					{#if $editSessionSubmitting}
 						Saving...
 					{:else}
-						Save Changes
+						Save
 					{/if}
 				</Button>
 			</Dialog.Footer>

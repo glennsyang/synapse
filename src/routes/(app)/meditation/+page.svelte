@@ -18,6 +18,7 @@ import { navigating, page } from '$app/state';
 import PageShell from '$lib/components/app/PageShell.svelte';
 import MeditationDurationFilter from '$lib/components/meditation/MeditationDurationFilter.svelte';
 import MeditationMoodFilter from '$lib/components/meditation/MeditationMoodFilter.svelte';
+import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 import { Badge } from '$lib/components/ui/badge';
 import { Button } from '$lib/components/ui/button';
@@ -35,6 +36,8 @@ import type { PageData } from './$types';
 let { data }: { data: PageData } = $props();
 
 let showEditSessionDialog = $state(false);
+let showDeleteSessionConfirm = $state(false);
+let sessionToDelete = $state<string | null>(null);
 // svelte-ignore state_referenced_locally
 let selectedSession = $state<(typeof data.sessions)[number] | null>(null);
 
@@ -378,26 +381,23 @@ async function switchTab(tab: string) {
 													</Tooltip.Trigger>
 													<Tooltip.Content>Edit Session</Tooltip.Content>
 												</Tooltip.Root>
-												<form method="POST" action="?/deleteSession" class="inline">
-													<input type="hidden" name="session_id" value={session.id}>
-													<Tooltip.Root>
-														<Tooltip.Trigger>
-															{#snippet child({ props })}
-																<Button
-																	{...props}
-																	type="submit"
-																	variant="ghost"
-																	size="icon-sm"
-																	class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
-																	aria-label="Delete Session"
-																>
-																	<Trash2 class="h-4 w-4" />
-																</Button>
-															{/snippet}
-														</Tooltip.Trigger>
-														<Tooltip.Content>Delete Session</Tooltip.Content>
-													</Tooltip.Root>
-												</form>
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														{#snippet child({ props })}
+															<Button
+																{...props}
+																variant="ghost"
+																size="icon-sm"
+																class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
+																aria-label="Delete Session"
+																onclick={() => { sessionToDelete = session.id; showDeleteSessionConfirm = true; }}
+															>
+																<Trash2 class="h-4 w-4" />
+															</Button>
+														{/snippet}
+													</Tooltip.Trigger>
+													<Tooltip.Content>Delete Session</Tooltip.Content>
+												</Tooltip.Root>
 											</div>
 										</div>
 									</div>
@@ -414,6 +414,16 @@ async function switchTab(tab: string) {
 		</Tabs.Root>
 	</PageShell>
 {/if}
+
+<!-- Delete Session Confirm Dialog -->
+<ConfirmDialog
+	bind:open={showDeleteSessionConfirm}
+	title="Delete Session?"
+	message="Are you sure you want to delete this session? This action cannot be undone."
+	confirmButtonText="Delete"
+	actionUrl="?/deleteSession"
+	hiddenFields={{ session_id: sessionToDelete ?? '' }}
+/>
 
 <!-- Edit Session Dialog -->
 <Dialog.Root bind:open={showEditSessionDialog}>
@@ -509,7 +519,7 @@ async function switchTab(tab: string) {
 					{#if $editSessionSubmitting}
 						Saving...
 					{:else}
-						Save Changes
+						Save
 					{/if}
 				</Button>
 			</Dialog.Footer>

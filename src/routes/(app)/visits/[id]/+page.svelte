@@ -420,7 +420,7 @@ function getEditStatusDescription(isExempt: boolean): string {
 								? 'Saving...'
 								: 'Logging...'
 							: isEditingVisit
-								? 'Save Changes'
+								? 'Save'
 								: 'Log Visit'}
 					</Button>
 				</div>
