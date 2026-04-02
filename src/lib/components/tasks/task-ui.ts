@@ -2,6 +2,8 @@ import type { TaskState } from '$lib/schemas/task';
 
 export type TaskPriority = 1 | 2 | 3 | 4;
 
+export type TaskDueDateFilter = 'overdue' | 'today' | 'upcoming';
+
 export type TaskSummary = {
 	id: string;
 	taskNumber: number;
@@ -28,6 +30,13 @@ type TaskStateMeta = {
 	badgeClass: string;
 	headerClass: string;
 	emptyClass: string;
+};
+
+type TaskDueDateFilterMeta = {
+	label: string;
+	valueLabel: string;
+	dotClass: string;
+	badgeClass: string;
 };
 
 export const taskPriorityMeta: Record<TaskPriority, TaskPriorityMeta> = {
@@ -127,6 +136,36 @@ export const taskStateOptions = [
 	{ value: 'on_hold' as const, ...taskStateMeta.on_hold },
 	{ value: 'blocked' as const, ...taskStateMeta.blocked },
 	{ value: 'done' as const, ...taskStateMeta.done }
+];
+
+const taskDueDateFilterMeta: Record<TaskDueDateFilter, TaskDueDateFilterMeta> = {
+	overdue: {
+		label: 'Overdue',
+		valueLabel: 'Overdue',
+		dotClass: 'bg-red-600 dark:bg-red-400/65',
+		badgeClass:
+			'border-red-300/80 bg-red-100/80 text-red-700 dark:border-red-500/35 dark:bg-red-500/10 dark:text-red-200'
+	},
+	today: {
+		label: 'Due Today',
+		valueLabel: 'Due Today',
+		dotClass: 'bg-orange-500 dark:bg-orange-300/65',
+		badgeClass:
+			'border-orange-300/80 bg-orange-100/80 text-orange-700 dark:border-orange-500/35 dark:bg-orange-500/10 dark:text-orange-200'
+	},
+	upcoming: {
+		label: 'Upcoming',
+		valueLabel: 'Upcoming',
+		dotClass: 'bg-blue-600 dark:bg-blue-400/65',
+		badgeClass:
+			'border-blue-300/80 bg-blue-100/80 text-blue-700 dark:border-blue-500/35 dark:bg-blue-500/10 dark:text-blue-200'
+	}
+};
+
+export const taskDueDateFilterOptions = [
+	{ value: 'overdue' as const, ...taskDueDateFilterMeta.overdue },
+	{ value: 'today' as const, ...taskDueDateFilterMeta.today },
+	{ value: 'upcoming' as const, ...taskDueDateFilterMeta.upcoming }
 ];
 
 export function formatTaskDisplayId(taskNumber: number): string {
