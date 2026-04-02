@@ -1,5 +1,15 @@
 <script lang="ts">
-import { ArrowLeft, Calendar, CircleCheck, CirclePlay, Clock, Pencil, Trash } from '@lucide/svelte';
+import {
+	ArrowLeft,
+	Calendar,
+	CircleCheck,
+	CirclePlay,
+	Clock,
+	Pencil,
+	Plus,
+	Trash,
+	Trash2
+} from '@lucide/svelte';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
 
@@ -11,7 +21,8 @@ import { Input } from '$lib/components/ui/input';
 import { Label } from '$lib/components/ui/label';
 import * as Select from '$lib/components/ui/select';
 import { Textarea } from '$lib/components/ui/textarea';
-import { daysOfWeek, formatTimestampLong } from '$lib/utils/date';
+import * as Tooltip from '$lib/components/ui/tooltip';
+import { daysOfWeek, formatTime12Hour, formatTimestampLong } from '$lib/utils/date';
 
 import type { PageData } from './$types';
 
@@ -21,21 +32,22 @@ let showScheduleDialog = $state(false);
 let showSessionDialog = $state(false);
 let showEditDialog = $state(false);
 let showDeleteConfirm = $state(false);
+let showEditSessionDialog = $state(false);
 
 // svelte-ignore state_referenced_locally
 const {
 	form: scheduleForm,
 	errors: scheduleErrors,
 	enhance: scheduleEnhance,
-	message: scheduleMessage
+	submitting: scheduleSubmitting
 } = superForm(data.scheduleForm, {
 	onUpdate: ({ form }) => {
-		if (form.valid && $scheduleMessage?.type === 'success') {
+		if (form.valid && form.message?.type === 'success') {
 			toast.success('Schedule saved successfully!');
 			showScheduleDialog = false;
 		}
-		if ($scheduleMessage?.type === 'error') {
-			toast.error(`Error: ${$scheduleMessage.text}`);
+		if (form.message?.type === 'error') {
+			toast.error(`Error: ${form.message.text}`);
 		}
 	}
 });
@@ -45,15 +57,15 @@ const {
 	form: sessionForm,
 	errors: sessionErrors,
 	enhance: sessionEnhance,
-	message: sessionMessage
+	submitting: sessionSubmitting
 } = superForm(data.sessionForm, {
 	onUpdate: ({ form }) => {
-		if (form.valid && $sessionMessage?.type === 'success') {
+		if (form.valid && form.message?.type === 'success') {
 			toast.success('Session logged successfully!');
 			showSessionDialog = false;
 		}
-		if ($sessionMessage?.type === 'error') {
-			toast.error(`Error: ${$sessionMessage.text}`);
+		if (form.message?.type === 'error') {
+			toast.error(`Error: ${form.message.text}`);
 		}
 	}
 });
@@ -63,15 +75,33 @@ const {
 	form: updateForm,
 	errors: updateErrors,
 	enhance: updateEnhance,
-	message: updateMessage
+	submitting: updateSubmitting
 } = superForm(data.updateForm, {
 	onUpdate: ({ form }) => {
-		if (form.valid && $updateMessage?.type === 'success') {
+		if (form.valid && form.message?.type === 'success') {
 			toast.success('Routine updated successfully!');
 			showEditDialog = false;
 		}
-		if ($updateMessage?.type === 'error') {
-			toast.error(`Error: ${$updateMessage.text}`);
+		if (form.message?.type === 'error') {
+			toast.error(`Error: ${form.message.text}`);
+		}
+	}
+});
+
+// svelte-ignore state_referenced_locally
+const {
+	form: editSessionForm,
+	errors: editSessionErrors,
+	enhance: editSessionEnhance,
+	submitting: editSessionSubmitting
+} = superForm(data.editSessionForm, {
+	onUpdate: ({ form }) => {
+		if (form.valid && form.message?.type === 'success') {
+			toast.success('Session updated successfully!');
+			showEditSessionDialog = false;
+		}
+		if (form.message?.type === 'error') {
+			toast.error(`Error: ${form.message.text}`);
 		}
 	}
 });
@@ -87,6 +117,50 @@ const moodTagColors: Record<string, string> = {
 function getDayName(dayNumber: number) {
 	return daysOfWeek.find((d) => d.id === dayNumber)?.name || 'Unknown';
 }
+
+function getSelectedDays(): number[] {
+	try {
+		return $scheduleForm.days_of_week ? JSON.parse($scheduleForm.days_of_week) : [];
+	} catch {
+		return [];
+	}
+}
+
+function toggleDay(dayId: number) {
+	const days = getSelectedDays();
+	if (days.includes(dayId)) {
+		$scheduleForm.days_of_week = JSON.stringify(days.filter((d) => d !== dayId));
+	} else {
+		$scheduleForm.days_of_week = JSON.stringify([...days, dayId].sort((a, b) => a - b));
+	}
+}
+
+function getNowDatetimeLocal(): string {
+	const now = new Date();
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+function toDatetimeLocal(isoString: string): string {
+	const d = new Date(isoString);
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function openEditSession(session: (typeof data.sessions)[number]) {
+	$editSessionForm.id = session.id;
+	$editSessionForm.completed_at = toDatetimeLocal(session.completedAt);
+	$editSessionForm.pre_mood_rating = session.preMoodRating ?? undefined;
+	$editSessionForm.mood_rating = session.moodRating ?? undefined;
+	$editSessionForm.notes = session.notes ?? undefined;
+	showEditSessionDialog = true;
+}
+
+$effect(() => {
+	if (showSessionDialog) {
+		$sessionForm.completed_at = getNowDatetimeLocal();
+	}
+});
 </script>
 
 <div class="container mx-auto max-w-4xl py-8">
@@ -98,7 +172,7 @@ function getDayName(dayNumber: number) {
 	</div>
 
 	<!-- Routine Details -->
-	<Card.Root class="mb-6">
+	<Card.Root class="mb-6 border-purple-200 dark:border-purple-800">
 		<Card.Header>
 			<div class="flex items-start justify-between">
 				<div class="flex-1">
@@ -133,11 +207,20 @@ function getDayName(dayNumber: number) {
 			</div>
 		</Card.Content>
 		<Card.Footer class="flex gap-2">
-			<Button href={data.routine.linkUrl} target="_blank" rel="noopener noreferrer" class="flex-1">
+			<Button
+				href={data.routine.linkUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="bg-purple-600 hover:bg-purple-700"
+			>
 				<CirclePlay class="mr-2 h-4 w-4" />
 				Start Practice
 			</Button>
-			<Button variant="outline" onclick={() => (showSessionDialog = true)}>
+			<Button
+				variant="outline"
+				class="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-600 dark:text-purple-300 dark:hover:bg-purple-950/30"
+				onclick={() => (showSessionDialog = true)}
+			>
 				<CircleCheck class="mr-2 h-4 w-4" />
 				Log Session
 			</Button>
@@ -168,11 +251,14 @@ function getDayName(dayNumber: number) {
 						{/if}
 						<p class="text-sm">
 							<span class="font-medium">Time:</span>
-							{data.schedule.time}
+							{formatTime12Hour(data.schedule.time)}
 						</p>
 						<p class="text-sm">
 							<span class="font-medium">Status:</span>
-							<Badge variant={data.schedule.enabled ? 'default' : 'secondary'}>
+							<Badge
+								variant={data.schedule.enabled ? 'default' : 'secondary'}
+								class="ml-1 bg-purple-600"
+							>
 								{data.schedule.enabled ? 'Active' : 'Inactive'}
 							</Badge>
 						</p>
@@ -181,13 +267,47 @@ function getDayName(dayNumber: number) {
 					<p class="text-sm text-muted-foreground">No schedule set</p>
 				{/if}
 			</Card.Content>
-			<Card.Footer class="flex gap-2">
-				<Button variant="outline" class="flex-1" onclick={() => (showScheduleDialog = true)}>
-					{data.schedule ? 'Edit Schedule' : 'Add Schedule'}
-				</Button>
+			<Card.Footer class="flex gap-3">
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								variant="ghost"
+								size="icon-sm"
+								class="border border-white/55 bg-white/68 text-slate-700 shadow-sm backdrop-blur-xl hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
+								aria-label={data.schedule ? 'Edit Schedule' : 'Add Schedule'}
+								onclick={() => (showScheduleDialog = true)}
+							>
+								{#if data.schedule}
+									<Pencil class="h-4 w-4" />
+								{:else}
+									<Plus class="h-4 w-4" />
+								{/if}
+							</Button>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content>{data.schedule ? 'Edit Schedule' : 'Add Schedule'}</Tooltip.Content>
+				</Tooltip.Root>
 				{#if data.schedule}
 					<form method="POST" action="?/deleteSchedule" class="inline">
-						<Button type="submit" variant="ghost" size="icon"> <Trash class="h-4 w-4" /> </Button>
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<Button
+										{...props}
+										type="submit"
+										variant="ghost"
+										size="icon-sm"
+										class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
+										aria-label="Delete Schedule"
+									>
+										<Trash2 class="h-4 w-4" />
+									</Button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content>Delete Schedule</Tooltip.Content>
+						</Tooltip.Root>
 					</form>
 				{/if}
 			</Card.Footer>
@@ -200,11 +320,56 @@ function getDayName(dayNumber: number) {
 				{#if data.sessions.length > 0}
 					<div class="space-y-3">
 						{#each data.sessions.slice(0, 5) as session (session.id)}
-							<div class="border-b pb-2 last:border-b-0">
-								<p class="text-sm font-medium">{formatTimestampLong(session.completedAt)}</p>
-								{#if session.moodRating}
-									<p class="text-sm text-muted-foreground">Mood: {session.moodRating}/5</p>
-								{/if}
+							<div class="flex items-start justify-between border-b pb-2 last:border-b-0">
+								<div>
+									<p class="text-sm font-medium">{formatTimestampLong(session.completedAt)}</p>
+									{#if session.preMoodRating && session.moodRating}
+										<p class="text-sm text-muted-foreground">
+											Mood: {session.preMoodRating} → {session.moodRating}
+										</p>
+									{:else if session.moodRating}
+										<p class="text-sm text-muted-foreground">Mood: {session.moodRating}/5</p>
+									{/if}
+								</div>
+								<div class="flex shrink-0 gap-1">
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											{#snippet child({ props })}
+												<Button
+													{...props}
+													variant="ghost"
+													size="icon-sm"
+													class="border border-white/55 bg-white/68 text-slate-700 shadow-sm backdrop-blur-xl hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
+													aria-label="Edit Session"
+													onclick={() => openEditSession(session)}
+												>
+													<Pencil class="h-4 w-4" />
+												</Button>
+											{/snippet}
+										</Tooltip.Trigger>
+										<Tooltip.Content>Edit Session</Tooltip.Content>
+									</Tooltip.Root>
+									<form method="POST" action="?/deleteSession" class="inline">
+										<input type="hidden" name="session_id" value={session.id}>
+										<Tooltip.Root>
+											<Tooltip.Trigger>
+												{#snippet child({ props })}
+													<Button
+														{...props}
+														type="submit"
+														variant="ghost"
+														size="icon-sm"
+														class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
+														aria-label="Delete Session"
+													>
+														<Trash2 class="h-4 w-4" />
+													</Button>
+												{/snippet}
+											</Tooltip.Trigger>
+											<Tooltip.Content>Delete Session</Tooltip.Content>
+										</Tooltip.Root>
+									</form>
+								</div>
 							</div>
 						{/each}
 					</div>
@@ -252,16 +417,24 @@ function getDayName(dayNumber: number) {
 
 			{#if $scheduleForm.cadence === 'weekly' || $scheduleForm.cadence === 'custom'}
 				<div class="space-y-2">
-					<Label for="days_of_week">Days of Week</Label>
-					<Input
-						id="days_of_week"
-						name="days_of_week"
-						bind:value={$scheduleForm.days_of_week}
-						placeholder="0,1,6 (0=Sun, 6=Sat)"
-					/>
-					<p class="text-sm text-muted-foreground">
-						Comma-separated day numbers (0=Sunday, 6=Saturday)
-					</p>
+					<Label>Days of Week</Label>
+					<Input name="days_of_week" type="hidden" bind:value={$scheduleForm.days_of_week} />
+					<div class="flex flex-wrap gap-2">
+						{#each daysOfWeek as day (day.id)}
+							{@const selectedDays = getSelectedDays()}
+							<Button
+								type="button"
+								variant={selectedDays.includes(day.id) ? 'default' : 'outline'}
+								size="sm"
+								class={selectedDays.includes(day.id)
+									? 'bg-purple-600 hover:bg-purple-700'
+									: ''}
+								onclick={() => toggleDay(day.id)}
+							>
+								{day.shortName}
+							</Button>
+						{/each}
+					</div>
 					{#if $scheduleErrors.days_of_week}
 						<p class="text-sm text-destructive">{$scheduleErrors.days_of_week}</p>
 					{/if}
@@ -276,7 +449,19 @@ function getDayName(dayNumber: number) {
 				{/if}
 			</div>
 
-			<Dialog.Footer> <Button type="submit">Save Schedule</Button> </Dialog.Footer>
+			<Dialog.Footer>
+				<Button
+					type="submit"
+					class="bg-purple-600 hover:bg-purple-700"
+					disabled={$scheduleSubmitting}
+				>
+					{#if $scheduleSubmitting}
+						Saving...
+					{:else}
+						Save
+					{/if}
+				</Button>
+			</Dialog.Footer>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
@@ -290,7 +475,52 @@ function getDayName(dayNumber: number) {
 		</Dialog.Header>
 		<form method="POST" action="?/completeSession" use:sessionEnhance class="space-y-4">
 			<div class="space-y-2">
-				<Label for="mood_rating">Mood Rating (1-5)</Label>
+				<Label for="completed_at">Date & Time</Label>
+				<Input
+					id="completed_at"
+					name="completed_at"
+					type="datetime-local"
+					bind:value={$sessionForm.completed_at}
+				/>
+				{#if $sessionErrors.completed_at}
+					<p class="text-sm text-destructive">{$sessionErrors.completed_at}</p>
+				{/if}
+			</div>
+			<!-- Rating explanation -->
+			<div
+				class="rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800 dark:border-purple-800 dark:bg-purple-950/30 dark:text-purple-200"
+			>
+				Rate your mood before and after your session to track how meditation affects your wellbeing.
+				<strong>1</strong>
+				= Very Bad &nbsp;·&nbsp;
+				<strong>2</strong>
+				= Bad &nbsp;·&nbsp;
+				<strong>3</strong>
+				= Neutral &nbsp;·&nbsp;
+				<strong>4</strong>
+				= Good &nbsp;·&nbsp;
+				<strong>5</strong>
+				= Great
+			</div>
+
+			<div class="space-y-2">
+				<Label for="pre_mood_rating">Before Session — How are you feeling right now?</Label>
+				<Input
+					id="pre_mood_rating"
+					name="pre_mood_rating"
+					type="number"
+					min="1"
+					max="5"
+					bind:value={$sessionForm.pre_mood_rating}
+					placeholder="1–5"
+				/>
+				{#if $sessionErrors.pre_mood_rating}
+					<p class="text-sm text-destructive">{$sessionErrors.pre_mood_rating}</p>
+				{/if}
+			</div>
+
+			<div class="space-y-2">
+				<Label for="mood_rating">After Session — How do you feel now?</Label>
 				<Input
 					id="mood_rating"
 					name="mood_rating"
@@ -298,7 +528,7 @@ function getDayName(dayNumber: number) {
 					min="1"
 					max="5"
 					bind:value={$sessionForm.mood_rating}
-					placeholder="How do you feel?"
+					placeholder="1–5"
 				/>
 				{#if $sessionErrors.mood_rating}
 					<p class="text-sm text-destructive">{$sessionErrors.mood_rating}</p>
@@ -319,7 +549,19 @@ function getDayName(dayNumber: number) {
 				{/if}
 			</div>
 
-			<Dialog.Footer> <Button type="submit">Log Session</Button> </Dialog.Footer>
+			<Dialog.Footer>
+				<Button
+					type="submit"
+					class="bg-purple-600 hover:bg-purple-700"
+					disabled={$sessionSubmitting}
+				>
+					{#if $sessionSubmitting}
+						Saving...
+					{:else}
+						Save
+					{/if}
+				</Button>
+			</Dialog.Footer>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
@@ -376,12 +618,27 @@ function getDayName(dayNumber: number) {
 					bind:value={$updateForm.mood_tags}
 					placeholder="Anxious, Focused"
 				/>
+				<p class="text-xs text-muted-foreground">
+					Comma-separated: Anxious, Low Energy, Focused, Pre-Sleep, General
+				</p>
 				{#if $updateErrors.mood_tags}
 					<p class="text-sm text-destructive">{$updateErrors.mood_tags}</p>
 				{/if}
 			</div>
 
-			<Dialog.Footer> <Button type="submit">Update Routine</Button> </Dialog.Footer>
+			<Dialog.Footer>
+				<Button
+					type="submit"
+					class="bg-purple-600 hover:bg-purple-700"
+					disabled={$updateSubmitting}
+				>
+					{#if $updateSubmitting}
+						Updating...
+					{:else}
+						Update Routine
+					{/if}
+				</Button>
+			</Dialog.Footer>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
@@ -402,5 +659,107 @@ function getDayName(dayNumber: number) {
 				<Button type="submit" variant="destructive">Delete</Button>
 			</form>
 		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Edit Session Dialog -->
+<Dialog.Root bind:open={showEditSessionDialog}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>Edit Session</Dialog.Title>
+			<Dialog.Description>Update your meditation session details</Dialog.Description>
+		</Dialog.Header>
+		<form method="POST" action="?/updateSession" use:editSessionEnhance class="space-y-4">
+			<input type="hidden" name="id" bind:value={$editSessionForm.id}>
+
+			<div class="space-y-2">
+				<Label for="edit_session_completed_at">Date & Time</Label>
+				<Input
+					id="edit_session_completed_at"
+					name="completed_at"
+					type="datetime-local"
+					bind:value={$editSessionForm.completed_at}
+				/>
+				{#if $editSessionErrors.completed_at}
+					<p class="text-sm text-destructive">{$editSessionErrors.completed_at}</p>
+				{/if}
+			</div>
+
+			<div
+				class="rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800 dark:border-purple-800 dark:bg-purple-950/30 dark:text-purple-200"
+			>
+				Rate your mood before and after your session to track how meditation affects your wellbeing.
+				<strong>1</strong>
+				= Very Bad &nbsp;·&nbsp;
+				<strong>2</strong>
+				= Bad &nbsp;·&nbsp;
+				<strong>3</strong>
+				= Neutral &nbsp;·&nbsp;
+				<strong>4</strong>
+				= Good &nbsp;·&nbsp;
+				<strong>5</strong>
+				= Great
+			</div>
+
+			<div class="space-y-2">
+				<Label for="edit_session_pre_mood">Before Session — How were you feeling?</Label>
+				<Input
+					id="edit_session_pre_mood"
+					name="pre_mood_rating"
+					type="number"
+					min="1"
+					max="5"
+					bind:value={$editSessionForm.pre_mood_rating}
+					placeholder="1–5"
+				/>
+				{#if $editSessionErrors.pre_mood_rating}
+					<p class="text-sm text-destructive">{$editSessionErrors.pre_mood_rating}</p>
+				{/if}
+			</div>
+
+			<div class="space-y-2">
+				<Label for="edit_session_mood">After Session — How did you feel?</Label>
+				<Input
+					id="edit_session_mood"
+					name="mood_rating"
+					type="number"
+					min="1"
+					max="5"
+					bind:value={$editSessionForm.mood_rating}
+					placeholder="1–5"
+				/>
+				{#if $editSessionErrors.mood_rating}
+					<p class="text-sm text-destructive">{$editSessionErrors.mood_rating}</p>
+				{/if}
+			</div>
+
+			<div class="space-y-2">
+				<Label for="edit_session_notes">Notes (optional)</Label>
+				<Textarea
+					id="edit_session_notes"
+					name="notes"
+					bind:value={$editSessionForm.notes}
+					placeholder="Any reflections or observations..."
+					rows={3}
+				/>
+				{#if $editSessionErrors.notes}
+					<p class="text-sm text-destructive">{$editSessionErrors.notes}</p>
+				{/if}
+			</div>
+
+			<Dialog.Footer>
+				<Button
+					type="submit"
+					class="bg-purple-600 hover:bg-purple-700"
+					disabled={$editSessionSubmitting}
+				>
+					{#if $editSessionSubmitting}
+						Saving...
+					{:else}
+						Save Changes
+					{/if}
+				</Button>
+			</Dialog.Footer>
+		</form>
 	</Dialog.Content>
 </Dialog.Root>

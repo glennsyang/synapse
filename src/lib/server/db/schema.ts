@@ -584,6 +584,7 @@ export const meditationSessions = sqliteTable('meditation_sessions', {
 		.notNull()
 		.references(() => meditationRoutines.id, { onDelete: 'cascade' }),
 	completedAt: text('completed_at').notNull(),
+	preMoodRating: integer('pre_mood_rating'), // 1-5 pre-meditation mood
 	moodRating: integer('mood_rating'), // 1-5 post-meditation mood
 	notes: text('notes'),
 	createdAt: text('created_at')
