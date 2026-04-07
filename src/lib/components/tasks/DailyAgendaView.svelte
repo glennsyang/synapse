@@ -648,13 +648,13 @@ function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
 											name="completed"
 											value={entry.completed ? 'false' : 'true'}
 										/>
-										<Input
+										<input
 											type="checkbox"
 											checked={entry.completed}
 											disabled={!day.isEditable}
 											class="h-3.5 w-3.5 rounded border-orange-300 text-orange-600 focus:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50"
 											onchange={(event) => event.currentTarget.form?.requestSubmit()}
-										/>
+										>
 									</form>
 									<div class="min-w-0 flex-1">
 										<div class="flex min-h-3.5 items-center">
