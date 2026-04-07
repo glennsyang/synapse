@@ -27,7 +27,7 @@ test.describe('tasks kanban due date filtering', () => {
 	}
 
 	async function openFilters(page: Page): Promise<void> {
-		const filterButton = page.getByRole('button', { name: 'Toggle task filters' });
+		const filterButton = page.getByLabel('Toggle task filters');
 		await filterButton.click();
 		await expect(page.locator('#tasks-filter-bar')).toBeVisible();
 	}
@@ -35,7 +35,7 @@ test.describe('tasks kanban due date filtering', () => {
 	async function openDueDateFilter(page: Page): Promise<void> {
 		const dueDateFilterButton = page.getByRole('combobox').filter({ hasText: 'Due date' });
 		await dueDateFilterButton.click();
-		await expect(page.getByText('Search due date filters...')).toBeVisible();
+		await expect(page.getByPlaceholder('Search due date filters...')).toBeVisible();
 	}
 
 	test('displays due date filter in filter bar when filters are opened', async ({ page }) => {
@@ -81,7 +81,7 @@ test.describe('tasks kanban due date filtering', () => {
 
 		// Reopen filter to deselect
 		await openDueDateFilter(page);
-		await page.getByText('Due Today').click();
+		await page.getByRole('option', { name: 'Due Today' }).click();
 		await dueDateFilterButton.click();
 
 		// Check that the filter badge is removed
@@ -159,12 +159,15 @@ test.describe('tasks kanban due date filtering', () => {
 		await dueDateFilterButton.click();
 
 		// Remove the "Overdue" filter by clicking the x button on its badge
-		const overdueBadge = page.getByText('Overdue').first().locator('..');
-		await overdueBadge.getByRole('button', { name: 'Remove due date filter Overdue' }).click();
+		await page.getByRole('button', { name: 'Remove due date filter Overdue' }).click();
 
 		// Check that only "Due Today" filter remains
-		await expect(page.getByText('Overdue').first()).not.toBeVisible();
-		await expect(page.getByText('Due Today').first()).toBeVisible();
+		await expect(
+			page.getByRole('button', { name: 'Remove due date filter Overdue' })
+		).not.toBeVisible();
+		await expect(
+			page.getByRole('button', { name: 'Remove due date filter Due Today' })
+		).toBeVisible();
 
 		// Check that the URL only contains the remaining filter
 		await expect(page).toHaveURL(/dueDate=today/);
@@ -223,7 +226,7 @@ test.describe('tasks kanban due date filtering', () => {
 		await navigateToKanbanBoard(page);
 
 		// Check initial state - filter button should not be highlighted
-		const filterButton = page.getByRole('button', { name: 'Toggle task filters' });
+		const filterButton = page.getByLabel('Toggle task filters');
 
 		await openFilters(page);
 		await openDueDateFilter(page);
