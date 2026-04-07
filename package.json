@@ -55,7 +55,7 @@
 		"clsx": "^2.1.1",
 		"embla-carousel-svelte": "^8.6.0",
 		"knip": "^5.85.0",
-		"layerchart": "^2.0.0-next.43",
+		"layerchart": "^2.0.0-next.48",
 		"lefthook": "^2.0.16",
 		"lint-staged": "^16.2.7",
 		"svelte": "^5.55.1",
