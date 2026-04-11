@@ -4,6 +4,8 @@ export const workoutTypeOptions = [
 	{
 		value: 'strength' as WorkoutType,
 		label: 'Strength',
+		emoji: '💪',
+		notificationTag: 'muscle',
 		borderClass: 'border-l-orange-500',
 		badgeClass: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
 		chartColor: 'var(--chart-1)'
@@ -11,6 +13,8 @@ export const workoutTypeOptions = [
 	{
 		value: 'cardio' as WorkoutType,
 		label: 'Cardio',
+		emoji: '🏃',
+		notificationTag: 'runner',
 		borderClass: 'border-l-blue-500',
 		badgeClass: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
 		chartColor: 'var(--chart-2)'
@@ -18,6 +22,8 @@ export const workoutTypeOptions = [
 	{
 		value: 'hiit' as WorkoutType,
 		label: 'HIIT',
+		emoji: '🔥',
+		notificationTag: 'fire',
 		borderClass: 'border-l-red-500',
 		badgeClass: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
 		chartColor: 'var(--chart-5)'
@@ -25,6 +31,8 @@ export const workoutTypeOptions = [
 	{
 		value: 'walk' as WorkoutType,
 		label: 'Walk',
+		emoji: '🚶',
+		notificationTag: 'walking',
 		borderClass: 'border-l-green-500',
 		badgeClass: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
 		chartColor: 'var(--chart-4)'
@@ -32,6 +40,8 @@ export const workoutTypeOptions = [
 	{
 		value: 'stretch' as WorkoutType,
 		label: 'Stretch',
+		emoji: '🤸',
+		notificationTag: 'person_doing_cartwheel',
 		borderClass: 'border-l-purple-500',
 		badgeClass: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
 		chartColor: 'var(--chart-3)'
@@ -39,6 +49,8 @@ export const workoutTypeOptions = [
 	{
 		value: 'other' as WorkoutType,
 		label: 'Other',
+		emoji: '🏋️',
+		notificationTag: 'weight_lifter',
 		borderClass: 'border-l-gray-400',
 		badgeClass: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300',
 		chartColor: 'var(--chart-3)'
@@ -69,4 +81,12 @@ export function getWorkoutBadgeClass(type: string): string {
 
 export function getWorkoutChartColor(type: string): string {
 	return getWorkoutOption(type)?.chartColor ?? 'var(--chart-3)';
+}
+
+export function getWorkoutEmoji(type: string): string {
+	return getWorkoutOption(type)?.emoji ?? '🏋️';
+}
+
+export function getWorkoutNotificationTag(type: string): string {
+	return getWorkoutOption(type)?.notificationTag ?? 'weight_lifter';
 }

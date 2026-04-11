@@ -294,7 +294,7 @@ async function processMeditationReminders(
 			await sendReminderNotification(
 				`Meditation reminder: ${routine.title} at ${schedule.time}.`,
 				'Meditation Reminder',
-				getNotificationTag('yoga')
+				'lotus_position_man'
 			);
 
 			await logNotification(
