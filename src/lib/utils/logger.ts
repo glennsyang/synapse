@@ -90,7 +90,15 @@ class Logger {
 		} else if (typeof error === 'string') {
 			errorPayload.error = error;
 		} else {
-			errorPayload.error = 'Non-Error thrown (details suppressed)';
+			try {
+				errorPayload.error = JSON.parse(
+					JSON.stringify(error, (_key, val) =>
+						val instanceof Error ? { name: val.name, message: val.message } : val
+					)
+				);
+			} catch {
+				errorPayload.error = String(error);
+			}
 		}
 
 		const errorMeta = {
