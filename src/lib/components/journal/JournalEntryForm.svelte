@@ -35,7 +35,6 @@ interface Props {
 let { data, mode }: Props = $props();
 
 const isNewMode = $derived(mode === 'new');
-const isEditMode = $derived(mode === 'edit');
 const formAction = $derived(mode === 'edit' ? '?/update' : undefined);
 const pageTitle = $derived(mode === 'edit' ? 'Edit Journal Entry' : 'New Journal Entry');
 const starterPrompt =

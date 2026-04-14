@@ -2,6 +2,7 @@
 import { ArrowLeft } from '@lucide/svelte';
 import { toast } from 'svelte-sonner';
 import { superForm } from 'sveltekit-superforms';
+import { goto } from '$app/navigation';
 
 import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
 import { taskPriorityOptions, taskStateOptions } from '$lib/components/tasks/task-ui';
@@ -17,12 +18,21 @@ import type { PageData } from './$types';
 let { data }: { data: PageData } = $props();
 
 // svelte-ignore state_referenced_locally
-const { form, errors, enhance, message } = superForm(data.form, {
-	dataType: 'form',
-	onUpdate: ({ form }) => {
-		if (form.valid) {
-			toast.success('Task created successfully!');
-		}
+const { form, errors, enhance, message, submitting } = superForm(data.form, {
+	// dataType: 'form',
+	// onResult: async ({ result, cancel }) => {
+	// 	if (result.type === 'redirect') {
+	// 		cancel();
+	// 		toast.success('Task created successfully!');
+	// 		await goto(result.location);
+	// 	}
+	// },
+	// onUpdate: ({ form }) => {
+	// 	if ($message?.type === 'error') {
+	// 		toast.error(`Error creating task. Reason: ${$message.text}`);
+	// 	}
+	// }
+	onUpdate: () => {
 		if ($message?.type === 'error') {
 			toast.error(`Error creating task. Reason: ${$message.text}`);
 		}
@@ -176,8 +186,12 @@ let selectedStateOption = $derived(
 				{/if}
 
 				<div class="flex gap-2">
-					<Button type="submit" class="text-white bg-orange-600 hover:bg-orange-700">
-						Create
+					<Button
+						type="submit"
+						disabled={$submitting}
+						class="text-white bg-orange-600 hover:bg-orange-700"
+					>
+						{$submitting ? 'Creating...' : 'Create'}
 					</Button>
 					<Button type="button" variant="outline" href="/tasks">Cancel</Button>
 				</div>

@@ -27,7 +27,6 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(journalEntrySchema));
 
 		if (!form.valid) {
-			logger.warn('Invalid journal entry form data', { errors: form.errors });
 			return fail(400, { form });
 		}
 
@@ -57,7 +56,7 @@ export const actions: Actions = {
 
 			logger.info('Journal entry created', { entryId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to create journal entry', { error });
+			logger.error('Failed to create journal entry', { error, userId: user.id });
 			return message(
 				form,
 				{

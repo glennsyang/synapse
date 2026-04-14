@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq, sql } from 'drizzle-orm';
-import { superValidate } from 'sveltekit-superforms';
+import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { createTaskSchema, type TaskState, TaskStateEnum } from '$lib/schemas/task';
@@ -39,25 +39,27 @@ async function createTaskWithTaskNumber(
 
 	for (let attempt = 1; attempt <= MAX_TASK_NUMBER_ATTEMPTS; attempt += 1) {
 		try {
-			return await db.transaction(async (tx) => {
-				const [taskNumberRow] = await tx
+			return db.transaction((tx) => {
+				const [taskNumberRow] = tx
 					.select({
 						nextTaskNumber: sql<number>`coalesce(max(${tasks.taskNumber}), 0) + 1`
 					})
-					.from(tasks);
+					.from(tasks)
+					.all();
 
-				const [sortOrderRow] = await tx
+				const [sortOrderRow] = tx
 					.select({
 						maxSortOrder: sql<number>`coalesce(max(${tasks.sortOrder}), -1)`
 					})
 					.from(tasks)
-					.where(and(eq(tasks.userId, userId), eq(tasks.state, input.state)));
+					.where(and(eq(tasks.userId, userId), eq(tasks.state, input.state)))
+					.all();
 
 				const timestamp = new Date().toISOString();
 				const nextTaskNumber = taskNumberRow?.nextTaskNumber ?? 1;
 				const nextSortOrder = (sortOrderRow?.maxSortOrder ?? -1) + 1;
 
-				const [newTask] = await tx
+				const [newTask] = tx
 					.insert(tasks)
 					.values({
 						userId,
@@ -72,7 +74,8 @@ async function createTaskWithTaskNumber(
 						createdAt: timestamp,
 						updatedAt: timestamp
 					})
-					.returning();
+					.returning()
+					.all();
 
 				return newTask;
 			});
@@ -97,9 +100,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		zod4(createTaskSchema)
 	);
 
-	return {
-		form
-	};
+	return { form };
 };
 
 export const actions: Actions = {
@@ -129,7 +130,14 @@ export const actions: Actions = {
 			});
 		} catch (error) {
 			logger.error('Failed to create task', { error, userId: user.id });
-			return fail(500, { form, error: 'Failed to create task' });
+			return message(
+				form,
+				{
+					type: 'error',
+					text: 'An error occurred while creating the task. Please try again.'
+				},
+				{ status: 500 }
+			);
 		}
 
 		throw redirect(303, '/tasks');
