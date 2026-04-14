@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq, sql } from 'drizzle-orm';
-import { message, superValidate } from 'sveltekit-superforms';
+import { message, setError, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { createTaskSchema, type TaskState, TaskStateEnum } from '$lib/schemas/task';
@@ -109,6 +109,13 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			return fail(400, { form });
+		}
+
+		const duplicate = await getDb().query.tasks.findFirst({
+			where: and(eq(tasks.userId, user.id), eq(tasks.title, form.data.title))
+		});
+		if (duplicate) {
+			return setError(form, 'title', 'A task with this name already exists.');
 		}
 
 		try {

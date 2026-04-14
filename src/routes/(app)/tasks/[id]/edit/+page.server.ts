@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { and, eq, sql } from 'drizzle-orm';
-import { superValidate } from 'sveltekit-superforms';
+import { and, eq, ne, sql } from 'drizzle-orm';
+import { setError, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import {
@@ -87,6 +87,19 @@ export const actions: Actions = {
 
 		if (!form.valid) {
 			return fail(400, { form });
+		}
+
+		if (form.data.title) {
+			const duplicate = await getDb().query.tasks.findFirst({
+				where: and(
+					eq(tasks.userId, user.id),
+					eq(tasks.title, form.data.title),
+					ne(tasks.id, taskId)
+				)
+			});
+			if (duplicate) {
+				return setError(form, 'title', 'A task with this name already exists.');
+			}
 		}
 
 		try {
