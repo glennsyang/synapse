@@ -6,6 +6,7 @@ import {
 	type TasksDueTodayTaskSummary
 } from '$lib/server/email/tasks-due-today-digest';
 import { logger } from '$lib/utils/logger';
+import { getWorkoutEmoji, getWorkoutNotificationTag } from '$lib/utils/workout';
 
 import { getEnv } from '../../../env';
 
@@ -334,24 +335,6 @@ export async function sendTasksDueTodayEmail(
 	}
 }
 
-function getWorkoutEmoji(workoutType: string): string {
-	const workoutEmojis: Record<string, string> = {
-		strength: '💪',
-		cardio: '🏃',
-		yoga: '🧘',
-		other: '🏋️'
-	};
-
-	return workoutEmojis[workoutType.toLowerCase()] || '🏋️';
-}
-
 export function getNotificationTag(workoutType: string): string {
-	const workoutTags: Record<string, string> = {
-		strength: 'muscle',
-		cardio: 'runner',
-		yoga: 'lotus_position_man',
-		other: 'weight_lifter'
-	};
-
-	return workoutTags[workoutType.toLowerCase()] || 'weight_lifter';
+	return getWorkoutNotificationTag(workoutType);
 }

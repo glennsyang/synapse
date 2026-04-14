@@ -99,7 +99,6 @@ $effect(() => {
 						<Select.Content>
 							<Select.Item value="strength" label="Strength">Strength</Select.Item>
 							<Select.Item value="cardio" label="Cardio">Cardio</Select.Item>
-							<Select.Item value="yoga" label="Yoga">Yoga</Select.Item>
 							<Select.Item value="other" label="Other">Other</Select.Item>
 						</Select.Content>
 					</Select.Root>
