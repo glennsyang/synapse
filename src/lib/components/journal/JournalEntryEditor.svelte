@@ -457,14 +457,14 @@ function insertLink(): void {
 			{/if}
 		</div>
 
-		<Tabs.Content value="write" class="p-3 md:p-4">
+		<Tabs.Content value="write" class="p-1 sm:p-3 md:p-4">
 			<Textarea
 				bind:ref={textareaRef}
 				bind:value={markdown}
 				id="content"
 				name="content"
 				{placeholder}
-				class="min-h-90 resize-y border-[oklch(var(--color-blue)/0.2)] bg-[oklch(var(--background))] font-mono text-[0.95rem] leading-6"
+				class="min-h-[55vh] resize-y border-[oklch(var(--color-blue)/0.2)] bg-[oklch(var(--background))] font-mono text-[0.95rem] leading-6 md:min-h-90"
 			/>
 		</Tabs.Content>
 
