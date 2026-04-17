@@ -1,4 +1,4 @@
-import type { Handle, HandleServerError } from '@sveltejs/kit';
+import type { Handle, HandleServerError, ResolveOptions } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 
 import { building, dev } from '$app/environment';
@@ -7,6 +7,21 @@ import { generateId } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
 
 export const handle: Handle = async ({ event, resolve }) => {
+	// Generate a per-request CSP nonce
+	const nonceArray = new Uint8Array(16);
+	crypto.getRandomValues(nonceArray);
+	const nonce = Buffer.from(nonceArray).toString('base64url');
+
+	// Wrap resolve so SvelteKit's injected inline scripts carry the nonce
+	const resolveWithNonce = (evt: Parameters<Handle>[0]['event'], opts?: ResolveOptions) =>
+		resolve(evt, {
+			...opts,
+			transformPageChunk: async ({ html, done }) => {
+				const intermediate = (await opts?.transformPageChunk?.({ html, done })) ?? html;
+				return intermediate.replaceAll(/<script(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`);
+			}
+		});
+
 	if (dev && event.url.pathname === '/.well-known/appspecific/com.chrome.devtools.json') {
 		return new Response(undefined, { status: 404 });
 	}
@@ -49,7 +64,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		requestLogger.setContext({ userId: session.user.id });
 	}
 
-	const response = await svelteKitHandler({ event, resolve, auth, building });
+	const response = await svelteKitHandler({ event, resolve: resolveWithNonce, auth, building });
 
 	// Log response
 	const duration = Date.now() - startTime;
@@ -75,13 +90,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 		);
 	}
 
-	// Content Security Policy (adjust as needed)
+	// Content Security Policy
 	const csp = [
 		"default-src 'self' https://nominatim.openstreetmap.org https://api.open-meteo.com",
-		"script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-eval needed for layerchart/d3
-		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // unsafe-inline needed for SvelteKit, Google Fonts for typography
+		// Note: sveltekit-superforms -> arktype -> @ark/util fires a one-shot CSP probe on first
+		// import: new Function("return false")(). Our CSP blocks it (expected), the catch returns
+		// true, and ArkType sets jitless:true for the session. The resulting console warning is
+		// benign — do not add 'unsafe-eval' to suppress it.
+		`script-src 'self' 'nonce-${nonce}'`,
+		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // unsafe-inline retained: chart-style.svelte injects dynamic <style> blocks
+		"style-src-attr 'unsafe-inline'", // narrower than style-src; ready to drop style-src unsafe-inline once chart-style.svelte is refactored
 		"img-src 'self' data: https:",
-		"font-src 'self' https://fonts.gstatic.com", // Google Fonts
+		"font-src 'self' https://fonts.gstatic.com",
 		"connect-src 'self' https://nominatim.openstreetmap.org https://api.open-meteo.com",
 		"manifest-src 'self'",
 		"worker-src 'self'",
