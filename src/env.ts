@@ -46,7 +46,7 @@ const ENV_FALLBACKS = {
  * Get environment variables with automatic fallback to build-time defaults.
  * This is the single source of truth for accessing environment variables.
  *
- * Critical variables (BETTER_AUTH_SECRET, DATABASE_URL):
+ * Critical variables (BETTER_AUTH_SECRET, DATABASE_URL, AUTH_ALERTS_URL, REMINDER_ALERTS_URL):
  * - During build: use fallbacks
  * - In development: allow fallbacks for convenience
  * - In production: require real values, no fallbacks, fail fast if missing or using dummy values
@@ -56,15 +56,21 @@ const ENV_FALLBACKS = {
 export function getEnv() {
 	let betterAuthSecret: string;
 	let databaseUrl: string;
+	let authAlertsUrl: string;
+	let reminderAlertsUrl: string;
 
 	if (building) {
 		// During build: use fallbacks
 		betterAuthSecret = ENV_FALLBACKS.BETTER_AUTH_SECRET;
 		databaseUrl = ENV_FALLBACKS.DATABASE_URL;
+		authAlertsUrl = ENV_FALLBACKS.AUTH_ALERTS_URL;
+		reminderAlertsUrl = ENV_FALLBACKS.REMINDER_ALERTS_URL;
 	} else if (dev) {
 		// In development: allow fallbacks for convenience
 		betterAuthSecret = env.BETTER_AUTH_SECRET || ENV_FALLBACKS.BETTER_AUTH_SECRET;
 		databaseUrl = env.DATABASE_URL || ENV_FALLBACKS.DATABASE_URL;
+		authAlertsUrl = env.AUTH_ALERTS_URL || ENV_FALLBACKS.AUTH_ALERTS_URL;
+		reminderAlertsUrl = env.REMINDER_ALERTS_URL || ENV_FALLBACKS.REMINDER_ALERTS_URL;
 	} else {
 		// In production: require real values, no fallbacks
 		if (!env.BETTER_AUTH_SECRET) {
@@ -83,21 +89,39 @@ export function getEnv() {
 			console.error('❌ CRITICAL: Cannot use dummy DATABASE_URL in production');
 			process.exit(1);
 		}
+		if (!env.AUTH_ALERTS_URL) {
+			console.error('❌ CRITICAL: AUTH_ALERTS_URL is required in production');
+			process.exit(1);
+		}
+		if (env.AUTH_ALERTS_URL === ENV_FALLBACKS.AUTH_ALERTS_URL) {
+			console.error('❌ CRITICAL: Cannot use dummy AUTH_ALERTS_URL in production');
+			process.exit(1);
+		}
+		if (!env.REMINDER_ALERTS_URL) {
+			console.error('❌ CRITICAL: REMINDER_ALERTS_URL is required in production');
+			process.exit(1);
+		}
+		if (env.REMINDER_ALERTS_URL === ENV_FALLBACKS.REMINDER_ALERTS_URL) {
+			console.error('❌ CRITICAL: Cannot use dummy REMINDER_ALERTS_URL in production');
+			process.exit(1);
+		}
 
 		betterAuthSecret = env.BETTER_AUTH_SECRET;
 		databaseUrl = env.DATABASE_URL;
+		authAlertsUrl = env.AUTH_ALERTS_URL;
+		reminderAlertsUrl = env.REMINDER_ALERTS_URL;
 	}
 
 	return {
 		DATABASE_URL: databaseUrl,
 		BETTER_AUTH_SECRET: betterAuthSecret,
+		AUTH_ALERTS_URL: authAlertsUrl,
+		REMINDER_ALERTS_URL: reminderAlertsUrl,
 		// Less critical vars can use fallbacks in any environment
 		BETTER_AUTH_BASE_URL: env.BETTER_AUTH_BASE_URL || ENV_FALLBACKS.BETTER_AUTH_BASE_URL,
 		RESEND_API_KEY: env.RESEND_API_KEY || ENV_FALLBACKS.RESEND_API_KEY,
 		RESEND_FROM_ADDRESS: env.RESEND_FROM_ADDRESS || ENV_FALLBACKS.RESEND_FROM_ADDRESS,
 		RESEND_NEW_USER_ADDRESS: env.RESEND_NEW_USER_ADDRESS || ENV_FALLBACKS.RESEND_NEW_USER_ADDRESS,
-		AUTH_ALERTS_URL: env.AUTH_ALERTS_URL || ENV_FALLBACKS.AUTH_ALERTS_URL,
-		REMINDER_ALERTS_URL: env.REMINDER_ALERTS_URL || ENV_FALLBACKS.REMINDER_ALERTS_URL,
 		NODE_ENV: (env.NODE_ENV as 'development' | 'production' | 'test') || ENV_FALLBACKS.NODE_ENV
 	};
 }
