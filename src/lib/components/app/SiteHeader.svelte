@@ -103,7 +103,7 @@ let showBreadcrumbs = $derived(breadcrumbs.length > 1);
 			{/if}
 		</div>
 		<div class="ms-auto flex items-center gap-2">
-			<Button onclick={toggleMode} variant="outline" size="icon" class="h-9 w-9">
+			<Button onclick={toggleMode} variant="outline" size="icon" class="h-8 w-8">
 				<Sun
 					class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
 				/>

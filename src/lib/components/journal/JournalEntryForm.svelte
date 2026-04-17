@@ -71,7 +71,7 @@ async function getWeather() {
 }
 </script>
 
-<PageShell class="space-y-6 py-3 sm:py-6">
+<PageShell class="space-y-4 py-0 sm:py-6">
 	<SectionHeader
 		title={pageTitle}
 		description="A focused, distraction-light writing space designed for flow."
@@ -85,10 +85,15 @@ async function getWeather() {
 		</div>
 	</SectionHeader>
 
-	<ContentSection color="blue" border={true} padding="lg" class="overflow-hidden">
+	<ContentSection
+		color="blue"
+		border={false}
+		padding="none"
+		class="-mx-4 overflow-hidden sm:mx-0 sm:border-l-4 sm:border-[oklch(var(--color-blue))] sm:p-6 md:p-8"
+	>
 		<form method="POST" action={formAction} {@attach fromAction(enhance)} class="space-y-6">
 			<div
-				class="rounded-2xl border border-[oklch(var(--color-blue)/0.2)] bg-white/88 p-5 shadow-sm dark:bg-slate-950/72 md:p-7"
+				class="px-2 py-3 sm:rounded-2xl sm:border sm:border-[oklch(var(--color-blue)/0.2)] sm:bg-white/88 sm:p-5 sm:shadow-sm sm:dark:bg-slate-950/72 md:p-7"
 			>
 				<div class="space-y-2">
 					<h2 class="font-display text-2xl font-bold text-foreground md:text-3xl">Today's Story</h2>
