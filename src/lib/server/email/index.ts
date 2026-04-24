@@ -335,6 +335,66 @@ export async function sendTasksDueTodayEmail(
 	}
 }
 
+export async function sendScheduledVisitReminderEmail(
+	to: string,
+	name: string,
+	personName: string,
+	followUpDate: string
+) {
+	logger.debug('📧 Sending Scheduled Visit Reminder Email to:', { to });
+
+	try {
+		await resend.emails.send({
+			from: env.RESEND_FROM_ADDRESS,
+			to,
+			subject: `[Synapse] 📅 Upcoming visit with ${personName} in one week`,
+			html: `
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<meta charset="utf-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Upcoming Visit Reminder</title>
+				</head>
+				<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+					<div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+						<h1 style="color: white; margin: 0; font-size: 28px;">📅 Upcoming Visit</h1>
+					</div>
+					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">
+							Just a reminder that you have a scheduled visit with <strong>${personName}</strong> coming up on <strong>${followUpDate}</strong> — that's one week from today!
+						</p>
+						<div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+							<p style="margin: 0; font-size: 16px; font-weight: 600; color: #1e40af;">
+								📅 Visit scheduled for ${followUpDate}
+							</p>
+						</div>
+						<p style="font-size: 16px; margin-bottom: 20px;">
+							Now is a great time to plan and prepare for a meaningful visit.
+						</p>
+						<div style="background: #e5e7eb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+							<p style="margin: 0; font-size: 14px; color: #6b7280;">
+								💡 <em>"You should know well the appearance of your flock. Take good care of your sheep."</em>
+							</p>
+						</div>
+						<p style="font-size: 16px; margin-top: 20px;">
+							Looking forward to a great visit! 💙
+						</p>
+					</div>
+					<div style="text-align: center; margin-top: 20px; padding: 20px; color: #9ca3af; font-size: 12px;">
+						<p>Synapse - Your Personal Second Brain</p>
+					</div>
+				</body>
+				</html>
+			`
+		});
+	} catch (error) {
+		logger.error('❌ Failed to send scheduled visit reminder email:', { error });
+		return error;
+	}
+}
+
 export function getNotificationTag(workoutType: string): string {
 	return getWorkoutNotificationTag(workoutType);
 }

@@ -38,10 +38,18 @@ import {
 import {
 	getNotificationTag,
 	sendMeditationReminderEmail,
+	sendScheduledVisitReminderEmail,
 	sendTasksDueTodayEmail,
 	sendVisitWarningEmail,
 	sendWorkoutReminderEmail
 } from './index';
+import {
+	buildScheduledVisitReminderEntityId,
+	buildScheduledVisitReminderSubject,
+	formatReminderDate,
+	getDateDaysAhead,
+	SCHEDULED_VISIT_REMINDER_NOTIFICATION_TYPE
+} from './scheduled-visit-reminder-utils';
 import {
 	buildTasksDueTodayDigestMessage,
 	buildTasksDueTodayDigestTitle,
@@ -626,6 +634,85 @@ async function processTasksDueTodayDigests(
 }
 
 /**
+ * Process scheduled visit reminders (one week before follow-up date)
+ */
+async function processScheduledVisitReminders(): Promise<void> {
+	logger.debug('\n📅 Processing scheduled visit reminders...');
+
+	const oneWeekFromNow = getDateDaysAhead(new Date(), 7);
+	logger.debug(`   Looking for visits with followUpDate = ${oneWeekFromNow}`);
+
+	// Find all visits where followUpDate is exactly one week from today
+	const upcomingVisits = db
+		.select({
+			visit: visits,
+			person: people,
+			user: user
+		})
+		.from(visits)
+		.innerJoin(people, eq(visits.personId, people.id))
+		.innerJoin(user, eq(visits.userId, user.id))
+		.where(and(eq(visits.followUpDate, oneWeekFromNow), eq(people.isArchived, false)))
+		.all();
+
+	logger.debug(`   Found ${upcomingVisits.length} upcoming visits in one week`);
+
+	let sentCount = 0;
+
+	for (const { visit, person, user: userData } of upcomingVisits) {
+		if (person.isExempt) {
+			logger.debug(`   ⏭️  Skipping exempt person ${person.name}`);
+			continue;
+		}
+
+		const entityId = buildScheduledVisitReminderEntityId(visit.id);
+
+		// Check if we already sent a reminder for this visit
+		if (await alreadySentToday(userData.id, SCHEDULED_VISIT_REMINDER_NOTIFICATION_TYPE, entityId)) {
+			logger.debug(`   ⏭️  Already sent reminder for ${person.name} today`);
+			continue;
+		}
+
+		const formattedFollowUpDate = formatReminderDate(oneWeekFromNow);
+		const subject = buildScheduledVisitReminderSubject(person.name);
+
+		logger.debug(
+			`   📧 Sending scheduled visit reminder to ${userData.email} (${person.name} on ${oneWeekFromNow})`
+		);
+
+		try {
+			await sendScheduledVisitReminderEmail(
+				userData.email,
+				userData.name,
+				person.name,
+				formattedFollowUpDate
+			);
+
+			await sendReminderNotification(
+				`Upcoming visit with ${person.name} is scheduled for ${formattedFollowUpDate}.`,
+				'Synapse - Upcoming Visit',
+				'calendar',
+				3
+			);
+
+			await logNotification(
+				userData.id,
+				SCHEDULED_VISIT_REMINDER_NOTIFICATION_TYPE,
+				entityId,
+				subject
+			);
+
+			sentCount++;
+			logger.debug(`   ✅ Sent successfully`);
+		} catch (error) {
+			logger.error(`   ❌ Failed to send:`, { error });
+		}
+	}
+
+	logger.debug(`   📊 Sent ${sentCount} scheduled visit reminders`);
+}
+
+/**
  * Main execution
  */
 export async function runEmailNotifications(): Promise<{ ok: true } | { ok: false; error: Error }> {
@@ -675,6 +762,7 @@ export async function runEmailNotifications(): Promise<{ ok: true } | { ok: fals
 		await processWorkoutReminders(currentDay, currentHour, currentMinute);
 		await processMeditationReminders(currentDay, currentHour, currentMinute);
 		await processVisitWarnings();
+		await processScheduledVisitReminders();
 
 		logger.debug('\n✅ Email notifications cron job completed successfully!');
 		return { ok: true };
