@@ -1,108 +1,108 @@
 <script lang="ts">
-import { CalendarCheck, Plus } from '@lucide/svelte';
+	import { CalendarCheck, Plus } from '@lucide/svelte';
 
-import { replaceState } from '$app/navigation';
-import { navigating, page } from '$app/state';
-import PageShell from '$lib/components/app/PageShell.svelte';
-import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-import * as Alert from '$lib/components/ui/alert';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import * as Tabs from '$lib/components/ui/tabs';
-import { formatDateShort } from '$lib/utils/date';
-import { getStatusLabel, type VisitStatus } from '$lib/utils/visit-status';
+	import { replaceState } from '$app/navigation';
+	import { navigating, page } from '$app/state';
+	import PageShell from '$lib/components/app/PageShell.svelte';
+	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+	import * as Alert from '$lib/components/ui/alert';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import { formatDateShort } from '$lib/utils/date';
+	import { getStatusLabel, type VisitStatus } from '$lib/utils/visit-status';
 
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-type VisitTab = 'all' | VisitStatus;
+	type VisitTab = 'all' | VisitStatus;
 
-const allowedTabs = new Set<VisitTab>([
-	'all',
-	'green',
-	'yellow',
-	'red',
-	'none',
-	'exempt',
-	'scheduled'
-]);
+	const allowedTabs = new Set<VisitTab>([
+		'all',
+		'green',
+		'yellow',
+		'red',
+		'none',
+		'exempt',
+		'scheduled'
+	]);
 
-function getInitialTab(): VisitTab {
-	const status = page.url.searchParams.get('status');
-	if (status && allowedTabs.has(status as VisitTab)) {
-		return status as VisitTab;
-	}
-	return 'all';
-}
-
-let activeTab = $state<VisitTab>(getInitialTab());
-
-function getValidTab(value: string): VisitTab {
-	if (value === 'all') {
+	function getInitialTab(): VisitTab {
+		const status = page.url.searchParams.get('status');
+		if (status && allowedTabs.has(status as VisitTab)) {
+			return status as VisitTab;
+		}
 		return 'all';
 	}
 
-	if (allowedTabs.has(value as VisitTab)) {
-		return value as VisitTab;
+	let activeTab = $state<VisitTab>(getInitialTab());
+
+	function getValidTab(value: string): VisitTab {
+		if (value === 'all') {
+			return 'all';
+		}
+
+		if (allowedTabs.has(value as VisitTab)) {
+			return value as VisitTab;
+		}
+
+		return 'all';
 	}
 
-	return 'all';
-}
+	function handleTabChange(value: string) {
+		const nextTab = getValidTab(value);
+		activeTab = nextTab;
 
-function handleTabChange(value: string) {
-	const nextTab = getValidTab(value);
-	activeTab = nextTab;
+		if (typeof window === 'undefined') {
+			return;
+		}
 
-	if (typeof window === 'undefined') {
-		return;
+		const nextUrl = new URL(window.location.href);
+		if (nextTab === 'all') {
+			nextUrl.searchParams.delete('status');
+		} else {
+			nextUrl.searchParams.set('status', nextTab);
+		}
+
+		replaceState(nextUrl, page.state);
 	}
 
-	const nextUrl = new URL(window.location.href);
-	if (nextTab === 'all') {
-		nextUrl.searchParams.delete('status');
-	} else {
-		nextUrl.searchParams.set('status', nextTab);
+	function peopleForTab(tab: VisitTab) {
+		if (tab === 'all') {
+			return data.people;
+		}
+
+		if (tab === 'scheduled') {
+			return data.people
+				.filter((person) => person.status === 'scheduled')
+				.sort((a, b) => {
+					if (!a.nextFollowUpDate || !b.nextFollowUpDate) {
+						return 0;
+					}
+					return a.nextFollowUpDate.localeCompare(b.nextFollowUpDate);
+				});
+		}
+
+		return data.people.filter((person) => person.status === tab);
 	}
 
-	replaceState(nextUrl, page.state);
-}
+	const allPeopleCount = $derived(data.people.length);
+	const criticalCount = $derived(peopleForTab('red').length);
+	const overdueCount = $derived(peopleForTab('yellow').length);
+	const recentCount = $derived(peopleForTab('green').length);
+	const noVisitsCount = $derived(peopleForTab('none').length);
+	const exemptCount = $derived(peopleForTab('exempt').length);
+	const scheduledCount = $derived(peopleForTab('scheduled').length);
 
-function peopleForTab(tab: VisitTab) {
-	if (tab === 'all') {
-		return data.people;
+	function formatTimeSince(days: number): string {
+		if (days < 30) {
+			return `${days} day${days !== 1 ? 's' : ''} ago`;
+		}
+		const months = Math.floor(days / 30);
+		return `${months} month${months !== 1 ? 's' : ''} ago`;
 	}
-
-	if (tab === 'scheduled') {
-		return data.people
-			.filter((person) => person.status === 'scheduled')
-			.sort((a, b) => {
-				if (!a.nextFollowUpDate || !b.nextFollowUpDate) {
-					return 0;
-				}
-				return a.nextFollowUpDate.localeCompare(b.nextFollowUpDate);
-			});
-	}
-
-	return data.people.filter((person) => person.status === tab);
-}
-
-const allPeopleCount = $derived(data.people.length);
-const criticalCount = $derived(peopleForTab('red').length);
-const overdueCount = $derived(peopleForTab('yellow').length);
-const recentCount = $derived(peopleForTab('green').length);
-const noVisitsCount = $derived(peopleForTab('none').length);
-const exemptCount = $derived(peopleForTab('exempt').length);
-const scheduledCount = $derived(peopleForTab('scheduled').length);
-
-function formatTimeSince(days: number): string {
-	if (days < 30) {
-		return `${days} day${days !== 1 ? 's' : ''} ago`;
-	}
-	const months = Math.floor(days / 30);
-	return `${months} month${months !== 1 ? 's' : ''} ago`;
-}
 </script>
 
 {#if navigating.to?.url.pathname === '/visits'}

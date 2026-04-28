@@ -1,78 +1,78 @@
 <script lang="ts">
-import { CircleAlert, CircleCheck, Lock, Pencil, Save, User, X } from '@lucide/svelte';
-import { superForm } from 'sveltekit-superforms';
+	import { CircleAlert, CircleCheck, Lock, Pencil, Save, User, X } from '@lucide/svelte';
+	import { superForm } from 'sveltekit-superforms';
 
-import { Button } from '$lib/components/ui/button';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import * as Separator from '$lib/components/ui/separator';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Separator from '$lib/components/ui/separator';
 
-import type { PageProps } from './$types';
+	import type { PageProps } from './$types';
 
-let { data }: PageProps = $props();
+	let { data }: PageProps = $props();
 
-// Profile form
-// svelte-ignore state_referenced_locally
-const profileFormStore = superForm(data.profileForm, {
-	onUpdate: ({ form }) => {
-		if (form.message) {
-			// Reset editing state on success
-			if (form.message.includes('successfully')) {
-				isEditingProfile = false;
+	// Profile form
+	// svelte-ignore state_referenced_locally
+	const profileFormStore = superForm(data.profileForm, {
+		onUpdate: ({ form }) => {
+			if (form.message) {
+				// Reset editing state on success
+				if (form.message.includes('successfully')) {
+					isEditingProfile = false;
+				}
 			}
 		}
-	}
-});
+	});
 
-const {
-	form: profileForm,
-	errors: profileErrors,
-	message: profileMessage,
-	submitting: profileSubmitting
-} = profileFormStore;
+	const {
+		form: profileForm,
+		errors: profileErrors,
+		message: profileMessage,
+		submitting: profileSubmitting
+	} = profileFormStore;
 
-// Password form
-// svelte-ignore state_referenced_locally
-const passwordFormStore = superForm(data.passwordForm, {
-	resetForm: true,
-	onUpdate: ({ form }) => {
-		if (form.message) {
-			// Reset editing state and form on success
-			if (form.message.includes('successfully')) {
-				isEditingPassword = false;
+	// Password form
+	// svelte-ignore state_referenced_locally
+	const passwordFormStore = superForm(data.passwordForm, {
+		resetForm: true,
+		onUpdate: ({ form }) => {
+			if (form.message) {
+				// Reset editing state and form on success
+				if (form.message.includes('successfully')) {
+					isEditingPassword = false;
+				}
 			}
 		}
+	});
+
+	const {
+		form: passwordForm,
+		errors: passwordErrors,
+		message: passwordMessage,
+		submitting: passwordSubmitting
+	} = passwordFormStore;
+
+	// Profile editing state
+	let isEditingProfile = $state(false);
+	let isEditingPassword = $state(false);
+
+	// Derived values from data
+	const userEmail = $derived(data.user?.email || '');
+	const passwordUpdatedAt = $derived(data.passwordUpdatedAt || '');
+
+	// Reset profile form
+	function resetProfileForm() {
+		$profileForm.name = data.user?.name || '';
+		isEditingProfile = false;
 	}
-});
 
-const {
-	form: passwordForm,
-	errors: passwordErrors,
-	message: passwordMessage,
-	submitting: passwordSubmitting
-} = passwordFormStore;
-
-// Profile editing state
-let isEditingProfile = $state(false);
-let isEditingPassword = $state(false);
-
-// Derived values from data
-const userEmail = $derived(data.user?.email || '');
-const passwordUpdatedAt = $derived(data.passwordUpdatedAt || '');
-
-// Reset profile form
-function resetProfileForm() {
-	$profileForm.name = data.user?.name || '';
-	isEditingProfile = false;
-}
-
-// Reset password form
-function resetPasswordForm() {
-	$passwordForm.currentPassword = '';
-	$passwordForm.newPassword = '';
-	$passwordForm.confirmPassword = '';
-	isEditingPassword = false;
-}
+	// Reset password form
+	function resetPasswordForm() {
+		$passwordForm.currentPassword = '';
+		$passwordForm.newPassword = '';
+		$passwordForm.confirmPassword = '';
+		isEditingPassword = false;
+	}
 </script>
 
 <svelte:head> <title>Profile</title> </svelte:head>

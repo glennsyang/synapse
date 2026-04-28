@@ -1,94 +1,102 @@
 <script lang="ts">
-import { Activity, Clock, Dumbbell, Flame } from '@lucide/svelte/icons';
-import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { Activity, Clock, Dumbbell, Flame } from '@lucide/svelte/icons';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
-import WorkoutFrequencyChart from '$lib/components/fitness/analytics/WorkoutFrequencyChart.svelte';
-import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
-import type { logWorkoutSchema } from '$lib/schemas/fitness';
-import { getTodayString, parseLocalDateString } from '$lib/utils/date';
+	import WorkoutFrequencyChart from '$lib/components/fitness/analytics/WorkoutFrequencyChart.svelte';
+	import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
+	import type { logWorkoutSchema } from '$lib/schemas/fitness';
+	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
 
-import FitnessStatusCard from './FitnessStatusCard.svelte';
+	import FitnessStatusCard from './FitnessStatusCard.svelte';
 
-interface Exercise {
-	exerciseName: string;
-	sets: number | null;
-	reps: number | null;
-	weightLbs: number | null;
-}
-
-interface Workout {
-	id: string;
-	date: string;
-	time: string | null;
-	type: string;
-	durationMinutes: number | null;
-	notes: string | null;
-	exercises: Exercise[];
-}
-
-interface Props {
-	workouts: Workout[];
-	workoutForm: SuperValidated<Infer<typeof logWorkoutSchema>>;
-}
-
-let { workouts, workoutForm }: Props = $props();
-
-const insights = $derived.by(() => {
-	if (workouts.length === 0) {
-		return { thisWeekCount: 0, streak: 0, avgDuration: 0, mostConsistentDay: null, topType: null };
+	interface Exercise {
+		exerciseName: string;
+		sets: number | null;
+		reps: number | null;
+		weightLbs: number | null;
 	}
 
-	const today = getTodayString();
-	const todayDate = parseLocalDateString(today);
+	interface Workout {
+		id: string;
+		date: string;
+		time: string | null;
+		type: string;
+		durationMinutes: number | null;
+		notes: string | null;
+		exercises: Exercise[];
+	}
 
-	// This week count
-	const startOfWeek = new Date(todayDate);
-	startOfWeek.setDate(todayDate.getDate() - ((todayDate.getDay() + 6) % 7));
-	startOfWeek.setHours(0, 0, 0, 0);
-	const thisWeekCount = workouts.filter((w) => parseLocalDateString(w.date) >= startOfWeek).length;
+	interface Props {
+		workouts: Workout[];
+		workoutForm: SuperValidated<Infer<typeof logWorkoutSchema>>;
+	}
 
-	// Current streak (consecutive days)
-	const workoutDates = new Set(workouts.map((w) => w.date));
-	let streak = 0;
-	const d = new Date(todayDate);
-	while (true) {
-		const dateStr = d.toISOString().slice(0, 10);
-		if (workoutDates.has(dateStr)) {
-			streak++;
-			d.setDate(d.getDate() - 1);
-		} else {
-			break;
+	let { workouts, workoutForm }: Props = $props();
+
+	const insights = $derived.by(() => {
+		if (workouts.length === 0) {
+			return {
+				thisWeekCount: 0,
+				streak: 0,
+				avgDuration: 0,
+				mostConsistentDay: null,
+				topType: null
+			};
 		}
-	}
 
-	// Avg duration
-	const withDuration = workouts.filter((w) => w.durationMinutes != null);
-	const avgDuration =
-		withDuration.length > 0
-			? Math.round(
-					withDuration.reduce((s, w) => s + (w.durationMinutes ?? 0), 0) / withDuration.length
-				)
-			: 0;
+		const today = getTodayString();
+		const todayDate = parseLocalDateString(today);
 
-	// Most consistent day of the week
-	const dayCounts: Record<number, number> = {};
-	for (const w of workouts) {
-		const day = parseLocalDateString(w.date).getDay();
-		dayCounts[day] = (dayCounts[day] ?? 0) + 1;
-	}
-	const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-	const topDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0];
-	const mostConsistentDay = topDay ? dayNames[Number(topDay[0])] : null;
+		// This week count
+		const startOfWeek = new Date(todayDate);
+		startOfWeek.setDate(todayDate.getDate() - ((todayDate.getDay() + 6) % 7));
+		startOfWeek.setHours(0, 0, 0, 0);
+		const thisWeekCount = workouts.filter(
+			(w) => parseLocalDateString(w.date) >= startOfWeek
+		).length;
 
-	// Top workout type
-	const typeCounts: Record<string, number> = {};
-	for (const w of workouts) {
-		typeCounts[w.type] = (typeCounts[w.type] ?? 0) + 1;
-	}
-	const topType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+		// Current streak (consecutive days)
+		const workoutDates = new Set(workouts.map((w) => w.date));
+		let streak = 0;
+		const d = new Date(todayDate);
+		while (true) {
+			const dateStr = d.toISOString().slice(0, 10);
+			if (workoutDates.has(dateStr)) {
+				streak++;
+				d.setDate(d.getDate() - 1);
+			} else {
+				break;
+			}
+		}
 
-	return { thisWeekCount, streak, avgDuration, mostConsistentDay, topType };
-});
+		// Avg duration
+		const withDuration = workouts.filter((w) => w.durationMinutes != null);
+		const avgDuration =
+			withDuration.length > 0
+				? Math.round(
+						withDuration.reduce((s, w) => s + (w.durationMinutes ?? 0), 0) / withDuration.length
+					)
+				: 0;
+
+		// Most consistent day of the week
+		const dayCounts: Record<number, number> = {};
+		for (const w of workouts) {
+			const day = parseLocalDateString(w.date).getDay();
+			dayCounts[day] = (dayCounts[day] ?? 0) + 1;
+		}
+		const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+		const topDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0];
+		const mostConsistentDay = topDay ? dayNames[Number(topDay[0])] : null;
+
+		// Top workout type
+		const typeCounts: Record<string, number> = {};
+		for (const w of workouts) {
+			typeCounts[w.type] = (typeCounts[w.type] ?? 0) + 1;
+		}
+		const topType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+		return { thisWeekCount, streak, avgDuration, mostConsistentDay, topType };
+	});
 </script>
 
 <section class="mb-2 space-y-4">

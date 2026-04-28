@@ -69,7 +69,7 @@
 		"experimentalFullSupportEnabled": true,
 		"formatter": {
 			"enabled": true,
-			"indentScriptAndStyle": false
+			"indentScriptAndStyle": true
 		}
 	},
 	"overrides": [
@@ -78,8 +78,7 @@
 			"linter": {
 				"rules": {
 					"correctness": {
-						"noUnusedImports": "off",
-						"noUnusedVariables": "off"
+						"noUnusedFunctionParameters": "off"
 					},
 					"suspicious": {
 						"noGlobalAssign": "off"

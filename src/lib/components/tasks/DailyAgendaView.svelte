@@ -1,364 +1,364 @@
 <script lang="ts">
-import {
-	CalendarDays,
-	ChevronLeft,
-	ChevronRight,
-	Pencil,
-	Plus,
-	Save,
-	Trash2,
-	X
-} from '@lucide/svelte';
-import type { ActionResult } from '@sveltejs/kit';
-import { toast } from 'svelte-sonner';
+	import {
+		CalendarDays,
+		ChevronLeft,
+		ChevronRight,
+		Pencil,
+		Plus,
+		Save,
+		Trash2,
+		X
+	} from '@lucide/svelte';
+	import type { ActionResult } from '@sveltejs/kit';
+	import { toast } from 'svelte-sonner';
 
-import { applyAction, enhance } from '$app/forms';
-import { invalidateAll } from '$app/navigation';
-import { page } from '$app/state';
-import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-import * as Alert from '$lib/components/ui/alert';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Dialog from '$lib/components/ui/dialog';
-import { Input } from '$lib/components/ui/input';
-import type { DailyAgendaData, DailyAgendaEntry, DailyAgendaTemplate } from '$lib/types';
-import { cn } from '$lib/utils';
-import { daysOfWeek, getStartOfWeek } from '$lib/utils/date';
+	import { applyAction, enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+	import * as Alert from '$lib/components/ui/alert';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Input } from '$lib/components/ui/input';
+	import type { DailyAgendaData, DailyAgendaEntry, DailyAgendaTemplate } from '$lib/types';
+	import { cn } from '$lib/utils';
+	import { daysOfWeek, getStartOfWeek } from '$lib/utils/date';
 
-import DailyAgendaRadial from './DailyAgendaRadial.svelte';
+	import DailyAgendaRadial from './DailyAgendaRadial.svelte';
 
-interface Props {
-	agenda: DailyAgendaData;
-	defaultsDialogOpen?: boolean;
-}
-
-type AgendaDeleteDialogState = {
-	id: string;
-	title: string;
-	message: string;
-	actionUrl: string;
-	confirmButtonText: string;
-};
-
-let { agenda, defaultsDialogOpen = $bindable(false) }: Props = $props();
-
-const templateDayOptions = [...daysOfWeek.slice(1), daysOfWeek[0]];
-const allTemplateDays = templateDayOptions.map((day) => day.id);
-
-let newTemplateTitle = $state('');
-let newTemplateDays = $state<number[]>([...allTemplateDays]);
-let editingTemplateId = $state<string | null>(null);
-let editingTemplateTitle = $state('');
-let editingTemplateDays = $state<number[]>([...allTemplateDays]);
-let newEntryDate = $state<string | null>(null);
-let newEntryTitle = $state('');
-let editingEntryId = $state<string | null>(null);
-let editingEntryTitle = $state('');
-let agendaDeleteDialogOpen = $state(false);
-let pendingAgendaDelete = $state<AgendaDeleteDialogState | null>(null);
-
-function normalizeTemplateDays(days: number[]): number[] {
-	const selected = new Set(days);
-
-	return templateDayOptions.filter((day) => selected.has(day.id)).map((day) => day.id);
-}
-
-function toggleTemplateDay(days: number[], dayId: number): number[] {
-	if (days.includes(dayId)) {
-		return days.filter((day) => day !== dayId);
+	interface Props {
+		agenda: DailyAgendaData;
+		defaultsDialogOpen?: boolean;
 	}
 
-	return normalizeTemplateDays([...days, dayId]);
-}
+	type AgendaDeleteDialogState = {
+		id: string;
+		title: string;
+		message: string;
+		actionUrl: string;
+		confirmButtonText: string;
+	};
 
-function serializeTemplateDays(days: number[]): string {
-	return normalizeTemplateDays(days).join(',');
-}
+	let { agenda, defaultsDialogOpen = $bindable(false) }: Props = $props();
 
-function formatTemplateDays(days: number[]): string {
-	const orderedDays = normalizeTemplateDays(days);
-	if (orderedDays.length === templateDayOptions.length) {
-		return 'Every day';
+	const templateDayOptions = [...daysOfWeek.slice(1), daysOfWeek[0]];
+	const allTemplateDays = templateDayOptions.map((day) => day.id);
+
+	let newTemplateTitle = $state('');
+	let newTemplateDays = $state<number[]>([...allTemplateDays]);
+	let editingTemplateId = $state<string | null>(null);
+	let editingTemplateTitle = $state('');
+	let editingTemplateDays = $state<number[]>([...allTemplateDays]);
+	let newEntryDate = $state<string | null>(null);
+	let newEntryTitle = $state('');
+	let editingEntryId = $state<string | null>(null);
+	let editingEntryTitle = $state('');
+	let agendaDeleteDialogOpen = $state(false);
+	let pendingAgendaDelete = $state<AgendaDeleteDialogState | null>(null);
+
+	function normalizeTemplateDays(days: number[]): number[] {
+		const selected = new Set(days);
+
+		return templateDayOptions.filter((day) => selected.has(day.id)).map((day) => day.id);
 	}
 
-	return templateDayOptions
-		.filter((day) => orderedDays.includes(day.id))
-		.map((day) => day.shortName)
-		.join(', ');
-}
+	function toggleTemplateDay(days: number[], dayId: number): number[] {
+		if (days.includes(dayId)) {
+			return days.filter((day) => day !== dayId);
+		}
 
-function toggleNewTemplateDay(dayId: number) {
-	newTemplateDays = toggleTemplateDay(newTemplateDays, dayId);
-}
-
-function toggleEditingTemplateDay(dayId: number) {
-	editingTemplateDays = toggleTemplateDay(editingTemplateDays, dayId);
-}
-
-function calculateAverageCompletion(points: Array<{ completionPercentage: number }>): number {
-	return points.length === 0
-		? 0
-		: Math.round(
-				points.reduce((total, point) => total + point.completionPercentage, 0) / points.length
-			);
-}
-
-const overallCompletionPercentage = $derived(
-	Math.min(Math.max(agenda.overallCompletionPercentage, 0), 100)
-);
-const todayAgendaDay = $derived(agenda.days.find((day) => day.isToday) ?? null);
-const currentWindowPoints = $derived(agenda.chartPoints.slice(-7));
-const previousWindowPoints = $derived(
-	agenda.chartPoints.slice(0, Math.max(agenda.chartPoints.length - 7, 0))
-);
-const currentWindowAverage = $derived(calculateAverageCompletion(currentWindowPoints));
-const previousWindowAverage = $derived(calculateAverageCompletion(previousWindowPoints));
-const previousWindowHasActivity = $derived(
-	previousWindowPoints.some((point) => point.totalCount > 0)
-);
-const completionDelta = $derived(currentWindowAverage - previousWindowAverage);
-const clampedCurrentWindowAverage = $derived(Math.min(Math.max(currentWindowAverage, 0), 100));
-const clampedPreviousWindowAverage = $derived(Math.min(Math.max(previousWindowAverage, 0), 100));
-const comparisonDeltaLabel = $derived.by(() => {
-	if (!previousWindowHasActivity) {
-		return 'New rhythm';
+		return normalizeTemplateDays([...days, dayId]);
 	}
 
-	if (completionDelta > 0) {
-		return `+${completionDelta} pts`;
+	function serializeTemplateDays(days: number[]): string {
+		return normalizeTemplateDays(days).join(',');
 	}
 
-	if (completionDelta < 0) {
-		return `${completionDelta} pts`;
+	function formatTemplateDays(days: number[]): string {
+		const orderedDays = normalizeTemplateDays(days);
+		if (orderedDays.length === templateDayOptions.length) {
+			return 'Every day';
+		}
+
+		return templateDayOptions
+			.filter((day) => orderedDays.includes(day.id))
+			.map((day) => day.shortName)
+			.join(', ');
 	}
 
-	return 'Even';
-});
-const comparisonSummary = $derived.by(() => {
-	if (!previousWindowHasActivity) {
-		return 'Comparison will settle in after one full prior week.';
+	function toggleNewTemplateDay(dayId: number) {
+		newTemplateDays = toggleTemplateDay(newTemplateDays, dayId);
 	}
 
-	if (completionDelta > 6) {
-		return 'Stronger than the prior 7 days.';
+	function toggleEditingTemplateDay(dayId: number) {
+		editingTemplateDays = toggleTemplateDay(editingTemplateDays, dayId);
 	}
 
-	if (completionDelta > 0) {
-		return 'Tracking ahead of the prior 7 days.';
+	function calculateAverageCompletion(points: Array<{ completionPercentage: number }>): number {
+		return points.length === 0
+			? 0
+			: Math.round(
+					points.reduce((total, point) => total + point.completionPercentage, 0) / points.length
+				);
 	}
 
-	if (completionDelta < -6) {
-		return 'Softer than the prior 7 days.';
-	}
+	const overallCompletionPercentage = $derived(
+		Math.min(Math.max(agenda.overallCompletionPercentage, 0), 100)
+	);
+	const todayAgendaDay = $derived(agenda.days.find((day) => day.isToday) ?? null);
+	const currentWindowPoints = $derived(agenda.chartPoints.slice(-7));
+	const previousWindowPoints = $derived(
+		agenda.chartPoints.slice(0, Math.max(agenda.chartPoints.length - 7, 0))
+	);
+	const currentWindowAverage = $derived(calculateAverageCompletion(currentWindowPoints));
+	const previousWindowAverage = $derived(calculateAverageCompletion(previousWindowPoints));
+	const previousWindowHasActivity = $derived(
+		previousWindowPoints.some((point) => point.totalCount > 0)
+	);
+	const completionDelta = $derived(currentWindowAverage - previousWindowAverage);
+	const clampedCurrentWindowAverage = $derived(Math.min(Math.max(currentWindowAverage, 0), 100));
+	const clampedPreviousWindowAverage = $derived(Math.min(Math.max(previousWindowAverage, 0), 100));
+	const comparisonDeltaLabel = $derived.by(() => {
+		if (!previousWindowHasActivity) {
+			return 'New rhythm';
+		}
 
-	if (completionDelta < 0) {
-		return 'Just under the prior 7 days.';
-	}
+		if (completionDelta > 0) {
+			return `+${completionDelta} pts`;
+		}
 
-	return 'Holding steady against the prior 7 days.';
-});
-type TodayAlertState = {
-	variant: 'destructive' | 'default' | undefined;
-	title: string;
-	description: string;
-	className: string;
-};
+		if (completionDelta < 0) {
+			return `${completionDelta} pts`;
+		}
 
-const todayAlertState = $derived.by((): TodayAlertState | null => {
-	if (!agenda.isCurrentWeek) {
-		return null;
-	}
+		return 'Even';
+	});
+	const comparisonSummary = $derived.by(() => {
+		if (!previousWindowHasActivity) {
+			return 'Comparison will settle in after one full prior week.';
+		}
 
-	if (!todayAgendaDay || todayAgendaDay.totalCount === 0) {
-		return {
-			variant: 'default',
-			title: 'Nothing queued yet',
-			description: 'Today is open. Add a task you want to get done.',
-			className:
-				'border-orange-200/80 bg-orange-50/75 dark:border-orange-500/25 dark:bg-orange-500/10'
-		};
-	}
+		if (completionDelta > 6) {
+			return 'Stronger than the prior 7 days.';
+		}
 
-	const doneCount = todayAgendaDay.completedCount;
-	const totalCount = todayAgendaDay.totalCount;
-	const progress = todayAgendaDay.completionPercentage;
-	const taskLabel = totalCount === 1 ? 'task' : 'tasks';
+		if (completionDelta > 0) {
+			return 'Tracking ahead of the prior 7 days.';
+		}
 
-	if (progress >= 80) {
-		if (doneCount === totalCount) {
+		if (completionDelta < -6) {
+			return 'Softer than the prior 7 days.';
+		}
+
+		if (completionDelta < 0) {
+			return 'Just under the prior 7 days.';
+		}
+
+		return 'Holding steady against the prior 7 days.';
+	});
+	type TodayAlertState = {
+		variant: 'destructive' | 'default' | undefined;
+		title: string;
+		description: string;
+		className: string;
+	};
+
+	const todayAlertState = $derived.by((): TodayAlertState | null => {
+		if (!agenda.isCurrentWeek) {
+			return null;
+		}
+
+		if (!todayAgendaDay || todayAgendaDay.totalCount === 0) {
 			return {
 				variant: 'default',
-				title: 'All done for today 🎉',
-				description: `You wrapped up all ${totalCount} ${taskLabel}. Nice finish.`,
+				title: 'Nothing queued yet',
+				description: 'Today is open. Add a task you want to get done.',
+				className:
+					'border-orange-200/80 bg-orange-50/75 dark:border-orange-500/25 dark:bg-orange-500/10'
+			};
+		}
+
+		const doneCount = todayAgendaDay.completedCount;
+		const totalCount = todayAgendaDay.totalCount;
+		const progress = todayAgendaDay.completionPercentage;
+		const taskLabel = totalCount === 1 ? 'task' : 'tasks';
+
+		if (progress >= 80) {
+			if (doneCount === totalCount) {
+				return {
+					variant: 'default',
+					title: 'All done for today 🎉',
+					description: `You wrapped up all ${totalCount} ${taskLabel}. Nice finish.`,
+					className:
+						'border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-500/25 dark:bg-emerald-500/10 text-[oklch(var(--color-green))]'
+				};
+			}
+
+			return {
+				variant: 'default',
+				title: 'Almost there 🎉',
+				description: `You have ${doneCount} of ${totalCount} ${taskLabel} done today. You're close to a clean sweep.`,
 				className:
 					'border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-500/25 dark:bg-emerald-500/10 text-[oklch(var(--color-green))]'
 			};
 		}
 
-		return {
-			variant: 'default',
-			title: 'Almost there 🎉',
-			description: `You have ${doneCount} of ${totalCount} ${taskLabel} done today. You're close to a clean sweep.`,
-			className:
-				'border-emerald-200/80 bg-emerald-50/80 dark:border-emerald-500/25 dark:bg-emerald-500/10 text-[oklch(var(--color-green))]'
-		};
-	}
+		if (progress >= 40) {
+			return {
+				variant: 'default',
+				title: progress >= 50 ? 'Halfway there' : 'Good momentum',
+				description: `You have ${doneCount} of ${totalCount} ${taskLabel} done today. Keep going and this day ends strong.`,
+				className:
+					'border-orange-200/80 bg-orange-50/75 dark:border-orange-500/25 dark:bg-orange-500/10 text-[oklch(var(--color-orange))]'
+			};
+		}
 
-	if (progress >= 40) {
-		return {
-			variant: 'default',
-			title: progress >= 50 ? 'Halfway there' : 'Good momentum',
-			description: `You have ${doneCount} of ${totalCount} ${taskLabel} done today. Keep going and this day ends strong.`,
-			className:
-				'border-orange-200/80 bg-orange-50/75 dark:border-orange-500/25 dark:bg-orange-500/10 text-[oklch(var(--color-orange))]'
-		};
-	}
+		if (doneCount === 0) {
+			return {
+				variant: 'destructive',
+				title: 'Today needs a first win',
+				description: 'No tasks are done yet today. Start with the easiest one and build momentum.',
+				className: 'border-red-200/80 bg-red-50/80 dark:border-red-500/25 dark:bg-red-500/10'
+			};
+		}
 
-	if (doneCount === 0) {
 		return {
 			variant: 'destructive',
-			title: 'Today needs a first win',
-			description: 'No tasks are done yet today. Start with the easiest one and build momentum.',
+			title: 'Today needs attention',
+			description: `You have only ${doneCount} of ${totalCount} ${taskLabel} done today. Knock out the next one to get back on pace.`,
 			className: 'border-red-200/80 bg-red-50/80 dark:border-red-500/25 dark:bg-red-500/10'
 		};
-	}
+	});
 
-	return {
-		variant: 'destructive',
-		title: 'Today needs attention',
-		description: `You have only ${doneCount} of ${totalCount} ${taskLabel} done today. Knock out the next one to get back on pace.`,
-		className: 'border-red-200/80 bg-red-50/80 dark:border-red-500/25 dark:bg-red-500/10'
-	};
-});
-
-type AgendaActionData = {
-	agendaAction?: {
-		type?: 'success' | 'error' | 'validation-error';
-		text?: string;
-	};
-};
-
-type AgendaEnhanceResult = ActionResult<AgendaActionData, AgendaActionData>;
-
-type AgendaEnhanceCallbackArgs = {
-	result: AgendaEnhanceResult;
-};
-
-function buildAgendaHref(weekStart: string): string {
-	const url = new URL(page.url);
-	url.searchParams.set('tab', 'agenda');
-	url.searchParams.set('week', weekStart);
-	return `${url.pathname}?${url.searchParams.toString()}`;
-}
-
-function buildAgendaActionHref(actionName: string): string {
-	const url = new URL(page.url);
-	const searchParams = new URLSearchParams(url.searchParams);
-
-	for (const key of Array.from(searchParams.keys())) {
-		if (key.startsWith('/')) {
-			searchParams.delete(key);
-		}
-	}
-
-	searchParams.set('tab', 'agenda');
-	searchParams.set('week', agenda.weekStart);
-
-	const query = searchParams.toString();
-	return `${url.pathname}?/${actionName}${query ? `&${query}` : ''}`;
-}
-
-function createAgendaEnhance(options: {
-	successMessage?: string;
-	errorMessage?: string;
-	silentSuccess?: boolean;
-	afterSuccess?: () => void;
-	afterFailure?: () => void;
-}) {
-	return () => {
-		return async ({ result }: AgendaEnhanceCallbackArgs) => {
-			const message =
-				result.type === 'success' || result.type === 'failure'
-					? result.data?.agendaAction?.text
-					: undefined;
-
-			if (result.type === 'success') {
-				options.afterSuccess?.();
-				if (!options.silentSuccess && options.successMessage) {
-					toast.success(typeof message === 'string' ? message : options.successMessage);
-				}
-				await invalidateAll();
-				await applyAction(result);
-				return;
-			}
-
-			if (result.type === 'failure') {
-				toast.error(
-					typeof message === 'string'
-						? message
-						: (options.errorMessage ?? 'Unable to save Daily Agenda changes.')
-				);
-				options.afterFailure?.();
-				await applyAction(result);
-				return;
-			}
-
-			if (result.type === 'error') {
-				toast.error(options.errorMessage ?? 'Unable to save Daily Agenda changes.');
-				options.afterFailure?.();
-			}
-
-			await applyAction(result);
+	type AgendaActionData = {
+		agendaAction?: {
+			type?: 'success' | 'error' | 'validation-error';
+			text?: string;
 		};
 	};
-}
 
-function startTemplateEdit(template: DailyAgendaTemplate) {
-	editingTemplateId = template.id;
-	editingTemplateTitle = template.title;
-	editingTemplateDays = normalizeTemplateDays(template.daysOfWeek);
-}
+	type AgendaEnhanceResult = ActionResult<AgendaActionData, AgendaActionData>;
 
-function cancelTemplateEdit() {
-	editingTemplateId = null;
-	editingTemplateTitle = '';
-	editingTemplateDays = [...allTemplateDays];
-}
+	type AgendaEnhanceCallbackArgs = {
+		result: AgendaEnhanceResult;
+	};
 
-function openNewEntry(date: string) {
-	newEntryDate = date;
-	newEntryTitle = '';
-	editingEntryId = null;
-	editingEntryTitle = '';
-}
+	function buildAgendaHref(weekStart: string): string {
+		const url = new URL(page.url);
+		url.searchParams.set('tab', 'agenda');
+		url.searchParams.set('week', weekStart);
+		return `${url.pathname}?${url.searchParams.toString()}`;
+	}
 
-function cancelNewEntry() {
-	newEntryDate = null;
-	newEntryTitle = '';
-}
+	function buildAgendaActionHref(actionName: string): string {
+		const url = new URL(page.url);
+		const searchParams = new URLSearchParams(url.searchParams);
 
-function startEntryEdit(entry: DailyAgendaEntry) {
-	editingEntryId = entry.id;
-	editingEntryTitle = entry.title;
-	newEntryDate = null;
-	newEntryTitle = '';
-}
+		for (const key of Array.from(searchParams.keys())) {
+			if (key.startsWith('/')) {
+				searchParams.delete(key);
+			}
+		}
 
-function cancelEntryEdit() {
-	editingEntryId = null;
-	editingEntryTitle = '';
-}
+		searchParams.set('tab', 'agenda');
+		searchParams.set('week', agenda.weekStart);
 
-function openAgendaDeleteDialog(config: AgendaDeleteDialogState) {
-	pendingAgendaDelete = config;
-	agendaDeleteDialogOpen = true;
-}
+		const query = searchParams.toString();
+		return `${url.pathname}?/${actionName}${query ? `&${query}` : ''}`;
+	}
 
-function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
-	return entry.sourceType === 'default'
-		? 'bg-slate-100/95 ring-slate-300/70 dark:bg-slate-900/85 dark:ring-slate-700/70'
-		: 'bg-background/90 ring-border/60 dark:bg-background/82';
-}
+	function createAgendaEnhance(options: {
+		successMessage?: string;
+		errorMessage?: string;
+		silentSuccess?: boolean;
+		afterSuccess?: () => void;
+		afterFailure?: () => void;
+	}) {
+		return () => {
+			return async ({ result }: AgendaEnhanceCallbackArgs) => {
+				const message =
+					result.type === 'success' || result.type === 'failure'
+						? result.data?.agendaAction?.text
+						: undefined;
+
+				if (result.type === 'success') {
+					options.afterSuccess?.();
+					if (!options.silentSuccess && options.successMessage) {
+						toast.success(typeof message === 'string' ? message : options.successMessage);
+					}
+					await invalidateAll();
+					await applyAction(result);
+					return;
+				}
+
+				if (result.type === 'failure') {
+					toast.error(
+						typeof message === 'string'
+							? message
+							: (options.errorMessage ?? 'Unable to save Daily Agenda changes.')
+					);
+					options.afterFailure?.();
+					await applyAction(result);
+					return;
+				}
+
+				if (result.type === 'error') {
+					toast.error(options.errorMessage ?? 'Unable to save Daily Agenda changes.');
+					options.afterFailure?.();
+				}
+
+				await applyAction(result);
+			};
+		};
+	}
+
+	function startTemplateEdit(template: DailyAgendaTemplate) {
+		editingTemplateId = template.id;
+		editingTemplateTitle = template.title;
+		editingTemplateDays = normalizeTemplateDays(template.daysOfWeek);
+	}
+
+	function cancelTemplateEdit() {
+		editingTemplateId = null;
+		editingTemplateTitle = '';
+		editingTemplateDays = [...allTemplateDays];
+	}
+
+	function openNewEntry(date: string) {
+		newEntryDate = date;
+		newEntryTitle = '';
+		editingEntryId = null;
+		editingEntryTitle = '';
+	}
+
+	function cancelNewEntry() {
+		newEntryDate = null;
+		newEntryTitle = '';
+	}
+
+	function startEntryEdit(entry: DailyAgendaEntry) {
+		editingEntryId = entry.id;
+		editingEntryTitle = entry.title;
+		newEntryDate = null;
+		newEntryTitle = '';
+	}
+
+	function cancelEntryEdit() {
+		editingEntryId = null;
+		editingEntryTitle = '';
+	}
+
+	function openAgendaDeleteDialog(config: AgendaDeleteDialogState) {
+		pendingAgendaDelete = config;
+		agendaDeleteDialogOpen = true;
+	}
+
+	function getEntrySurfaceClass(entry: DailyAgendaEntry): string {
+		return entry.sourceType === 'default'
+			? 'bg-slate-100/95 ring-slate-300/70 dark:bg-slate-900/85 dark:ring-slate-700/70'
+			: 'bg-background/90 ring-border/60 dark:bg-background/82';
+	}
 </script>
 
 <div class="space-y-4">

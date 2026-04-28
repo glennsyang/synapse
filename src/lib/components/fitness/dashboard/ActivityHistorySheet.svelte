@@ -1,146 +1,146 @@
 <script lang="ts">
-import { Dumbbell, Pencil, Scale, Trash2, UtensilsCrossed } from '@lucide/svelte/icons';
+	import { Dumbbell, Pencil, Scale, Trash2, UtensilsCrossed } from '@lucide/svelte/icons';
 
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Sheet from '$lib/components/ui/sheet';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import { formatDateMedium, formatTime12Hour } from '$lib/utils/date';
-import { getWorkoutBadgeClass, getWorkoutLabel } from '$lib/utils/workout';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Sheet from '$lib/components/ui/sheet';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { formatDateMedium, formatTime12Hour } from '$lib/utils/date';
+	import { getWorkoutBadgeClass, getWorkoutLabel } from '$lib/utils/workout';
 
-interface Exercise {
-	exerciseName: string;
-	sets: number | null;
-	reps: number | null;
-	weightLbs: number | null;
-}
+	interface Exercise {
+		exerciseName: string;
+		sets: number | null;
+		reps: number | null;
+		weightLbs: number | null;
+	}
 
-interface Workout {
-	id: string;
-	date: string;
-	time: string | null;
-	type: string;
-	durationMinutes: number | null;
-	steps: number | null;
-	notes: string | null;
-	exercises: Exercise[];
-}
+	interface Workout {
+		id: string;
+		date: string;
+		time: string | null;
+		type: string;
+		durationMinutes: number | null;
+		steps: number | null;
+		notes: string | null;
+		exercises: Exercise[];
+	}
 
-interface WeightEntry {
-	id: string;
-	date: string;
-	time: string | null;
-	weightLbs: number;
-	createdAt: string;
-}
+	interface WeightEntry {
+		id: string;
+		date: string;
+		time: string | null;
+		weightLbs: number;
+		createdAt: string;
+	}
 
-interface Meal {
-	id: string;
-	date: string;
-	timeOfDay: string;
-	description: string;
-	caloriesEstimate: number | null;
-}
-
-type FilterKind = 'all' | 'workouts' | 'weight' | 'meals';
-
-type ActivityItem =
-	| { kind: 'workout'; data: Workout; sortKey: string }
-	| { kind: 'weight'; data: WeightEntry; sortKey: string }
-	| { kind: 'meal'; data: Meal; sortKey: string };
-
-interface Props {
-	open: boolean;
-	workouts: Workout[];
-	weightEntries: WeightEntry[];
-	meals: Meal[];
-	onEditWorkout: (w: Workout) => void;
-	onDeleteWorkout: (id: string) => void;
-	onEditWeight: (e: { id: string; date: string; time: string | null; weightLbs: number }) => void;
-	onDeleteWeight: (id: string) => void;
-	onEditMeal: (m: {
+	interface Meal {
 		id: string;
 		date: string;
 		timeOfDay: string;
 		description: string;
 		caloriesEstimate: number | null;
-	}) => void;
-	onDeleteMeal: (id: string) => void;
-}
-
-let {
-	open = $bindable(false),
-	workouts,
-	weightEntries,
-	meals,
-	onEditWorkout,
-	onDeleteWorkout,
-	onEditWeight,
-	onDeleteWeight,
-	onEditMeal,
-	onDeleteMeal
-}: Props = $props();
-
-let filter = $state<FilterKind>('all');
-
-const allItems = $derived.by((): ActivityItem[] => {
-	const items: ActivityItem[] = [
-		...workouts.map((w) => ({
-			kind: 'workout' as const,
-			data: w,
-			sortKey: `${w.date}T${w.time ?? '23:59:59'}`
-		})),
-		...weightEntries.map((e) => ({
-			kind: 'weight' as const,
-			data: e,
-			sortKey: `${e.date}T${e.time ?? '12:00:00'}`
-		})),
-		...meals.map((m) => ({
-			kind: 'meal' as const,
-			data: m,
-			sortKey: `${m.date}T00:00:00`
-		}))
-	];
-	return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
-});
-
-const filtered = $derived(
-	filter === 'all'
-		? allItems
-		: allItems.filter((item) => {
-				if (filter === 'workouts') return item.kind === 'workout';
-				if (filter === 'weight') return item.kind === 'weight';
-				if (filter === 'meals') return item.kind === 'meal';
-				return true;
-			})
-);
-
-// Group by date
-const grouped = $derived.by(() => {
-	const groups: { date: string; label: string; items: ActivityItem[] }[] = [];
-	let current: (typeof groups)[0] | null = null;
-
-	for (const item of filtered) {
-		const date = item.sortKey.slice(0, 10);
-		if (!current || current.date !== date) {
-			current = {
-				date,
-				label: formatDateMedium(date),
-				items: []
-			};
-			groups.push(current);
-		}
-		current.items.push(item);
 	}
-	return groups;
-});
 
-const filters: { value: FilterKind; label: string }[] = [
-	{ value: 'all', label: 'All' },
-	{ value: 'workouts', label: 'Workouts' },
-	{ value: 'weight', label: 'Weight' },
-	{ value: 'meals', label: 'Meals' }
-];
+	type FilterKind = 'all' | 'workouts' | 'weight' | 'meals';
+
+	type ActivityItem =
+		| { kind: 'workout'; data: Workout; sortKey: string }
+		| { kind: 'weight'; data: WeightEntry; sortKey: string }
+		| { kind: 'meal'; data: Meal; sortKey: string };
+
+	interface Props {
+		open: boolean;
+		workouts: Workout[];
+		weightEntries: WeightEntry[];
+		meals: Meal[];
+		onEditWorkout: (w: Workout) => void;
+		onDeleteWorkout: (id: string) => void;
+		onEditWeight: (e: { id: string; date: string; time: string | null; weightLbs: number }) => void;
+		onDeleteWeight: (id: string) => void;
+		onEditMeal: (m: {
+			id: string;
+			date: string;
+			timeOfDay: string;
+			description: string;
+			caloriesEstimate: number | null;
+		}) => void;
+		onDeleteMeal: (id: string) => void;
+	}
+
+	let {
+		open = $bindable(false),
+		workouts,
+		weightEntries,
+		meals,
+		onEditWorkout,
+		onDeleteWorkout,
+		onEditWeight,
+		onDeleteWeight,
+		onEditMeal,
+		onDeleteMeal
+	}: Props = $props();
+
+	let filter = $state<FilterKind>('all');
+
+	const allItems = $derived.by((): ActivityItem[] => {
+		const items: ActivityItem[] = [
+			...workouts.map((w) => ({
+				kind: 'workout' as const,
+				data: w,
+				sortKey: `${w.date}T${w.time ?? '23:59:59'}`
+			})),
+			...weightEntries.map((e) => ({
+				kind: 'weight' as const,
+				data: e,
+				sortKey: `${e.date}T${e.time ?? '12:00:00'}`
+			})),
+			...meals.map((m) => ({
+				kind: 'meal' as const,
+				data: m,
+				sortKey: `${m.date}T00:00:00`
+			}))
+		];
+		return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+	});
+
+	const filtered = $derived(
+		filter === 'all'
+			? allItems
+			: allItems.filter((item) => {
+					if (filter === 'workouts') return item.kind === 'workout';
+					if (filter === 'weight') return item.kind === 'weight';
+					if (filter === 'meals') return item.kind === 'meal';
+					return true;
+				})
+	);
+
+	// Group by date
+	const grouped = $derived.by(() => {
+		const groups: { date: string; label: string; items: ActivityItem[] }[] = [];
+		let current: (typeof groups)[0] | null = null;
+
+		for (const item of filtered) {
+			const date = item.sortKey.slice(0, 10);
+			if (!current || current.date !== date) {
+				current = {
+					date,
+					label: formatDateMedium(date),
+					items: []
+				};
+				groups.push(current);
+			}
+			current.items.push(item);
+		}
+		return groups;
+	});
+
+	const filters: { value: FilterKind; label: string }[] = [
+		{ value: 'all', label: 'All' },
+		{ value: 'workouts', label: 'Workouts' },
+		{ value: 'weight', label: 'Weight' },
+		{ value: 'meals', label: 'Meals' }
+	];
 </script>
 
 <Sheet.Root bind:open>

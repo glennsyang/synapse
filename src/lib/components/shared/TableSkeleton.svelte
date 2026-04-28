@@ -1,13 +1,13 @@
 <script lang="ts">
-import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-import * as Table from '$lib/components/ui/table/index.js';
+	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
 
-interface Props {
-	rows?: number;
-	cols?: number;
-}
+	interface Props {
+		rows?: number;
+		cols?: number;
+	}
 
-let { rows = 5, cols = 4 }: Props = $props();
+	let { rows = 5, cols = 4 }: Props = $props();
 </script>
 
 <div class="rounded-md border">

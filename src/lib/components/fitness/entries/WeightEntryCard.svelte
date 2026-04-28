@@ -1,30 +1,30 @@
 <script lang="ts">
-import { Minus, Pencil, Trash2, TrendingDown, TrendingUp } from '@lucide/svelte/icons';
+	import { Minus, Pencil, Trash2, TrendingDown, TrendingUp } from '@lucide/svelte/icons';
 
-import { Button } from '$lib/components/ui/button';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import { formatDateShort, formatTime12Hour } from '$lib/utils/date';
+	import { Button } from '$lib/components/ui/button';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { formatDateShort, formatTime12Hour } from '$lib/utils/date';
 
-interface WeightEntry {
-	id: string;
-	date: string;
-	time: string | null;
-	weightLbs: number;
-}
+	interface WeightEntry {
+		id: string;
+		date: string;
+		time: string | null;
+		weightLbs: number;
+	}
 
-let {
-	entry,
-	previousEntry = null,
-	onEdit,
-	onDelete
-}: {
-	entry: WeightEntry;
-	previousEntry?: WeightEntry | null;
-	onEdit: (entry: WeightEntry) => void;
-	onDelete: (id: string) => void;
-} = $props();
+	let {
+		entry,
+		previousEntry = null,
+		onEdit,
+		onDelete
+	}: {
+		entry: WeightEntry;
+		previousEntry?: WeightEntry | null;
+		onEdit: (entry: WeightEntry) => void;
+		onDelete: (id: string) => void;
+	} = $props();
 
-const delta = $derived(previousEntry != null ? entry.weightLbs - previousEntry.weightLbs : null);
+	const delta = $derived(previousEntry != null ? entry.weightLbs - previousEntry.weightLbs : null);
 </script>
 
 <div

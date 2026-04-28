@@ -1,32 +1,32 @@
 <script lang="ts">
-import { Bell, BellOff } from '@lucide/svelte/icons';
-import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { Bell, BellOff } from '@lucide/svelte/icons';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
-import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
-import ReminderCard from '$lib/components/fitness/entries/ReminderCard.svelte';
-import * as Card from '$lib/components/ui/card';
-import type { workoutReminderSchema } from '$lib/schemas/fitness';
+	import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
+	import ReminderCard from '$lib/components/fitness/entries/ReminderCard.svelte';
+	import * as Card from '$lib/components/ui/card';
+	import type { workoutReminderSchema } from '$lib/schemas/fitness';
 
-interface Reminder {
-	id: string;
-	workoutType: string;
-	cadence: string;
-	time: string;
-	daysOfWeek: string | null;
-	enabled: boolean;
-}
+	interface Reminder {
+		id: string;
+		workoutType: string;
+		cadence: string;
+		time: string;
+		daysOfWeek: string | null;
+		enabled: boolean;
+	}
 
-interface Props {
-	reminders: Reminder[];
-	reminderForm: SuperValidated<Infer<typeof workoutReminderSchema>>;
-	onToggle: (reminder: Reminder) => void;
-	onDelete: (id: string) => void;
-}
+	interface Props {
+		reminders: Reminder[];
+		reminderForm: SuperValidated<Infer<typeof workoutReminderSchema>>;
+		onToggle: (reminder: Reminder) => void;
+		onDelete: (id: string) => void;
+	}
 
-let { reminders, reminderForm, onToggle, onDelete }: Props = $props();
+	let { reminders, reminderForm, onToggle, onDelete }: Props = $props();
 
-const activeCount = $derived(reminders.filter((r) => r.enabled).length);
-const disabledCount = $derived(reminders.filter((r) => !r.enabled).length);
+	const activeCount = $derived(reminders.filter((r) => r.enabled).length);
+	const disabledCount = $derived(reminders.filter((r) => !r.enabled).length);
 </script>
 
 <section class="mb-2 space-y-4">

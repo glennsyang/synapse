@@ -1,52 +1,52 @@
 <script lang="ts">
-import { ArrowLeft } from '@lucide/svelte';
-import { toast } from 'svelte-sonner';
-import { superForm } from 'sveltekit-superforms';
-import { goto } from '$app/navigation';
+	import { ArrowLeft } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
+	import { goto } from '$app/navigation';
 
-import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
-import { taskPriorityOptions, taskStateOptions } from '$lib/components/tasks/task-ui';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import * as Select from '$lib/components/ui/select';
-import { Textarea } from '$lib/components/ui/textarea';
+	import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
+	import { taskPriorityOptions, taskStateOptions } from '$lib/components/tasks/task-ui';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
+	import { Textarea } from '$lib/components/ui/textarea';
 
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance, message, submitting } = superForm(data.form, {
-	// dataType: 'form',
-	// onResult: async ({ result, cancel }) => {
-	// 	if (result.type === 'redirect') {
-	// 		cancel();
-	// 		toast.success('Task created successfully!');
-	// 		await goto(result.location);
-	// 	}
-	// },
-	// onUpdate: ({ form }) => {
-	// 	if ($message?.type === 'error') {
-	// 		toast.error(`Error creating task. Reason: ${$message.text}`);
-	// 	}
-	// }
-	onUpdate: () => {
-		if ($message?.type === 'error') {
-			toast.error(`Error creating task. Reason: ${$message.text}`);
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance, message, submitting } = superForm(data.form, {
+		// dataType: 'form',
+		// onResult: async ({ result, cancel }) => {
+		// 	if (result.type === 'redirect') {
+		// 		cancel();
+		// 		toast.success('Task created successfully!');
+		// 		await goto(result.location);
+		// 	}
+		// },
+		// onUpdate: ({ form }) => {
+		// 	if ($message?.type === 'error') {
+		// 		toast.error(`Error creating task. Reason: ${$message.text}`);
+		// 	}
+		// }
+		onUpdate: () => {
+			if ($message?.type === 'error') {
+				toast.error(`Error creating task. Reason: ${$message.text}`);
+			}
 		}
-	}
-});
+	});
 
-let priorityString = $derived($form.priority?.toString() ?? '2');
-let selectedPriorityOption = $derived(
-	taskPriorityOptions.find((option) => option.value.toString() === priorityString) ??
-		taskPriorityOptions[1]
-);
-let selectedStateOption = $derived(
-	taskStateOptions.find((option) => option.value === $form.state) ?? taskStateOptions[0]
-);
+	let priorityString = $derived($form.priority?.toString() ?? '2');
+	let selectedPriorityOption = $derived(
+		taskPriorityOptions.find((option) => option.value.toString() === priorityString) ??
+			taskPriorityOptions[1]
+	);
+	let selectedStateOption = $derived(
+		taskStateOptions.find((option) => option.value === $form.state) ?? taskStateOptions[0]
+	);
 </script>
 
 <PageFormShell>

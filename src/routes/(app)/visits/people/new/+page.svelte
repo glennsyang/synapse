@@ -1,32 +1,32 @@
 <script lang="ts">
-import { toast } from 'svelte-sonner';
-import { superForm } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
+	import { zod4 } from 'sveltekit-superforms/adapters';
 
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import { personSchema } from '$lib/schemas/visits';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { personSchema } from '$lib/schemas/visits';
 
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-let formState = $derived(
-	superForm(data.form, {
-		validators: zod4(personSchema),
-		onUpdated({ form }) {
-			if (form.message) {
-				if (form.message.type === 'error') {
-					toast.error(form.message.text);
+	let formState = $derived(
+		superForm(data.form, {
+			validators: zod4(personSchema),
+			onUpdated({ form }) {
+				if (form.message) {
+					if (form.message.type === 'error') {
+						toast.error(form.message.text);
+					}
 				}
 			}
-		}
-	})
-);
+		})
+	);
 
-const { form, errors, enhance, submitting } = $derived(formState);
+	const { form, errors, enhance, submitting } = $derived(formState);
 </script>
 
 <div class="container mx-auto max-w-2xl p-6">

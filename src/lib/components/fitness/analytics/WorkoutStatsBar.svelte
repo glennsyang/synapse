@@ -1,78 +1,78 @@
 <script lang="ts">
-import { Clock, Dumbbell, Flame, TrendingUp } from '@lucide/svelte/icons';
+	import { Clock, Dumbbell, Flame, TrendingUp } from '@lucide/svelte/icons';
 
-interface Workout {
-	id: string;
-	date: string;
-	durationMinutes: number | null;
-}
+	interface Workout {
+		id: string;
+		date: string;
+		durationMinutes: number | null;
+	}
 
-let { workouts }: { workouts: Workout[] } = $props();
+	let { workouts }: { workouts: Workout[] } = $props();
 
-const stats = $derived.by(() => {
-	const now = new Date();
-	const thirtyDaysAgo = new Date(now);
-	thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+	const stats = $derived.by(() => {
+		const now = new Date();
+		const thirtyDaysAgo = new Date(now);
+		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-	const last30 = workouts.filter((w) => new Date(w.date) >= thirtyDaysAgo);
+		const last30 = workouts.filter((w) => new Date(w.date) >= thirtyDaysAgo);
 
-	// This week (Mon–Sun)
-	const startOfWeek = new Date(now);
-	startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-	startOfWeek.setHours(0, 0, 0, 0);
-	const thisWeek = workouts.filter((w) => new Date(w.date) >= startOfWeek);
+		// This week (Mon–Sun)
+		const startOfWeek = new Date(now);
+		startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+		startOfWeek.setHours(0, 0, 0, 0);
+		const thisWeek = workouts.filter((w) => new Date(w.date) >= startOfWeek);
 
-	// Current streak: consecutive days with at least one workout
-	const workoutDates = new Set(workouts.map((w) => w.date));
-	let streak = 0;
-	const d = new Date(now);
-	d.setHours(0, 0, 0, 0);
-	while (true) {
-		const dateStr = d.toISOString().slice(0, 10);
-		if (workoutDates.has(dateStr)) {
-			streak++;
-			d.setDate(d.getDate() - 1);
-		} else {
-			break;
+		// Current streak: consecutive days with at least one workout
+		const workoutDates = new Set(workouts.map((w) => w.date));
+		let streak = 0;
+		const d = new Date(now);
+		d.setHours(0, 0, 0, 0);
+		while (true) {
+			const dateStr = d.toISOString().slice(0, 10);
+			if (workoutDates.has(dateStr)) {
+				streak++;
+				d.setDate(d.getDate() - 1);
+			} else {
+				break;
+			}
 		}
-	}
 
-	const longestSession = workouts.reduce((max, w) => Math.max(max, w.durationMinutes ?? 0), 0);
+		const longestSession = workouts.reduce((max, w) => Math.max(max, w.durationMinutes ?? 0), 0);
 
-	return {
-		last30Count: last30.length,
-		thisWeekCount: thisWeek.length,
-		streak,
-		longestSession
-	};
-});
+		return {
+			last30Count: last30.length,
+			thisWeekCount: thisWeek.length,
+			streak,
+			longestSession
+		};
+	});
 
-const cards = $derived([
-	{
-		label: 'Last 30 Days',
-		value: stats.last30Count,
-		unit: 'workouts',
-		icon: Dumbbell
-	},
-	{
-		label: 'This Week',
-		value: stats.thisWeekCount,
-		unit: 'workouts',
-		icon: TrendingUp
-	},
-	{
-		label: 'Day Streak',
-		value: stats.streak,
-		unit: 'days',
-		icon: Flame
-	},
-	{
-		label: 'Longest Session',
-		value: stats.longestSession,
-		unit: 'min',
-		icon: Clock
-	}
-]);
+	const cards = $derived([
+		{
+			label: 'Last 30 Days',
+			value: stats.last30Count,
+			unit: 'workouts',
+			icon: Dumbbell
+		},
+		{
+			label: 'This Week',
+			value: stats.thisWeekCount,
+			unit: 'workouts',
+			icon: TrendingUp
+		},
+		{
+			label: 'Day Streak',
+			value: stats.streak,
+			unit: 'days',
+			icon: Flame
+		},
+		{
+			label: 'Longest Session',
+			value: stats.longestSession,
+			unit: 'min',
+			icon: Clock
+		}
+	]);
 </script>
 
 <div class="grid grid-cols-2 gap-3 md:grid-cols-4">

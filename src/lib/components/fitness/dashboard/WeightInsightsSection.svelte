@@ -1,87 +1,87 @@
 <script lang="ts">
-import {
-	ArrowDown,
-	ArrowUp,
-	Minus,
-	Scale,
-	Target,
-	TrendingDown,
-	TrendingUp
-} from '@lucide/svelte/icons';
-import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import {
+		ArrowDown,
+		ArrowUp,
+		Minus,
+		Scale,
+		Target,
+		TrendingDown,
+		TrendingUp
+	} from '@lucide/svelte/icons';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
-import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
-import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
-import WeightChart from '$lib/components/fitness/WeightChart.svelte';
-import type { logWeightSchema, setGoalWeightSchema } from '$lib/schemas/fitness';
-import { parseLocalDateString } from '$lib/utils/date';
+	import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
+	import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
+	import WeightChart from '$lib/components/fitness/WeightChart.svelte';
+	import type { logWeightSchema, setGoalWeightSchema } from '$lib/schemas/fitness';
+	import { parseLocalDateString } from '$lib/utils/date';
 
-import FitnessStatusCard from './FitnessStatusCard.svelte';
+	import FitnessStatusCard from './FitnessStatusCard.svelte';
 
-interface WeightEntry {
-	id: string;
-	date: string;
-	time: string | null;
-	weightLbs: number;
-	createdAt: string;
-}
+	interface WeightEntry {
+		id: string;
+		date: string;
+		time: string | null;
+		weightLbs: number;
+		createdAt: string;
+	}
 
-interface WeightStats {
-	currentWeight: number | null;
-	startWeight: number | null;
-	remainingToGoal: number | null;
-	trend: string;
-}
+	interface WeightStats {
+		currentWeight: number | null;
+		startWeight: number | null;
+		remainingToGoal: number | null;
+		trend: string;
+	}
 
-interface GoalWeight {
-	targetWeightLbs: number;
-}
+	interface GoalWeight {
+		targetWeightLbs: number;
+	}
 
-interface Props {
-	weightEntries: WeightEntry[];
-	weightStats: WeightStats;
-	goalWeight: GoalWeight | null | undefined;
-	weightForm: SuperValidated<Infer<typeof logWeightSchema>>;
-	goalForm: SuperValidated<Infer<typeof setGoalWeightSchema>>;
-}
+	interface Props {
+		weightEntries: WeightEntry[];
+		weightStats: WeightStats;
+		goalWeight: GoalWeight | null | undefined;
+		weightForm: SuperValidated<Infer<typeof logWeightSchema>>;
+		goalForm: SuperValidated<Infer<typeof setGoalWeightSchema>>;
+	}
 
-let { weightEntries, weightStats, goalWeight, weightForm, goalForm }: Props = $props();
+	let { weightEntries, weightStats, goalWeight, weightForm, goalForm }: Props = $props();
 
-// Weekly rate of change (lbs/week)
-const weeklyRate = $derived.by(() => {
-	if (weightEntries.length < 2) return null;
-	const newest = weightEntries[0];
-	const oldest = weightEntries[weightEntries.length - 1];
-	const daysDiff = Math.max(
-		1,
-		(parseLocalDateString(newest.date).getTime() - parseLocalDateString(oldest.date).getTime()) /
-			(1000 * 60 * 60 * 24)
+	// Weekly rate of change (lbs/week)
+	const weeklyRate = $derived.by(() => {
+		if (weightEntries.length < 2) return null;
+		const newest = weightEntries[0];
+		const oldest = weightEntries[weightEntries.length - 1];
+		const daysDiff = Math.max(
+			1,
+			(parseLocalDateString(newest.date).getTime() - parseLocalDateString(oldest.date).getTime()) /
+				(1000 * 60 * 60 * 24)
+		);
+		const change = newest.weightLbs - oldest.weightLbs;
+		return (change / daysDiff) * 7;
+	});
+
+	// Estimated weeks to goal
+	const weeksToGoal = $derived.by(() => {
+		if (!weeklyRate || !weightStats.remainingToGoal || weeklyRate === 0) return null;
+		const weeks = weightStats.remainingToGoal / weeklyRate;
+		if (weeks < 0 || weeks > 200) return null;
+		return Math.round(Math.abs(weeks));
+	});
+
+	const trendIcon = $derived(
+		weightStats.trend === 'down' ? TrendingDown : weightStats.trend === 'up' ? TrendingUp : Minus
 	);
-	const change = newest.weightLbs - oldest.weightLbs;
-	return (change / daysDiff) * 7;
-});
 
-// Estimated weeks to goal
-const weeksToGoal = $derived.by(() => {
-	if (!weeklyRate || !weightStats.remainingToGoal || weeklyRate === 0) return null;
-	const weeks = weightStats.remainingToGoal / weeklyRate;
-	if (weeks < 0 || weeks > 200) return null;
-	return Math.round(Math.abs(weeks));
-});
-
-const trendIcon = $derived(
-	weightStats.trend === 'down' ? TrendingDown : weightStats.trend === 'up' ? TrendingUp : Minus
-);
-
-const remainingTrend = $derived(
-	!weightStats.remainingToGoal
-		? 'neutral'
-		: weightStats.remainingToGoal < 0
-			? 'positive'
-			: weightStats.trend === 'down'
+	const remainingTrend = $derived(
+		!weightStats.remainingToGoal
+			? 'neutral'
+			: weightStats.remainingToGoal < 0
 				? 'positive'
-				: 'neutral'
-);
+				: weightStats.trend === 'down'
+					? 'positive'
+					: 'neutral'
+	);
 </script>
 
 <section class="mb-2 space-y-4">

@@ -1,38 +1,38 @@
 <script lang="ts">
-import PieChartIcon from '@lucide/svelte/icons/chart-pie';
-import { PieChart } from 'layerchart';
+	import PieChartIcon from '@lucide/svelte/icons/chart-pie';
+	import { PieChart } from 'layerchart';
 
-import * as Card from '$lib/components/ui/card';
-import * as Chart from '$lib/components/ui/chart';
+	import * as Card from '$lib/components/ui/card';
+	import * as Chart from '$lib/components/ui/chart';
 
-interface MoodDistributionPoint {
-	mood: string;
-	count: number;
-	fill: string;
-	percentage: number;
-}
-
-interface Props {
-	distribution: MoodDistributionPoint[];
-	rangeLabel: string;
-	totalLogs: number;
-	mostFrequentMood: string | null;
-}
-
-let { distribution, rangeLabel, totalLogs, mostFrequentMood }: Props = $props();
-
-const chartConfig = $derived.by(() => {
-	const config: Chart.ChartConfig = {};
-
-	for (const item of distribution) {
-		config[item.mood] = {
-			label: item.mood,
-			color: item.fill
-		};
+	interface MoodDistributionPoint {
+		mood: string;
+		count: number;
+		fill: string;
+		percentage: number;
 	}
 
-	return config;
-});
+	interface Props {
+		distribution: MoodDistributionPoint[];
+		rangeLabel: string;
+		totalLogs: number;
+		mostFrequentMood: string | null;
+	}
+
+	let { distribution, rangeLabel, totalLogs, mostFrequentMood }: Props = $props();
+
+	const chartConfig = $derived.by(() => {
+		const config: Chart.ChartConfig = {};
+
+		for (const item of distribution) {
+			config[item.mood] = {
+				label: item.mood,
+				color: item.fill
+			};
+		}
+
+		return config;
+	});
 </script>
 
 <Card.Root class="h-full">

@@ -38,7 +38,7 @@ export type Exercise = {
 
 export type TaskPageTab = 'kanban' | 'agenda';
 
-export type DailyAgendaSourceType = 'default' | 'custom';
+type DailyAgendaSourceType = 'default' | 'custom';
 
 export type DailyAgendaTemplate = {
 	id: string;

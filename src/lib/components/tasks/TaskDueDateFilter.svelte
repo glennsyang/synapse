@@ -1,68 +1,68 @@
 <script lang="ts">
-import { Check, ChevronsUpDown, X } from '@lucide/svelte';
-import { SvelteSet } from 'svelte/reactivity';
+	import { Check, ChevronsUpDown, X } from '@lucide/svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
-import { goto } from '$app/navigation';
-import { page } from '$app/state';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Command from '$lib/components/ui/command';
-import * as Popover from '$lib/components/ui/popover';
-import { cn } from '$lib/utils';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Command from '$lib/components/ui/command';
+	import * as Popover from '$lib/components/ui/popover';
+	import { cn } from '$lib/utils';
 
-import { type TaskDueDateFilter, taskDueDateFilterOptions } from './task-ui';
+	import { type TaskDueDateFilter, taskDueDateFilterOptions } from './task-ui';
 
-const validDueDateFilters = new Set<TaskDueDateFilter>(['overdue', 'today', 'upcoming']);
+	const validDueDateFilters = new Set<TaskDueDateFilter>(['overdue', 'today', 'upcoming']);
 
-let selectedDueDateFilters = $derived.by(() => {
-	const dueDateParam = page.url.searchParams.get('dueDate');
-	const parsedValues = dueDateParam
-		? dueDateParam
-				.split(',')
-				.map((value) => value.trim())
-				.filter((value): value is TaskDueDateFilter =>
-					validDueDateFilters.has(value as TaskDueDateFilter)
-				)
-		: [];
+	let selectedDueDateFilters = $derived.by(() => {
+		const dueDateParam = page.url.searchParams.get('dueDate');
+		const parsedValues = dueDateParam
+			? dueDateParam
+					.split(',')
+					.map((value) => value.trim())
+					.filter((value): value is TaskDueDateFilter =>
+						validDueDateFilters.has(value as TaskDueDateFilter)
+					)
+			: [];
 
-	return Array.from(new Set(parsedValues));
-});
+		return Array.from(new Set(parsedValues));
+	});
 
-let selectedDueDateOptions = $derived(
-	taskDueDateFilterOptions.filter((option) => selectedDueDateFilters.includes(option.value))
-);
+	let selectedDueDateOptions = $derived(
+		taskDueDateFilterOptions.filter((option) => selectedDueDateFilters.includes(option.value))
+	);
 
-let open = $state(false);
+	let open = $state(false);
 
-function toggleDueDateFilter(filter: TaskDueDateFilter) {
-	const current = new SvelteSet(selectedDueDateFilters);
-	if (current.has(filter)) {
-		current.delete(filter);
-	} else {
-		current.add(filter);
+	function toggleDueDateFilter(filter: TaskDueDateFilter) {
+		const current = new SvelteSet(selectedDueDateFilters);
+		if (current.has(filter)) {
+			current.delete(filter);
+		} else {
+			current.add(filter);
+		}
+
+		void updateUrl(Array.from(current));
 	}
 
-	void updateUrl(Array.from(current));
-}
-
-function removeDueDateFilter(filter: TaskDueDateFilter) {
-	void updateUrl(selectedDueDateFilters.filter((value) => value !== filter));
-}
-
-function clearAll() {
-	void updateUrl([]);
-}
-
-async function updateUrl(filters: TaskDueDateFilter[]) {
-	const url = new URL(page.url);
-	if (filters.length > 0) {
-		url.searchParams.set('dueDate', filters.join(','));
-	} else {
-		url.searchParams.delete('dueDate');
+	function removeDueDateFilter(filter: TaskDueDateFilter) {
+		void updateUrl(selectedDueDateFilters.filter((value) => value !== filter));
 	}
 
-	await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-}
+	function clearAll() {
+		void updateUrl([]);
+	}
+
+	async function updateUrl(filters: TaskDueDateFilter[]) {
+		const url = new URL(page.url);
+		if (filters.length > 0) {
+			url.searchParams.set('dueDate', filters.join(','));
+		} else {
+			url.searchParams.delete('dueDate');
+		}
+
+		await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+	}
 </script>
 
 <div class="w-full space-y-2">

@@ -1,41 +1,41 @@
 <script lang="ts">
-import { ChevronDown, ChevronRight, Pencil, Trash2 } from '@lucide/svelte/icons';
+	import { ChevronDown, ChevronRight, Pencil, Trash2 } from '@lucide/svelte/icons';
 
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import { formatDateMedium, formatTime12Hour } from '$lib/utils/date';
-import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { formatDateMedium, formatTime12Hour } from '$lib/utils/date';
+	import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
 
-interface Exercise {
-	exerciseName: string;
-	sets: number | null;
-	reps: number | null;
-	weightLbs: number | null;
-}
+	interface Exercise {
+		exerciseName: string;
+		sets: number | null;
+		reps: number | null;
+		weightLbs: number | null;
+	}
 
-interface Workout {
-	id: string;
-	date: string;
-	time: string | null;
-	type: string;
-	durationMinutes: number | null;
-	steps: number | null;
-	notes: string | null;
-	exercises: Exercise[];
-}
+	interface Workout {
+		id: string;
+		date: string;
+		time: string | null;
+		type: string;
+		durationMinutes: number | null;
+		steps: number | null;
+		notes: string | null;
+		exercises: Exercise[];
+	}
 
-let {
-	workout,
-	onEdit,
-	onDelete
-}: {
-	workout: Workout;
-	onEdit: (workout: Workout) => void;
-	onDelete: (id: string) => void;
-} = $props();
+	let {
+		workout,
+		onEdit,
+		onDelete
+	}: {
+		workout: Workout;
+		onEdit: (workout: Workout) => void;
+		onDelete: (id: string) => void;
+	} = $props();
 
-let expanded = $state(false);
+	let expanded = $state(false);
 </script>
 
 <div

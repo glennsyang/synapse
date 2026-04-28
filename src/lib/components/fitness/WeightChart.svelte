@@ -1,39 +1,39 @@
 <script lang="ts">
-import { TrendingDown, TrendingUp } from '@lucide/svelte/icons';
-import { scaleUtc } from 'd3-scale';
-import { curveNatural } from 'd3-shape';
-import { LineChart } from 'layerchart';
+	import { TrendingDown, TrendingUp } from '@lucide/svelte/icons';
+	import { scaleUtc } from 'd3-scale';
+	import { curveNatural } from 'd3-shape';
+	import { LineChart } from 'layerchart';
 
-import * as Card from '$lib/components/ui/card';
-import * as Chart from '$lib/components/ui/chart/index.js';
+	import * as Card from '$lib/components/ui/card';
+	import * as Chart from '$lib/components/ui/chart/index.js';
 
-interface Props {
-	title: string;
-	description: string;
-	entries: WeightEntry[];
-	goalWeight: number | null;
-}
+	interface Props {
+		title: string;
+		description: string;
+		entries: WeightEntry[];
+		goalWeight: number | null;
+	}
 
-interface WeightEntry {
-	id: string;
-	date: string;
-	time: string | null;
-	weightLbs: number;
-	createdAt: string;
-}
+	interface WeightEntry {
+		id: string;
+		date: string;
+		time: string | null;
+		weightLbs: number;
+		createdAt: string;
+	}
 
-let { title, description, entries, goalWeight }: Props = $props();
+	let { title, description, entries, goalWeight }: Props = $props();
 
-const chartData = $derived(
-	entries.map((entry) => ({
-		date: new Date(`${entry.date}T${entry.time || '00:00:00'}`),
-		weight: entry.weightLbs
-	}))
-);
+	const chartData = $derived(
+		entries.map((entry) => ({
+			date: new Date(`${entry.date}T${entry.time || '00:00:00'}`),
+			weight: entry.weightLbs
+		}))
+	);
 
-const chartConfig = {
-	weight: { label: 'Weight', color: 'var(--chart-1)' }
-} satisfies Chart.ChartConfig;
+	const chartConfig = {
+		weight: { label: 'Weight', color: 'var(--chart-1)' }
+	} satisfies Chart.ChartConfig;
 </script>
 
 <Card.Root>

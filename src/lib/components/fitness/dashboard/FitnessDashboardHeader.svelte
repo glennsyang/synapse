@@ -1,50 +1,50 @@
 <script lang="ts">
-import {
-	BellPlus,
-	Dumbbell,
-	EllipsisVertical,
-	Scale,
-	Settings,
-	Target,
-	UtensilsCrossed
-} from '@lucide/svelte/icons';
-import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import {
+		BellPlus,
+		Dumbbell,
+		EllipsisVertical,
+		Scale,
+		Settings,
+		Target,
+		UtensilsCrossed
+	} from '@lucide/svelte/icons';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
-import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
-import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
-import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
-import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
-import SetCalorieTargetDialog from '$lib/components/fitness/dialogs/SetCalorieTargetDialog.svelte';
-import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
-import { buttonVariants } from '$lib/components/ui/button';
-import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-import type {
-	logMealSchema,
-	logWeightSchema,
-	logWorkoutSchema,
-	setCalorieTargetSchema,
-	setGoalWeightSchema,
-	workoutReminderSchema
-} from '$lib/schemas/fitness';
+	import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
+	import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
+	import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
+	import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
+	import SetCalorieTargetDialog from '$lib/components/fitness/dialogs/SetCalorieTargetDialog.svelte';
+	import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
+	import { buttonVariants } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import type {
+		logMealSchema,
+		logWeightSchema,
+		logWorkoutSchema,
+		setCalorieTargetSchema,
+		setGoalWeightSchema,
+		workoutReminderSchema
+	} from '$lib/schemas/fitness';
 
-interface Props {
-	workoutForm: SuperValidated<Infer<typeof logWorkoutSchema>>;
-	weightForm: SuperValidated<Infer<typeof logWeightSchema>>;
-	mealForm: SuperValidated<Infer<typeof logMealSchema>>;
-	goalForm: SuperValidated<Infer<typeof setGoalWeightSchema>>;
-	calorieForm: SuperValidated<Infer<typeof setCalorieTargetSchema>>;
-	reminderForm: SuperValidated<Infer<typeof workoutReminderSchema>>;
-}
+	interface Props {
+		workoutForm: SuperValidated<Infer<typeof logWorkoutSchema>>;
+		weightForm: SuperValidated<Infer<typeof logWeightSchema>>;
+		mealForm: SuperValidated<Infer<typeof logMealSchema>>;
+		goalForm: SuperValidated<Infer<typeof setGoalWeightSchema>>;
+		calorieForm: SuperValidated<Infer<typeof setCalorieTargetSchema>>;
+		reminderForm: SuperValidated<Infer<typeof workoutReminderSchema>>;
+	}
 
-let { workoutForm, weightForm, mealForm, goalForm, calorieForm, reminderForm }: Props = $props();
+	let { workoutForm, weightForm, mealForm, goalForm, calorieForm, reminderForm }: Props = $props();
 
-// Dialog state
-let showLogWorkout = $state(false);
-let showLogWeight = $state(false);
-let showLogMeal = $state(false);
-let showSetGoalWeight = $state(false);
-let showSetCalorieTarget = $state(false);
-let showCreateReminder = $state(false);
+	// Dialog state
+	let showLogWorkout = $state(false);
+	let showLogWeight = $state(false);
+	let showLogMeal = $state(false);
+	let showSetGoalWeight = $state(false);
+	let showSetCalorieTarget = $state(false);
+	let showCreateReminder = $state(false);
 </script>
 
 <div

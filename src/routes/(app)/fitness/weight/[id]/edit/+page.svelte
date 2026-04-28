@@ -1,24 +1,24 @@
 <script lang="ts">
-import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
-import { superForm } from 'sveltekit-superforms';
+	import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
+	import { superForm } from 'sveltekit-superforms';
 
-import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+	import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance, submitting } = superForm(data.form, {
-	dataType: 'form'
-});
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance, submitting } = superForm(data.form, {
+		dataType: 'form'
+	});
 
-let showDeleteDialog = $state(false);
+	let showDeleteDialog = $state(false);
 </script>
 
 <PageFormShell>

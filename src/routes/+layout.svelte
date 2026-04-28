@@ -1,17 +1,17 @@
 <script lang="ts">
-import { browser, dev } from '$app/environment';
+	import { browser, dev } from '$app/environment';
 
-let { children } = $props();
+	let { children } = $props();
 
-if (browser && 'serviceWorker' in navigator) {
-	void navigator.serviceWorker
-		.register('/service-worker.js', {
-			type: dev ? 'module' : 'classic'
-		})
-		.catch(() => {
-			// Registration can fail in unsupported/private contexts; fail silently.
-		});
-}
+	if (browser && 'serviceWorker' in navigator) {
+		void navigator.serviceWorker
+			.register('/service-worker.js', {
+				type: dev ? 'module' : 'classic'
+			})
+			.catch(() => {
+				// Registration can fail in unsupported/private contexts; fail silently.
+			});
+	}
 </script>
 
 {@render children()}

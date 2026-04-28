@@ -1,20 +1,20 @@
 <script lang="ts">
-import { CircleUserIcon, EllipsisVerticalIcon, LogOutIcon } from '@lucide/svelte';
+	import { CircleUserIcon, EllipsisVerticalIcon, LogOutIcon } from '@lucide/svelte';
 
-import { enhance } from '$app/forms';
-import { goto } from '$app/navigation';
-import * as Avatar from '$lib/components/ui/avatar/index.js';
-import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-import type { User } from '$lib/types';
+	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
+	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import type { User } from '$lib/types';
 
-interface Props {
-	user: User;
-}
+	interface Props {
+		user: User;
+	}
 
-let { user }: Props = $props();
+	let { user }: Props = $props();
 
-const sidebar = Sidebar.useSidebar();
+	const sidebar = Sidebar.useSidebar();
 </script>
 
 <Sidebar.Menu>

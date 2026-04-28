@@ -1,11 +1,11 @@
 <script lang="ts">
-import MailIcon from '@lucide/svelte/icons/mail';
+	import MailIcon from '@lucide/svelte/icons/mail';
 
-import { Button } from '$lib/components/ui/button';
+	import { Button } from '$lib/components/ui/button';
 
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head> <title>Verify Your Email - Synapse</title> </svelte:head>

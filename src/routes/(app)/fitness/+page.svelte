@@ -1,171 +1,173 @@
 <script lang="ts">
-import { Activity, Dumbbell, Flame, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
+	import { Activity, Dumbbell, Flame, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
 
-import { SvelteSet } from 'svelte/reactivity';
-import { toast } from 'svelte-sonner';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { toast } from 'svelte-sonner';
 
-import { navigating, page } from '$app/state';
-import PageShell from '$lib/components/app/PageShell.svelte';
-import ActivityHistorySheet from '$lib/components/fitness/dashboard/ActivityHistorySheet.svelte';
-import FitnessDashboardHeader from '$lib/components/fitness/dashboard/FitnessDashboardHeader.svelte';
-import FitnessMomentumPanel from '$lib/components/fitness/dashboard/FitnessMomentumPanel.svelte';
-import FitnessStatusCard from '$lib/components/fitness/dashboard/FitnessStatusCard.svelte';
-import NutritionInsightsSection from '$lib/components/fitness/dashboard/NutritionInsightsSection.svelte';
-import RecentActivityPreview from '$lib/components/fitness/dashboard/RecentActivityPreview.svelte';
-import ReminderSummarySection from '$lib/components/fitness/dashboard/ReminderSummarySection.svelte';
-import WeightInsightsSection from '$lib/components/fitness/dashboard/WeightInsightsSection.svelte';
-import WorkoutInsightsSection from '$lib/components/fitness/dashboard/WorkoutInsightsSection.svelte';
-import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
-import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
-import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
-import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-import * as Accordion from '$lib/components/ui/accordion';
-import { getTodayString, parseLocalDateString } from '$lib/utils/date';
+	import { navigating, page } from '$app/state';
+	import PageShell from '$lib/components/app/PageShell.svelte';
+	import ActivityHistorySheet from '$lib/components/fitness/dashboard/ActivityHistorySheet.svelte';
+	import FitnessDashboardHeader from '$lib/components/fitness/dashboard/FitnessDashboardHeader.svelte';
+	import FitnessMomentumPanel from '$lib/components/fitness/dashboard/FitnessMomentumPanel.svelte';
+	import FitnessStatusCard from '$lib/components/fitness/dashboard/FitnessStatusCard.svelte';
+	import NutritionInsightsSection from '$lib/components/fitness/dashboard/NutritionInsightsSection.svelte';
+	import RecentActivityPreview from '$lib/components/fitness/dashboard/RecentActivityPreview.svelte';
+	import ReminderSummarySection from '$lib/components/fitness/dashboard/ReminderSummarySection.svelte';
+	import WeightInsightsSection from '$lib/components/fitness/dashboard/WeightInsightsSection.svelte';
+	import WorkoutInsightsSection from '$lib/components/fitness/dashboard/WorkoutInsightsSection.svelte';
+	import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
+	import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
+	import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+	import * as Accordion from '$lib/components/ui/accordion';
+	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
 
-import type { PageData } from './$types.js';
+	import type { PageData } from './$types.js';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-// ─── Delete state ─────────────────────────────────────────────────────────────
-let weightEntryToDelete = $state<string | null>(null);
-let workoutToDelete = $state<string | null>(null);
-let mealToDelete = $state<string | null>(null);
-let showDeleteWeightDialog = $state(false);
-let showDeleteWorkoutDialog = $state(false);
-let showDeleteMealDialog = $state(false);
-let reminderToDelete = $state<string | null>(null);
-let showDeleteReminderDialog = $state(false);
+	// ─── Delete state ─────────────────────────────────────────────────────────────
+	let weightEntryToDelete = $state<string | null>(null);
+	let workoutToDelete = $state<string | null>(null);
+	let mealToDelete = $state<string | null>(null);
+	let showDeleteWeightDialog = $state(false);
+	let showDeleteWorkoutDialog = $state(false);
+	let showDeleteMealDialog = $state(false);
+	let reminderToDelete = $state<string | null>(null);
+	let showDeleteReminderDialog = $state(false);
 
-let reminderToToggle = $state<{
-	id: string;
-	workoutType: string;
-	cadence: string;
-	time: string;
-	daysOfWeek: string | null;
-	enabled: boolean;
-} | null>(null);
-let showToggleReminderDialog = $state(false);
+	let reminderToToggle = $state<{
+		id: string;
+		workoutType: string;
+		cadence: string;
+		time: string;
+		daysOfWeek: string | null;
+		enabled: boolean;
+	} | null>(null);
+	let showToggleReminderDialog = $state(false);
 
-// ─── Edit state ───────────────────────────────────────────────────────────────
-let showEditWorkoutDialog = $state(false);
-let showEditWeightDialog = $state(false);
-let showEditMealDialog = $state(false);
+	// ─── Edit state ───────────────────────────────────────────────────────────────
+	let showEditWorkoutDialog = $state(false);
+	let showEditWeightDialog = $state(false);
+	let showEditMealDialog = $state(false);
 
-let weightToEdit = $state<{
-	id: string;
-	date: string;
-	time: string | null;
-	weightLbs: number;
-} | null>(null);
+	let weightToEdit = $state<{
+		id: string;
+		date: string;
+		time: string | null;
+		weightLbs: number;
+	} | null>(null);
 
-let workoutToEdit = $state<{
-	id: string;
-	date: string;
-	time: string | null;
-	type: string;
-	durationMinutes: number | null;
-	steps: number | null;
-	notes: string | null;
-	exercises: {
-		exerciseName: string;
-		sets: number | null;
-		reps: number | null;
-		weightLbs: number | null;
-	}[];
-} | null>(null);
+	let workoutToEdit = $state<{
+		id: string;
+		date: string;
+		time: string | null;
+		type: string;
+		durationMinutes: number | null;
+		steps: number | null;
+		notes: string | null;
+		exercises: {
+			exerciseName: string;
+			sets: number | null;
+			reps: number | null;
+			weightLbs: number | null;
+		}[];
+	} | null>(null);
 
-let mealToEdit = $state<{
-	id: string;
-	date: string;
-	timeOfDay: string;
-	description: string;
-	caloriesEstimate: number | null;
-} | null>(null);
+	let mealToEdit = $state<{
+		id: string;
+		date: string;
+		timeOfDay: string;
+		description: string;
+		caloriesEstimate: number | null;
+	} | null>(null);
 
-// ─── Edit effects ───────────────────────────────────────────────────────────────
-$effect(() => {
-	if (workoutToEdit) {
-		showEditWorkoutDialog = true;
-	}
-});
-
-$effect(() => {
-	if (weightToEdit) {
-		showEditWeightDialog = true;
-	}
-});
-
-$effect(() => {
-	if (mealToEdit) {
-		showEditMealDialog = true;
-	}
-});
-
-// ─── History sheet ─────────────────────────────────────────────────────────────
-let historySheetOpen = $state(false);
-
-// ─── Toast notices ─────────────────────────────────────────────────────────────
-const handledNotices = new SvelteSet<string>();
-
-$effect(() => {
-	const notice = page.url.searchParams.get('notice');
-	if (!notice || handledNotices.has(notice)) return;
-	handledNotices.add(notice);
-	if (notice === 'reminder-disabled') toast.success('Reminder updated successfully!');
-	else if (notice === 'reminder-deleted') toast.success('Reminder deleted successfully!');
-});
-
-// ─── Hero KPI derivations ──────────────────────────────────────────────────────
-const today = $derived(getTodayString());
-
-const todayCalories = $derived(
-	data.meals.filter((m) => m.date === today).reduce((s, m) => s + (m.caloriesEstimate ?? 0), 0)
-);
-
-const calorieAdherence = $derived(
-	data.calorieTarget ? Math.round((todayCalories / data.calorieTarget.targetCalories) * 100) : null
-);
-
-const weeklySessionCount = $derived.by(() => {
-	const todayDate = parseLocalDateString(today);
-	const startOfWeek = new Date(todayDate);
-	startOfWeek.setDate(todayDate.getDate() - ((todayDate.getDay() + 6) % 7));
-	startOfWeek.setHours(0, 0, 0, 0);
-	return data.workouts.filter((w) => parseLocalDateString(w.date) >= startOfWeek).length;
-});
-
-const dayStreak = $derived.by(() => {
-	const workoutDates = new Set(data.workouts.map((w) => w.date));
-	let streak = 0;
-	const d = new Date(parseLocalDateString(today));
-	while (true) {
-		const dateStr = d.toISOString().slice(0, 10);
-		if (workoutDates.has(dateStr)) {
-			streak++;
-			d.setDate(d.getDate() - 1);
-		} else {
-			break;
+	// ─── Edit effects ───────────────────────────────────────────────────────────────
+	$effect(() => {
+		if (workoutToEdit) {
+			showEditWorkoutDialog = true;
 		}
-	}
-	return streak;
-});
+	});
 
-const weightDelta = $derived.by(() => {
-	if (data.weightEntries.length < 2) return null;
-	return data.weightEntries[0].weightLbs - data.weightEntries[1].weightLbs;
-});
+	$effect(() => {
+		if (weightToEdit) {
+			showEditWeightDialog = true;
+		}
+	});
 
-// ─── Toggle reminder ───────────────────────────────────────────────────────────
-const toggleReminderDialogTitle = $derived(
-	reminderToToggle?.enabled ? 'Enable Reminder' : 'Disable Reminder'
-);
-const toggleReminderDialogMessage = $derived(
-	reminderToToggle?.enabled
-		? 'Are you sure you want to enable this reminder?'
-		: 'Are you sure you want to disable this reminder?'
-);
-const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enable' : 'Disable');
+	$effect(() => {
+		if (mealToEdit) {
+			showEditMealDialog = true;
+		}
+	});
+
+	// ─── History sheet ─────────────────────────────────────────────────────────────
+	let historySheetOpen = $state(false);
+
+	// ─── Toast notices ─────────────────────────────────────────────────────────────
+	const handledNotices = new SvelteSet<string>();
+
+	$effect(() => {
+		const notice = page.url.searchParams.get('notice');
+		if (!notice || handledNotices.has(notice)) return;
+		handledNotices.add(notice);
+		if (notice === 'reminder-disabled') toast.success('Reminder updated successfully!');
+		else if (notice === 'reminder-deleted') toast.success('Reminder deleted successfully!');
+	});
+
+	// ─── Hero KPI derivations ──────────────────────────────────────────────────────
+	const today = $derived(getTodayString());
+
+	const todayCalories = $derived(
+		data.meals.filter((m) => m.date === today).reduce((s, m) => s + (m.caloriesEstimate ?? 0), 0)
+	);
+
+	const calorieAdherence = $derived(
+		data.calorieTarget
+			? Math.round((todayCalories / data.calorieTarget.targetCalories) * 100)
+			: null
+	);
+
+	const weeklySessionCount = $derived.by(() => {
+		const todayDate = parseLocalDateString(today);
+		const startOfWeek = new Date(todayDate);
+		startOfWeek.setDate(todayDate.getDate() - ((todayDate.getDay() + 6) % 7));
+		startOfWeek.setHours(0, 0, 0, 0);
+		return data.workouts.filter((w) => parseLocalDateString(w.date) >= startOfWeek).length;
+	});
+
+	const dayStreak = $derived.by(() => {
+		const workoutDates = new Set(data.workouts.map((w) => w.date));
+		let streak = 0;
+		const d = new Date(parseLocalDateString(today));
+		while (true) {
+			const dateStr = d.toISOString().slice(0, 10);
+			if (workoutDates.has(dateStr)) {
+				streak++;
+				d.setDate(d.getDate() - 1);
+			} else {
+				break;
+			}
+		}
+		return streak;
+	});
+
+	const weightDelta = $derived.by(() => {
+		if (data.weightEntries.length < 2) return null;
+		return data.weightEntries[0].weightLbs - data.weightEntries[1].weightLbs;
+	});
+
+	// ─── Toggle reminder ───────────────────────────────────────────────────────────
+	const toggleReminderDialogTitle = $derived(
+		reminderToToggle?.enabled ? 'Enable Reminder' : 'Disable Reminder'
+	);
+	const toggleReminderDialogMessage = $derived(
+		reminderToToggle?.enabled
+			? 'Are you sure you want to enable this reminder?'
+			: 'Are you sure you want to disable this reminder?'
+	);
+	const toggleReminderDialogButtonText = $derived(reminderToToggle?.enabled ? 'Enable' : 'Disable');
 </script>
 
 {#if navigating.to?.url.pathname === '/fitness'}

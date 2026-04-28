@@ -1,20 +1,20 @@
 <script lang="ts">
-import { Plus, Trash2 } from '@lucide/svelte';
+	import { Plus, Trash2 } from '@lucide/svelte';
 
-import { Button } from '$lib/components/ui/button';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import type { Exercise } from '$lib/types';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import type { Exercise } from '$lib/types';
 
-let { exercises = $bindable([]) }: { exercises: Exercise[] } = $props();
+	let { exercises = $bindable([]) }: { exercises: Exercise[] } = $props();
 
-function addExercise() {
-	exercises = [...exercises, { exerciseName: '', sets: null, reps: null, weightLbs: null }];
-}
+	function addExercise() {
+		exercises = [...exercises, { exerciseName: '', sets: null, reps: null, weightLbs: null }];
+	}
 
-function removeExercise(index: number) {
-	exercises = exercises.filter((_, i) => i !== index);
-}
+	function removeExercise(index: number) {
+		exercises = exercises.filter((_, i) => i !== index);
+	}
 </script>
 
 <div class="space-y-4">

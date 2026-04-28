@@ -1,42 +1,42 @@
 <script lang="ts">
-import { CircleAlert, NotebookPen } from '@lucide/svelte/icons';
-import { fromAction } from 'svelte/attachments';
-import { toast } from 'svelte-sonner';
-import { type SuperValidated, superForm } from 'sveltekit-superforms';
+	import { CircleAlert, NotebookPen } from '@lucide/svelte/icons';
+	import { fromAction } from 'svelte/attachments';
+	import { toast } from 'svelte-sonner';
+	import { type SuperValidated, superForm } from 'sveltekit-superforms';
 
-import * as Alert from '$lib/components/ui/alert';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import type { MoodLogFormValues } from '$lib/schemas/mood';
-import { moodOptions } from '$lib/utils/mood';
+	import * as Alert from '$lib/components/ui/alert';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import type { MoodLogFormValues } from '$lib/schemas/mood';
+	import { moodOptions } from '$lib/utils/mood';
 
-interface Props {
-	form: SuperValidated<MoodLogFormValues>;
-	todayLog: {
-		resolvedMood: string;
-		notes: string | null;
-	} | null;
-}
-
-let { form: initialForm, todayLog }: Props = $props();
-
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance, message, submitting } = superForm(initialForm, {
-	resetForm: false,
-	invalidateAll: true,
-	onUpdate: () => {
-		if ($message?.type === 'success') {
-			toast.success($message.text);
-		}
-
-		if ($message?.type === 'error') {
-			toast.error($message.text);
-		}
+	interface Props {
+		form: SuperValidated<MoodLogFormValues>;
+		todayLog: {
+			resolvedMood: string;
+			notes: string | null;
+		} | null;
 	}
-});
+
+	let { form: initialForm, todayLog }: Props = $props();
+
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance, message, submitting } = superForm(initialForm, {
+		resetForm: false,
+		invalidateAll: true,
+		onUpdate: () => {
+			if ($message?.type === 'success') {
+				toast.success($message.text);
+			}
+
+			if ($message?.type === 'error') {
+				toast.error($message.text);
+			}
+		}
+	});
 </script>
 
 <Card.Root

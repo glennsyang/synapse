@@ -1,65 +1,65 @@
 <script lang="ts">
-import { cn } from '$lib/utils';
+	import { cn } from '$lib/utils';
 
-interface Props {
-	completionPercentage: number;
-	completedCount: number;
-	totalCount: number;
-	rollingAverage: number;
-	previousAverage: number;
-	trendDelta: number;
-	hasComparisonData: boolean;
-}
-
-const uid = $props.id();
-
-let {
-	completionPercentage,
-	completedCount,
-	totalCount,
-	rollingAverage,
-	previousAverage,
-	trendDelta,
-	hasComparisonData
-}: Props = $props();
-
-const gaugeCenter = 110;
-const gaugeRadius = 66;
-const gaugeCircumference = 2 * Math.PI * gaugeRadius;
-const gradientId = `agenda-radial-gradient-${uid.replace(/:/g, '')}`;
-const glowId = `agenda-radial-glow-${uid.replace(/:/g, '')}`;
-const clampedCompletionPercentage = $derived(Math.min(Math.max(completionPercentage, 0), 100));
-const clampedRollingAverage = $derived(Math.min(Math.max(rollingAverage, 0), 100));
-const clampedPreviousAverage = $derived(Math.min(Math.max(previousAverage, 0), 100));
-const displayPercentage = $derived(Math.round(clampedCompletionPercentage));
-const displayRollingAverage = $derived(Math.round(clampedRollingAverage));
-const displayPreviousAverage = $derived(Math.round(clampedPreviousAverage));
-const gaugeProgress = $derived(clampedCompletionPercentage / 100);
-const gaugeDashOffset = $derived(gaugeCircumference * (1 - gaugeProgress));
-const gaugeAngleRadians = $derived(((gaugeProgress * 360 - 90) * Math.PI) / 180);
-const gaugeDotX = $derived(gaugeCenter + gaugeRadius * Math.cos(gaugeAngleRadians));
-const gaugeDotY = $derived(gaugeCenter + gaugeRadius * Math.sin(gaugeAngleRadians));
-const absoluteTrendDelta = $derived(Math.abs(trendDelta));
-const trendLabel = $derived.by(() => {
-	if (!hasComparisonData) {
-		return 'New rhythm';
+	interface Props {
+		completionPercentage: number;
+		completedCount: number;
+		totalCount: number;
+		rollingAverage: number;
+		previousAverage: number;
+		trendDelta: number;
+		hasComparisonData: boolean;
 	}
 
-	if (trendDelta > 0) {
-		return `+${absoluteTrendDelta} pts`;
-	}
+	const uid = $props.id();
 
-	if (trendDelta < 0) {
-		return `-${absoluteTrendDelta} pts`;
-	}
+	let {
+		completionPercentage,
+		completedCount,
+		totalCount,
+		rollingAverage,
+		previousAverage,
+		trendDelta,
+		hasComparisonData
+	}: Props = $props();
 
-	return 'Even';
-});
-const ariaLabel = $derived(
-	hasComparisonData
-		? `Week progress ${displayPercentage} percent. ${completedCount} done out of ${totalCount} items. Rolling seven day average is ${displayRollingAverage} percent compared with ${displayPreviousAverage} percent across the prior seven days.`
-		: `Week progress ${displayPercentage} percent. ${completedCount} done out of ${totalCount} items.`
-);
+	const gaugeCenter = 110;
+	const gaugeRadius = 66;
+	const gaugeCircumference = 2 * Math.PI * gaugeRadius;
+	const gradientId = `agenda-radial-gradient-${uid.replace(/:/g, '')}`;
+	const glowId = `agenda-radial-glow-${uid.replace(/:/g, '')}`;
+	const clampedCompletionPercentage = $derived(Math.min(Math.max(completionPercentage, 0), 100));
+	const clampedRollingAverage = $derived(Math.min(Math.max(rollingAverage, 0), 100));
+	const clampedPreviousAverage = $derived(Math.min(Math.max(previousAverage, 0), 100));
+	const displayPercentage = $derived(Math.round(clampedCompletionPercentage));
+	const displayRollingAverage = $derived(Math.round(clampedRollingAverage));
+	const displayPreviousAverage = $derived(Math.round(clampedPreviousAverage));
+	const gaugeProgress = $derived(clampedCompletionPercentage / 100);
+	const gaugeDashOffset = $derived(gaugeCircumference * (1 - gaugeProgress));
+	const gaugeAngleRadians = $derived(((gaugeProgress * 360 - 90) * Math.PI) / 180);
+	const gaugeDotX = $derived(gaugeCenter + gaugeRadius * Math.cos(gaugeAngleRadians));
+	const gaugeDotY = $derived(gaugeCenter + gaugeRadius * Math.sin(gaugeAngleRadians));
+	const absoluteTrendDelta = $derived(Math.abs(trendDelta));
+	const trendLabel = $derived.by(() => {
+		if (!hasComparisonData) {
+			return 'New rhythm';
+		}
+
+		if (trendDelta > 0) {
+			return `+${absoluteTrendDelta} pts`;
+		}
+
+		if (trendDelta < 0) {
+			return `-${absoluteTrendDelta} pts`;
+		}
+
+		return 'Even';
+	});
+	const ariaLabel = $derived(
+		hasComparisonData
+			? `Week progress ${displayPercentage} percent. ${completedCount} done out of ${totalCount} items. Rolling seven day average is ${displayRollingAverage} percent compared with ${displayPreviousAverage} percent across the prior seven days.`
+			: `Week progress ${displayPercentage} percent. ${completedCount} done out of ${totalCount} items.`
+	);
 </script>
 
 <section

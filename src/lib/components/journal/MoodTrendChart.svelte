@@ -1,41 +1,41 @@
 <script lang="ts">
-import AreaChartIcon from '@lucide/svelte/icons/chart-area';
-import { scaleUtc } from 'd3-scale';
-import { AreaChart } from 'layerchart';
+	import AreaChartIcon from '@lucide/svelte/icons/chart-area';
+	import { scaleUtc } from 'd3-scale';
+	import { AreaChart } from 'layerchart';
 
-import * as Card from '$lib/components/ui/card';
-import * as Chart from '$lib/components/ui/chart';
-import { parseLocalDateString } from '$lib/utils/date';
-import { getMoodScoreLabel } from '$lib/utils/mood';
+	import * as Card from '$lib/components/ui/card';
+	import * as Chart from '$lib/components/ui/chart';
+	import { parseLocalDateString } from '$lib/utils/date';
+	import { getMoodScoreLabel } from '$lib/utils/mood';
 
-interface MoodTrendPoint {
-	date: string;
-	score: number;
-	resolvedMood: string;
-	isCustom: boolean;
-	fill: string;
-}
+	interface MoodTrendPoint {
+		date: string;
+		score: number;
+		resolvedMood: string;
+		isCustom: boolean;
+		fill: string;
+	}
 
-interface Props {
-	points: MoodTrendPoint[];
-	rangeLabel: string;
-	averageScore: number | null;
-}
+	interface Props {
+		points: MoodTrendPoint[];
+		rangeLabel: string;
+		averageScore: number | null;
+	}
 
-let { points, rangeLabel, averageScore }: Props = $props();
+	let { points, rangeLabel, averageScore }: Props = $props();
 
-const chartData = $derived(
-	points.map((point) => ({
-		...point,
-		date: parseLocalDateString(point.date)
-	}))
-);
+	const chartData = $derived(
+		points.map((point) => ({
+			...point,
+			date: parseLocalDateString(point.date)
+		}))
+	);
 
-const hasCustomMood = $derived(points.some((point) => point.isCustom));
+	const hasCustomMood = $derived(points.some((point) => point.isCustom));
 
-const chartConfig = {
-	score: { label: 'Mood score', color: 'var(--chart-2)' }
-} satisfies Chart.ChartConfig;
+	const chartConfig = {
+		score: { label: 'Mood score', color: 'var(--chart-2)' }
+	} satisfies Chart.ChartConfig;
 </script>
 
 <Card.Root class="h-full">

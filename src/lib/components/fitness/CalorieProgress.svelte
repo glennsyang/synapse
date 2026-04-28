@@ -1,18 +1,18 @@
 <script lang="ts">
-import * as Card from '$lib/components/ui/card';
-import { Progress } from '$lib/components/ui/progress';
+	import * as Card from '$lib/components/ui/card';
+	import { Progress } from '$lib/components/ui/progress';
 
-let {
-	consumed,
-	target
-}: {
-	consumed: number;
-	target: number | null;
-} = $props();
+	let {
+		consumed,
+		target
+	}: {
+		consumed: number;
+		target: number | null;
+	} = $props();
 
-let percentage = $derived(target ? Math.min((consumed / target) * 100, 100) : 0);
-let remaining = $derived(target ? Math.max(target - consumed, 0) : 0);
-let isOverTarget = $derived(target ? consumed > target : false);
+	let percentage = $derived(target ? Math.min((consumed / target) * 100, 100) : 0);
+	let remaining = $derived(target ? Math.max(target - consumed, 0) : 0);
+	let isOverTarget = $derived(target ? consumed > target : false);
 </script>
 
 <Card.Root>

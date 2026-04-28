@@ -1,67 +1,67 @@
 <script lang="ts">
-import BellPlusIcon from '@lucide/svelte/icons/bell-plus';
-import { toast } from 'svelte-sonner';
-import type { Infer, SuperValidated } from 'sveltekit-superforms';
-import { superForm } from 'sveltekit-superforms';
+	import BellPlusIcon from '@lucide/svelte/icons/bell-plus';
+	import { toast } from 'svelte-sonner';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
-import { Button } from '$lib/components/ui/button';
-import * as Dialog from '$lib/components/ui/dialog';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import * as Select from '$lib/components/ui/select';
-import type { workoutReminderSchema } from '$lib/schemas/fitness';
-import { daysOfWeek } from '$lib/utils/date';
-import { workoutTypeOptions } from '$lib/utils/workout';
+	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
+	import type { workoutReminderSchema } from '$lib/schemas/fitness';
+	import { daysOfWeek } from '$lib/utils/date';
+	import { workoutTypeOptions } from '$lib/utils/workout';
 
-type WorkoutReminderData = Infer<typeof workoutReminderSchema>;
+	type WorkoutReminderData = Infer<typeof workoutReminderSchema>;
 
-let {
-	formData,
-	onClose,
-	open = $bindable(false)
-}: {
-	formData: SuperValidated<WorkoutReminderData>;
-	onClose?: () => void;
-	open?: boolean;
-} = $props();
+	let {
+		formData,
+		onClose,
+		open = $bindable(false)
+	}: {
+		formData: SuperValidated<WorkoutReminderData>;
+		onClose?: () => void;
+		open?: boolean;
+	} = $props();
 
-let internalOpen = $state(false);
-const dialogOpen = $derived(open !== undefined ? open : internalOpen);
+	let internalOpen = $state(false);
+	const dialogOpen = $derived(open !== undefined ? open : internalOpen);
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance } = superForm(formData, {
-	id: 'create-reminder',
-	resetForm: true,
-	onUpdate: ({ form }) => {
-		if (form.valid) {
-			if (open !== undefined) {
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance } = superForm(formData, {
+		id: 'create-reminder',
+		resetForm: true,
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				if (open !== undefined) {
+					onClose?.();
+				} else {
+					internalOpen = false;
+				}
+				toast.success('Reminder created successfully!');
 				onClose?.();
-			} else {
-				internalOpen = false;
 			}
-			toast.success('Reminder created successfully!');
-			onClose?.();
+		},
+		onError: ({ result }) => {
+			toast.error(`Error creating reminder: ${result.error.message}`);
 		}
-	},
-	onError: ({ result }) => {
-		toast.error(`Error creating reminder: ${result.error.message}`);
-	}
-});
+	});
 
-function handleOpenChange(isOpen: boolean) {
-	if (open !== undefined) {
-		// Externally controlled - notify via onClose
-		if (!isOpen && onClose) {
-			onClose();
-		}
-	} else {
-		// Internally controlled
-		internalOpen = isOpen;
-		if (!isOpen) {
-			onClose?.();
+	function handleOpenChange(isOpen: boolean) {
+		if (open !== undefined) {
+			// Externally controlled - notify via onClose
+			if (!isOpen && onClose) {
+				onClose();
+			}
+		} else {
+			// Internally controlled
+			internalOpen = isOpen;
+			if (!isOpen) {
+				onClose?.();
+			}
 		}
 	}
-}
 </script>
 
 <Dialog.Root open={dialogOpen} onOpenChange={handleOpenChange}>

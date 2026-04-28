@@ -1,114 +1,121 @@
 <script lang="ts">
-import { CalendarCog, CalendarDays, ListFilter, Plus, Search, SquareKanban } from '@lucide/svelte';
-import { onDestroy } from 'svelte';
+	import {
+		CalendarCog,
+		CalendarDays,
+		ListFilter,
+		Plus,
+		Search,
+		SquareKanban
+	} from '@lucide/svelte';
+	import { onDestroy } from 'svelte';
 
-import { goto } from '$app/navigation';
-import { navigating, page } from '$app/state';
-import PageShell from '$lib/components/app/PageShell.svelte';
-import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-import DailyAgendaView from '$lib/components/tasks/DailyAgendaView.svelte';
-import TaskDueDateFilter from '$lib/components/tasks/TaskDueDateFilter.svelte';
-import TaskKanbanView from '$lib/components/tasks/TaskKanbanView.svelte';
-import TaskPriorityFilter from '$lib/components/tasks/TaskPriorityFilter.svelte';
-import TaskTagFilter from '$lib/components/tasks/TaskTagFilter.svelte';
-import { Button } from '$lib/components/ui/button';
-import * as Collapsible from '$lib/components/ui/collapsible';
-import { Input } from '$lib/components/ui/input';
-import * as Tabs from '$lib/components/ui/tabs';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import type { TaskPageTab } from '$lib/types';
-import type { PageData } from './$types';
+	import { goto } from '$app/navigation';
+	import { navigating, page } from '$app/state';
+	import PageShell from '$lib/components/app/PageShell.svelte';
+	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+	import DailyAgendaView from '$lib/components/tasks/DailyAgendaView.svelte';
+	import TaskDueDateFilter from '$lib/components/tasks/TaskDueDateFilter.svelte';
+	import TaskKanbanView from '$lib/components/tasks/TaskKanbanView.svelte';
+	import TaskPriorityFilter from '$lib/components/tasks/TaskPriorityFilter.svelte';
+	import TaskTagFilter from '$lib/components/tasks/TaskTagFilter.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Collapsible from '$lib/components/ui/collapsible';
+	import { Input } from '$lib/components/ui/input';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import type { TaskPageTab } from '$lib/types';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-let filtersOpen = $state(false);
-let defaultsDialogOpen = $state(false);
-let keyword = $state(page.url.searchParams.get('keyword') ?? '');
-let keywordDebounce = $state<ReturnType<typeof setTimeout> | null>(null);
-let keywordDirty = $state(false);
-let urlKeyword = $derived(page.url.searchParams.get('keyword') ?? '');
+	let filtersOpen = $state(false);
+	let defaultsDialogOpen = $state(false);
+	let keyword = $state(page.url.searchParams.get('keyword') ?? '');
+	let keywordDebounce = $state<ReturnType<typeof setTimeout> | null>(null);
+	let keywordDirty = $state(false);
+	let urlKeyword = $derived(page.url.searchParams.get('keyword') ?? '');
 
-let hasActiveFilters = $derived(
-	Boolean(page.url.searchParams.get('keyword')?.trim()) ||
-		Boolean(page.url.searchParams.get('priority')) ||
-		Boolean(page.url.searchParams.get('tag')) ||
-		Boolean(page.url.searchParams.get('dueDate'))
-);
+	let hasActiveFilters = $derived(
+		Boolean(page.url.searchParams.get('keyword')?.trim()) ||
+			Boolean(page.url.searchParams.get('priority')) ||
+			Boolean(page.url.searchParams.get('tag')) ||
+			Boolean(page.url.searchParams.get('dueDate'))
+	);
 
-let showPageSkeleton = $derived(
-	navigating.to?.url.pathname === '/tasks' && navigating.from?.url.pathname !== '/tasks'
-);
+	let showPageSkeleton = $derived(
+		navigating.to?.url.pathname === '/tasks' && navigating.from?.url.pathname !== '/tasks'
+	);
 
-function buildTasksHref(tab: TaskPageTab, week?: string | null): string {
-	const url = new URL(page.url);
-	url.searchParams.set('tab', tab);
+	function buildTasksHref(tab: TaskPageTab, week?: string | null): string {
+		const url = new URL(page.url);
+		url.searchParams.set('tab', tab);
 
-	if (week) {
-		url.searchParams.set('week', week);
+		if (week) {
+			url.searchParams.set('week', week);
+		}
+
+		return `${url.pathname}?${url.searchParams.toString()}`;
 	}
 
-	return `${url.pathname}?${url.searchParams.toString()}`;
-}
-
-async function openTaskTab(tab: TaskPageTab) {
-	const week =
-		tab === 'agenda' ? (data.agenda?.weekStart ?? page.url.searchParams.get('week')) : null;
-	await goto(buildTasksHref(tab, week), { replaceState: true, noScroll: true, keepFocus: true });
-}
-
-onDestroy(() => {
-	if (keywordDebounce) {
-		clearTimeout(keywordDebounce);
-	}
-});
-
-function handleKeywordInput(event: Event) {
-	const currentTarget = event.currentTarget;
-	if (!(currentTarget instanceof HTMLInputElement)) {
-		return;
+	async function openTaskTab(tab: TaskPageTab) {
+		const week =
+			tab === 'agenda' ? (data.agenda?.weekStart ?? page.url.searchParams.get('week')) : null;
+		await goto(buildTasksHref(tab, week), { replaceState: true, noScroll: true, keepFocus: true });
 	}
 
-	keyword = currentTarget.value;
-	queueKeywordFilterUpdate();
-}
+	onDestroy(() => {
+		if (keywordDebounce) {
+			clearTimeout(keywordDebounce);
+		}
+	});
 
-function queueKeywordFilterUpdate() {
-	keywordDirty = true;
-	if (keywordDebounce) {
-		clearTimeout(keywordDebounce);
+	function handleKeywordInput(event: Event) {
+		const currentTarget = event.currentTarget;
+		if (!(currentTarget instanceof HTMLInputElement)) {
+			return;
+		}
+
+		keyword = currentTarget.value;
+		queueKeywordFilterUpdate();
 	}
 
-	keywordDebounce = setTimeout(() => {
-		void applyKeywordFilter();
-	}, 250);
-}
+	function queueKeywordFilterUpdate() {
+		keywordDirty = true;
+		if (keywordDebounce) {
+			clearTimeout(keywordDebounce);
+		}
 
-async function applyKeywordFilter() {
-	if (keywordDebounce) {
-		clearTimeout(keywordDebounce);
-		keywordDebounce = null;
+		keywordDebounce = setTimeout(() => {
+			void applyKeywordFilter();
+		}, 250);
 	}
 
-	const normalizedKeyword = keyword.trim();
-	const currentKeyword = urlKeyword;
-	if (normalizedKeyword === currentKeyword) {
-		keywordDirty = false;
-		return;
-	}
+	async function applyKeywordFilter() {
+		if (keywordDebounce) {
+			clearTimeout(keywordDebounce);
+			keywordDebounce = null;
+		}
 
-	const url = new URL(page.url);
-	if (normalizedKeyword) {
-		url.searchParams.set('keyword', normalizedKeyword);
-	} else {
-		url.searchParams.delete('keyword');
-	}
+		const normalizedKeyword = keyword.trim();
+		const currentKeyword = urlKeyword;
+		if (normalizedKeyword === currentKeyword) {
+			keywordDirty = false;
+			return;
+		}
 
-	try {
-		await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-	} finally {
-		keywordDirty = false;
+		const url = new URL(page.url);
+		if (normalizedKeyword) {
+			url.searchParams.set('keyword', normalizedKeyword);
+		} else {
+			url.searchParams.delete('keyword');
+		}
+
+		try {
+			await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+		} finally {
+			keywordDirty = false;
+		}
 	}
-}
 </script>
 
 {#if showPageSkeleton}

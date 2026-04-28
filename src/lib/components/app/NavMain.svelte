@@ -1,20 +1,20 @@
 <script lang="ts">
-import type { Component } from 'svelte';
+	import type { Component } from 'svelte';
 
-import { page } from '$app/state';
-import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { page } from '$app/state';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
-let {
-	items
-}: {
-	items: {
-		title: string;
-		url?: string;
-		icon?: Component;
-		items?: { title: string; url: string }[];
-		color?: string;
-	}[];
-} = $props();
+	let {
+		items
+	}: {
+		items: {
+			title: string;
+			url?: string;
+			icon?: Component;
+			items?: { title: string; url: string }[];
+			color?: string;
+		}[];
+	} = $props();
 </script>
 
 <Sidebar.Group>

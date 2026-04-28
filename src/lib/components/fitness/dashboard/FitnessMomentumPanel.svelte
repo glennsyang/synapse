@@ -1,126 +1,125 @@
 <script lang="ts">
-import { Dumbbell, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
+	import { Dumbbell, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
 
-import * as Card from '$lib/components/ui/card';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import { getTodayString, parseLocalDateString } from '$lib/utils/date';
-import { getWorkoutChartColor, workoutTypeOptions } from '$lib/utils/workout';
+	import * as Card from '$lib/components/ui/card';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
+	import { getWorkoutChartColor, workoutTypeOptions } from '$lib/utils/workout';
 
-interface Workout {
-	id: string;
-	date: string;
-	type: string;
-	durationMinutes: number | null;
-}
-
-interface WeightEntry {
-	id: string;
-	date: string;
-	weightLbs: number;
-}
-
-interface Meal {
-	id: string;
-	date: string;
-	caloriesEstimate: number | null;
-}
-
-interface Props {
-	workouts: Workout[];
-	weightEntries: WeightEntry[];
-	meals: Meal[];
-	calorieTarget: number | null;
-}
-
-let { workouts, weightEntries, meals, calorieTarget }: Props = $props();
-
-// Build last 14 days data
-const dayData = $derived.by(() => {
-	const days: {
+	interface Workout {
+		id: string;
 		date: string;
-		label: string;
-		shortLabel: string;
-		workoutTypes: string[];
-		hasWeight: boolean;
-		calories: number | null;
-	}[] = [];
-
-	const today = getTodayString();
-	const todayDate = parseLocalDateString(today);
-
-	for (let i = 13; i >= 0; i--) {
-		const d = new Date(todayDate);
-		d.setDate(d.getDate() - i);
-		const dateStr = d.toISOString().slice(0, 10);
-		const label = d.toLocaleDateString('en-US', {
-			weekday: 'short',
-			month: 'short',
-			day: 'numeric'
-		});
-		const shortLabel = d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1);
-
-		const dayWorkouts = workouts.filter((w) => w.date === dateStr);
-		const dayWeight = weightEntries.find((w) => w.date === dateStr);
-		const dayMeals = meals.filter((m) => m.date === dateStr);
-		const dayCals = dayMeals.reduce((sum, m) => sum + (m.caloriesEstimate ?? 0), 0);
-
-		days.push({
-			date: dateStr,
-			label,
-			shortLabel,
-			workoutTypes: dayWorkouts.map((w) => w.type),
-			hasWeight: !!dayWeight,
-			calories: dayCals > 0 ? dayCals : null
-		});
+		type: string;
+		durationMinutes: number | null;
 	}
 
-	return days;
-});
+	interface WeightEntry {
+		id: string;
+		date: string;
+		weightLbs: number;
+	}
 
-function workoutColor(types: string[]): string {
-	if (types.length === 0) return '';
-	// Convert chart color CSS variable to background class
-	const chartColor = getWorkoutChartColor(types[0]);
-	// Map chart colors to background classes for consistency
-	const colorMap: Record<string, string> = {
-		'var(--chart-1)': 'bg-orange-400', // strength
-		'var(--chart-2)': 'bg-sky-400', // cardio
-		'var(--chart-3)': 'bg-purple-400', // stretch/other
-		'var(--chart-4)': 'bg-green-400', // walk
-		'var(--chart-5)': 'bg-red-400' // hiit
+	interface Meal {
+		id: string;
+		date: string;
+		caloriesEstimate: number | null;
+	}
+
+	interface Props {
+		workouts: Workout[];
+		weightEntries: WeightEntry[];
+		meals: Meal[];
+		calorieTarget: number | null;
+	}
+
+	let { workouts, weightEntries, meals, calorieTarget }: Props = $props();
+
+	const workoutColorMap: Record<string, string> = {
+		'var(--chart-1)': 'bg-orange-400',
+		'var(--chart-2)': 'bg-sky-400',
+		'var(--chart-3)': 'bg-purple-400',
+		'var(--chart-4)': 'bg-green-400',
+		'var(--chart-5)': 'bg-red-400'
 	};
-	return colorMap[chartColor] ?? 'bg-stone-400';
-}
 
-// Interpretation sentence
-const interpretation = $derived.by(() => {
-	const last7 = dayData.slice(7);
-	const workoutDays = last7.filter((d) => d.workoutTypes.length > 0).length;
-	const weightDays = last7.filter((d) => d.hasWeight).length;
-	const calDays = last7.filter((d) => d.calories !== null).length;
+	// Build last 14 days data
+	const dayData = $derived.by(() => {
+		const days: {
+			date: string;
+			label: string;
+			shortLabel: string;
+			workoutTypes: string[];
+			color: string;
+			hasWeight: boolean;
+			calories: number | null;
+		}[] = [];
 
-	const parts: string[] = [];
+		const today = getTodayString();
+		const todayDate = parseLocalDateString(today);
 
-	if (workoutDays >= 4) parts.push(`${workoutDays} of 7 days active — solid consistency`);
-	else if (workoutDays >= 2) parts.push(`${workoutDays} of 7 days active — building rhythm`);
-	else if (workoutDays === 1) parts.push('One session this week — a start to build on');
-	else parts.push('No workouts logged yet this week');
+		for (let i = 13; i >= 0; i--) {
+			const d = new Date(todayDate);
+			d.setDate(d.getDate() - i);
+			const dateStr = d.toISOString().slice(0, 10);
+			const label = d.toLocaleDateString('en-US', {
+				weekday: 'short',
+				month: 'short',
+				day: 'numeric'
+			});
+			const shortLabel = d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1);
 
-	if (weightDays >= 4) parts.push('weight tracked consistently');
-	if (calDays >= 5) parts.push('nutrition well logged');
+			const dayWorkouts = workouts.filter((w) => w.date === dateStr);
+			const dayWeight = weightEntries.find((w) => w.date === dateStr);
+			const dayMeals = meals.filter((m) => m.date === dateStr);
+			const dayCals = dayMeals.reduce((sum, m) => sum + (m.caloriesEstimate ?? 0), 0);
 
-	return parts.join(' · ');
-});
+			const types = dayWorkouts.map((w) => w.type);
+			days.push({
+				date: dateStr,
+				label,
+				shortLabel,
+				workoutTypes: types,
+				color:
+					types.length > 0
+						? (workoutColorMap[getWorkoutChartColor(types[0])] ?? 'bg-stone-400')
+						: 'bg-zinc-700',
+				hasWeight: !!dayWeight,
+				calories: dayCals > 0 ? dayCals : null
+			});
+		}
 
-const calAdherenceClass = (calories: number | null): string => {
-	if (calories === null) return 'bg-stone-200 dark:bg-stone-700';
-	if (!calorieTarget) return 'bg-stone-300 dark:bg-stone-600';
-	const ratio = calories / calorieTarget;
-	if (ratio >= 0.85 && ratio <= 1.1) return 'bg-emerald-400';
-	if (ratio > 1.1 && ratio <= 1.25) return 'bg-amber-400';
-	if (ratio > 1.25) return 'bg-rose-400';
-	return 'bg-sky-300 dark:bg-sky-600'; // under target
-};
+		return days;
+	});
+
+	// Interpretation sentence
+	const interpretation = $derived.by(() => {
+		const last7 = dayData.slice(7);
+		const workoutDays = last7.filter((d) => d.workoutTypes.length > 0).length;
+		const weightDays = last7.filter((d) => d.hasWeight).length;
+		const calDays = last7.filter((d) => d.calories !== null).length;
+
+		const parts: string[] = [];
+
+		if (workoutDays >= 4) parts.push(`${workoutDays} of 7 days active — solid consistency`);
+		else if (workoutDays >= 2) parts.push(`${workoutDays} of 7 days active — building rhythm`);
+		else if (workoutDays === 1) parts.push('One session this week — a start to build on');
+		else parts.push('No workouts logged yet this week');
+
+		if (weightDays >= 4) parts.push('weight tracked consistently');
+		if (calDays >= 5) parts.push('nutrition well logged');
+
+		return parts.join(' · ');
+	});
+
+	const calAdherenceClass = (calories: number | null): string => {
+		if (calories === null) return 'bg-stone-200 dark:bg-stone-700';
+		if (!calorieTarget) return 'bg-stone-300 dark:bg-stone-600';
+		const ratio = calories / calorieTarget;
+		if (ratio >= 0.85 && ratio <= 1.1) return 'bg-emerald-400';
+		if (ratio > 1.1 && ratio <= 1.25) return 'bg-amber-400';
+		if (ratio > 1.25) return 'bg-rose-400';
+		return 'bg-sky-300 dark:bg-sky-600'; // under target
+	};
 </script>
 
 <Card.Root
@@ -151,11 +150,7 @@ const calAdherenceClass = (calories: number | null): string => {
 				{#each dayData as day (day.date)}
 					<Tooltip.Root>
 						<Tooltip.Trigger>
-							<div
-								class="h-6 rounded-sm transition-all {day.workoutTypes.length > 0
-							? workoutColor(day.workoutTypes)
-							: 'bg-zinc-700'}"
-							></div>
+							<div class="h-6 rounded-sm transition-all {day.color}"></div>
 						</Tooltip.Trigger>
 						<Tooltip.Content>
 							{day.workoutTypes.length > 0

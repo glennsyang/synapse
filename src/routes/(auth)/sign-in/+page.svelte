@@ -1,26 +1,31 @@
 <script lang="ts">
-import { superForm } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
-import { page } from '$app/state';
-import { Button } from '$lib/components/ui/button/index.js';
-import * as Card from '$lib/components/ui/card/index.js';
-import { Field, FieldDescription, FieldGroup, FieldLabel } from '$lib/components/ui/field/index.js';
-import { Input } from '$lib/components/ui/input/index.js';
+	import { page } from '$app/state';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import {
+		Field,
+		FieldDescription,
+		FieldGroup,
+		FieldLabel
+	} from '$lib/components/ui/field/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 
-let { data } = $props();
+	let { data } = $props();
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance, message, submitting } = superForm(data.form, {
-	onUpdated: ({ form }) => {
-		if (form.message) {
-			// The error message will be displayed below
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance, message, submitting } = superForm(data.form, {
+		onUpdated: ({ form }) => {
+			if (form.message) {
+				// The error message will be displayed below
+			}
 		}
-	}
-});
+	});
 
-const registered = $derived(page.url.searchParams.get('registered') === 'true');
-const verified = $derived(page.url.searchParams.get('verified') === 'true');
-const reset = $derived(page.url.searchParams.get('reset') === 'true');
+	const registered = $derived(page.url.searchParams.get('registered') === 'true');
+	const verified = $derived(page.url.searchParams.get('verified') === 'true');
+	const reset = $derived(page.url.searchParams.get('reset') === 'true');
 </script>
 
 <svelte:head> <title>Sign In - Synapse</title> </svelte:head>
