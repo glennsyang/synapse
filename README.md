@@ -171,12 +171,16 @@ synapse/
 │   │   │   ├── journal/      # Journal-specific components
 │   │   │   ├── tasks/        # Task-specific components
 │   │   │   ├── fitness/      # Fitness-specific components
-│   │   │   └── skeletons/     # Loading and placeholder components
+│   │   │   ├── meditation/   # Meditation-specific components
+│   │   │   └── skeletons/    # Loading and placeholder components
 │   │   ├── server/
 │   │   │   ├── db/           # Database schema, migrations, and utils
-│   │   │   ├── auth.ts       # Better-auth configuration
+│   │   │   ├── auth/         # Better-auth plugin configuration
+│   │   │   ├── auth.ts       # Better-auth instance and exports
 │   │   │   ├── actions/      # Server actions
-│   │   │   └── email/        # Email sending + notification jobs
+│   │   │   ├── email/        # Email sending utilities
+│   │   │   ├── notifications/ # Notification job logic
+│   │   │   └── daily-agenda.ts # Daily agenda digest logic
 │   │   ├── hooks/            # Shared Svelte hooks
 │   │   ├── schemas/          # Zod validation schemas
 │   │   ├── utils/            # Utility functions
