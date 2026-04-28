@@ -1,42 +1,42 @@
 <script lang="ts">
-import { Bell, BellOff, Trash2 } from '@lucide/svelte/icons';
+	import { Bell, BellOff, Trash2 } from '@lucide/svelte/icons';
 
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import { daysOfWeek, formatTime12Hour } from '$lib/utils/date';
-import { getWorkoutBadgeClass, getWorkoutLabel } from '$lib/utils/workout';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { daysOfWeek, formatTime12Hour } from '$lib/utils/date';
+	import { getWorkoutBadgeClass, getWorkoutLabel } from '$lib/utils/workout';
 
-interface Reminder {
-	id: string;
-	workoutType: string;
-	cadence: string;
-	time: string;
-	daysOfWeek: string | null;
-	enabled: boolean;
-}
+	interface Reminder {
+		id: string;
+		workoutType: string;
+		cadence: string;
+		time: string;
+		daysOfWeek: string | null;
+		enabled: boolean;
+	}
 
-let {
-	reminder,
-	onToggle,
-	onDelete
-}: {
-	reminder: Reminder;
-	onToggle: (reminder: Reminder) => void;
-	onDelete: (id: string) => void;
-} = $props();
+	let {
+		reminder,
+		onToggle,
+		onDelete
+	}: {
+		reminder: Reminder;
+		onToggle: (reminder: Reminder) => void;
+		onDelete: (id: string) => void;
+	} = $props();
 
-const scheduleText = $derived(
-	reminder.cadence === 'daily'
-		? 'Every day'
-		: `Weekly on ${
-				reminder.daysOfWeek
-					? JSON.parse(reminder.daysOfWeek)
-							.map((d: number) => daysOfWeek[d].shortName)
-							.join(', ')
-					: 'Not configured'
-			}`
-);
+	const scheduleText = $derived(
+		reminder.cadence === 'daily'
+			? 'Every day'
+			: `Weekly on ${
+					reminder.daysOfWeek
+						? JSON.parse(reminder.daysOfWeek)
+								.map((d: number) => daysOfWeek[d].shortName)
+								.join(', ')
+						: 'Not configured'
+				}`
+	);
 </script>
 
 <div

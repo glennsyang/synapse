@@ -1,44 +1,44 @@
 <script lang="ts">
-import { Pencil, Trash2 } from '@lucide/svelte/icons';
+	import { Pencil, Trash2 } from '@lucide/svelte/icons';
 
-import { Button } from '$lib/components/ui/button';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import { formatDateShort } from '$lib/utils/date';
+	import { Button } from '$lib/components/ui/button';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { formatDateShort } from '$lib/utils/date';
 
-interface Meal {
-	id: string;
-	date: string;
-	timeOfDay: string;
-	description: string;
-	caloriesEstimate: number | null;
-}
+	interface Meal {
+		id: string;
+		date: string;
+		timeOfDay: string;
+		description: string;
+		caloriesEstimate: number | null;
+	}
 
-let {
-	meal,
-	onEdit,
-	onDelete
-}: {
-	meal: Meal;
-	onEdit: (meal: Meal) => void;
-	onDelete: (id: string) => void;
-} = $props();
+	let {
+		meal,
+		onEdit,
+		onDelete
+	}: {
+		meal: Meal;
+		onEdit: (meal: Meal) => void;
+		onDelete: (id: string) => void;
+	} = $props();
 
-const mealIcons: Record<string, string> = {
-	breakfast: '🌅',
-	lunch: '☀️',
-	dinner: '🌙',
-	snack: '🍪'
-};
+	const mealIcons: Record<string, string> = {
+		breakfast: '🌅',
+		lunch: '☀️',
+		dinner: '🌙',
+		snack: '🍪'
+	};
 
-const mealBadgeStyles: Record<string, string> = {
-	breakfast: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-	lunch: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-	dinner: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-	snack: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
-};
+	const mealBadgeStyles: Record<string, string> = {
+		breakfast: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+		lunch: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+		dinner: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+		snack: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+	};
 
-const icon = $derived(mealIcons[meal.timeOfDay] ?? '🍽️');
-const badgeStyle = $derived(mealBadgeStyles[meal.timeOfDay] ?? '');
+	const icon = $derived(mealIcons[meal.timeOfDay] ?? '🍽️');
+	const badgeStyle = $derived(mealBadgeStyles[meal.timeOfDay] ?? '');
 </script>
 
 <div class="flex items-start justify-between gap-3 rounded-lg border bg-card p-3">

@@ -1,6 +1,6 @@
 <script lang="ts">
-import { enhance } from '$app/forms';
-import { Button } from '$lib/components/ui/button';
+	import { enhance } from '$app/forms';
+	import { Button } from '$lib/components/ui/button';
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-gray-100">

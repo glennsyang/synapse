@@ -1,48 +1,48 @@
 <script lang="ts">
-import { ArrowLeft, Trash2 } from '@lucide/svelte';
-import { toast } from 'svelte-sonner';
-import { superForm } from 'sveltekit-superforms';
-import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
-import {
-	formatTaskDisplayId,
-	taskPriorityOptions,
-	taskStateOptions
-} from '$lib/components/tasks/task-ui';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import * as Select from '$lib/components/ui/select';
-import { Textarea } from '$lib/components/ui/textarea';
+	import { ArrowLeft, Trash2 } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+	import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
+	import {
+		formatTaskDisplayId,
+		taskPriorityOptions,
+		taskStateOptions
+	} from '$lib/components/tasks/task-ui';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
+	import { Textarea } from '$lib/components/ui/textarea';
 
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance, message, submitting } = superForm(data.form, {
-	dataType: 'form',
-	onUpdate: ({ form }) => {
-		if (form.valid) {
-			toast.success('Task updated successfully!');
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance, message, submitting } = superForm(data.form, {
+		dataType: 'form',
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				toast.success('Task updated successfully!');
+			}
+			if ($message?.type === 'error') {
+				toast.error(`Error updating task. Reason: ${$message.text}`);
+			}
 		}
-		if ($message?.type === 'error') {
-			toast.error(`Error updating task. Reason: ${$message.text}`);
-		}
-	}
-});
+	});
 
-let showDeleteDialog = $state(false);
+	let showDeleteDialog = $state(false);
 
-let priorityString = $derived($form.priority?.toString() ?? '2');
-let selectedPriorityOption = $derived(
-	taskPriorityOptions.find((option) => option.value.toString() === priorityString) ??
-		taskPriorityOptions[1]
-);
-let selectedStateOption = $derived(
-	taskStateOptions.find((option) => option.value === $form.state) ?? taskStateOptions[0]
-);
+	let priorityString = $derived($form.priority?.toString() ?? '2');
+	let selectedPriorityOption = $derived(
+		taskPriorityOptions.find((option) => option.value.toString() === priorityString) ??
+			taskPriorityOptions[1]
+	);
+	let selectedStateOption = $derived(
+		taskStateOptions.find((option) => option.value === $form.state) ?? taskStateOptions[0]
+	);
 </script>
 
 <PageFormShell>

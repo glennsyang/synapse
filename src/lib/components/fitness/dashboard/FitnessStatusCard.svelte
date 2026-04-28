@@ -1,17 +1,17 @@
 <script lang="ts">
-import type { Component } from 'svelte';
+	import type { Component } from 'svelte';
 
-interface Props {
-	label: string;
-	value: string | number;
-	unit?: string;
-	icon?: Component<{ class?: string }>;
-	trend?: 'positive' | 'negative' | 'neutral';
-	trendLabel?: string;
-	gradient?: string;
-}
+	interface Props {
+		label: string;
+		value: string | number;
+		unit?: string;
+		icon?: Component<{ class?: string }>;
+		trend?: 'positive' | 'negative' | 'neutral';
+		trendLabel?: string;
+		gradient?: string;
+	}
 
-let { label, value, unit, icon: Icon, trend = 'neutral', trendLabel, gradient }: Props = $props();
+	let { label, value, unit, icon: Icon, trend = 'neutral', trendLabel, gradient }: Props = $props();
 </script>
 
 {#if gradient}

@@ -1,22 +1,22 @@
 <script lang="ts">
-import { Calendar, Cloud, MapPin, Pencil, Trash2 } from '@lucide/svelte/icons';
-import { marked } from 'marked';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import type { JournalEntry } from '$lib/types';
-import { formatDateLong } from '$lib/utils/date';
-import ConfirmDialog from '../shared/ConfirmDialog.svelte';
+	import { Calendar, Cloud, MapPin, Pencil, Trash2 } from '@lucide/svelte/icons';
+	import { marked } from 'marked';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import type { JournalEntry } from '$lib/types';
+	import { formatDateLong } from '$lib/utils/date';
+	import ConfirmDialog from '../shared/ConfirmDialog.svelte';
 
-let { entry }: { entry: JournalEntry } = $props();
+	let { entry }: { entry: JournalEntry } = $props();
 
-let openDeleteModal = $state<boolean>(false);
+	let openDeleteModal = $state<boolean>(false);
 
-let previewHtml = $derived(marked.parse(entry.content));
-let isLargeTile = $derived(entry.content.trim().length > 360);
-let hasMetadata = $derived(
-	Boolean(entry.location) || Boolean(entry.weather?.temp) || Boolean(entry.weather?.condition)
-);
+	let previewHtml = $derived(marked.parse(entry.content));
+	let isLargeTile = $derived(entry.content.trim().length > 360);
+	let hasMetadata = $derived(
+		Boolean(entry.location) || Boolean(entry.weather?.temp) || Boolean(entry.weather?.condition)
+	);
 </script>
 
 <Card.Root

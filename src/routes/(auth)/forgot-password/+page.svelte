@@ -1,23 +1,28 @@
 <script lang="ts">
-import { superForm } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
-import { Button } from '$lib/components/ui/button/index.js';
-import * as Card from '$lib/components/ui/card/index.js';
-import { Field, FieldDescription, FieldGroup, FieldLabel } from '$lib/components/ui/field/index.js';
-import { Input } from '$lib/components/ui/input/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import {
+		Field,
+		FieldDescription,
+		FieldGroup,
+		FieldLabel
+	} from '$lib/components/ui/field/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 
-let { data } = $props();
+	let { data } = $props();
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance, message, submitting } = superForm(data.form, {
-	onUpdated: ({ form }) => {
-		if (form.message) {
-			// The error message will be displayed below
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance, message, submitting } = superForm(data.form, {
+		onUpdated: ({ form }) => {
+			if (form.message) {
+				// The error message will be displayed below
+			}
 		}
-	}
-});
+	});
 
-let submitted = $state(false);
+	let submitted = $state(false);
 </script>
 
 <svelte:head> <title>Forgot Password - Synapse</title> </svelte:head>

@@ -1,44 +1,46 @@
 <script lang="ts">
-import { Calendar, CircleCheck, EllipsisVertical, Pencil, Trash2 } from '@lucide/svelte/icons';
-import { goto } from '$app/navigation';
-import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-import {
-	formatTaskDisplayId,
-	type TaskPriority,
-	type TaskSummary,
-	taskPriorityMeta
-} from '$lib/components/tasks/task-ui';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-import type { TaskState } from '$lib/schemas/task';
-import { formatDateMedium, getDateUrgencyStatus } from '$lib/utils/date';
+	import { Calendar, CircleCheck, EllipsisVertical, Pencil, Trash2 } from '@lucide/svelte/icons';
+	import { goto } from '$app/navigation';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+	import {
+		formatTaskDisplayId,
+		type TaskPriority,
+		type TaskSummary,
+		taskPriorityMeta
+	} from '$lib/components/tasks/task-ui';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import type { TaskState } from '$lib/schemas/task';
+	import { formatDateMedium, getDateUrgencyStatus } from '$lib/utils/date';
 
-interface Props {
-	task: TaskSummary;
-	onStateChange?: (newState: TaskState) => void;
-	deleteAction?: string;
-}
+	interface Props {
+		task: TaskSummary;
+		onStateChange?: (newState: TaskState) => void;
+		deleteAction?: string;
+	}
 
-let { task, onStateChange, deleteAction = '?/delete' }: Props = $props();
+	let { task, onStateChange, deleteAction = '?/delete' }: Props = $props();
 
-let openDeleteTaskDialog = $state(false);
+	let openDeleteTaskDialog = $state(false);
 
-let priorityMeta = $derived(taskPriorityMeta[task.priority as TaskPriority] ?? taskPriorityMeta[4]);
-let displayId = $derived(formatTaskDisplayId(task.taskNumber));
-let editHref = $derived(`/tasks/${task.id}/edit`);
-let isDoneTask = $derived(task.state === 'done');
-let isBlockedTask = $derived(task.state === 'blocked');
-let dueDateLabel = $derived(task.dueDate ? formatDateMedium(task.dueDate) : null);
-let dueDateStatus = $derived(getDateUrgencyStatus(task.dueDate));
-let hasFooterMeta = $derived(Boolean(dueDateLabel) || Boolean(task.tags?.length));
-let dueDateClass = $derived(
-	dueDateStatus === 'overdue'
-		? 'text-red-600 dark:text-red-300'
-		: dueDateStatus === 'today'
-			? 'text-orange-600 dark:text-orange-300'
-			: 'text-muted-foreground'
-);
+	let priorityMeta = $derived(
+		taskPriorityMeta[task.priority as TaskPriority] ?? taskPriorityMeta[4]
+	);
+	let displayId = $derived(formatTaskDisplayId(task.taskNumber));
+	let editHref = $derived(`/tasks/${task.id}/edit`);
+	let isDoneTask = $derived(task.state === 'done');
+	let isBlockedTask = $derived(task.state === 'blocked');
+	let dueDateLabel = $derived(task.dueDate ? formatDateMedium(task.dueDate) : null);
+	let dueDateStatus = $derived(getDateUrgencyStatus(task.dueDate));
+	let hasFooterMeta = $derived(Boolean(dueDateLabel) || Boolean(task.tags?.length));
+	let dueDateClass = $derived(
+		dueDateStatus === 'overdue'
+			? 'text-red-600 dark:text-red-300'
+			: dueDateStatus === 'today'
+				? 'text-orange-600 dark:text-orange-300'
+				: 'text-muted-foreground'
+	);
 </script>
 
 <article

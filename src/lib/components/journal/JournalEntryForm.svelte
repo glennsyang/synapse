@@ -1,74 +1,74 @@
 <script lang="ts">
-import { ArrowLeft, ChevronDown, CircleAlert, Info, Thermometer } from '@lucide/svelte/icons';
-import { fromAction } from 'svelte/attachments';
-import { toast } from 'svelte-sonner';
-import { type SuperValidated, superForm } from 'sveltekit-superforms';
-import ContentSection from '$lib/components/app/ContentSection.svelte';
-import PageShell from '$lib/components/app/PageShell.svelte';
-import SectionHeader from '$lib/components/app/SectionHeader.svelte';
-import JournalEntryEditor from '$lib/components/journal/JournalEntryEditor.svelte';
-import * as Alert from '$lib/components/ui/alert';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Collapsible from '$lib/components/ui/collapsible';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import { Separator } from '$lib/components/ui/separator';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import type { JournalEntryFormValues } from '$lib/schemas/journal';
-import { getCurrentWeather } from '$lib/utils/journal-context';
+	import { ArrowLeft, ChevronDown, CircleAlert, Info, Thermometer } from '@lucide/svelte/icons';
+	import { fromAction } from 'svelte/attachments';
+	import { toast } from 'svelte-sonner';
+	import { type SuperValidated, superForm } from 'sveltekit-superforms';
+	import ContentSection from '$lib/components/app/ContentSection.svelte';
+	import PageShell from '$lib/components/app/PageShell.svelte';
+	import SectionHeader from '$lib/components/app/SectionHeader.svelte';
+	import JournalEntryEditor from '$lib/components/journal/JournalEntryEditor.svelte';
+	import * as Alert from '$lib/components/ui/alert';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Collapsible from '$lib/components/ui/collapsible';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { Separator } from '$lib/components/ui/separator';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import type { JournalEntryFormValues } from '$lib/schemas/journal';
+	import { getCurrentWeather } from '$lib/utils/journal-context';
 
-const starterPrompts = [
-	"What's one thing that went well today?",
-	'What moment felt most meaningful today?',
-	'What did you learn about yourself today?',
-	'What helped you feel grounded today?',
-	'What would you like to remember from today?',
-	'What challenged you, and how did you respond?'
-] as const;
+	const starterPrompts = [
+		"What's one thing that went well today?",
+		'What moment felt most meaningful today?',
+		'What did you learn about yourself today?',
+		'What helped you feel grounded today?',
+		'What would you like to remember from today?',
+		'What challenged you, and how did you respond?'
+	] as const;
 
-interface Props {
-	data: { form: SuperValidated<JournalEntryFormValues> };
-	mode: 'new' | 'edit';
-}
+	interface Props {
+		data: { form: SuperValidated<JournalEntryFormValues> };
+		mode: 'new' | 'edit';
+	}
 
-let { data, mode }: Props = $props();
+	let { data, mode }: Props = $props();
 
-const isNewMode = $derived(mode === 'new');
-const formAction = $derived(mode === 'edit' ? '?/update' : undefined);
-const pageTitle = $derived(mode === 'edit' ? 'Edit Journal Entry' : 'New Journal Entry');
-const starterPrompt =
-	starterPrompts[Math.floor(Math.random() * starterPrompts.length)] ?? starterPrompts[0];
-let metadataOpen = $state(false);
+	const isNewMode = $derived(mode === 'new');
+	const formAction = $derived(mode === 'edit' ? '?/update' : undefined);
+	const pageTitle = $derived(mode === 'edit' ? 'Edit Journal Entry' : 'New Journal Entry');
+	const starterPrompt =
+		starterPrompts[Math.floor(Math.random() * starterPrompts.length)] ?? starterPrompts[0];
+	let metadataOpen = $state(false);
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance, message, submitting } = superForm(data.form, {
-	onUpdate: () => {
-		if ($message?.type === 'error') {
-			toast.error(`Unable to save entry. ${$message.text}`);
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance, message, submitting } = superForm(data.form, {
+		onUpdate: () => {
+			if ($message?.type === 'error') {
+				toast.error(`Unable to save entry. ${$message.text}`);
+			}
+		}
+	});
+	let gettingWeather = $state(false);
+
+	async function getWeather() {
+		gettingWeather = true;
+
+		try {
+			const weather = await getCurrentWeather();
+			$form.weatherTemp = weather.temperature;
+			$form.weatherCondition = weather.condition;
+			toast.success(`Weather added: ${weather.condition}, ${weather.temperature}°C`);
+		} catch (error) {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: 'Unable to retrieve your location for weather information.'
+			);
+		} finally {
+			gettingWeather = false;
 		}
 	}
-});
-let gettingWeather = $state(false);
-
-async function getWeather() {
-	gettingWeather = true;
-
-	try {
-		const weather = await getCurrentWeather();
-		$form.weatherTemp = weather.temperature;
-		$form.weatherCondition = weather.condition;
-		toast.success(`Weather added: ${weather.condition}, ${weather.temperature}°C`);
-	} catch (error) {
-		toast.error(
-			error instanceof Error
-				? error.message
-				: 'Unable to retrieve your location for weather information.'
-		);
-	} finally {
-		gettingWeather = false;
-	}
-}
 </script>
 
 <PageShell class="space-y-4 py-0 sm:py-6">

@@ -1,113 +1,113 @@
 <script lang="ts">
-import {
-	ChevronRight,
-	Dumbbell,
-	Pencil,
-	Scale,
-	Trash2,
-	UtensilsCrossed
-} from '@lucide/svelte/icons';
+	import {
+		ChevronRight,
+		Dumbbell,
+		Pencil,
+		Scale,
+		Trash2,
+		UtensilsCrossed
+	} from '@lucide/svelte/icons';
 
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import { formatDateShort, formatTime12Hour } from '$lib/utils/date';
-import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { formatDateShort, formatTime12Hour } from '$lib/utils/date';
+	import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
 
-interface Exercise {
-	exerciseName: string;
-	sets: number | null;
-	reps: number | null;
-	weightLbs: number | null;
-}
+	interface Exercise {
+		exerciseName: string;
+		sets: number | null;
+		reps: number | null;
+		weightLbs: number | null;
+	}
 
-interface Workout {
-	id: string;
-	date: string;
-	time: string | null;
-	type: string;
-	durationMinutes: number | null;
-	steps: number | null;
-	notes: string | null;
-	exercises: Exercise[];
-}
+	interface Workout {
+		id: string;
+		date: string;
+		time: string | null;
+		type: string;
+		durationMinutes: number | null;
+		steps: number | null;
+		notes: string | null;
+		exercises: Exercise[];
+	}
 
-interface WeightEntry {
-	id: string;
-	date: string;
-	time: string | null;
-	weightLbs: number;
-	createdAt: string;
-}
+	interface WeightEntry {
+		id: string;
+		date: string;
+		time: string | null;
+		weightLbs: number;
+		createdAt: string;
+	}
 
-interface Meal {
-	id: string;
-	date: string;
-	timeOfDay: string;
-	description: string;
-	caloriesEstimate: number | null;
-}
-
-type ActivityItem =
-	| { kind: 'workout'; data: Workout; sortKey: string }
-	| { kind: 'weight'; data: WeightEntry; sortKey: string }
-	| { kind: 'meal'; data: Meal; sortKey: string };
-
-interface Props {
-	workouts: Workout[];
-	weightEntries: WeightEntry[];
-	meals: Meal[];
-	onEditWorkout: (w: Workout) => void;
-	onDeleteWorkout: (id: string) => void;
-	onEditWeight: (e: { id: string; date: string; time: string | null; weightLbs: number }) => void;
-	onDeleteWeight: (id: string) => void;
-	onEditMeal: (m: {
+	interface Meal {
 		id: string;
 		date: string;
 		timeOfDay: string;
 		description: string;
 		caloriesEstimate: number | null;
-	}) => void;
-	onDeleteMeal: (id: string) => void;
-	onViewAll: () => void;
-}
+	}
 
-let {
-	workouts,
-	weightEntries,
-	meals,
-	onEditWorkout,
-	onDeleteWorkout,
-	onEditWeight,
-	onDeleteWeight,
-	onEditMeal,
-	onDeleteMeal,
-	onViewAll
-}: Props = $props();
+	type ActivityItem =
+		| { kind: 'workout'; data: Workout; sortKey: string }
+		| { kind: 'weight'; data: WeightEntry; sortKey: string }
+		| { kind: 'meal'; data: Meal; sortKey: string };
 
-// Build merged chronological feed
-const feed = $derived.by((): ActivityItem[] => {
-	const items: ActivityItem[] = [
-		...workouts.map((w) => ({
-			kind: 'workout' as const,
-			data: w,
-			sortKey: `${w.date}T${w.time ?? '23:59:59'}`
-		})),
-		...weightEntries.map((e) => ({
-			kind: 'weight' as const,
-			data: e,
-			sortKey: `${e.date}T${e.time ?? '12:00:00'}`
-		})),
-		...meals.map((m) => ({
-			kind: 'meal' as const,
-			data: m,
-			sortKey: `${m.date}T00:00:00`
-		}))
-	];
+	interface Props {
+		workouts: Workout[];
+		weightEntries: WeightEntry[];
+		meals: Meal[];
+		onEditWorkout: (w: Workout) => void;
+		onDeleteWorkout: (id: string) => void;
+		onEditWeight: (e: { id: string; date: string; time: string | null; weightLbs: number }) => void;
+		onDeleteWeight: (id: string) => void;
+		onEditMeal: (m: {
+			id: string;
+			date: string;
+			timeOfDay: string;
+			description: string;
+			caloriesEstimate: number | null;
+		}) => void;
+		onDeleteMeal: (id: string) => void;
+		onViewAll: () => void;
+	}
 
-	return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey)).slice(0, 7);
-});
+	let {
+		workouts,
+		weightEntries,
+		meals,
+		onEditWorkout,
+		onDeleteWorkout,
+		onEditWeight,
+		onDeleteWeight,
+		onEditMeal,
+		onDeleteMeal,
+		onViewAll
+	}: Props = $props();
+
+	// Build merged chronological feed
+	const feed = $derived.by((): ActivityItem[] => {
+		const items: ActivityItem[] = [
+			...workouts.map((w) => ({
+				kind: 'workout' as const,
+				data: w,
+				sortKey: `${w.date}T${w.time ?? '23:59:59'}`
+			})),
+			...weightEntries.map((e) => ({
+				kind: 'weight' as const,
+				data: e,
+				sortKey: `${e.date}T${e.time ?? '12:00:00'}`
+			})),
+			...meals.map((m) => ({
+				kind: 'meal' as const,
+				data: m,
+				sortKey: `${m.date}T00:00:00`
+			}))
+		];
+
+		return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey)).slice(0, 7);
+	});
 </script>
 
 <section class="mb-2">

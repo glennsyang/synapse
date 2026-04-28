@@ -1,77 +1,77 @@
 <script lang="ts">
-import { scaleUtc } from 'd3-scale';
-import { curveNatural } from 'd3-shape';
-import { LineChart } from 'layerchart';
+	import { scaleUtc } from 'd3-scale';
+	import { curveNatural } from 'd3-shape';
+	import { LineChart } from 'layerchart';
 
-import { Badge } from '$lib/components/ui/badge';
-import * as Chart from '$lib/components/ui/chart/index.js';
-import type { DailyAgendaChartPoint } from '$lib/types';
-import { cn } from '$lib/utils';
-import { parseLocalDateString } from '$lib/utils/date';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Chart from '$lib/components/ui/chart/index.js';
+	import type { DailyAgendaChartPoint } from '$lib/types';
+	import { cn } from '$lib/utils';
+	import { parseLocalDateString } from '$lib/utils/date';
 
-interface Props {
-	points: DailyAgendaChartPoint[];
-	rangeLabel: string;
-}
+	interface Props {
+		points: DailyAgendaChartPoint[];
+		rangeLabel: string;
+	}
 
-function calculateAverageCompletion(points: DailyAgendaChartPoint[]): number {
-	return points.length === 0
-		? 0
-		: Math.round(
-				points.reduce((total, point) => total + point.completionPercentage, 0) / points.length
-			);
-}
+	function calculateAverageCompletion(points: DailyAgendaChartPoint[]): number {
+		return points.length === 0
+			? 0
+			: Math.round(
+					points.reduce((total, point) => total + point.completionPercentage, 0) / points.length
+				);
+	}
 
-let { points, rangeLabel }: Props = $props();
+	let { points, rangeLabel }: Props = $props();
 
-const chartData = $derived(
-	points.map((point) => ({
-		date: new Date(`${point.date}T00:00:00`),
-		completion: point.completionPercentage,
-		completedCount: point.completedCount,
-		totalCount: point.totalCount
-	}))
-);
+	const chartData = $derived(
+		points.map((point) => ({
+			date: new Date(`${point.date}T00:00:00`),
+			completion: point.completionPercentage,
+			completedCount: point.completedCount,
+			totalCount: point.totalCount
+		}))
+	);
 
-const chartConfig = {
-	completion: { label: 'Completion', color: 'var(--chart-3)' }
-} satisfies Chart.ChartConfig;
+	const chartConfig = {
+		completion: { label: 'Completion', color: 'var(--chart-3)' }
+	} satisfies Chart.ChartConfig;
 
-const averageCompletion = $derived(
-	points.length === 0
-		? 0
-		: Math.round(
-				points.reduce((total, point) => total + point.completionPercentage, 0) / points.length
-			)
-);
+	const averageCompletion = $derived(
+		points.length === 0
+			? 0
+			: Math.round(
+					points.reduce((total, point) => total + point.completionPercentage, 0) / points.length
+				)
+	);
 
-const bestPoint = $derived(
-	points.reduce<DailyAgendaChartPoint | null>((best, point) => {
-		if (!best || point.completionPercentage > best.completionPercentage) {
-			return point;
-		}
+	const bestPoint = $derived(
+		points.reduce<DailyAgendaChartPoint | null>((best, point) => {
+			if (!best || point.completionPercentage > best.completionPercentage) {
+				return point;
+			}
 
-		return best;
-	}, null)
-);
-const currentWindowPoints = $derived(points.slice(-7));
-const previousWindowPoints = $derived(points.slice(0, Math.max(points.length - 7, 0)));
-const currentWindowAverage = $derived(calculateAverageCompletion(currentWindowPoints));
-const previousWindowAverage = $derived(calculateAverageCompletion(previousWindowPoints));
-const completionDelta = $derived(currentWindowAverage - previousWindowAverage);
-const shiftLabel = $derived(
-	previousWindowPoints.length === 0
-		? 'No prior ribbon yet'
-		: completionDelta > 6
-			? 'Heating up nicely'
-			: completionDelta > 0
-				? 'Climbing from the prior 7 days'
-				: completionDelta < -6
-					? 'Cooling off from the prior 7 days'
-					: completionDelta < 0
-						? 'Softer than the prior 7 days'
-						: 'Even with the prior 7 days'
-);
+			return best;
+		}, null)
+	);
+	const currentWindowPoints = $derived(points.slice(-7));
+	const previousWindowPoints = $derived(points.slice(0, Math.max(points.length - 7, 0)));
+	const currentWindowAverage = $derived(calculateAverageCompletion(currentWindowPoints));
+	const previousWindowAverage = $derived(calculateAverageCompletion(previousWindowPoints));
+	const completionDelta = $derived(currentWindowAverage - previousWindowAverage);
+	const shiftLabel = $derived(
+		previousWindowPoints.length === 0
+			? 'No prior ribbon yet'
+			: completionDelta > 6
+				? 'Heating up nicely'
+				: completionDelta > 0
+					? 'Climbing from the prior 7 days'
+					: completionDelta < -6
+						? 'Cooling off from the prior 7 days'
+						: completionDelta < 0
+							? 'Softer than the prior 7 days'
+							: 'Even with the prior 7 days'
+	);
 </script>
 
 <section

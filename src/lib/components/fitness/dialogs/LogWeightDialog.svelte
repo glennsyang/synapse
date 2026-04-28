@@ -1,96 +1,96 @@
 <script lang="ts">
-import PlusIcon from '@lucide/svelte/icons/plus';
-import { toast } from 'svelte-sonner';
-import type { Infer, SuperValidated } from 'sveltekit-superforms';
-import { superForm } from 'sveltekit-superforms';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import { toast } from 'svelte-sonner';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
-import { Button } from '$lib/components/ui/button';
-import * as Dialog from '$lib/components/ui/dialog';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import type { logWeightSchema } from '$lib/schemas/fitness';
+	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import type { logWeightSchema } from '$lib/schemas/fitness';
 
-type LogWeightData = Infer<typeof logWeightSchema>;
+	type LogWeightData = Infer<typeof logWeightSchema>;
 
-interface WeightEntry {
-	id: string;
-	date: string;
-	time: string | null;
-	weightLbs: number;
-}
-
-let {
-	formData,
-	editEntry = null,
-	onClose,
-	open = $bindable(false),
-	instanceId = 'default'
-}: {
-	formData: SuperValidated<LogWeightData>;
-	editEntry?: WeightEntry | null;
-	onClose?: () => void;
-	open?: boolean;
-	instanceId?: string;
-} = $props();
-
-const isEditing = $derived(editEntry !== null);
-
-let internalOpen = $state(false);
-const dialogOpen = $derived(open !== undefined ? open : internalOpen);
-
-// Open dialog externally when editEntry is provided
-$effect(() => {
-	if (editEntry && open === undefined) {
-		internalOpen = true;
+	interface WeightEntry {
+		id: string;
+		date: string;
+		time: string | null;
+		weightLbs: number;
 	}
-});
 
-// Generate a unique form ID based on the editing context and instance
-const formId = $derived(editEntry ? `edit-weight-${editEntry.id}` : `log-weight-${instanceId}`);
+	let {
+		formData,
+		editEntry = null,
+		onClose,
+		open = $bindable(false),
+		instanceId = 'default'
+	}: {
+		formData: SuperValidated<LogWeightData>;
+		editEntry?: WeightEntry | null;
+		onClose?: () => void;
+		open?: boolean;
+		instanceId?: string;
+	} = $props();
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance } = superForm(formData, {
-	id: formId,
-	resetForm: !isEditing,
-	onUpdate: ({ form }) => {
-		if (form.valid) {
-			if (open !== undefined) {
+	const isEditing = $derived(editEntry !== null);
+
+	let internalOpen = $state(false);
+	const dialogOpen = $derived(open !== undefined ? open : internalOpen);
+
+	// Open dialog externally when editEntry is provided
+	$effect(() => {
+		if (editEntry && open === undefined) {
+			internalOpen = true;
+		}
+	});
+
+	// Generate a unique form ID based on the editing context and instance
+	const formId = $derived(editEntry ? `edit-weight-${editEntry.id}` : `log-weight-${instanceId}`);
+
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance } = superForm(formData, {
+		id: formId,
+		resetForm: !isEditing,
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				if (open !== undefined) {
+					onClose?.();
+				} else {
+					internalOpen = false;
+				}
+				toast.success(isEditing ? 'Weight updated successfully!' : 'Weight logged successfully!');
 				onClose?.();
-			} else {
-				internalOpen = false;
 			}
-			toast.success(isEditing ? 'Weight updated successfully!' : 'Weight logged successfully!');
-			onClose?.();
+		},
+		onError: ({ result }) => {
+			toast.error(`Error: ${result.error.message}`);
 		}
-	},
-	onError: ({ result }) => {
-		toast.error(`Error: ${result.error.message}`);
-	}
-});
+	});
 
-// Populate form fields when editing
-$effect(() => {
-	if (editEntry) {
-		$form.date = editEntry.date;
-		$form.time = editEntry.time;
-		$form.weightLbs = editEntry.weightLbs;
-	}
-});
+	// Populate form fields when editing
+	$effect(() => {
+		if (editEntry) {
+			$form.date = editEntry.date;
+			$form.time = editEntry.time;
+			$form.weightLbs = editEntry.weightLbs;
+		}
+	});
 
-function handleOpenChange(isOpen: boolean) {
-	if (open !== undefined) {
-		// Externally controlled - notify via onClose
-		if (!isOpen && onClose) {
-			onClose();
-		}
-	} else {
-		// Internally controlled
-		internalOpen = isOpen;
-		if (!isOpen) {
-			onClose?.();
+	function handleOpenChange(isOpen: boolean) {
+		if (open !== undefined) {
+			// Externally controlled - notify via onClose
+			if (!isOpen && onClose) {
+				onClose();
+			}
+		} else {
+			// Internally controlled
+			internalOpen = isOpen;
+			if (!isOpen) {
+				onClose?.();
+			}
 		}
 	}
-}
 </script>
 
 <Dialog.Root open={dialogOpen} onOpenChange={handleOpenChange}>

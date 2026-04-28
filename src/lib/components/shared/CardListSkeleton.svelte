@@ -1,12 +1,12 @@
 <script lang="ts">
-import * as Card from '$lib/components/ui/card/index.js';
-import { Skeleton } from '$lib/components/ui/skeleton/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 
-interface Props {
-	count?: number;
-}
+	interface Props {
+		count?: number;
+	}
 
-let { count = 3 }: Props = $props();
+	let { count = 3 }: Props = $props();
 </script>
 
 <div class="space-y-4">

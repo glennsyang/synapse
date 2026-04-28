@@ -1,17 +1,17 @@
 <script lang="ts">
-import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-import { cn } from '$lib/utils.js';
+	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
+	import { cn } from '$lib/utils.js';
 
-let {
-	color = 'teal',
-	showIcon = true,
-	class: className,
-	...restProps
-}: {
-	color?: 'teal' | 'blue' | 'green' | 'orange' | 'purple' | 'pink';
-	showIcon?: boolean;
-	class?: string;
-} = $props();
+	let {
+		color = 'teal',
+		showIcon = true,
+		class: className,
+		...restProps
+	}: {
+		color?: 'teal' | 'blue' | 'green' | 'orange' | 'purple' | 'pink';
+		showIcon?: boolean;
+		class?: string;
+	} = $props();
 </script>
 
 <div class={cn('rounded-lg border bg-card p-6 shadow-xs', className)} {...restProps}>

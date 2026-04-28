@@ -1,232 +1,242 @@
 <script lang="ts">
-import { Calendar, ChartArea, CircleX, ListFilter, Plus, Search, SmilePlus } from '@lucide/svelte';
-import { onDestroy } from 'svelte';
-import type { SuperValidated } from 'sveltekit-superforms';
-import { goto } from '$app/navigation';
-import { navigating, page } from '$app/state';
-import PageShell from '$lib/components/app/PageShell.svelte';
-import JournalEntryCard from '$lib/components/journal/JournalEntryCard.svelte';
-import MoodDistributionChart from '$lib/components/journal/MoodDistributionChart.svelte';
-import MoodLogForm from '$lib/components/journal/MoodLogForm.svelte';
-import MoodTrendChart from '$lib/components/journal/MoodTrendChart.svelte';
-import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import * as Collapsible from '$lib/components/ui/collapsible';
-import { Input } from '$lib/components/ui/input';
-import * as Select from '$lib/components/ui/select';
-import * as Tabs from '$lib/components/ui/tabs';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import type { MoodLogFormValues } from '$lib/schemas/mood';
-import { type MoodPeriod, moodPeriods } from '$lib/utils/mood';
-import type { PageData } from './$types';
+	import {
+		Calendar,
+		ChartArea,
+		CircleX,
+		ListFilter,
+		Plus,
+		Search,
+		SmilePlus
+	} from '@lucide/svelte';
+	import { onDestroy } from 'svelte';
+	import type { SuperValidated } from 'sveltekit-superforms';
+	import { goto } from '$app/navigation';
+	import { navigating, page } from '$app/state';
+	import PageShell from '$lib/components/app/PageShell.svelte';
+	import JournalEntryCard from '$lib/components/journal/JournalEntryCard.svelte';
+	import MoodDistributionChart from '$lib/components/journal/MoodDistributionChart.svelte';
+	import MoodLogForm from '$lib/components/journal/MoodLogForm.svelte';
+	import MoodTrendChart from '$lib/components/journal/MoodTrendChart.svelte';
+	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as Collapsible from '$lib/components/ui/collapsible';
+	import { Input } from '$lib/components/ui/input';
+	import * as Select from '$lib/components/ui/select';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import type { MoodLogFormValues } from '$lib/schemas/mood';
+	import { type MoodPeriod, moodPeriods } from '$lib/utils/mood';
+	import type { PageData } from './$types';
 
-type JournalTab = 'journal' | 'mood';
+	type JournalTab = 'journal' | 'mood';
 
-type MoodTrendPoint = {
-	date: string;
-	score: number;
-	resolvedMood: string;
-	mood: string;
-	isCustom: boolean;
-	fill: string;
-};
-
-type MoodDistributionPoint = {
-	mood: string;
-	count: number;
-	fill: string;
-	percentage: number;
-};
-
-type JournalMoodData = {
-	selectedPeriod: MoodPeriod;
-	rangeLabel: string;
-	trendPoints: MoodTrendPoint[];
-	distribution: MoodDistributionPoint[];
-	todayLog: {
+	type MoodTrendPoint = {
 		date: string;
-		mood: string;
+		score: number;
 		resolvedMood: string;
-		notes: string | null;
-	} | null;
-	summary: {
-		loggedDays: number;
-		totalDays: number;
-		coveragePercentage: number;
-		currentStreak: number;
-		mostFrequentMood: string | null;
-		averageScore: number | null;
-		scaleHint: string;
+		mood: string;
+		isCustom: boolean;
+		fill: string;
 	};
-};
 
-type JournalPageData = PageData & {
-	selectedTab: JournalTab;
-	filters: {
-		content: string;
-		date: string;
+	type MoodDistributionPoint = {
+		mood: string;
+		count: number;
+		fill: string;
+		percentage: number;
 	};
-	moodForm: SuperValidated<MoodLogFormValues>;
-	mood: JournalMoodData;
-};
 
-let { data }: { data: JournalPageData } = $props();
+	type JournalMoodData = {
+		selectedPeriod: MoodPeriod;
+		rangeLabel: string;
+		trendPoints: MoodTrendPoint[];
+		distribution: MoodDistributionPoint[];
+		todayLog: {
+			date: string;
+			mood: string;
+			resolvedMood: string;
+			notes: string | null;
+		} | null;
+		summary: {
+			loggedDays: number;
+			totalDays: number;
+			coveragePercentage: number;
+			currentStreak: number;
+			mostFrequentMood: string | null;
+			averageScore: number | null;
+			scaleHint: string;
+		};
+	};
 
-const periodLabels: Record<MoodPeriod, string> = {
-	week: 'This week',
-	month: 'This month',
-	quarter: 'This quarter'
-};
+	type JournalPageData = PageData & {
+		selectedTab: JournalTab;
+		filters: {
+			content: string;
+			date: string;
+		};
+		moodForm: SuperValidated<MoodLogFormValues>;
+		mood: JournalMoodData;
+	};
 
-let filtersOpen = $state(
-	Boolean(page.url.searchParams.get('content')?.trim()) ||
-		Boolean(page.url.searchParams.get('date'))
-);
-let contentFilter = $state(page.url.searchParams.get('content') ?? '');
-let contentDebounce = $state<ReturnType<typeof setTimeout> | null>(null);
-let contentDirty = $state(false);
+	let { data }: { data: JournalPageData } = $props();
 
-const activeJournalContent = $derived(page.url.searchParams.get('content') ?? '');
-const activeJournalDate = $derived(page.url.searchParams.get('date') ?? '');
-const hasActiveFilters = $derived(
-	Boolean(activeJournalContent.trim()) || Boolean(activeJournalDate)
-);
-const activeTab = $derived.by<JournalTab>(() =>
-	page.url.searchParams.get('tab') === 'mood' ? 'mood' : 'journal'
-);
-const showPageSkeleton = $derived(
-	navigating.to?.url.pathname === '/journal' && navigating.from?.url.pathname !== '/journal'
-);
+	const periodLabels: Record<MoodPeriod, string> = {
+		week: 'This week',
+		month: 'This month',
+		quarter: 'This quarter'
+	};
 
-const selectedPeriod = $derived.by<MoodPeriod>(() => {
-	const currentPeriod = page.url.searchParams.get('period');
-	return moodPeriods.includes(currentPeriod as MoodPeriod) ? (currentPeriod as MoodPeriod) : 'week';
-});
+	let filtersOpen = $state(
+		Boolean(page.url.searchParams.get('content')?.trim()) ||
+			Boolean(page.url.searchParams.get('date'))
+	);
+	let contentFilter = $state(page.url.searchParams.get('content') ?? '');
+	let contentDebounce = $state<ReturnType<typeof setTimeout> | null>(null);
+	let contentDirty = $state(false);
 
-const clearFiltersHref = $derived.by(() => {
-	const nextUrl = buildNextUrl((searchParams) => {
-		searchParams.delete('content');
-		searchParams.delete('date');
+	const activeJournalContent = $derived(page.url.searchParams.get('content') ?? '');
+	const activeJournalDate = $derived(page.url.searchParams.get('date') ?? '');
+	const hasActiveFilters = $derived(
+		Boolean(activeJournalContent.trim()) || Boolean(activeJournalDate)
+	);
+	const activeTab = $derived.by<JournalTab>(() =>
+		page.url.searchParams.get('tab') === 'mood' ? 'mood' : 'journal'
+	);
+	const showPageSkeleton = $derived(
+		navigating.to?.url.pathname === '/journal' && navigating.from?.url.pathname !== '/journal'
+	);
+
+	const selectedPeriod = $derived.by<MoodPeriod>(() => {
+		const currentPeriod = page.url.searchParams.get('period');
+		return moodPeriods.includes(currentPeriod as MoodPeriod)
+			? (currentPeriod as MoodPeriod)
+			: 'week';
 	});
 
-	return nextUrl.toString();
-});
-
-onDestroy(() => {
-	if (contentDebounce) {
-		clearTimeout(contentDebounce);
-	}
-});
-
-function buildNextUrl(update: (searchParams: URLSearchParams) => void) {
-	const nextUrl = new URL(page.url);
-	const nextParams = new URLSearchParams(page.url.searchParams);
-
-	update(nextParams);
-
-	const nextSearch = nextParams.toString();
-	nextUrl.search = nextSearch;
-	return nextUrl;
-}
-
-async function openJournalTab(tab: JournalTab) {
-	const nextUrl = buildNextUrl((searchParams) => {
-		if (tab === 'journal') {
-			searchParams.delete('tab');
-			return;
-		}
-
-		searchParams.set('tab', tab);
-	});
-
-	await goto(nextUrl.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-}
-
-function handleContentInput(event: Event) {
-	const currentTarget = event.currentTarget;
-	if (!(currentTarget instanceof HTMLInputElement)) {
-		return;
-	}
-
-	contentFilter = currentTarget.value;
-	queueContentFilterUpdate();
-}
-
-function queueContentFilterUpdate() {
-	contentDirty = true;
-	if (contentDebounce) {
-		clearTimeout(contentDebounce);
-	}
-
-	contentDebounce = setTimeout(() => {
-		void applyContentFilter();
-	}, 250);
-}
-
-async function applyContentFilter() {
-	if (contentDebounce) {
-		clearTimeout(contentDebounce);
-		contentDebounce = null;
-	}
-
-	const normalizedContent = contentFilter.trim();
-	if (normalizedContent === activeJournalContent) {
-		contentDirty = false;
-		return;
-	}
-
-	const nextUrl = buildNextUrl((searchParams) => {
-		if (normalizedContent) {
-			searchParams.set('content', normalizedContent);
-		} else {
+	const clearFiltersHref = $derived.by(() => {
+		const nextUrl = buildNextUrl((searchParams) => {
 			searchParams.delete('content');
-		}
-	});
-
-	try {
-		await goto(nextUrl.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-	} finally {
-		contentDirty = false;
-	}
-}
-
-async function handleDateChange(event: Event) {
-	const currentTarget = event.currentTarget;
-	if (!(currentTarget instanceof HTMLInputElement)) {
-		return;
-	}
-
-	const nextDate = currentTarget.value;
-	const nextUrl = buildNextUrl((searchParams) => {
-		if (nextDate) {
-			searchParams.set('date', nextDate);
-		} else {
 			searchParams.delete('date');
+		});
+
+		return nextUrl.toString();
+	});
+
+	onDestroy(() => {
+		if (contentDebounce) {
+			clearTimeout(contentDebounce);
 		}
 	});
 
-	await goto(nextUrl.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-}
+	function buildNextUrl(update: (searchParams: URLSearchParams) => void) {
+		const nextUrl = new URL(page.url);
+		const nextParams = new URLSearchParams(page.url.searchParams);
 
-async function handlePeriodChange(nextPeriod: string) {
-	if (!moodPeriods.includes(nextPeriod as MoodPeriod)) {
-		return;
+		update(nextParams);
+
+		const nextSearch = nextParams.toString();
+		nextUrl.search = nextSearch;
+		return nextUrl;
 	}
 
-	const nextUrl = buildNextUrl((searchParams) => {
-		searchParams.set('tab', 'mood');
+	async function openJournalTab(tab: JournalTab) {
+		const nextUrl = buildNextUrl((searchParams) => {
+			if (tab === 'journal') {
+				searchParams.delete('tab');
+				return;
+			}
 
-		if (nextPeriod === 'week') {
-			searchParams.delete('period');
+			searchParams.set('tab', tab);
+		});
+
+		await goto(nextUrl.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+	}
+
+	function handleContentInput(event: Event) {
+		const currentTarget = event.currentTarget;
+		if (!(currentTarget instanceof HTMLInputElement)) {
 			return;
 		}
 
-		searchParams.set('period', nextPeriod);
-	});
+		contentFilter = currentTarget.value;
+		queueContentFilterUpdate();
+	}
 
-	await goto(nextUrl.toString());
-}
+	function queueContentFilterUpdate() {
+		contentDirty = true;
+		if (contentDebounce) {
+			clearTimeout(contentDebounce);
+		}
+
+		contentDebounce = setTimeout(() => {
+			void applyContentFilter();
+		}, 250);
+	}
+
+	async function applyContentFilter() {
+		if (contentDebounce) {
+			clearTimeout(contentDebounce);
+			contentDebounce = null;
+		}
+
+		const normalizedContent = contentFilter.trim();
+		if (normalizedContent === activeJournalContent) {
+			contentDirty = false;
+			return;
+		}
+
+		const nextUrl = buildNextUrl((searchParams) => {
+			if (normalizedContent) {
+				searchParams.set('content', normalizedContent);
+			} else {
+				searchParams.delete('content');
+			}
+		});
+
+		try {
+			await goto(nextUrl.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+		} finally {
+			contentDirty = false;
+		}
+	}
+
+	async function handleDateChange(event: Event) {
+		const currentTarget = event.currentTarget;
+		if (!(currentTarget instanceof HTMLInputElement)) {
+			return;
+		}
+
+		const nextDate = currentTarget.value;
+		const nextUrl = buildNextUrl((searchParams) => {
+			if (nextDate) {
+				searchParams.set('date', nextDate);
+			} else {
+				searchParams.delete('date');
+			}
+		});
+
+		await goto(nextUrl.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+	}
+
+	async function handlePeriodChange(nextPeriod: string) {
+		if (!moodPeriods.includes(nextPeriod as MoodPeriod)) {
+			return;
+		}
+
+		const nextUrl = buildNextUrl((searchParams) => {
+			searchParams.set('tab', 'mood');
+
+			if (nextPeriod === 'week') {
+				searchParams.delete('period');
+				return;
+			}
+
+			searchParams.set('period', nextPeriod);
+		});
+
+		await goto(nextUrl.toString());
+	}
 </script>
 
 {#if showPageSkeleton}

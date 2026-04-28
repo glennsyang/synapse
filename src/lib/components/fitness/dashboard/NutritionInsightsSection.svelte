@@ -1,98 +1,98 @@
 <script lang="ts">
-import { Flame, Target, TrendingDown, TrendingUp, UtensilsCrossed } from '@lucide/svelte/icons';
-import { BarChart } from 'layerchart';
-import type { Infer, SuperValidated } from 'sveltekit-superforms';
-import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
-import SetCalorieTargetDialog from '$lib/components/fitness/dialogs/SetCalorieTargetDialog.svelte';
-import * as Card from '$lib/components/ui/card';
-import * as Chart from '$lib/components/ui/chart';
-import type { logMealSchema, setCalorieTargetSchema } from '$lib/schemas/fitness';
-import { getTodayString, parseLocalDateString } from '$lib/utils/date';
+	import { Flame, Target, TrendingDown, TrendingUp, UtensilsCrossed } from '@lucide/svelte/icons';
+	import { BarChart } from 'layerchart';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
+	import SetCalorieTargetDialog from '$lib/components/fitness/dialogs/SetCalorieTargetDialog.svelte';
+	import * as Card from '$lib/components/ui/card';
+	import * as Chart from '$lib/components/ui/chart';
+	import type { logMealSchema, setCalorieTargetSchema } from '$lib/schemas/fitness';
+	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
 
-import FitnessStatusCard from './FitnessStatusCard.svelte';
+	import FitnessStatusCard from './FitnessStatusCard.svelte';
 
-interface Meal {
-	id: string;
-	date: string;
-	timeOfDay: string;
-	description: string;
-	caloriesEstimate: number | null;
-}
-
-interface CalorieTarget {
-	targetCalories: number;
-}
-
-interface Props {
-	meals: Meal[];
-	calorieTarget: CalorieTarget | null | undefined;
-	mealForm: SuperValidated<Infer<typeof logMealSchema>>;
-	calorieForm: SuperValidated<Infer<typeof setCalorieTargetSchema>>;
-}
-
-let { meals, calorieTarget, mealForm, calorieForm }: Props = $props();
-
-const target = $derived(calorieTarget?.targetCalories ?? null);
-
-// Last 7 days adherence data
-const adherenceData = $derived.by(() => {
-	const today = getTodayString();
-	const todayDate = parseLocalDateString(today);
-	const days: { day: string; calories: number; target: number | null }[] = [];
-
-	for (let i = 6; i >= 0; i--) {
-		const d = new Date(todayDate);
-		d.setDate(d.getDate() - i);
-		const dateStr = d.toISOString().slice(0, 10);
-		const label = d.toLocaleDateString('en-US', { weekday: 'short' });
-
-		const dayCals = meals
-			.filter((m) => m.date === dateStr)
-			.reduce((sum, m) => sum + (m.caloriesEstimate ?? 0), 0);
-
-		days.push({ day: label, calories: dayCals, target });
+	interface Meal {
+		id: string;
+		date: string;
+		timeOfDay: string;
+		description: string;
+		caloriesEstimate: number | null;
 	}
-	return days;
-});
 
-// Today's stats
-const todayCalories = $derived.by(() => {
-	const today = getTodayString();
-	return meals.filter((m) => m.date === today).reduce((s, m) => s + (m.caloriesEstimate ?? 0), 0);
-});
-
-const todayPercentage = $derived(target ? Math.round((todayCalories / target) * 100) : null);
-const todayRemaining = $derived(target ? Math.max(target - todayCalories, 0) : null);
-const todayOver = $derived(target && todayCalories > target ? todayCalories - target : null);
-
-// 7-day average
-const sevenDayAvg = $derived.by(() => {
-	const withCals = adherenceData.filter((d) => d.calories > 0);
-	if (withCals.length === 0) return null;
-	return Math.round(withCals.reduce((s, d) => s + d.calories, 0) / withCals.length);
-});
-
-// Avg delta vs target (last 7 days)
-const avgDelta = $derived.by(() => {
-	if (!target) return null;
-	const withCals = adherenceData.filter((d) => d.calories > 0);
-	if (withCals.length === 0) return null;
-	const avg = withCals.reduce((s, d) => s + d.calories, 0) / withCals.length;
-	return Math.round(avg - target);
-});
-
-// Most consistent meal period
-const topMealPeriod = $derived.by(() => {
-	const counts: Record<string, number> = {};
-	for (const m of meals) {
-		counts[m.timeOfDay] = (counts[m.timeOfDay] ?? 0) + 1;
+	interface CalorieTarget {
+		targetCalories: number;
 	}
-	return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-});
 
-const chartConfig = {
-	calories: { label: 'Calories', color: 'var(--chart-2)' }
-} satisfies Chart.ChartConfig;
+	interface Props {
+		meals: Meal[];
+		calorieTarget: CalorieTarget | null | undefined;
+		mealForm: SuperValidated<Infer<typeof logMealSchema>>;
+		calorieForm: SuperValidated<Infer<typeof setCalorieTargetSchema>>;
+	}
+
+	let { meals, calorieTarget, mealForm, calorieForm }: Props = $props();
+
+	const target = $derived(calorieTarget?.targetCalories ?? null);
+
+	// Last 7 days adherence data
+	const adherenceData = $derived.by(() => {
+		const today = getTodayString();
+		const todayDate = parseLocalDateString(today);
+		const days: { day: string; calories: number; target: number | null }[] = [];
+
+		for (let i = 6; i >= 0; i--) {
+			const d = new Date(todayDate);
+			d.setDate(d.getDate() - i);
+			const dateStr = d.toISOString().slice(0, 10);
+			const label = d.toLocaleDateString('en-US', { weekday: 'short' });
+
+			const dayCals = meals
+				.filter((m) => m.date === dateStr)
+				.reduce((sum, m) => sum + (m.caloriesEstimate ?? 0), 0);
+
+			days.push({ day: label, calories: dayCals, target });
+		}
+		return days;
+	});
+
+	// Today's stats
+	const todayCalories = $derived.by(() => {
+		const today = getTodayString();
+		return meals.filter((m) => m.date === today).reduce((s, m) => s + (m.caloriesEstimate ?? 0), 0);
+	});
+
+	const todayPercentage = $derived(target ? Math.round((todayCalories / target) * 100) : null);
+	const todayRemaining = $derived(target ? Math.max(target - todayCalories, 0) : null);
+	const todayOver = $derived(target && todayCalories > target ? todayCalories - target : null);
+
+	// 7-day average
+	const sevenDayAvg = $derived.by(() => {
+		const withCals = adherenceData.filter((d) => d.calories > 0);
+		if (withCals.length === 0) return null;
+		return Math.round(withCals.reduce((s, d) => s + d.calories, 0) / withCals.length);
+	});
+
+	// Avg delta vs target (last 7 days)
+	const avgDelta = $derived.by(() => {
+		if (!target) return null;
+		const withCals = adherenceData.filter((d) => d.calories > 0);
+		if (withCals.length === 0) return null;
+		const avg = withCals.reduce((s, d) => s + d.calories, 0) / withCals.length;
+		return Math.round(avg - target);
+	});
+
+	// Most consistent meal period
+	const topMealPeriod = $derived.by(() => {
+		const counts: Record<string, number> = {};
+		for (const m of meals) {
+			counts[m.timeOfDay] = (counts[m.timeOfDay] ?? 0) + 1;
+		}
+		return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+	});
+
+	const chartConfig = {
+		calories: { label: 'Calories', color: 'var(--chart-2)' }
+	} satisfies Chart.ChartConfig;
 </script>
 
 <section class="mb-2 space-y-4">

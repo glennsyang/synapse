@@ -1,49 +1,49 @@
 <script lang="ts">
-import { Check, ChevronsUpDown, X } from '@lucide/svelte';
+	import { Check, ChevronsUpDown, X } from '@lucide/svelte';
 
-import { goto } from '$app/navigation';
-import { page } from '$app/state';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Command from '$lib/components/ui/command';
-import * as Popover from '$lib/components/ui/popover';
-import { cn } from '$lib/utils';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Command from '$lib/components/ui/command';
+	import * as Popover from '$lib/components/ui/popover';
+	import { cn } from '$lib/utils';
 
-const durationOptions = [
-	{ value: 10, label: '10 min' },
-	{ value: 15, label: '15 min' },
-	{ value: 20, label: '20 min' },
-	{ value: 30, label: '30 min' }
-];
+	const durationOptions = [
+		{ value: 10, label: '10 min' },
+		{ value: 15, label: '15 min' },
+		{ value: 20, label: '20 min' },
+		{ value: 30, label: '30 min' }
+	];
 
-// Parse selected duration from URL (single value)
-let selectedDuration = $derived.by(() => {
-	const param = page.url.searchParams.get('duration');
-	if (!param) return null;
-	const parsed = Number.parseInt(param, 10);
-	return durationOptions.some((o) => o.value === parsed) ? parsed : null;
-});
+	// Parse selected duration from URL (single value)
+	let selectedDuration = $derived.by(() => {
+		const param = page.url.searchParams.get('duration');
+		if (!param) return null;
+		const parsed = Number.parseInt(param, 10);
+		return durationOptions.some((o) => o.value === parsed) ? parsed : null;
+	});
 
-let selectedOption = $derived(durationOptions.find((o) => o.value === selectedDuration) ?? null);
+	let selectedOption = $derived(durationOptions.find((o) => o.value === selectedDuration) ?? null);
 
-let open = $state(false);
+	let open = $state(false);
 
-function toggleDuration(duration: number) {
-	// Single-select: clicking same value deselects
-	const newValue = selectedDuration === duration ? null : duration;
-	updateUrl(newValue);
-	open = false;
-}
-
-function updateUrl(duration: number | null) {
-	const url = new URL(page.url);
-	if (duration !== null) {
-		url.searchParams.set('duration', String(duration));
-	} else {
-		url.searchParams.delete('duration');
+	function toggleDuration(duration: number) {
+		// Single-select: clicking same value deselects
+		const newValue = selectedDuration === duration ? null : duration;
+		updateUrl(newValue);
+		open = false;
 	}
-	void goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-}
+
+	function updateUrl(duration: number | null) {
+		const url = new URL(page.url);
+		if (duration !== null) {
+			url.searchParams.set('duration', String(duration));
+		} else {
+			url.searchParams.delete('duration');
+		}
+		void goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+	}
 </script>
 
 <div class="w-full space-y-2">

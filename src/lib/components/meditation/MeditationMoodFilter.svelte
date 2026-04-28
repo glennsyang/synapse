@@ -1,97 +1,97 @@
 <script lang="ts">
-import { Check, ChevronsUpDown, X } from '@lucide/svelte';
-import { SvelteSet } from 'svelte/reactivity';
+	import { Check, ChevronsUpDown, X } from '@lucide/svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
-import { goto } from '$app/navigation';
-import { page } from '$app/state';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Command from '$lib/components/ui/command';
-import * as Popover from '$lib/components/ui/popover';
-import { MOOD_TAGS } from '$lib/schemas/meditation';
-import { cn } from '$lib/utils';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Command from '$lib/components/ui/command';
+	import * as Popover from '$lib/components/ui/popover';
+	import { MOOD_TAGS } from '$lib/schemas/meditation';
+	import { cn } from '$lib/utils';
 
-const moodOptions = [
-	{
-		value: 'Anxious',
-		dotClass: 'bg-amber-500',
-		badgeClass:
-			'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
-	},
-	{
-		value: 'Low Energy',
-		dotClass: 'bg-blue-500',
-		badgeClass:
-			'border-blue-200 bg-blue-100 text-blue-800 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-200'
-	},
-	{
-		value: 'Focused',
-		dotClass: 'bg-green-500',
-		badgeClass:
-			'border-green-200 bg-green-100 text-green-800 dark:border-green-500/40 dark:bg-green-500/10 dark:text-green-200'
-	},
-	{
-		value: 'Pre-Sleep',
-		dotClass: 'bg-purple-500',
-		badgeClass:
-			'border-purple-200 bg-purple-100 text-purple-800 dark:border-purple-500/40 dark:bg-purple-500/10 dark:text-purple-200'
-	},
-	{
-		value: 'General',
-		dotClass: 'bg-gray-400',
-		badgeClass:
-			'border-gray-200 bg-gray-100 text-gray-800 dark:border-gray-500/40 dark:bg-gray-700 dark:text-gray-200'
-	}
-] as const;
+	const moodOptions = [
+		{
+			value: 'Anxious',
+			dotClass: 'bg-amber-500',
+			badgeClass:
+				'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
+		},
+		{
+			value: 'Low Energy',
+			dotClass: 'bg-blue-500',
+			badgeClass:
+				'border-blue-200 bg-blue-100 text-blue-800 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-200'
+		},
+		{
+			value: 'Focused',
+			dotClass: 'bg-green-500',
+			badgeClass:
+				'border-green-200 bg-green-100 text-green-800 dark:border-green-500/40 dark:bg-green-500/10 dark:text-green-200'
+		},
+		{
+			value: 'Pre-Sleep',
+			dotClass: 'bg-purple-500',
+			badgeClass:
+				'border-purple-200 bg-purple-100 text-purple-800 dark:border-purple-500/40 dark:bg-purple-500/10 dark:text-purple-200'
+		},
+		{
+			value: 'General',
+			dotClass: 'bg-gray-400',
+			badgeClass:
+				'border-gray-200 bg-gray-100 text-gray-800 dark:border-gray-500/40 dark:bg-gray-700 dark:text-gray-200'
+		}
+	] as const;
 
-type MoodTag = (typeof MOOD_TAGS)[number];
+	type MoodTag = (typeof MOOD_TAGS)[number];
 
-// Parse selected moods from URL
-let selectedMoods = $derived.by(() => {
-	const moodParam = page.url.searchParams.get('mood');
-	return moodParam
-		? Array.from(
-				new Set(
-					moodParam
-						.split(',')
-						.map((m) => m.trim())
-						.filter((m): m is MoodTag => MOOD_TAGS.includes(m as MoodTag))
+	// Parse selected moods from URL
+	let selectedMoods = $derived.by(() => {
+		const moodParam = page.url.searchParams.get('mood');
+		return moodParam
+			? Array.from(
+					new Set(
+						moodParam
+							.split(',')
+							.map((m) => m.trim())
+							.filter((m): m is MoodTag => MOOD_TAGS.includes(m as MoodTag))
+					)
 				)
-			)
-		: [];
-});
+			: [];
+	});
 
-let selectedMoodOptions = $derived(moodOptions.filter((o) => selectedMoods.includes(o.value)));
+	let selectedMoodOptions = $derived(moodOptions.filter((o) => selectedMoods.includes(o.value)));
 
-let open = $state(false);
+	let open = $state(false);
 
-function toggleMood(mood: MoodTag) {
-	const current = new SvelteSet(selectedMoods);
-	if (current.has(mood)) {
-		current.delete(mood);
-	} else {
-		current.add(mood);
+	function toggleMood(mood: MoodTag) {
+		const current = new SvelteSet(selectedMoods);
+		if (current.has(mood)) {
+			current.delete(mood);
+		} else {
+			current.add(mood);
+		}
+		updateUrl(Array.from(current));
 	}
-	updateUrl(Array.from(current));
-}
 
-function removeMood(mood: MoodTag) {
-	updateUrl(selectedMoods.filter((m) => m !== mood));
-}
-
-function clearAll() {
-	updateUrl([]);
-}
-
-function updateUrl(moods: MoodTag[]) {
-	const url = new URL(page.url);
-	if (moods.length > 0) {
-		url.searchParams.set('mood', moods.join(','));
-	} else {
-		url.searchParams.delete('mood');
+	function removeMood(mood: MoodTag) {
+		updateUrl(selectedMoods.filter((m) => m !== mood));
 	}
-	void goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-}
+
+	function clearAll() {
+		updateUrl([]);
+	}
+
+	function updateUrl(moods: MoodTag[]) {
+		const url = new URL(page.url);
+		if (moods.length > 0) {
+			url.searchParams.set('mood', moods.join(','));
+		} else {
+			url.searchParams.delete('mood');
+		}
+		void goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+	}
 </script>
 
 <div class="w-full space-y-2">

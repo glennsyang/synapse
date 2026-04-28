@@ -1,160 +1,160 @@
 <script lang="ts">
-import {
-	CirclePlay,
-	Clock,
-	ListFilter,
-	Pencil,
-	Plus,
-	Search,
-	Sparkles,
-	Trash2
-} from '@lucide/svelte';
-import { onDestroy } from 'svelte';
-import { toast } from 'svelte-sonner';
-import { superForm } from 'sveltekit-superforms';
+	import {
+		CirclePlay,
+		Clock,
+		ListFilter,
+		Pencil,
+		Plus,
+		Search,
+		Sparkles,
+		Trash2
+	} from '@lucide/svelte';
+	import { onDestroy } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
 
-import { goto } from '$app/navigation';
-import { navigating, page } from '$app/state';
-import PageShell from '$lib/components/app/PageShell.svelte';
-import MeditationDurationFilter from '$lib/components/meditation/MeditationDurationFilter.svelte';
-import MeditationMoodFilter from '$lib/components/meditation/MeditationMoodFilter.svelte';
-import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import * as Collapsible from '$lib/components/ui/collapsible';
-import * as Dialog from '$lib/components/ui/dialog';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import * as Tabs from '$lib/components/ui/tabs';
-import { Textarea } from '$lib/components/ui/textarea';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
-import type { PageData } from './$types';
+	import { goto } from '$app/navigation';
+	import { navigating, page } from '$app/state';
+	import PageShell from '$lib/components/app/PageShell.svelte';
+	import MeditationDurationFilter from '$lib/components/meditation/MeditationDurationFilter.svelte';
+	import MeditationMoodFilter from '$lib/components/meditation/MeditationMoodFilter.svelte';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as Collapsible from '$lib/components/ui/collapsible';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-let showEditSessionDialog = $state(false);
-let showDeleteSessionConfirm = $state(false);
-let sessionToDelete = $state<string | null>(null);
-// svelte-ignore state_referenced_locally
-let selectedSession = $state<(typeof data.sessions)[number] | null>(null);
+	let showEditSessionDialog = $state(false);
+	let showDeleteSessionConfirm = $state(false);
+	let sessionToDelete = $state<string | null>(null);
+	// svelte-ignore state_referenced_locally
+	let selectedSession = $state<(typeof data.sessions)[number] | null>(null);
 
-// svelte-ignore state_referenced_locally
-const {
-	form: editSessionForm,
-	errors: editSessionErrors,
-	enhance: editSessionEnhance,
-	submitting: editSessionSubmitting
-} = superForm(data.editSessionForm, {
-	onUpdate: ({ form }) => {
-		if (form.valid && form.message?.type === 'success') {
-			toast.success('Session updated successfully!');
-			showEditSessionDialog = false;
+	// svelte-ignore state_referenced_locally
+	const {
+		form: editSessionForm,
+		errors: editSessionErrors,
+		enhance: editSessionEnhance,
+		submitting: editSessionSubmitting
+	} = superForm(data.editSessionForm, {
+		onUpdate: ({ form }) => {
+			if (form.valid && form.message?.type === 'success') {
+				toast.success('Session updated successfully!');
+				showEditSessionDialog = false;
+			}
+			if (form.message?.type === 'error') {
+				toast.error(`Error: ${form.message.text}`);
+			}
 		}
-		if (form.message?.type === 'error') {
-			toast.error(`Error: ${form.message.text}`);
+	});
+
+	function toDatetimeLocal(isoString: string): string {
+		const d = new Date(isoString);
+		const pad = (n: number) => String(n).padStart(2, '0');
+		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+	}
+
+	function openEditSession(session: (typeof data.sessions)[number]) {
+		selectedSession = session;
+		$editSessionForm.id = session.id;
+		$editSessionForm.completed_at = toDatetimeLocal(session.completedAt);
+		$editSessionForm.pre_mood_rating = session.preMoodRating ?? undefined;
+		$editSessionForm.mood_rating = session.moodRating ?? undefined;
+		$editSessionForm.notes = session.notes ?? undefined;
+		showEditSessionDialog = true;
+	}
+
+	const moodTagColors: Record<string, string> = {
+		Anxious: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+		'Low Energy': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+		Focused: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+		'Pre-Sleep': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+		General: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+	};
+
+	let filtersOpen = $state(false);
+	let keyword = $state(page.url.searchParams.get('search') ?? '');
+	let keywordDebounce = $state<ReturnType<typeof setTimeout> | null>(null);
+	let keywordDirty = $state(false);
+	let urlKeyword = $derived(page.url.searchParams.get('search') ?? '');
+
+	let hasActiveFilters = $derived(
+		Boolean(page.url.searchParams.get('search')?.trim()) ||
+			Boolean(page.url.searchParams.get('mood')) ||
+			Boolean(page.url.searchParams.get('duration'))
+	);
+
+	const activeTab = $derived.by(() =>
+		page.url.searchParams.get('tab') === 'history' ? 'history' : 'routines'
+	);
+	const showPageSkeleton = $derived(
+		navigating.to?.url.pathname === '/meditation' && navigating.from?.url.pathname !== '/meditation'
+	);
+
+	onDestroy(() => {
+		if (keywordDebounce) {
+			clearTimeout(keywordDebounce);
+		}
+	});
+
+	function handleKeywordInput(event: Event) {
+		const currentTarget = event.currentTarget;
+		if (!(currentTarget instanceof HTMLInputElement)) return;
+		keyword = currentTarget.value;
+		queueKeywordFilterUpdate();
+	}
+
+	function queueKeywordFilterUpdate() {
+		keywordDirty = true;
+		if (keywordDebounce) clearTimeout(keywordDebounce);
+		keywordDebounce = setTimeout(() => {
+			void applyKeywordFilter();
+		}, 250);
+	}
+
+	async function applyKeywordFilter() {
+		if (keywordDebounce) {
+			clearTimeout(keywordDebounce);
+			keywordDebounce = null;
+		}
+		const normalizedKeyword = keyword.trim();
+		if (normalizedKeyword === urlKeyword) {
+			keywordDirty = false;
+			return;
+		}
+		const url = new URL(page.url);
+		if (normalizedKeyword) {
+			url.searchParams.set('search', normalizedKeyword);
+		} else {
+			url.searchParams.delete('search');
+		}
+		try {
+			await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+		} finally {
+			keywordDirty = false;
 		}
 	}
-});
 
-function toDatetimeLocal(isoString: string): string {
-	const d = new Date(isoString);
-	const pad = (n: number) => String(n).padStart(2, '0');
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function openEditSession(session: (typeof data.sessions)[number]) {
-	selectedSession = session;
-	$editSessionForm.id = session.id;
-	$editSessionForm.completed_at = toDatetimeLocal(session.completedAt);
-	$editSessionForm.pre_mood_rating = session.preMoodRating ?? undefined;
-	$editSessionForm.mood_rating = session.moodRating ?? undefined;
-	$editSessionForm.notes = session.notes ?? undefined;
-	showEditSessionDialog = true;
-}
-
-const moodTagColors: Record<string, string> = {
-	Anxious: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
-	'Low Energy': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-	Focused: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-	'Pre-Sleep': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-	General: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-};
-
-let filtersOpen = $state(false);
-let keyword = $state(page.url.searchParams.get('search') ?? '');
-let keywordDebounce = $state<ReturnType<typeof setTimeout> | null>(null);
-let keywordDirty = $state(false);
-let urlKeyword = $derived(page.url.searchParams.get('search') ?? '');
-
-let hasActiveFilters = $derived(
-	Boolean(page.url.searchParams.get('search')?.trim()) ||
-		Boolean(page.url.searchParams.get('mood')) ||
-		Boolean(page.url.searchParams.get('duration'))
-);
-
-const activeTab = $derived.by(() =>
-	page.url.searchParams.get('tab') === 'history' ? 'history' : 'routines'
-);
-const showPageSkeleton = $derived(
-	navigating.to?.url.pathname === '/meditation' && navigating.from?.url.pathname !== '/meditation'
-);
-
-onDestroy(() => {
-	if (keywordDebounce) {
-		clearTimeout(keywordDebounce);
-	}
-});
-
-function handleKeywordInput(event: Event) {
-	const currentTarget = event.currentTarget;
-	if (!(currentTarget instanceof HTMLInputElement)) return;
-	keyword = currentTarget.value;
-	queueKeywordFilterUpdate();
-}
-
-function queueKeywordFilterUpdate() {
-	keywordDirty = true;
-	if (keywordDebounce) clearTimeout(keywordDebounce);
-	keywordDebounce = setTimeout(() => {
-		void applyKeywordFilter();
-	}, 250);
-}
-
-async function applyKeywordFilter() {
-	if (keywordDebounce) {
-		clearTimeout(keywordDebounce);
-		keywordDebounce = null;
-	}
-	const normalizedKeyword = keyword.trim();
-	if (normalizedKeyword === urlKeyword) {
-		keywordDirty = false;
-		return;
-	}
-	const url = new URL(page.url);
-	if (normalizedKeyword) {
-		url.searchParams.set('search', normalizedKeyword);
-	} else {
-		url.searchParams.delete('search');
-	}
-	try {
+	async function switchTab(tab: string) {
+		const url = new URL(page.url);
+		if (tab === 'routines') {
+			url.searchParams.delete('tab');
+		} else {
+			url.searchParams.set('tab', tab);
+		}
 		await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-	} finally {
-		keywordDirty = false;
 	}
-}
-
-async function switchTab(tab: string) {
-	const url = new URL(page.url);
-	if (tab === 'routines') {
-		url.searchParams.delete('tab');
-	} else {
-		url.searchParams.set('tab', tab);
-	}
-	await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-}
 </script>
 
 {#if showPageSkeleton}

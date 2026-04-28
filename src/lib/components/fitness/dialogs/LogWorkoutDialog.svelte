@@ -1,140 +1,140 @@
 <script lang="ts">
-import PlusIcon from '@lucide/svelte/icons/plus';
-import { toast } from 'svelte-sonner';
-import type { Infer, SuperValidated } from 'sveltekit-superforms';
-import { superForm } from 'sveltekit-superforms';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import { toast } from 'svelte-sonner';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
-import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
-import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
-import { Button } from '$lib/components/ui/button';
-import * as Dialog from '$lib/components/ui/dialog';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import * as Select from '$lib/components/ui/select';
-import type { logWorkoutSchema, WorkoutType } from '$lib/schemas/fitness';
-import type { Exercise } from '$lib/types';
-import { getTodayString } from '$lib/utils/date';
-import { workoutTypeOptions } from '$lib/utils/workout';
+	import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
+	import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
+	import type { logWorkoutSchema, WorkoutType } from '$lib/schemas/fitness';
+	import type { Exercise } from '$lib/types';
+	import { getTodayString } from '$lib/utils/date';
+	import { workoutTypeOptions } from '$lib/utils/workout';
 
-type LogWorkoutData = Infer<typeof logWorkoutSchema>;
+	type LogWorkoutData = Infer<typeof logWorkoutSchema>;
 
-interface WorkoutExercise {
-	exerciseName: string;
-	sets: number | null;
-	reps: number | null;
-	weightLbs: number | null;
-}
-
-interface EditWorkout {
-	id: string;
-	date: string;
-	time: string | null;
-	type: string;
-	durationMinutes: number | null;
-	steps: number | null;
-	notes: string | null;
-	exercises: WorkoutExercise[];
-}
-
-let {
-	formData,
-	editEntry = null,
-	onClose,
-	open = $bindable(false),
-	instanceId = 'default'
-}: {
-	formData: SuperValidated<LogWorkoutData>;
-	editEntry?: EditWorkout | null;
-	onClose?: () => void;
-	open?: boolean;
-	instanceId?: string;
-} = $props();
-
-const isEditing = $derived(editEntry !== null);
-
-let internalOpen = $state(false);
-const dialogOpen = $derived(open !== undefined ? open : internalOpen);
-let workoutExercises = $state<Exercise[]>([]);
-
-// Open dialog externally when editEntry is provided
-$effect(() => {
-	if (editEntry && open === undefined) {
-		internalOpen = true;
+	interface WorkoutExercise {
+		exerciseName: string;
+		sets: number | null;
+		reps: number | null;
+		weightLbs: number | null;
 	}
-});
 
-// Generate a unique form ID based on the editing context and instance
-const formId = $derived(editEntry ? `edit-workout-${editEntry.id}` : `log-workout-${instanceId}`);
+	interface EditWorkout {
+		id: string;
+		date: string;
+		time: string | null;
+		type: string;
+		durationMinutes: number | null;
+		steps: number | null;
+		notes: string | null;
+		exercises: WorkoutExercise[];
+	}
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance } = superForm(formData, {
-	id: formId,
-	resetForm: !isEditing,
-	onUpdate: ({ form }) => {
-		if (form.valid) {
-			if (open !== undefined) {
+	let {
+		formData,
+		editEntry = null,
+		onClose,
+		open = $bindable(false),
+		instanceId = 'default'
+	}: {
+		formData: SuperValidated<LogWorkoutData>;
+		editEntry?: EditWorkout | null;
+		onClose?: () => void;
+		open?: boolean;
+		instanceId?: string;
+	} = $props();
+
+	const isEditing = $derived(editEntry !== null);
+
+	let internalOpen = $state(false);
+	const dialogOpen = $derived(open !== undefined ? open : internalOpen);
+	let workoutExercises = $state<Exercise[]>([]);
+
+	// Open dialog externally when editEntry is provided
+	$effect(() => {
+		if (editEntry && open === undefined) {
+			internalOpen = true;
+		}
+	});
+
+	// Generate a unique form ID based on the editing context and instance
+	const formId = $derived(editEntry ? `edit-workout-${editEntry.id}` : `log-workout-${instanceId}`);
+
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance } = superForm(formData, {
+		id: formId,
+		resetForm: !isEditing,
+		onUpdate: ({ form }) => {
+			if (form.valid) {
+				if (open !== undefined) {
+					onClose?.();
+				} else {
+					internalOpen = false;
+				}
+				workoutExercises = [];
+				toast.success(isEditing ? 'Workout updated successfully!' : 'Workout logged successfully!');
 				onClose?.();
-			} else {
-				internalOpen = false;
 			}
-			workoutExercises = [];
-			toast.success(isEditing ? 'Workout updated successfully!' : 'Workout logged successfully!');
-			onClose?.();
+		},
+		onError: ({ result }) => {
+			toast.error(`Error: ${result.error.message}`);
 		}
-	},
-	onError: ({ result }) => {
-		toast.error(`Error: ${result.error.message}`);
-	}
-});
+	});
 
-// $effect(() => {
-// 	if (workoutExercises.length > 0) {
-// 		$form.exercises = JSON.stringify(workoutExercises);
-// 	}
-// });
+	// $effect(() => {
+	// 	if (workoutExercises.length > 0) {
+	// 		$form.exercises = JSON.stringify(workoutExercises);
+	// 	}
+	// });
 
-// Populate form fields when editing
-$effect(() => {
-	if (editEntry) {
-		$form.date = editEntry.date;
-		$form.time = editEntry.time;
-		$form.type = editEntry.type as WorkoutType;
-		$form.durationMinutes = editEntry.durationMinutes;
-		$form.steps = editEntry.steps;
-		$form.notes = editEntry.notes;
-		if (editEntry.exercises && editEntry.exercises.length > 0) {
-			workoutExercises = editEntry.exercises.map((e) => ({
-				exerciseName: e.exerciseName,
-				sets: e.sets,
-				reps: e.reps,
-				weightLbs: e.weightLbs
-			}));
+	// Populate form fields when editing
+	$effect(() => {
+		if (editEntry) {
+			$form.date = editEntry.date;
+			$form.time = editEntry.time;
+			$form.type = editEntry.type as WorkoutType;
+			$form.durationMinutes = editEntry.durationMinutes;
+			$form.steps = editEntry.steps;
+			$form.notes = editEntry.notes;
+			if (editEntry.exercises && editEntry.exercises.length > 0) {
+				workoutExercises = editEntry.exercises.map((e) => ({
+					exerciseName: e.exerciseName,
+					sets: e.sets,
+					reps: e.reps,
+					weightLbs: e.weightLbs
+				}));
+			}
 		}
-	}
-});
+	});
 
-// Default the date to today when opening for new entry
-$effect(() => {
-	if (dialogOpen && !isEditing && !$form.date) {
-		$form.date = getTodayString();
-	}
-});
-
-function handleOpenChange(isOpen: boolean) {
-	if (open !== undefined) {
-		// Externally controlled - notify via onClose
-		if (!isOpen && onClose) {
-			onClose();
+	// Default the date to today when opening for new entry
+	$effect(() => {
+		if (dialogOpen && !isEditing && !$form.date) {
+			$form.date = getTodayString();
 		}
-	} else {
-		// Internally controlled
-		internalOpen = isOpen;
-		if (!isOpen) {
-			workoutExercises = [];
-			onClose?.();
+	});
+
+	function handleOpenChange(isOpen: boolean) {
+		if (open !== undefined) {
+			// Externally controlled - notify via onClose
+			if (!isOpen && onClose) {
+				onClose();
+			}
+		} else {
+			// Internally controlled
+			internalOpen = isOpen;
+			if (!isOpen) {
+				workoutExercises = [];
+				onClose?.();
+			}
 		}
 	}
-}
 </script>
 
 <Dialog.Root open={dialogOpen} onOpenChange={handleOpenChange}>

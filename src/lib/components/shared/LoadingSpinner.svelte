@@ -1,16 +1,16 @@
 <script lang="ts">
-interface Props {
-	size?: 'sm' | 'md' | 'lg';
-	fullScreen?: boolean;
-}
+	interface Props {
+		size?: 'sm' | 'md' | 'lg';
+		fullScreen?: boolean;
+	}
 
-let { size = 'md', fullScreen = false }: Props = $props();
+	let { size = 'md', fullScreen = false }: Props = $props();
 
-const sizeClasses = {
-	sm: 'h-6 w-6 border-2',
-	md: 'h-12 w-12 border-4',
-	lg: 'h-16 w-16 border-4'
-};
+	const sizeClasses = {
+		sm: 'h-6 w-6 border-2',
+		md: 'h-12 w-12 border-4',
+		lg: 'h-16 w-16 border-4'
+	};
 </script>
 
 {#if fullScreen}

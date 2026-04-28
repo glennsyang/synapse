@@ -1,56 +1,56 @@
 <script lang="ts">
-import { Book, Dumbbell, Heart } from '@lucide/svelte/icons';
-import { scaleTime } from 'd3-scale';
-import { LineChart } from 'layerchart';
-import { fade } from 'svelte/transition';
+	import { Book, Dumbbell, Heart } from '@lucide/svelte/icons';
+	import { scaleTime } from 'd3-scale';
+	import { LineChart } from 'layerchart';
+	import { fade } from 'svelte/transition';
 
-import { navigating } from '$app/state';
-import ContentSection from '$lib/components/app/ContentSection.svelte';
-import FeatureCard from '$lib/components/app/FeatureCard.svelte';
-import StatCard from '$lib/components/app/StatCard.svelte';
-import DashboardSkeleton from '$lib/components/skeletons/DashboardSkeleton.svelte';
-import * as Accordion from '$lib/components/ui/accordion/index.js';
-import { Badge } from '$lib/components/ui/badge/index.js';
-import * as Chart from '$lib/components/ui/chart/index.js';
-import * as ScrollArea from '$lib/components/ui/scroll-area/index.js';
-import {
-	formatDateMedium,
-	formatTime12Hour,
-	formatTimestampMedium,
-	formatTimestampShort
-} from '$lib/utils/date';
-import { createMarkdownExcerpt } from '$lib/utils/markdown';
+	import { navigating } from '$app/state';
+	import ContentSection from '$lib/components/app/ContentSection.svelte';
+	import FeatureCard from '$lib/components/app/FeatureCard.svelte';
+	import StatCard from '$lib/components/app/StatCard.svelte';
+	import DashboardSkeleton from '$lib/components/skeletons/DashboardSkeleton.svelte';
+	import * as Accordion from '$lib/components/ui/accordion/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import * as Chart from '$lib/components/ui/chart/index.js';
+	import * as ScrollArea from '$lib/components/ui/scroll-area/index.js';
+	import {
+		formatDateMedium,
+		formatTime12Hour,
+		formatTimestampMedium,
+		formatTimestampShort
+	} from '$lib/utils/date';
+	import { createMarkdownExcerpt } from '$lib/utils/markdown';
 
-import { navItems } from './../sidebar';
+	import { navItems } from './../sidebar';
 
-let { data } = $props();
+	let { data } = $props();
 
-const features = $derived(navItems.navMain.filter((item) => item.title !== 'Dashboard'));
+	const features = $derived(navItems.navMain.filter((item) => item.title !== 'Dashboard'));
 
-// Map features to colors
-const featureColors = {
-	Journal: 'blue' as const,
-	Tasks: 'orange' as const,
-	Fitness: 'green' as const,
-	Meditation: 'purple' as const,
-	Visits: 'pink' as const
-};
+	// Map features to colors
+	const featureColors = {
+		Journal: 'blue' as const,
+		Tasks: 'orange' as const,
+		Fitness: 'green' as const,
+		Meditation: 'purple' as const,
+		Visits: 'pink' as const
+	};
 
-// Chart configuration
-const chartConfig = {
-	total: { label: 'Total Activity', color: 'oklch(var(--color-teal))' }
-} satisfies Chart.ChartConfig;
+	// Chart configuration
+	const chartConfig = {
+		total: { label: 'Total Activity', color: 'oklch(var(--color-teal))' }
+	} satisfies Chart.ChartConfig;
 
-// Prepare chart data
-const chartData = $derived(
-	data.stats.weeklyActivity.map((d) => ({
-		date: new Date(d.date),
-		journal: d.journal,
-		meditation: d.meditation,
-		workouts: d.workouts,
-		total: d.journal + d.meditation + d.workouts
-	}))
-);
+	// Prepare chart data
+	const chartData = $derived(
+		data.stats.weeklyActivity.map((d) => ({
+			date: new Date(d.date),
+			journal: d.journal,
+			meditation: d.meditation,
+			workouts: d.workouts,
+			total: d.journal + d.meditation + d.workouts
+		}))
+	);
 </script>
 
 <svelte:head> <title>Dashboard - Synapse</title> </svelte:head>

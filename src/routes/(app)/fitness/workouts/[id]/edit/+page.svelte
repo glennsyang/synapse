@@ -1,53 +1,53 @@
 <script lang="ts">
-import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
-import { superForm } from 'sveltekit-superforms';
+	import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
+	import { superForm } from 'sveltekit-superforms';
 
-import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
-import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import * as Select from '$lib/components/ui/select';
-import type { Exercise } from '$lib/types';
+	import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+	import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
+	import type { Exercise } from '$lib/types';
 
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-// svelte-ignore state_referenced_locally
-const { form, errors, enhance, submitting } = superForm(data.form, {
-	dataType: 'form'
-});
+	// svelte-ignore state_referenced_locally
+	const { form, errors, enhance, submitting } = superForm(data.form, {
+		dataType: 'form'
+	});
 
-const initialExercises = (() => {
-	if (!$form.exercises) {
-		return [] as Exercise[];
-	}
-
-	try {
-		const parsed = JSON.parse($form.exercises);
-		if (!Array.isArray(parsed)) {
+	const initialExercises = (() => {
+		if (!$form.exercises) {
 			return [] as Exercise[];
 		}
 
-		return parsed as Exercise[];
-	} catch {
-		return [] as Exercise[];
-	}
-})();
+		try {
+			const parsed = JSON.parse($form.exercises);
+			if (!Array.isArray(parsed)) {
+				return [] as Exercise[];
+			}
 
-let workoutExercises = $state<Exercise[]>(initialExercises);
-let showDeleteDialog = $state(false);
+			return parsed as Exercise[];
+		} catch {
+			return [] as Exercise[];
+		}
+	})();
 
-$effect(() => {
-	if ($form.type === 'strength') {
-		$form.exercises = JSON.stringify(workoutExercises);
-	} else {
-		$form.exercises = null;
-	}
-});
+	let workoutExercises = $state<Exercise[]>(initialExercises);
+	let showDeleteDialog = $state(false);
+
+	$effect(() => {
+		if ($form.type === 'strength') {
+			$form.exercises = JSON.stringify(workoutExercises);
+		} else {
+			$form.exercises = null;
+		}
+	});
 </script>
 
 <div class="container mx-auto max-w-3xl py-8">

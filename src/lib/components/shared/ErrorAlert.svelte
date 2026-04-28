@@ -1,14 +1,14 @@
 <script lang="ts">
-import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
+	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 
-import * as Alert from '$lib/components/ui/alert';
+	import * as Alert from '$lib/components/ui/alert';
 
-interface Props {
-	message?: string;
-	variant?: 'default' | 'destructive';
-}
+	interface Props {
+		message?: string;
+		variant?: 'default' | 'destructive';
+	}
 
-let { message = 'An error occurred', variant = 'destructive' }: Props = $props();
+	let { message = 'An error occurred', variant = 'destructive' }: Props = $props();
 </script>
 
 <Alert.Root {variant}>

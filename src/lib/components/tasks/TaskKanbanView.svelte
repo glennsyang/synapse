@@ -1,262 +1,262 @@
 <script lang="ts">
-import { ChevronLeft, ChevronRight, Plus } from '@lucide/svelte/icons';
-import { flip } from 'svelte/animate';
-import type { DndEvent } from 'svelte-dnd-action';
-import { dndzone } from 'svelte-dnd-action';
-import { toast } from 'svelte-sonner';
+	import { ChevronLeft, ChevronRight, Plus } from '@lucide/svelte/icons';
+	import { flip } from 'svelte/animate';
+	import type { DndEvent } from 'svelte-dnd-action';
+	import { dndzone } from 'svelte-dnd-action';
+	import { toast } from 'svelte-sonner';
 
-import { Button } from '$lib/components/ui/button';
-import { IsMobile } from '$lib/hooks/is-mobile.svelte';
-import type { TaskState } from '$lib/schemas/task';
+	import { Button } from '$lib/components/ui/button';
+	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
+	import type { TaskState } from '$lib/schemas/task';
 
-import TaskCard from './TaskCard.svelte';
-import { type TaskSummary, taskStateOptions } from './task-ui';
+	import TaskCard from './TaskCard.svelte';
+	import { type TaskSummary, taskStateOptions } from './task-ui';
 
-interface Props {
-	tasks: TaskSummary[];
-}
-
-type BoardTasksByState = Record<TaskState, TaskSummary[]>;
-type TaskBoardDndEvent = CustomEvent<DndEvent<TaskSummary>>;
-type MoveBoardTaskPayload = {
-	id: string;
-	fromState: TaskState;
-	toState: TaskState;
-	toIndex: number;
-};
-
-const taskStateOrder: TaskState[] = ['new', 'in_progress', 'on_hold', 'blocked', 'done'];
-const flipDurationMs = 180;
-const touchStartDelayMs = 120;
-
-let { tasks }: Props = $props();
-
-const isMobileQuery = new IsMobile();
-
-let showDone = $state(false);
-let boardTasks = $derived(createBoardTasksByState(tasks));
-let isDragging = $state(false);
-let isSavingMove = $state(false);
-let dragSnapshot = $state<BoardTasksByState | null>(null);
-
-let isMobileLayout = $derived(isMobileQuery.current);
-
-let columns = $derived([
-	{
-		...taskStateOptions[0],
-		count: boardTasks.new.length
-	},
-	{
-		...taskStateOptions[1],
-		count: boardTasks.in_progress.length
-	},
-	{
-		...taskStateOptions[2],
-		count: boardTasks.on_hold.length
-	},
-	{
-		...taskStateOptions[3],
-		count: boardTasks.blocked.length
-	},
-	{
-		...taskStateOptions[4],
-		count: boardTasks.done.length
+	interface Props {
+		tasks: TaskSummary[];
 	}
-]);
 
-let visibleColumns = $derived(
-	showDone ? columns : columns.filter((column) => column.value !== 'done')
-);
-let doneColumn = $derived(columns.find((column) => column.value === 'done') ?? columns[4]);
-let desktopGridColumns = $derived(
-	showDone
-		? `repeat(${visibleColumns.length}, minmax(0, 1fr))`
-		: `repeat(${visibleColumns.length}, minmax(0, 1fr)) 4.5rem`
-);
-
-const mobileDoneColumnId = 'tasks-done-column-mobile';
-const desktopDoneColumnId = 'tasks-done-column-desktop';
-
-function createEmptyBoardTasksByState(): BoardTasksByState {
-	return {
-		new: [],
-		in_progress: [],
-		on_hold: [],
-		blocked: [],
-		done: []
+	type BoardTasksByState = Record<TaskState, TaskSummary[]>;
+	type TaskBoardDndEvent = CustomEvent<DndEvent<TaskSummary>>;
+	type MoveBoardTaskPayload = {
+		id: string;
+		fromState: TaskState;
+		toState: TaskState;
+		toIndex: number;
 	};
-}
 
-function createBoardTasksByState(taskList: TaskSummary[]): BoardTasksByState {
-	const nextBoardTasks = createEmptyBoardTasksByState();
+	const taskStateOrder: TaskState[] = ['new', 'in_progress', 'on_hold', 'blocked', 'done'];
+	const flipDurationMs = 180;
+	const touchStartDelayMs = 120;
 
-	for (const state of taskStateOrder) {
-		const tasksForState = taskList.filter((task) => task.state === state);
-		tasksForState.sort((left, right) => {
-			if (left.sortOrder !== right.sortOrder) {
-				return left.sortOrder - right.sortOrder;
-			}
+	let { tasks }: Props = $props();
 
-			return left.taskNumber - right.taskNumber;
-		});
-		nextBoardTasks[state] = tasksForState;
-	}
+	const isMobileQuery = new IsMobile();
 
-	return nextBoardTasks;
-}
+	let showDone = $state(false);
+	let boardTasks = $derived(createBoardTasksByState(tasks));
+	let isDragging = $state(false);
+	let isSavingMove = $state(false);
+	let dragSnapshot = $state<BoardTasksByState | null>(null);
 
-function cloneBoardTasksByState(source: BoardTasksByState): BoardTasksByState {
-	return {
-		new: [...source.new],
-		in_progress: [...source.in_progress],
-		on_hold: [...source.on_hold],
-		blocked: [...source.blocked],
-		done: [...source.done]
-	};
-}
+	let isMobileLayout = $derived(isMobileQuery.current);
 
-function findTaskState(board: BoardTasksByState, taskId: string): TaskState | null {
-	for (const state of taskStateOrder) {
-		if (board[state].some((task) => task.id === taskId)) {
-			return state;
-		}
-	}
-
-	return null;
-}
-
-function getDndZoneOptions(items: TaskSummary[]) {
-	return {
-		items,
-		flipDurationMs,
-		type: 'task-board',
-		dragDisabled: isSavingMove,
-		useCursorForDetection: true,
-		dropTargetClasses: [
-			'ring-2',
-			'ring-orange-300/70',
-			'ring-offset-2',
-			'ring-offset-background',
-			'shadow-[inset_0_0_0_1px_rgba(251,146,60,0.22)]',
-			'dark:ring-orange-400/45',
-			'dark:shadow-[inset_0_0_0_1px_rgba(251,146,60,0.26)]'
-		],
-		delayTouchStart: touchStartDelayMs
-	};
-}
-
-function updateBoardColumnTasks(state: TaskState, items: TaskSummary[]) {
-	boardTasks = {
-		...boardTasks,
-		[state]: [...items]
-	};
-}
-
-async function submitBoardMove(payload: MoveBoardTaskPayload): Promise<Response> {
-	const formData = new FormData();
-	formData.set('id', payload.id);
-	formData.set('fromState', payload.fromState);
-	formData.set('toState', payload.toState);
-	formData.set('toIndex', String(payload.toIndex));
-
-	return fetch('?/moveBoardTask', {
-		method: 'POST',
-		body: formData
-	});
-}
-
-async function persistBoardMove(payload: MoveBoardTaskPayload, snapshot: BoardTasksByState) {
-	isSavingMove = true;
-
-	try {
-		const response = await submitBoardMove(payload);
-		if (!response.ok) {
-			throw new Error('move-failed');
-		}
-	} catch {
-		boardTasks = cloneBoardTasksByState(snapshot);
-		toast.error('Could not save task move. The board was restored.');
-	} finally {
-		isSavingMove = false;
-	}
-}
-
-function handleColumnConsider(state: TaskState, event: TaskBoardDndEvent) {
-	if (!isDragging) {
-		dragSnapshot = cloneBoardTasksByState(boardTasks);
-		isDragging = true;
-	}
-
-	updateBoardColumnTasks(state, event.detail.items);
-}
-
-async function handleColumnFinalize(state: TaskState, event: TaskBoardDndEvent) {
-	const nextStateTasks = [...event.detail.items];
-	updateBoardColumnTasks(state, nextStateTasks);
-
-	const movedTaskId = String(event.detail.info.id ?? '');
-	if (!movedTaskId || isSavingMove) {
-		return;
-	}
-
-	const toIndex = nextStateTasks.findIndex((task) => task.id === movedTaskId);
-	if (toIndex === -1) {
-		return;
-	}
-
-	const snapshot = dragSnapshot
-		? cloneBoardTasksByState(dragSnapshot)
-		: cloneBoardTasksByState(boardTasks);
-	const fromState = findTaskState(snapshot, movedTaskId);
-	if (!fromState) {
-		return;
-	}
-
-	const movedTask = nextStateTasks[toIndex];
-	if (movedTask && movedTask.state !== state) {
-		nextStateTasks[toIndex] = {
-			...movedTask,
-			state
-		};
-		updateBoardColumnTasks(state, nextStateTasks);
-	}
-
-	await persistBoardMove(
+	let columns = $derived([
 		{
-			id: movedTaskId,
-			fromState,
-			toState: state,
-			toIndex
+			...taskStateOptions[0],
+			count: boardTasks.new.length
 		},
-		snapshot
+		{
+			...taskStateOptions[1],
+			count: boardTasks.in_progress.length
+		},
+		{
+			...taskStateOptions[2],
+			count: boardTasks.on_hold.length
+		},
+		{
+			...taskStateOptions[3],
+			count: boardTasks.blocked.length
+		},
+		{
+			...taskStateOptions[4],
+			count: boardTasks.done.length
+		}
+	]);
+
+	let visibleColumns = $derived(
+		showDone ? columns : columns.filter((column) => column.value !== 'done')
+	);
+	let doneColumn = $derived(columns.find((column) => column.value === 'done') ?? columns[4]);
+	let desktopGridColumns = $derived(
+		showDone
+			? `repeat(${visibleColumns.length}, minmax(0, 1fr))`
+			: `repeat(${visibleColumns.length}, minmax(0, 1fr)) 4.5rem`
 	);
 
-	isDragging = false;
-	dragSnapshot = null;
-}
+	const mobileDoneColumnId = 'tasks-done-column-mobile';
+	const desktopDoneColumnId = 'tasks-done-column-desktop';
 
-function handleStateChange(taskId: string, newState: TaskState) {
-	const form = document.createElement('form');
-	form.method = 'POST';
-	form.action = '?/updateState';
+	function createEmptyBoardTasksByState(): BoardTasksByState {
+		return {
+			new: [],
+			in_progress: [],
+			on_hold: [],
+			blocked: [],
+			done: []
+		};
+	}
 
-	const idInput = document.createElement('input');
-	idInput.type = 'hidden';
-	idInput.name = 'id';
-	idInput.value = taskId;
+	function createBoardTasksByState(taskList: TaskSummary[]): BoardTasksByState {
+		const nextBoardTasks = createEmptyBoardTasksByState();
 
-	const stateInput = document.createElement('input');
-	stateInput.type = 'hidden';
-	stateInput.name = 'state';
-	stateInput.value = newState;
+		for (const state of taskStateOrder) {
+			const tasksForState = taskList.filter((task) => task.state === state);
+			tasksForState.sort((left, right) => {
+				if (left.sortOrder !== right.sortOrder) {
+					return left.sortOrder - right.sortOrder;
+				}
 
-	form.appendChild(idInput);
-	form.appendChild(stateInput);
-	document.body.appendChild(form);
-	form.submit();
-}
+				return left.taskNumber - right.taskNumber;
+			});
+			nextBoardTasks[state] = tasksForState;
+		}
 
-const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
+		return nextBoardTasks;
+	}
+
+	function cloneBoardTasksByState(source: BoardTasksByState): BoardTasksByState {
+		return {
+			new: [...source.new],
+			in_progress: [...source.in_progress],
+			on_hold: [...source.on_hold],
+			blocked: [...source.blocked],
+			done: [...source.done]
+		};
+	}
+
+	function findTaskState(board: BoardTasksByState, taskId: string): TaskState | null {
+		for (const state of taskStateOrder) {
+			if (board[state].some((task) => task.id === taskId)) {
+				return state;
+			}
+		}
+
+		return null;
+	}
+
+	function getDndZoneOptions(items: TaskSummary[]) {
+		return {
+			items,
+			flipDurationMs,
+			type: 'task-board',
+			dragDisabled: isSavingMove,
+			useCursorForDetection: true,
+			dropTargetClasses: [
+				'ring-2',
+				'ring-orange-300/70',
+				'ring-offset-2',
+				'ring-offset-background',
+				'shadow-[inset_0_0_0_1px_rgba(251,146,60,0.22)]',
+				'dark:ring-orange-400/45',
+				'dark:shadow-[inset_0_0_0_1px_rgba(251,146,60,0.26)]'
+			],
+			delayTouchStart: touchStartDelayMs
+		};
+	}
+
+	function updateBoardColumnTasks(state: TaskState, items: TaskSummary[]) {
+		boardTasks = {
+			...boardTasks,
+			[state]: [...items]
+		};
+	}
+
+	async function submitBoardMove(payload: MoveBoardTaskPayload): Promise<Response> {
+		const formData = new FormData();
+		formData.set('id', payload.id);
+		formData.set('fromState', payload.fromState);
+		formData.set('toState', payload.toState);
+		formData.set('toIndex', String(payload.toIndex));
+
+		return fetch('?/moveBoardTask', {
+			method: 'POST',
+			body: formData
+		});
+	}
+
+	async function persistBoardMove(payload: MoveBoardTaskPayload, snapshot: BoardTasksByState) {
+		isSavingMove = true;
+
+		try {
+			const response = await submitBoardMove(payload);
+			if (!response.ok) {
+				throw new Error('move-failed');
+			}
+		} catch {
+			boardTasks = cloneBoardTasksByState(snapshot);
+			toast.error('Could not save task move. The board was restored.');
+		} finally {
+			isSavingMove = false;
+		}
+	}
+
+	function handleColumnConsider(state: TaskState, event: TaskBoardDndEvent) {
+		if (!isDragging) {
+			dragSnapshot = cloneBoardTasksByState(boardTasks);
+			isDragging = true;
+		}
+
+		updateBoardColumnTasks(state, event.detail.items);
+	}
+
+	async function handleColumnFinalize(state: TaskState, event: TaskBoardDndEvent) {
+		const nextStateTasks = [...event.detail.items];
+		updateBoardColumnTasks(state, nextStateTasks);
+
+		const movedTaskId = String(event.detail.info.id ?? '');
+		if (!movedTaskId || isSavingMove) {
+			return;
+		}
+
+		const toIndex = nextStateTasks.findIndex((task) => task.id === movedTaskId);
+		if (toIndex === -1) {
+			return;
+		}
+
+		const snapshot = dragSnapshot
+			? cloneBoardTasksByState(dragSnapshot)
+			: cloneBoardTasksByState(boardTasks);
+		const fromState = findTaskState(snapshot, movedTaskId);
+		if (!fromState) {
+			return;
+		}
+
+		const movedTask = nextStateTasks[toIndex];
+		if (movedTask && movedTask.state !== state) {
+			nextStateTasks[toIndex] = {
+				...movedTask,
+				state
+			};
+			updateBoardColumnTasks(state, nextStateTasks);
+		}
+
+		await persistBoardMove(
+			{
+				id: movedTaskId,
+				fromState,
+				toState: state,
+				toIndex
+			},
+			snapshot
+		);
+
+		isDragging = false;
+		dragSnapshot = null;
+	}
+
+	function handleStateChange(taskId: string, newState: TaskState) {
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = '?/updateState';
+
+		const idInput = document.createElement('input');
+		idInput.type = 'hidden';
+		idInput.name = 'id';
+		idInput.value = taskId;
+
+		const stateInput = document.createElement('input');
+		stateInput.type = 'hidden';
+		stateInput.name = 'state';
+		stateInput.value = newState;
+
+		form.appendChild(idInput);
+		form.appendChild(stateInput);
+		document.body.appendChild(form);
+		form.submit();
+	}
+
+	const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
 </script>
 
 {#if isMobileLayout}

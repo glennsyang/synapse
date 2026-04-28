@@ -1,53 +1,53 @@
 <script lang="ts">
-import type { ActionResult } from '@sveltejs/kit';
-import { toast } from 'svelte-sonner';
+	import type { ActionResult } from '@sveltejs/kit';
+	import { toast } from 'svelte-sonner';
 
-import { enhance } from '$app/forms';
-import { Button } from '$lib/components/ui/button/index.js';
-import * as Dialog from '$lib/components/ui/dialog';
+	import { enhance } from '$app/forms';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog';
 
-import Input from '../ui/input/input.svelte';
+	import Input from '../ui/input/input.svelte';
 
-interface Props {
-	open: boolean;
-	title: string;
-	message: string;
-	confirmButtonText: string;
-	id?: string;
-	actionUrl?: string;
-	hiddenFields?: Record<string, string | number | boolean>;
-}
+	interface Props {
+		open: boolean;
+		title: string;
+		message: string;
+		confirmButtonText: string;
+		id?: string;
+		actionUrl?: string;
+		hiddenFields?: Record<string, string | number | boolean>;
+	}
 
-let {
-	open = $bindable(),
-	title,
-	message,
-	id,
-	confirmButtonText,
-	actionUrl,
-	hiddenFields
-}: Props = $props();
+	let {
+		open = $bindable(),
+		title,
+		message,
+		id,
+		confirmButtonText,
+		actionUrl,
+		hiddenFields
+	}: Props = $props();
 
-type ConfirmDialogActionData = {
-	error?: string;
-	agendaAction?: {
-		text?: string;
+	type ConfirmDialogActionData = {
+		error?: string;
+		agendaAction?: {
+			text?: string;
+		};
 	};
-};
 
-function getResultMessage(
-	result: ActionResult<ConfirmDialogActionData, ConfirmDialogActionData>
-): string | undefined {
-	if (result.type !== 'success' && result.type !== 'failure') {
-		return undefined;
+	function getResultMessage(
+		result: ActionResult<ConfirmDialogActionData, ConfirmDialogActionData>
+	): string | undefined {
+		if (result.type !== 'success' && result.type !== 'failure') {
+			return undefined;
+		}
+
+		if (typeof result.data?.agendaAction?.text === 'string') {
+			return result.data.agendaAction.text;
+		}
+
+		return typeof result.data?.error === 'string' ? result.data.error : undefined;
 	}
-
-	if (typeof result.data?.agendaAction?.text === 'string') {
-		return result.data.agendaAction.text;
-	}
-
-	return typeof result.data?.error === 'string' ? result.data.error : undefined;
-}
 </script>
 
 <Dialog.Root bind:open>

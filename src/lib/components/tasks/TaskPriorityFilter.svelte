@@ -1,66 +1,66 @@
 <script lang="ts">
-import { Check, ChevronsUpDown, X } from '@lucide/svelte';
-import { SvelteSet } from 'svelte/reactivity';
+	import { Check, ChevronsUpDown, X } from '@lucide/svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
-import { goto } from '$app/navigation';
-import { page } from '$app/state';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Command from '$lib/components/ui/command';
-import * as Popover from '$lib/components/ui/popover';
-import { cn } from '$lib/utils';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Command from '$lib/components/ui/command';
+	import * as Popover from '$lib/components/ui/popover';
+	import { cn } from '$lib/utils';
 
-import { type TaskPriority, taskPriorityOptions } from './task-ui';
+	import { type TaskPriority, taskPriorityOptions } from './task-ui';
 
-const validPriorities = new Set<TaskPriority>([1, 2, 3, 4]);
+	const validPriorities = new Set<TaskPriority>([1, 2, 3, 4]);
 
-let selectedPriorities = $derived.by(() => {
-	const priorityParam = page.url.searchParams.get('priority');
-	const parsedValues = priorityParam
-		? priorityParam
-				.split(',')
-				.map((value) => Number.parseInt(value.trim(), 10))
-				.filter((value): value is TaskPriority => validPriorities.has(value as TaskPriority))
-		: [];
+	let selectedPriorities = $derived.by(() => {
+		const priorityParam = page.url.searchParams.get('priority');
+		const parsedValues = priorityParam
+			? priorityParam
+					.split(',')
+					.map((value) => Number.parseInt(value.trim(), 10))
+					.filter((value): value is TaskPriority => validPriorities.has(value as TaskPriority))
+			: [];
 
-	return Array.from(new Set(parsedValues)).sort((left, right) => left - right) as TaskPriority[];
-});
+		return Array.from(new Set(parsedValues)).sort((left, right) => left - right) as TaskPriority[];
+	});
 
-let selectedPriorityOptions = $derived(
-	taskPriorityOptions.filter((option) => selectedPriorities.includes(option.value))
-);
+	let selectedPriorityOptions = $derived(
+		taskPriorityOptions.filter((option) => selectedPriorities.includes(option.value))
+	);
 
-let open = $state(false);
+	let open = $state(false);
 
-function togglePriority(priority: TaskPriority) {
-	const current = new SvelteSet(selectedPriorities);
-	if (current.has(priority)) {
-		current.delete(priority);
-	} else {
-		current.add(priority);
+	function togglePriority(priority: TaskPriority) {
+		const current = new SvelteSet(selectedPriorities);
+		if (current.has(priority)) {
+			current.delete(priority);
+		} else {
+			current.add(priority);
+		}
+
+		void updateUrl(Array.from(current).sort((left, right) => left - right) as TaskPriority[]);
 	}
 
-	void updateUrl(Array.from(current).sort((left, right) => left - right) as TaskPriority[]);
-}
-
-function removePriority(priority: TaskPriority) {
-	void updateUrl(selectedPriorities.filter((value) => value !== priority));
-}
-
-function clearAll() {
-	void updateUrl([]);
-}
-
-async function updateUrl(priorities: TaskPriority[]) {
-	const url = new URL(page.url);
-	if (priorities.length > 0) {
-		url.searchParams.set('priority', priorities.join(','));
-	} else {
-		url.searchParams.delete('priority');
+	function removePriority(priority: TaskPriority) {
+		void updateUrl(selectedPriorities.filter((value) => value !== priority));
 	}
 
-	await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
-}
+	function clearAll() {
+		void updateUrl([]);
+	}
+
+	async function updateUrl(priorities: TaskPriority[]) {
+		const url = new URL(page.url);
+		if (priorities.length > 0) {
+			url.searchParams.set('priority', priorities.join(','));
+		} else {
+			url.searchParams.delete('priority');
+		}
+
+		await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+	}
 </script>
 
 <div class="w-full space-y-2">

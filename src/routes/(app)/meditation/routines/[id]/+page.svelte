@@ -1,170 +1,170 @@
 <script lang="ts">
-import {
-	ArrowLeft,
-	Calendar,
-	CircleCheck,
-	CirclePlay,
-	Clock,
-	Pencil,
-	Plus,
-	Trash,
-	Trash2
-} from '@lucide/svelte';
-import { toast } from 'svelte-sonner';
-import { superForm } from 'sveltekit-superforms';
+	import {
+		ArrowLeft,
+		Calendar,
+		CircleCheck,
+		CirclePlay,
+		Clock,
+		Pencil,
+		Plus,
+		Trash,
+		Trash2
+	} from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
 
-import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-import { Badge } from '$lib/components/ui/badge';
-import { Button } from '$lib/components/ui/button';
-import * as Card from '$lib/components/ui/card';
-import * as Dialog from '$lib/components/ui/dialog';
-import { Input } from '$lib/components/ui/input';
-import { Label } from '$lib/components/ui/label';
-import * as Select from '$lib/components/ui/select';
-import { Textarea } from '$lib/components/ui/textarea';
-import * as Tooltip from '$lib/components/ui/tooltip';
-import { daysOfWeek, formatTime12Hour, formatTimestampLong } from '$lib/utils/date';
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { daysOfWeek, formatTime12Hour, formatTimestampLong } from '$lib/utils/date';
 
-import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-let { data }: { data: PageData } = $props();
+	let { data }: { data: PageData } = $props();
 
-let showScheduleDialog = $state(false);
-let showSessionDialog = $state(false);
-let showEditDialog = $state(false);
-let showDeleteConfirm = $state(false);
-let showDeleteScheduleConfirm = $state(false);
-let showDeleteSessionConfirm = $state(false);
-let sessionToDelete = $state<string | null>(null);
-let showEditSessionDialog = $state(false);
+	let showScheduleDialog = $state(false);
+	let showSessionDialog = $state(false);
+	let showEditDialog = $state(false);
+	let showDeleteConfirm = $state(false);
+	let showDeleteScheduleConfirm = $state(false);
+	let showDeleteSessionConfirm = $state(false);
+	let sessionToDelete = $state<string | null>(null);
+	let showEditSessionDialog = $state(false);
 
-// svelte-ignore state_referenced_locally
-const {
-	form: scheduleForm,
-	errors: scheduleErrors,
-	enhance: scheduleEnhance,
-	submitting: scheduleSubmitting
-} = superForm(data.scheduleForm, {
-	onUpdate: ({ form }) => {
-		if (form.valid && form.message?.type === 'success') {
-			toast.success('Schedule saved successfully!');
-			showScheduleDialog = false;
+	// svelte-ignore state_referenced_locally
+	const {
+		form: scheduleForm,
+		errors: scheduleErrors,
+		enhance: scheduleEnhance,
+		submitting: scheduleSubmitting
+	} = superForm(data.scheduleForm, {
+		onUpdate: ({ form }) => {
+			if (form.valid && form.message?.type === 'success') {
+				toast.success('Schedule saved successfully!');
+				showScheduleDialog = false;
+			}
+			if (form.message?.type === 'error') {
+				toast.error(`Error: ${form.message.text}`);
+			}
 		}
-		if (form.message?.type === 'error') {
-			toast.error(`Error: ${form.message.text}`);
+	});
+
+	// svelte-ignore state_referenced_locally
+	const {
+		form: sessionForm,
+		errors: sessionErrors,
+		enhance: sessionEnhance,
+		submitting: sessionSubmitting
+	} = superForm(data.sessionForm, {
+		onUpdate: ({ form }) => {
+			if (form.valid && form.message?.type === 'success') {
+				toast.success('Session logged successfully!');
+				showSessionDialog = false;
+			}
+			if (form.message?.type === 'error') {
+				toast.error(`Error: ${form.message.text}`);
+			}
+		}
+	});
+
+	// svelte-ignore state_referenced_locally
+	const {
+		form: updateForm,
+		errors: updateErrors,
+		enhance: updateEnhance,
+		submitting: updateSubmitting
+	} = superForm(data.updateForm, {
+		onUpdate: ({ form }) => {
+			if (form.valid && form.message?.type === 'success') {
+				toast.success('Routine updated successfully!');
+				showEditDialog = false;
+			}
+			if (form.message?.type === 'error') {
+				toast.error(`Error: ${form.message.text}`);
+			}
+		}
+	});
+
+	// svelte-ignore state_referenced_locally
+	const {
+		form: editSessionForm,
+		errors: editSessionErrors,
+		enhance: editSessionEnhance,
+		submitting: editSessionSubmitting
+	} = superForm(data.editSessionForm, {
+		onUpdate: ({ form }) => {
+			if (form.valid && form.message?.type === 'success') {
+				toast.success('Session updated successfully!');
+				showEditSessionDialog = false;
+			}
+			if (form.message?.type === 'error') {
+				toast.error(`Error: ${form.message.text}`);
+			}
+		}
+	});
+
+	const moodTagColors: Record<string, string> = {
+		Anxious: 'bg-amber-100 text-amber-800',
+		'Low Energy': 'bg-blue-100 text-blue-800',
+		Focused: 'bg-green-100 text-green-800',
+		'Pre-Sleep': 'bg-purple-100 text-purple-800',
+		General: 'bg-gray-100 text-gray-800'
+	};
+
+	function getDayName(dayNumber: number) {
+		return daysOfWeek.find((d) => d.id === dayNumber)?.name || 'Unknown';
+	}
+
+	function getSelectedDays(): number[] {
+		try {
+			return $scheduleForm.days_of_week ? JSON.parse($scheduleForm.days_of_week) : [];
+		} catch {
+			return [];
 		}
 	}
-});
 
-// svelte-ignore state_referenced_locally
-const {
-	form: sessionForm,
-	errors: sessionErrors,
-	enhance: sessionEnhance,
-	submitting: sessionSubmitting
-} = superForm(data.sessionForm, {
-	onUpdate: ({ form }) => {
-		if (form.valid && form.message?.type === 'success') {
-			toast.success('Session logged successfully!');
-			showSessionDialog = false;
-		}
-		if (form.message?.type === 'error') {
-			toast.error(`Error: ${form.message.text}`);
+	function toggleDay(dayId: number) {
+		const days = getSelectedDays();
+		if (days.includes(dayId)) {
+			$scheduleForm.days_of_week = JSON.stringify(days.filter((d) => d !== dayId));
+		} else {
+			$scheduleForm.days_of_week = JSON.stringify([...days, dayId].sort((a, b) => a - b));
 		}
 	}
-});
 
-// svelte-ignore state_referenced_locally
-const {
-	form: updateForm,
-	errors: updateErrors,
-	enhance: updateEnhance,
-	submitting: updateSubmitting
-} = superForm(data.updateForm, {
-	onUpdate: ({ form }) => {
-		if (form.valid && form.message?.type === 'success') {
-			toast.success('Routine updated successfully!');
-			showEditDialog = false;
+	function getNowDatetimeLocal(): string {
+		const now = new Date();
+		const pad = (n: number) => String(n).padStart(2, '0');
+		return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+	}
+
+	function toDatetimeLocal(isoString: string): string {
+		const d = new Date(isoString);
+		const pad = (n: number) => String(n).padStart(2, '0');
+		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+	}
+
+	function openEditSession(session: (typeof data.sessions)[number]) {
+		$editSessionForm.id = session.id;
+		$editSessionForm.completed_at = toDatetimeLocal(session.completedAt);
+		$editSessionForm.pre_mood_rating = session.preMoodRating ?? undefined;
+		$editSessionForm.mood_rating = session.moodRating ?? undefined;
+		$editSessionForm.notes = session.notes ?? undefined;
+		showEditSessionDialog = true;
+	}
+
+	$effect(() => {
+		if (showSessionDialog) {
+			$sessionForm.completed_at = getNowDatetimeLocal();
 		}
-		if (form.message?.type === 'error') {
-			toast.error(`Error: ${form.message.text}`);
-		}
-	}
-});
-
-// svelte-ignore state_referenced_locally
-const {
-	form: editSessionForm,
-	errors: editSessionErrors,
-	enhance: editSessionEnhance,
-	submitting: editSessionSubmitting
-} = superForm(data.editSessionForm, {
-	onUpdate: ({ form }) => {
-		if (form.valid && form.message?.type === 'success') {
-			toast.success('Session updated successfully!');
-			showEditSessionDialog = false;
-		}
-		if (form.message?.type === 'error') {
-			toast.error(`Error: ${form.message.text}`);
-		}
-	}
-});
-
-const moodTagColors: Record<string, string> = {
-	Anxious: 'bg-amber-100 text-amber-800',
-	'Low Energy': 'bg-blue-100 text-blue-800',
-	Focused: 'bg-green-100 text-green-800',
-	'Pre-Sleep': 'bg-purple-100 text-purple-800',
-	General: 'bg-gray-100 text-gray-800'
-};
-
-function getDayName(dayNumber: number) {
-	return daysOfWeek.find((d) => d.id === dayNumber)?.name || 'Unknown';
-}
-
-function getSelectedDays(): number[] {
-	try {
-		return $scheduleForm.days_of_week ? JSON.parse($scheduleForm.days_of_week) : [];
-	} catch {
-		return [];
-	}
-}
-
-function toggleDay(dayId: number) {
-	const days = getSelectedDays();
-	if (days.includes(dayId)) {
-		$scheduleForm.days_of_week = JSON.stringify(days.filter((d) => d !== dayId));
-	} else {
-		$scheduleForm.days_of_week = JSON.stringify([...days, dayId].sort((a, b) => a - b));
-	}
-}
-
-function getNowDatetimeLocal(): string {
-	const now = new Date();
-	const pad = (n: number) => String(n).padStart(2, '0');
-	return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-}
-
-function toDatetimeLocal(isoString: string): string {
-	const d = new Date(isoString);
-	const pad = (n: number) => String(n).padStart(2, '0');
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function openEditSession(session: (typeof data.sessions)[number]) {
-	$editSessionForm.id = session.id;
-	$editSessionForm.completed_at = toDatetimeLocal(session.completedAt);
-	$editSessionForm.pre_mood_rating = session.preMoodRating ?? undefined;
-	$editSessionForm.mood_rating = session.moodRating ?? undefined;
-	$editSessionForm.notes = session.notes ?? undefined;
-	showEditSessionDialog = true;
-}
-
-$effect(() => {
-	if (showSessionDialog) {
-		$sessionForm.completed_at = getNowDatetimeLocal();
-	}
-});
+	});
 </script>
 
 <div class="container mx-auto max-w-4xl py-8">

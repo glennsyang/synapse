@@ -1,298 +1,299 @@
 <script lang="ts">
-import {
-	Bold,
-	Heading,
-	Italic,
-	Link2,
-	List,
-	ListOrdered,
-	Pilcrow,
-	Quote,
-	Underline
-} from '@lucide/svelte/icons';
-import { marked } from 'marked';
-import { Button } from '$lib/components/ui/button';
-import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-import * as Tabs from '$lib/components/ui/tabs';
-import { Textarea } from '$lib/components/ui/textarea';
-import * as Tooltip from '$lib/components/ui/tooltip';
+	import {
+		Bold,
+		Heading,
+		Italic,
+		Link2,
+		List,
+		ListOrdered,
+		Pilcrow,
+		Quote,
+		Underline
+	} from '@lucide/svelte/icons';
+	import { marked } from 'marked';
+	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 
-interface Props {
-	markdown?: string;
-	placeholder?: string;
-}
+	interface Props {
+		markdown?: string;
+		placeholder?: string;
+	}
 
-let { markdown = $bindable(''), placeholder = 'Write your entry in Markdown...' }: Props = $props();
+	let { markdown = $bindable(''), placeholder = 'Write your entry in Markdown...' }: Props =
+		$props();
 
-let activeTab = $state<'write' | 'preview'>('write');
-let textareaRef = $state<HTMLTextAreaElement | null>(null);
-const markdownOptions = {
-	gfm: true,
-	breaks: true,
-	headerIds: true
-} as const;
-let previewHtml = $derived(marked.parse(markdown, markdownOptions));
+	let activeTab = $state<'write' | 'preview'>('write');
+	let textareaRef = $state<HTMLTextAreaElement | null>(null);
+	const markdownOptions = {
+		gfm: true,
+		breaks: true,
+		headerIds: true
+	} as const;
+	let previewHtml = $derived(marked.parse(markdown, markdownOptions));
 
-function getLineStart(content: string, index: number): number {
-	const previousNewline = content.lastIndexOf('\n', Math.max(0, index - 1));
-	return previousNewline === -1 ? 0 : previousNewline + 1;
-}
+	function getLineStart(content: string, index: number): number {
+		const previousNewline = content.lastIndexOf('\n', Math.max(0, index - 1));
+		return previousNewline === -1 ? 0 : previousNewline + 1;
+	}
 
-function getLineEnd(content: string, index: number): number {
-	const nextNewline = content.indexOf('\n', index);
-	return nextNewline === -1 ? content.length : nextNewline;
-}
+	function getLineEnd(content: string, index: number): number {
+		const nextNewline = content.indexOf('\n', index);
+		return nextNewline === -1 ? content.length : nextNewline;
+	}
 
-function getExpandedLineRange(
-	content: string,
-	selectionStart: number,
-	selectionEnd: number
-): { start: number; end: number } {
-	const normalizedEnd =
-		selectionEnd > selectionStart && content[selectionEnd - 1] === '\n'
-			? selectionEnd - 1
-			: selectionEnd;
+	function getExpandedLineRange(
+		content: string,
+		selectionStart: number,
+		selectionEnd: number
+	): { start: number; end: number } {
+		const normalizedEnd =
+			selectionEnd > selectionStart && content[selectionEnd - 1] === '\n'
+				? selectionEnd - 1
+				: selectionEnd;
 
-	return {
-		start: getLineStart(content, selectionStart),
-		end: getLineEnd(content, normalizedEnd)
-	};
-}
+		return {
+			start: getLineStart(content, selectionStart),
+			end: getLineEnd(content, normalizedEnd)
+		};
+	}
 
-function updateWithSelection(
-	nextValue: string,
-	selectionStart: number,
-	selectionEnd: number
-): void {
-	markdown = nextValue;
+	function updateWithSelection(
+		nextValue: string,
+		selectionStart: number,
+		selectionEnd: number
+	): void {
+		markdown = nextValue;
 
-	queueMicrotask(() => {
+		queueMicrotask(() => {
+			if (!textareaRef) {
+				return;
+			}
+
+			textareaRef.focus();
+			textareaRef.setSelectionRange(selectionStart, selectionEnd);
+		});
+	}
+
+	function wrapSelection(before: string, after: string, placeholderText: string): void {
 		if (!textareaRef) {
 			return;
 		}
 
-		textareaRef.focus();
-		textareaRef.setSelectionRange(selectionStart, selectionEnd);
-	});
-}
+		const content = markdown ?? '';
+		const start = textareaRef.selectionStart;
+		const end = textareaRef.selectionEnd;
+		const selectedText = content.slice(start, end);
+		const innerText = selectedText.length > 0 ? selectedText : placeholderText;
+		const replacement = `${before}${innerText}${after}`;
+		const nextValue = `${content.slice(0, start)}${replacement}${content.slice(end)}`;
 
-function wrapSelection(before: string, after: string, placeholderText: string): void {
-	if (!textareaRef) {
-		return;
+		const nextStart = start + before.length;
+		const nextEnd = nextStart + innerText.length;
+
+		updateWithSelection(nextValue, nextStart, nextEnd);
 	}
 
-	const content = markdown ?? '';
-	const start = textareaRef.selectionStart;
-	const end = textareaRef.selectionEnd;
-	const selectedText = content.slice(start, end);
-	const innerText = selectedText.length > 0 ? selectedText : placeholderText;
-	const replacement = `${before}${innerText}${after}`;
-	const nextValue = `${content.slice(0, start)}${replacement}${content.slice(end)}`;
+	function prefixLines(prefix: string, placeholderText: string): void {
+		if (!textareaRef) {
+			return;
+		}
 
-	const nextStart = start + before.length;
-	const nextEnd = nextStart + innerText.length;
+		const content = markdown ?? '';
+		const start = textareaRef.selectionStart;
+		const end = textareaRef.selectionEnd;
 
-	updateWithSelection(nextValue, nextStart, nextEnd);
-}
+		if (start === end) {
+			const lineStart = getLineStart(content, start);
+			const lineEnd = getLineEnd(content, start);
+			const currentLine = content.slice(lineStart, lineEnd);
 
-function prefixLines(prefix: string, placeholderText: string): void {
-	if (!textareaRef) {
-		return;
-	}
+			if (!currentLine.trim()) {
+				const replacement = `${prefix}${placeholderText}`;
+				const nextValue = `${content.slice(0, lineStart)}${replacement}${content.slice(lineEnd)}`;
+				const nextStart = lineStart + prefix.length;
+				const nextEnd = nextStart + placeholderText.length;
+				updateWithSelection(nextValue, nextStart, nextEnd);
+				return;
+			}
 
-	const content = markdown ?? '';
-	const start = textareaRef.selectionStart;
-	const end = textareaRef.selectionEnd;
-
-	if (start === end) {
-		const lineStart = getLineStart(content, start);
-		const lineEnd = getLineEnd(content, start);
-		const currentLine = content.slice(lineStart, lineEnd);
-
-		if (!currentLine.trim()) {
-			const replacement = `${prefix}${placeholderText}`;
+			const replacement = `${prefix}${currentLine}`;
 			const nextValue = `${content.slice(0, lineStart)}${replacement}${content.slice(lineEnd)}`;
 			const nextStart = lineStart + prefix.length;
-			const nextEnd = nextStart + placeholderText.length;
+			const nextEnd = nextStart + currentLine.length;
 			updateWithSelection(nextValue, nextStart, nextEnd);
 			return;
 		}
 
-		const replacement = `${prefix}${currentLine}`;
-		const nextValue = `${content.slice(0, lineStart)}${replacement}${content.slice(lineEnd)}`;
-		const nextStart = lineStart + prefix.length;
-		const nextEnd = nextStart + currentLine.length;
-		updateWithSelection(nextValue, nextStart, nextEnd);
-		return;
+		const expanded = getExpandedLineRange(content, start, end);
+		const selectedText = content.slice(expanded.start, expanded.end);
+		const prefixed = selectedText
+			.split('\n')
+			.map((line) => `${prefix}${line}`)
+			.join('\n');
+		const nextValue = `${content.slice(0, expanded.start)}${prefixed}${content.slice(expanded.end)}`;
+
+		updateWithSelection(nextValue, expanded.start, expanded.start + prefixed.length);
 	}
 
-	const expanded = getExpandedLineRange(content, start, end);
-	const selectedText = content.slice(expanded.start, expanded.end);
-	const prefixed = selectedText
-		.split('\n')
-		.map((line) => `${prefix}${line}`)
-		.join('\n');
-	const nextValue = `${content.slice(0, expanded.start)}${prefixed}${content.slice(expanded.end)}`;
+	function insertHeading(level: 1 | 2 | 3): void {
+		if (!textareaRef) {
+			return;
+		}
 
-	updateWithSelection(nextValue, expanded.start, expanded.start + prefixed.length);
-}
+		const content = markdown ?? '';
+		const start = textareaRef.selectionStart;
+		const end = textareaRef.selectionEnd;
+		const expanded = getExpandedLineRange(content, start, end);
+		const selectedText = content.slice(expanded.start, expanded.end);
+		const prefix = `${'#'.repeat(level)} `;
+		const headedLines = selectedText
+			.split('\n')
+			.map((line) => {
+				if (!line.trim()) {
+					return `${prefix}Header`;
+				}
 
-function insertHeading(level: 1 | 2 | 3): void {
-	if (!textareaRef) {
-		return;
+				if (/^#{1,6}\s+/.test(line)) {
+					return line.replace(/^#{1,6}\s+/, prefix);
+				}
+
+				return `${prefix}${line}`;
+			})
+			.join('\n');
+		const nextValue = `${content.slice(0, expanded.start)}${headedLines}${content.slice(expanded.end)}`;
+
+		updateWithSelection(nextValue, expanded.start, expanded.start + headedLines.length);
 	}
 
-	const content = markdown ?? '';
-	const start = textareaRef.selectionStart;
-	const end = textareaRef.selectionEnd;
-	const expanded = getExpandedLineRange(content, start, end);
-	const selectedText = content.slice(expanded.start, expanded.end);
-	const prefix = `${'#'.repeat(level)} `;
-	const headedLines = selectedText
-		.split('\n')
-		.map((line) => {
-			if (!line.trim()) {
-				return `${prefix}Header`;
+	function prefixNumberedLines(placeholderText: string): void {
+		if (!textareaRef) {
+			return;
+		}
+
+		const content = markdown ?? '';
+		const start = textareaRef.selectionStart;
+		const end = textareaRef.selectionEnd;
+
+		if (start === end) {
+			const lineStart = getLineStart(content, start);
+			const lineEnd = getLineEnd(content, start);
+			const currentLine = content.slice(lineStart, lineEnd);
+
+			if (!currentLine.trim()) {
+				const replacement = `1. ${placeholderText}`;
+				const nextValue = `${content.slice(0, lineStart)}${replacement}${content.slice(lineEnd)}`;
+				const nextStart = lineStart + 3;
+				const nextEnd = nextStart + placeholderText.length;
+				updateWithSelection(nextValue, nextStart, nextEnd);
+				return;
 			}
 
-			if (/^#{1,6}\s+/.test(line)) {
-				return line.replace(/^#{1,6}\s+/, prefix);
-			}
+			const replacement = `1. ${currentLine}`;
+			const nextValue = `${content.slice(0, lineStart)}${replacement}${content.slice(lineEnd)}`;
+			const nextStart = lineStart + 3;
+			const nextEnd = nextStart + currentLine.length;
+			updateWithSelection(nextValue, nextStart, nextEnd);
+			return;
+		}
 
-			return `${prefix}${line}`;
-		})
-		.join('\n');
-	const nextValue = `${content.slice(0, expanded.start)}${headedLines}${content.slice(expanded.end)}`;
+		const expanded = getExpandedLineRange(content, start, end);
+		const selectedText = content.slice(expanded.start, expanded.end);
+		const numbered = selectedText
+			.split('\n')
+			.map((line, index) => `${index + 1}. ${line}`)
+			.join('\n');
+		const nextValue = `${content.slice(0, expanded.start)}${numbered}${content.slice(expanded.end)}`;
 
-	updateWithSelection(nextValue, expanded.start, expanded.start + headedLines.length);
-}
-
-function prefixNumberedLines(placeholderText: string): void {
-	if (!textareaRef) {
-		return;
+		updateWithSelection(nextValue, expanded.start, expanded.start + numbered.length);
 	}
 
-	const content = markdown ?? '';
-	const start = textareaRef.selectionStart;
-	const end = textareaRef.selectionEnd;
+	function insertBulletList(): void {
+		if (!textareaRef) {
+			return;
+		}
 
-	if (start === end) {
+		const content = markdown ?? '';
+		const start = textareaRef.selectionStart;
+		const end = textareaRef.selectionEnd;
+
+		if (start !== end) {
+			prefixLines('- ', 'List item');
+			return;
+		}
+
 		const lineStart = getLineStart(content, start);
 		const lineEnd = getLineEnd(content, start);
 		const currentLine = content.slice(lineStart, lineEnd);
+		const bulletMatch = /^(\s*)([-*+])\s+/.exec(currentLine);
 
-		if (!currentLine.trim()) {
-			const replacement = `1. ${placeholderText}`;
-			const nextValue = `${content.slice(0, lineStart)}${replacement}${content.slice(lineEnd)}`;
-			const nextStart = lineStart + 3;
-			const nextEnd = nextStart + placeholderText.length;
-			updateWithSelection(nextValue, nextStart, nextEnd);
+		if (!bulletMatch) {
+			prefixLines('- ', 'List item');
 			return;
 		}
 
-		const replacement = `1. ${currentLine}`;
-		const nextValue = `${content.slice(0, lineStart)}${replacement}${content.slice(lineEnd)}`;
-		const nextStart = lineStart + 3;
-		const nextEnd = nextStart + currentLine.length;
-		updateWithSelection(nextValue, nextStart, nextEnd);
-		return;
+		const indentation = bulletMatch[1] ?? '';
+		const marker = bulletMatch[2] ?? '-';
+		const continuation = `\n${indentation}${marker} `;
+		const nextValue = `${content.slice(0, lineEnd)}${continuation}${content.slice(lineEnd)}`;
+		const nextCursor = lineEnd + continuation.length;
+
+		updateWithSelection(nextValue, nextCursor, nextCursor);
 	}
 
-	const expanded = getExpandedLineRange(content, start, end);
-	const selectedText = content.slice(expanded.start, expanded.end);
-	const numbered = selectedText
-		.split('\n')
-		.map((line, index) => `${index + 1}. ${line}`)
-		.join('\n');
-	const nextValue = `${content.slice(0, expanded.start)}${numbered}${content.slice(expanded.end)}`;
+	function insertNumberedList(): void {
+		if (!textareaRef) {
+			return;
+		}
 
-	updateWithSelection(nextValue, expanded.start, expanded.start + numbered.length);
-}
+		const content = markdown ?? '';
+		const start = textareaRef.selectionStart;
+		const end = textareaRef.selectionEnd;
 
-function insertBulletList(): void {
-	if (!textareaRef) {
-		return;
+		if (start !== end) {
+			prefixNumberedLines('List item');
+			return;
+		}
+
+		const lineStart = getLineStart(content, start);
+		const lineEnd = getLineEnd(content, start);
+		const currentLine = content.slice(lineStart, lineEnd);
+		const numberedMatch = /^(\s*)(\d+)\.\s+/.exec(currentLine);
+
+		if (!numberedMatch) {
+			prefixNumberedLines('List item');
+			return;
+		}
+
+		const indentation = numberedMatch[1] ?? '';
+		const nextNumber = Number(numberedMatch[2] ?? '1') + 1;
+		const continuation = `\n${indentation}${nextNumber}. `;
+		const nextValue = `${content.slice(0, lineEnd)}${continuation}${content.slice(lineEnd)}`;
+		const nextCursor = lineEnd + continuation.length;
+
+		updateWithSelection(nextValue, nextCursor, nextCursor);
 	}
 
-	const content = markdown ?? '';
-	const start = textareaRef.selectionStart;
-	const end = textareaRef.selectionEnd;
+	function insertLink(): void {
+		if (!textareaRef) {
+			return;
+		}
 
-	if (start !== end) {
-		prefixLines('- ', 'List item');
-		return;
+		const content = markdown ?? '';
+		const start = textareaRef.selectionStart;
+		const end = textareaRef.selectionEnd;
+		const selectedText = content.slice(start, end);
+		const linkText = selectedText.length > 0 ? selectedText : '';
+		const replacement = `[${linkText}](url)`;
+		const nextValue = `${content.slice(0, start)}${replacement}${content.slice(end)}`;
+
+		const linkTargetStart = start + replacement.lastIndexOf('(') + 1;
+		const linkTargetEnd = linkTargetStart + 3;
+
+		updateWithSelection(nextValue, linkTargetStart, linkTargetEnd);
 	}
-
-	const lineStart = getLineStart(content, start);
-	const lineEnd = getLineEnd(content, start);
-	const currentLine = content.slice(lineStart, lineEnd);
-	const bulletMatch = /^(\s*)([-*+])\s+/.exec(currentLine);
-
-	if (!bulletMatch) {
-		prefixLines('- ', 'List item');
-		return;
-	}
-
-	const indentation = bulletMatch[1] ?? '';
-	const marker = bulletMatch[2] ?? '-';
-	const continuation = `\n${indentation}${marker} `;
-	const nextValue = `${content.slice(0, lineEnd)}${continuation}${content.slice(lineEnd)}`;
-	const nextCursor = lineEnd + continuation.length;
-
-	updateWithSelection(nextValue, nextCursor, nextCursor);
-}
-
-function insertNumberedList(): void {
-	if (!textareaRef) {
-		return;
-	}
-
-	const content = markdown ?? '';
-	const start = textareaRef.selectionStart;
-	const end = textareaRef.selectionEnd;
-
-	if (start !== end) {
-		prefixNumberedLines('List item');
-		return;
-	}
-
-	const lineStart = getLineStart(content, start);
-	const lineEnd = getLineEnd(content, start);
-	const currentLine = content.slice(lineStart, lineEnd);
-	const numberedMatch = /^(\s*)(\d+)\.\s+/.exec(currentLine);
-
-	if (!numberedMatch) {
-		prefixNumberedLines('List item');
-		return;
-	}
-
-	const indentation = numberedMatch[1] ?? '';
-	const nextNumber = Number(numberedMatch[2] ?? '1') + 1;
-	const continuation = `\n${indentation}${nextNumber}. `;
-	const nextValue = `${content.slice(0, lineEnd)}${continuation}${content.slice(lineEnd)}`;
-	const nextCursor = lineEnd + continuation.length;
-
-	updateWithSelection(nextValue, nextCursor, nextCursor);
-}
-
-function insertLink(): void {
-	if (!textareaRef) {
-		return;
-	}
-
-	const content = markdown ?? '';
-	const start = textareaRef.selectionStart;
-	const end = textareaRef.selectionEnd;
-	const selectedText = content.slice(start, end);
-	const linkText = selectedText.length > 0 ? selectedText : '';
-	const replacement = `[${linkText}](url)`;
-	const nextValue = `${content.slice(0, start)}${replacement}${content.slice(end)}`;
-
-	const linkTargetStart = start + replacement.lastIndexOf('(') + 1;
-	const linkTargetEnd = linkTargetStart + 3;
-
-	updateWithSelection(nextValue, linkTargetStart, linkTargetEnd);
-}
 </script>
 
 <div class="rounded-xl border border-[oklch(var(--color-blue)/0.22)] bg-background/90 shadow-sm">
