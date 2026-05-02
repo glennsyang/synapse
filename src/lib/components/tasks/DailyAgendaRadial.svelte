@@ -39,6 +39,9 @@
 	const gaugeAngleRadians = $derived(((gaugeProgress * 360 - 90) * Math.PI) / 180);
 	const gaugeDotX = $derived(gaugeCenter + gaugeRadius * Math.cos(gaugeAngleRadians));
 	const gaugeDotY = $derived(gaugeCenter + gaugeRadius * Math.sin(gaugeAngleRadians));
+	const completionSummary = $derived(
+		totalCount > 0 ? `${completedCount} of ${totalCount} done` : 'Nothing scheduled yet'
+	);
 	const absoluteTrendDelta = $derived(Math.abs(trendDelta));
 	const trendLabel = $derived.by(() => {
 		if (!hasComparisonData) {
@@ -79,12 +82,7 @@
 					Week pulse
 				</p>
 				<p class="mt-1 text-xs leading-5 text-muted-foreground">
-					{#if totalCount > 0}
-						{completedCount}
-						of {totalCount} done
-					{:else}
-						Nothing scheduled yet
-					{/if}
+					{completionSummary}
 				</p>
 			</div>
 			<div

@@ -23,19 +23,10 @@
 			"purpose": "any"
 		},
 		{
-			"src": "/icons/icon-512-maskable.png",
+			"src": "/icons/icon-maskable-512.png",
 			"sizes": "512x512",
 			"type": "image/png",
 			"purpose": "maskable"
-		}
-	],
-	"screenshots": [
-		{
-			"src": "/screenshots/mobile-home-1080x1920.png",
-			"sizes": "1080x1920",
-			"type": "image/png",
-			"form_factor": "narrow",
-			"label": "Synapse mobile app placeholder screenshot"
 		}
 	]
 }
