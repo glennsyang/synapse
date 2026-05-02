@@ -34,6 +34,9 @@ COPY . .
 # Build application
 RUN npm run build
 
+# Strip source maps from server bundle (adapter-node hardcodes sourcemap: true)
+RUN find build -name "*.map" -delete
+
 # Remove development dependencies
 RUN npm prune --omit=dev
 

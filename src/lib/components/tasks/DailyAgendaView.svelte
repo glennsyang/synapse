@@ -570,8 +570,7 @@
 							></div>
 						</div>
 						<p class="mt-1.5 text-[11px] text-muted-foreground">
-							{day.completedCount}
-							of {day.totalCount} done
+							{`${day.completedCount} of ${day.totalCount} done`}
 						</p>
 					</div>
 
