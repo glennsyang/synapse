@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import { cn } from '$lib/utils.js';
+	import CardSkeleton from './CardSkeleton.svelte';
 
 	let {
 		class: className,
@@ -9,11 +10,6 @@
 		class?: string;
 	} = $props();
 
-	const statsSkeleton = [
-		{ id: 1, value: '123' },
-		{ id: 2, value: '5 days' },
-		{ id: 3, value: '12 days' }
-	];
 	const featureSkeleton = [
 		{ id: 1, value: '123' },
 		{ id: 2, value: '5 days' },
@@ -37,17 +33,8 @@
 
 	<!-- Quick Stats Row Skeleton -->
 	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-		{#each statsSkeleton as stat (stat.id)}
-			<div class="rounded-lg border bg-card p-6 shadow-xs">
-				<div class="flex items-start justify-between gap-4">
-					<div class="flex-1 space-y-3">
-						<Skeleton class="h-4 w-24" />
-						<Skeleton class="h-9 w-16" />
-						<Skeleton class="h-4 w-32" />
-					</div>
-					<Skeleton class="size-12 rounded-full bg-[oklch(var(--color-teal)/0.2)]" />
-				</div>
-			</div>
+		{#each [1, 2, 3] as i (i)}
+			<CardSkeleton color="teal" />
 		{/each}
 	</div>
 

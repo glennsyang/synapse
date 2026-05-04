@@ -20,7 +20,6 @@
 		formatTimestampShort
 	} from '$lib/utils/date';
 	import { createMarkdownExcerpt } from '$lib/utils/markdown';
-
 	import { navItems } from './../sidebar';
 
 	let { data } = $props();
