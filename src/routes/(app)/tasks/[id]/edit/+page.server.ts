@@ -9,7 +9,7 @@ import {
 	type UpdateTaskInput,
 	updateTaskSchema
 } from '$lib/schemas/task';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import {
 	getOwnedEntityOrNull,
 	getOwnedEntityOrThrow
@@ -51,7 +51,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const task = await getOwnedEntityOrThrow(
 		() =>
 			getDb().query.tasks.findFirst({
-				where: and(eq(tasks.id, params.id), eq(tasks.userId, locals.user?.id))
+				where: and(eq(tasks.id, params.id), eq(tasks.userId, getUser(locals).id))
 			}),
 		{ type: 'redirect', to: '/tasks' }
 	);

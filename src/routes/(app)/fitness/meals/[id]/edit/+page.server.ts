@@ -4,7 +4,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { deleteEntrySchema, type MealType, updateMealSchema } from '$lib/schemas/fitness';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import {
 	getOwnedEntityOrNull,
 	getOwnedEntityOrThrow
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const meal = await getOwnedEntityOrThrow(
 		() =>
 			getDb().query.mealLogs.findFirst({
-				where: and(eq(mealLogs.id, params.id), eq(mealLogs.userId, locals.user?.id))
+				where: and(eq(mealLogs.id, params.id), eq(mealLogs.userId, getUser(locals).id))
 			}),
 		{ type: 'redirect', to: '/fitness?tab=meals' }
 	);

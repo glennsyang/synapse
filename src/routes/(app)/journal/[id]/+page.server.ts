@@ -4,7 +4,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { journalEntrySchema } from '$lib/schemas/journal';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -13,7 +13,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const entry = await getDb().query.journalEntries.findFirst({
-		where: and(eq(journalEntries.id, params.id), eq(journalEntries.userId, locals.user?.id))
+		where: and(eq(journalEntries.id, params.id), eq(journalEntries.userId, getUser(locals).id))
 	});
 
 	if (!entry) {

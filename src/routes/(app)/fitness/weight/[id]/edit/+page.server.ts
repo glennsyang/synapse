@@ -4,7 +4,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { deleteEntrySchema, updateWeightSchema } from '$lib/schemas/fitness';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import {
 	getOwnedEntityOrNull,
 	getOwnedEntityOrThrow
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const entry = await getOwnedEntityOrThrow(
 		() =>
 			getDb().query.weightEntries.findFirst({
-				where: and(eq(weightEntries.id, params.id), eq(weightEntries.userId, locals.user?.id))
+				where: and(eq(weightEntries.id, params.id), eq(weightEntries.userId, getUser(locals).id))
 			}),
 		{ type: 'redirect', to: '/fitness?tab=weight' }
 	);

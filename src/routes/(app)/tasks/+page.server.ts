@@ -20,7 +20,7 @@ import {
 	taskFilterSchema,
 	updateTaskStateSchema
 } from '$lib/schemas/task';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import {
 	createDailyAgendaCustomEntry,
 	createDailyAgendaTemplate,
@@ -361,7 +361,7 @@ async function loadTaskBoardData(
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	const userId = locals.user?.id;
+	const userId = getUser(locals).id;
 	const pageState = dailyAgendaPageQuerySchema.safeParse({
 		tab: url.searchParams.get('tab') ?? undefined,
 		week: url.searchParams.get('week') ?? undefined

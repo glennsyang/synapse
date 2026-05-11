@@ -1,5 +1,5 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 
 import type { User } from '$lib/types';
 
@@ -28,4 +28,23 @@ export function requireAuth<T>(
 		}
 		return handler(event, event.locals.user);
 	};
+}
+
+/**
+ * Returns the authenticated user from locals, or throws a redirect to /sign-in.
+ * Use in load functions inside the (app) route group where the layout already
+ * guarantees authentication — this provides a clean type-narrowed User without
+ * needing non-null assertions.
+ *
+ * @example
+ * export const load: PageServerLoad = async ({ locals }) => {
+ *   const user = getUser(locals);
+ *   // user.id is typed as string, no ! required
+ * };
+ */
+export function getUser(locals: App.Locals): User {
+	if (!locals.user) {
+		redirect(302, '/sign-in');
+	}
+	return locals.user;
 }

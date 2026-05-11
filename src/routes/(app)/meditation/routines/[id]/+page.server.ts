@@ -9,7 +9,7 @@ import {
 	scheduleSchema,
 	updateRoutineSchema
 } from '$lib/schemas/meditation';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
@@ -170,7 +170,7 @@ export const actions: Actions = {
 
 				logger.info('Meditation schedule updated', {
 					scheduleId: existingSchedule.id,
-					userId: locals.user.id
+					userId: getUser(locals).id
 				});
 			} else {
 				// Create new schedule
@@ -178,7 +178,7 @@ export const actions: Actions = {
 
 				await db.insert(meditationSchedules).values({
 					id: scheduleId,
-					userId: locals.user.id,
+					userId: getUser(locals).id,
 					routineId,
 					cadence: form.data.cadence,
 					daysOfWeek: daysOfWeekJson,
@@ -190,7 +190,7 @@ export const actions: Actions = {
 
 				logger.info('Meditation schedule created', {
 					scheduleId,
-					userId: locals.user.id
+					userId: getUser(locals).id
 				});
 			}
 
