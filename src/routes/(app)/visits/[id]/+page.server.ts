@@ -4,7 +4,7 @@ import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { personSchema, visitSchema } from '$lib/schemas/visits';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	// Load person
 	const person = await db.query.people.findFirst({
-		where: and(eq(people.id, params.id), eq(people.userId, locals.user?.id))
+		where: and(eq(people.id, params.id), eq(people.userId, getUser(locals).id))
 	});
 
 	if (!person) {

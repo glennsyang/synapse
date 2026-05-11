@@ -10,7 +10,7 @@ import {
 	type WorkoutType,
 	workoutExerciseSchema
 } from '$lib/schemas/fitness';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import {
 	getOwnedEntityOrNull,
 	getOwnedEntityOrThrow
@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const workout = await getOwnedEntityOrThrow(
 		() =>
 			getDb().query.workoutLogs.findFirst({
-				where: and(eq(workoutLogs.id, params.id), eq(workoutLogs.userId, locals.user?.id)),
+				where: and(eq(workoutLogs.id, params.id), eq(workoutLogs.userId, getUser(locals).id)),
 				with: {
 					exercises: true
 				}

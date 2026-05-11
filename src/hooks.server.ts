@@ -56,9 +56,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 	});
 
 	// Make session and user available on server
+	// better-auth types optional DB fields with `?:` while our Drizzle schema uses `| null`;
+	// runtime values are always string | null (never undefined), so the cast is safe.
 	if (session) {
-		event.locals.session = session.session;
-		event.locals.user = session.user;
+		event.locals.session = session.session as NonNullable<typeof event.locals.session>;
+		event.locals.user = session.user as NonNullable<typeof event.locals.user>;
 
 		// Add user context to logger
 		requestLogger.setContext({ userId: session.user.id });

@@ -3,7 +3,7 @@ import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { changePasswordSchema, updateProfileSchema } from '$lib/schemas/auth';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { auth } from '$lib/server/auth';
 import { getDb } from '$lib/server/db';
 import { account, user } from '$lib/server/db/schema';
@@ -16,12 +16,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	// Get the full user data including updatedAt
 	const fullUserData = await db.query.user.findFirst({
-		where: eq(user.id, locals.user.id)
+		where: eq(user.id, getUser(locals).id)
 	});
 
 	// Get the account data to find when password was last updated
 	const accountData = await db.query.account.findFirst({
-		where: eq(account.userId, locals.user.id)
+		where: eq(account.userId, getUser(locals).id)
 	});
 
 	// Initialize profile form with current user data

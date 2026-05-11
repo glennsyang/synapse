@@ -5,7 +5,7 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { journalFilterSchema } from '$lib/schemas/journal';
 import { journalPageTabSchema, moodLogSchema, moodPeriodSchema } from '$lib/schemas/mood';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries, moodLogs } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
@@ -108,7 +108,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	try {
 		const db = getDb();
-		const conditions = [eq(journalEntries.userId, locals.user?.id)];
+		const conditions = [eq(journalEntries.userId, getUser(locals).id)];
 
 		if (date) {
 			conditions.push(eq(journalEntries.date, date));
@@ -125,7 +125,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			}),
 			db.query.moodLogs.findMany({
 				where: and(
-					eq(moodLogs.userId, locals.user?.id),
+					eq(moodLogs.userId, getUser(locals).id),
 					gte(moodLogs.date, moodRangeStart),
 					lte(moodLogs.date, today)
 				),

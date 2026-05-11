@@ -18,7 +18,7 @@ import {
 	workoutExerciseSchema,
 	workoutReminderSchema
 } from '$lib/schemas/fitness';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import {
 	dailyCalorieTargets,
@@ -53,7 +53,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const mealForm = await superValidate(zod4(logMealSchema));
 	const reminderForm = await superValidate(zod4(workoutReminderSchema));
 
-	const userId = locals.user?.id;
+	const userId = getUser(locals).id;
 	const db = getDb();
 
 	try {

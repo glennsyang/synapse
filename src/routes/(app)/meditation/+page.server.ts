@@ -4,7 +4,7 @@ import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import { editSessionSchema, routineFilterSchema } from '$lib/schemas/meditation';
-import { requireAuth } from '$lib/server/actions/auth-guard';
+import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
@@ -77,7 +77,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 		// Fetch all schedules for user
 		const schedules = await db.query.meditationSchedules.findMany({
-			where: eq(meditationSchedules.userId, locals.user.id),
+			where: eq(meditationSchedules.userId, getUser(locals).id),
 			with: {
 				routine: true
 			}
@@ -91,7 +91,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 		// Fetch recent sessions for history
 		const sessions = await db.query.meditationSessions.findMany({
-			where: eq(meditationSessions.userId, locals.user.id),
+			where: eq(meditationSessions.userId, getUser(locals).id),
 			orderBy: [desc(meditationSessions.completedAt)],
 			limit: 50,
 			with: {
