@@ -36,7 +36,7 @@ export type Exercise = {
 	weightLbs: number | null;
 };
 
-export type TaskPageTab = 'kanban' | 'agenda';
+export type TaskPageTab = 'kanban' | 'agenda' | 'mood';
 
 type DailyAgendaSourceType = 'default' | 'custom';
 

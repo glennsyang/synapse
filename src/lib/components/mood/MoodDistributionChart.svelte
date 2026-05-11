@@ -38,7 +38,7 @@
 <Card.Root class="h-full">
 	<Card.Header>
 		<Card.Title class="font-display flex items-center gap-2">
-			<PieChartIcon class="h-4 w-4 text-[oklch(var(--color-blue))]" />
+			<PieChartIcon class="h-4 w-4 text-[oklch(var(--color-orange))]" />
 			Mood distribution
 		</Card.Title>
 		<Card.Description>{rangeLabel}</Card.Description>

@@ -18,30 +18,33 @@
 
 	interface Props {
 		points: MoodTrendPoint[];
+		rollingAvgPoints: { date: string; rollingAvg: number }[];
 		rangeLabel: string;
 		averageScore: number | null;
 	}
 
-	let { points, rangeLabel, averageScore }: Props = $props();
+	let { points, rollingAvgPoints, rangeLabel, averageScore }: Props = $props();
 
 	const chartData = $derived(
-		points.map((point) => ({
+		points.map((point, index) => ({
 			...point,
-			date: parseLocalDateString(point.date)
+			date: parseLocalDateString(point.date),
+			rollingAvg: rollingAvgPoints[index]?.rollingAvg ?? point.score
 		}))
 	);
 
 	const hasCustomMood = $derived(points.some((point) => point.isCustom));
 
 	const chartConfig = {
-		score: { label: 'Mood score', color: 'var(--chart-2)' }
+		score: { label: 'Mood score', color: 'var(--chart-2)' },
+		rollingAvg: { label: '7-day avg', color: 'var(--chart-4)' }
 	} satisfies Chart.ChartConfig;
 </script>
 
 <Card.Root class="h-full">
 	<Card.Header>
 		<Card.Title class="font-display flex items-center gap-2">
-			<AreaChartIcon class="h-4 w-4 text-[oklch(var(--color-blue))]" />
+			<AreaChartIcon class="h-4 w-4 text-[oklch(var(--color-orange))]" />
 			Mood trend
 		</Card.Title>
 		<Card.Description>
@@ -75,6 +78,11 @@
 							key: 'score',
 							label: 'Mood score',
 							color: chartConfig.score.color
+						},
+						{
+							key: 'rollingAvg',
+							label: '7-day avg',
+							color: chartConfig.rollingAvg.color
 						}
 					]}
 					props={{

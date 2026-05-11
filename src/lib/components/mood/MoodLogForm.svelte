@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { CircleAlert, NotebookPen } from '@lucide/svelte/icons';
+	import { CircleAlert } from '@lucide/svelte/icons';
 	import { fromAction } from 'svelte/attachments';
 	import { toast } from 'svelte-sonner';
 	import { type SuperValidated, superForm } from 'sveltekit-superforms';
 
 	import * as Alert from '$lib/components/ui/alert';
-	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
@@ -40,28 +39,24 @@
 </script>
 
 <Card.Root
-	class="border-[oklch(var(--color-blue)/0.18)] bg-[radial-gradient(circle_at_top,oklch(var(--color-blue)/0.14),transparent_65%)]"
+	class="border-[oklch(var(--color-orange)/0.18)] bg-[radial-gradient(circle_at_top,oklch(var(--color-orange)/0.14),transparent_65%)]"
 >
-	<Card.Header class="space-y-4">
-		<div class="flex items-start justify-between gap-3">
-			<div class="space-y-2">
-				<Badge variant="outline">Daily mood</Badge>
-				<Card.Title class="font-display text-2xl">How are you feeling today?</Card.Title>
-				<Card.Description> Log a single mood to build your trend over time. </Card.Description>
-			</div>
+	<Card.Header class="pb-3 pt-4">
+		<div class="flex items-center justify-between gap-3">
+			<Card.Title class="font-display text-xl">How are you feeling today?</Card.Title>
 			{#if todayLog}
 				<div
-					class="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-right shadow-sm"
+					class="rounded-xl border border-border/70 bg-background/80 px-3 py-1.5 text-right shadow-sm"
 				>
 					<p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Logged</p>
-					<p class="font-display text-lg font-semibold">{todayLog.resolvedMood}</p>
+					<p class="font-display text-base font-semibold">{todayLog.resolvedMood}</p>
 				</div>
 			{/if}
 		</div>
 	</Card.Header>
 
 	<Card.Content>
-		<form method="POST" action="?/upsertMood" {@attach fromAction(enhance)} class="space-y-5">
+		<form method="POST" action="?/upsertMood" {@attach fromAction(enhance)} class="space-y-3">
 			<Input type="hidden" name="date" bind:value={$form.date} />
 			<Input type="hidden" name="mood" bind:value={$form.mood} />
 
@@ -75,8 +70,8 @@
 							class={[
 								'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
 								$form.mood === option.value
-									? 'border-blue-600 bg-blue-600 text-white shadow-sm'
-									: 'border-blue-200 bg-blue-50 text-blue-800 hover:border-blue-300 hover:bg-blue-100'
+								? 'border-orange-600 bg-orange-600 text-white shadow-sm'
+								: 'border-orange-200 bg-orange-50 text-orange-800 hover:border-orange-300 hover:bg-orange-100'
 							]}
 						>
 							{option.label}
@@ -125,16 +120,10 @@
 				{/if}
 			</div>
 
-			<div
-				class="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between"
-			>
-				<div class="flex items-center gap-2 text-sm text-muted-foreground">
-					<NotebookPen class="h-4 w-4" />
-					<span>One daily mood keeps the trend clean and easy to review.</span>
-				</div>
+			<div class="flex justify-end border-t border-border/60 pt-3">
 				<Button
 					type="submit"
-					class=" bg-blue-600 hover:bg-blue-700"
+					class=" bg-orange-600 hover:bg-orange-700"
 					variant="default"
 					disabled={$submitting}
 				>

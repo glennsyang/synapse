@@ -5,6 +5,7 @@
 		ListFilter,
 		Plus,
 		Search,
+		SmilePlus,
 		SquareKanban
 	} from '@lucide/svelte';
 	import { onDestroy } from 'svelte';
@@ -14,6 +15,7 @@
 	import PageShell from '$lib/components/app/PageShell.svelte';
 	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 	import DailyAgendaView from '$lib/components/tasks/DailyAgendaView.svelte';
+	import MoodTrackerView from '$lib/components/tasks/MoodTrackerView.svelte';
 	import TaskDueDateFilter from '$lib/components/tasks/TaskDueDateFilter.svelte';
 	import TaskKanbanView from '$lib/components/tasks/TaskKanbanView.svelte';
 	import TaskPriorityFilter from '$lib/components/tasks/TaskPriorityFilter.svelte';
@@ -24,6 +26,7 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { TaskPageTab } from '$lib/types';
+	import { type MoodPeriod, moodPeriods } from '$lib/utils/mood';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -45,6 +48,19 @@
 	let showPageSkeleton = $derived(
 		navigating.to?.url.pathname === '/tasks' && navigating.from?.url.pathname !== '/tasks'
 	);
+
+	const periodLabels: Record<MoodPeriod, string> = {
+		week: 'This week',
+		month: 'This month',
+		quarter: 'This quarter'
+	};
+
+	const selectedPeriod = $derived.by<MoodPeriod>(() => {
+		const currentPeriod = page.url.searchParams.get('period');
+		return moodPeriods.includes(currentPeriod as MoodPeriod)
+			? (currentPeriod as MoodPeriod)
+			: 'week';
+	});
 
 	function buildTasksHref(tab: TaskPageTab, week?: string | null): string {
 		const url = new URL(page.url);
@@ -116,6 +132,23 @@
 			keywordDirty = false;
 		}
 	}
+
+	async function handlePeriodChange(nextPeriod: string) {
+		if (!moodPeriods.includes(nextPeriod as MoodPeriod)) {
+			return;
+		}
+
+		const url = new URL(page.url);
+		url.searchParams.set('tab', 'mood');
+
+		if (nextPeriod === 'week') {
+			url.searchParams.delete('period');
+		} else {
+			url.searchParams.set('period', nextPeriod);
+		}
+
+		await goto(url.toString());
+	}
 </script>
 
 {#if showPageSkeleton}
@@ -176,7 +209,7 @@
 
 		<Tabs.Root value={data.activeTab} class="w-full gap-3">
 			<Tabs.List
-				class="grid h-11 w-full grid-cols-2 rounded-xl bg-muted/75 p-1 text-muted-foreground"
+				class="grid h-11 w-full grid-cols-3 rounded-xl bg-muted/75 p-1 text-muted-foreground"
 			>
 				<Tabs.Trigger
 					value="kanban"
@@ -200,7 +233,19 @@
 					}}
 				>
 					<CalendarDays class="size-4" />
-					Daily Agenda
+					Agenda
+				</Tabs.Trigger>
+				<Tabs.Trigger
+					value="mood"
+					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-orange-500"
+					onclick={() => {
+						if (data.activeTab !== 'mood') {
+							void openTaskTab('mood');
+						}
+					}}
+				>
+					<SmilePlus class="size-4" />
+					Mood
 				</Tabs.Trigger>
 			</Tabs.List>
 
@@ -247,6 +292,18 @@
 			<Tabs.Content value="agenda" class="mt-0 min-w-0">
 				{#if data.activeTab === 'agenda' && data.agenda}
 					<DailyAgendaView agenda={data.agenda} bind:defaultsDialogOpen />
+				{/if}
+			</Tabs.Content>
+
+			<Tabs.Content value="mood" class="mt-0 min-w-0">
+				{#if data.activeTab === 'mood'}
+					<MoodTrackerView
+						moodForm={data.moodForm}
+						mood={data.mood}
+						{selectedPeriod}
+						{periodLabels}
+						onPeriodChange={handlePeriodChange}
+					/>
 				{/if}
 			</Tabs.Content>
 		</Tabs.Root>
