@@ -70,7 +70,7 @@
 		mood: MoodData;
 		selectedPeriod: MoodPeriod;
 		periodLabels: Record<MoodPeriod, string>;
-		onPeriodChange: (period: string) => void;
+		onPeriodChange: (period: MoodPeriod) => void;
 	}
 
 	let { moodForm, mood, selectedPeriod, periodLabels, onPeriodChange }: Props = $props();
