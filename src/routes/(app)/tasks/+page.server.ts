@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { and, asc, eq, like, or } from 'drizzle-orm';
-import { superValidate } from 'sveltekit-superforms';
+import { and, asc, eq, gte, like, lte, or } from 'drizzle-orm';
+import { message, setError, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import {
@@ -13,6 +13,7 @@ import {
 	updateDailyAgendaEntrySchema,
 	updateDailyAgendaTemplateSchema
 } from '$lib/schemas/daily-agenda';
+import { moodLogSchema, moodPeriodSchema } from '$lib/schemas/mood';
 import type { TaskState } from '$lib/schemas/task';
 import {
 	deleteTaskSchema,
@@ -33,9 +34,26 @@ import {
 	updateDailyAgendaTemplate
 } from '$lib/server/daily-agenda';
 import { getDb } from '$lib/server/db';
-import { tasks } from '$lib/server/db/schema';
-import { getDateUrgencyStatus, getStartOfWeek, getTodayString } from '$lib/utils/date';
+import { moodLogs, tasks } from '$lib/server/db/schema';
+import { generateId } from '$lib/server/db/utils';
+import {
+	addDaysToDateString,
+	formatDateShort,
+	getDateRange,
+	getDateUrgencyStatus,
+	getStartOfMonth,
+	getStartOfQuarter,
+	getStartOfWeek,
+	getTodayString,
+	parseLocalDateString
+} from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
+import {
+	getMoodChartColor,
+	getMoodScore,
+	normalizeOptionalMoodText,
+	resolveMoodLabel
+} from '$lib/utils/mood';
 
 import type { Actions, PageServerLoad } from './$types';
 
@@ -126,6 +144,58 @@ function failAgendaMutation(
 			date: context.date
 		})
 	);
+}
+
+function getSelectedPeriod(value: string | null): 'week' | 'month' | 'quarter' {
+	const parsed = moodPeriodSchema.safeParse(value ?? 'week');
+	return parsed.success ? parsed.data : 'week';
+}
+
+function getMoodRangeStart(today: string, period: 'week' | 'month' | 'quarter'): string {
+	if (period === 'month') return getStartOfMonth(today);
+	if (period === 'quarter') return getStartOfQuarter(today);
+	return getStartOfWeek(today);
+}
+
+async function buildMoodForm(todayMoodLog?: typeof moodLogs.$inferSelect | null) {
+	const today = getTodayString();
+	return superValidate(
+		{
+			date: todayMoodLog?.date ?? today,
+			mood: todayMoodLog?.mood ?? '',
+			customMood: todayMoodLog?.customMood ?? '',
+			notes: todayMoodLog?.notes ?? ''
+		},
+		zod4(moodLogSchema)
+	);
+}
+
+const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+
+function buildWeekdayAvg(
+	entries: { date: string; mood: string }[]
+): { day: string; avgScore: number | null; count: number }[] {
+	const weekdayScores: number[][] = Array.from({ length: 7 }, () => []);
+
+	for (const entry of entries) {
+		const date = parseLocalDateString(entry.date);
+		// JS getDay(): 0=Sun…6=Sat → convert to Mon=0…Sun=6
+		const dayIndex = (date.getDay() + 6) % 7;
+		weekdayScores[dayIndex].push(getMoodScore(entry.mood));
+	}
+
+	return WEEKDAY_LABELS.map((day, index) => ({
+		day,
+		avgScore:
+			weekdayScores[index].length > 0
+				? Number(
+						(weekdayScores[index].reduce((s, v) => s + v, 0) / weekdayScores[index].length).toFixed(
+							1
+						)
+					)
+				: null,
+		count: weekdayScores[index].length
+	}));
 }
 
 /**
@@ -362,6 +432,8 @@ async function loadTaskBoardData(
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const userId = getUser(locals).id;
+	const today = getTodayString();
+
 	const pageState = dailyAgendaPageQuerySchema.safeParse({
 		tab: url.searchParams.get('tab') ?? undefined,
 		week: url.searchParams.get('week') ?? undefined
@@ -377,6 +449,46 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		dueDate: url.searchParams.get('dueDate') ?? undefined
 	});
 
+	// Mood range vars are only needed when the mood tab is active — compute lazily.
+	const selectedPeriod =
+		activeTab === 'mood' ? getSelectedPeriod(url.searchParams.get('period')) : 'week';
+	const moodRangeStart = activeTab === 'mood' ? getMoodRangeStart(today, selectedPeriod) : today;
+	const moodRangeDates = activeTab === 'mood' ? getDateRange(moodRangeStart, today) : [];
+	const calendarMonthStart = activeTab === 'mood' ? getStartOfMonth(today) : today;
+	const rangeLabel =
+		activeTab === 'mood' ? `${formatDateShort(moodRangeStart)} – ${formatDateShort(today)}` : '';
+
+	const emptyMood = {
+		selectedPeriod,
+		rangeLabel,
+		trendPoints: [] as {
+			date: string;
+			score: number;
+			resolvedMood: string;
+			mood: string;
+			isCustom: boolean;
+			fill: string;
+		}[],
+		rollingAvgPoints: [] as { date: string; rollingAvg: number }[],
+		distribution: [] as { mood: string; count: number; fill: string; percentage: number }[],
+		weekdayAvg: buildWeekdayAvg([]),
+		calendarLogs: [] as { date: string; score: number; resolvedMood: string; fill: string }[],
+		todayLog: null as {
+			date: string;
+			mood: string;
+			resolvedMood: string;
+			notes: string | null;
+		} | null,
+		summary: {
+			loggedDays: 0,
+			totalDays: moodRangeDates.length,
+			coveragePercentage: 0,
+			currentStreak: 0,
+			mostFrequentMood: null as string | null,
+			averageScore: null as number | null
+		}
+	};
+
 	if (!filters.success) {
 		logger.error('Invalid task filter parameters', { error: filters.error, userId });
 
@@ -384,21 +496,160 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			activeTab,
 			agenda,
 			tasks: [],
-			allTags: userId ? await getAllTags(userId) : []
+			allTags: userId ? await getAllTags(userId) : [],
+			moodForm: await buildMoodForm(),
+			mood: emptyMood
 		};
 	}
 
 	try {
-		const tasksWithParsedFields = await loadTaskBoardData(userId, filters.data);
+		const db = getDb();
 
-		// Get all unique tags for filter component
-		const allTags = await getAllTags(userId);
+		if (activeTab !== 'mood') {
+			const [tasksWithParsedFields, allTags] = await Promise.all([
+				loadTaskBoardData(userId, filters.data),
+				getAllTags(userId)
+			]);
+
+			return {
+				activeTab,
+				agenda,
+				tasks: tasksWithParsedFields,
+				allTags,
+				moodForm: await buildMoodForm(),
+				mood: emptyMood
+			};
+		}
+
+		const [tasksWithParsedFields, allTags, moodEntries, calendarEntries] = await Promise.all([
+			loadTaskBoardData(userId, filters.data),
+			getAllTags(userId),
+			db.query.moodLogs.findMany({
+				where: and(
+					eq(moodLogs.userId, userId),
+					gte(moodLogs.date, moodRangeStart),
+					lte(moodLogs.date, today)
+				),
+				orderBy: [asc(moodLogs.date)]
+			}),
+			db.query.moodLogs.findMany({
+				where: and(
+					eq(moodLogs.userId, userId),
+					gte(moodLogs.date, calendarMonthStart),
+					lte(moodLogs.date, today)
+				),
+				orderBy: [asc(moodLogs.date)]
+			})
+		]);
+
+		const todayLog = moodEntries.find((e) => e.date === today) ?? null;
+		const moodForm = await buildMoodForm(todayLog);
+
+		const trendPoints = moodEntries.map((entry) => ({
+			date: entry.date,
+			score: getMoodScore(entry.mood),
+			resolvedMood: resolveMoodLabel(entry.mood, entry.customMood),
+			mood: entry.mood,
+			isCustom: entry.mood === 'custom',
+			fill: getMoodChartColor(entry.mood)
+		}));
+
+		// Rolling 7-day average: average over available logged points only (no interpolation)
+		const rollingAvgPoints: { date: string; rollingAvg: number }[] = [];
+		let windowStartIndex = 0;
+		let windowScoreSum = 0;
+
+		for (let pointIndex = 0; pointIndex < trendPoints.length; pointIndex += 1) {
+			const point = trendPoints[pointIndex];
+			const windowStart = addDaysToDateString(point.date, -6);
+
+			while (trendPoints[windowStartIndex] && trendPoints[windowStartIndex].date < windowStart) {
+				windowScoreSum -= trendPoints[windowStartIndex].score;
+				windowStartIndex += 1;
+			}
+
+			windowScoreSum += point.score;
+			const windowLength = pointIndex - windowStartIndex + 1;
+			const avg = windowScoreSum / windowLength;
+
+			rollingAvgPoints.push({ date: point.date, rollingAvg: Number(avg.toFixed(1)) });
+		}
+
+		const distributionMap = new Map<string, { count: number; fill: string }>();
+		for (const entry of moodEntries) {
+			const resolvedMood = resolveMoodLabel(entry.mood, entry.customMood);
+			const existing = distributionMap.get(resolvedMood);
+			if (existing) {
+				existing.count += 1;
+			} else {
+				distributionMap.set(resolvedMood, { count: 1, fill: getMoodChartColor(entry.mood) });
+			}
+		}
+
+		const distribution = Array.from(distributionMap.entries())
+			.map(([mood, value]) => ({
+				mood,
+				count: value.count,
+				fill: value.fill,
+				percentage:
+					moodEntries.length > 0 ? Math.round((value.count / moodEntries.length) * 100) : 0
+			}))
+			.sort((a, b) => b.count - a.count);
+
+		const weekdayAvg = buildWeekdayAvg(moodEntries);
+
+		const calendarLogs = calendarEntries.map((entry) => ({
+			date: entry.date,
+			score: getMoodScore(entry.mood),
+			resolvedMood: resolveMoodLabel(entry.mood, entry.customMood),
+			fill: getMoodChartColor(entry.mood)
+		}));
+
+		const moodDates = new Set(moodEntries.map((e) => e.date));
+		let currentStreak = 0;
+		for (let i = moodRangeDates.length - 1; i >= 0; i -= 1) {
+			if (!moodDates.has(moodRangeDates[i])) break;
+			currentStreak += 1;
+		}
+
+		const totalScore = trendPoints.reduce((sum, p) => sum + p.score, 0);
+		const averageScore =
+			trendPoints.length > 0 ? Number((totalScore / trendPoints.length).toFixed(1)) : null;
 
 		return {
 			activeTab,
 			agenda,
 			tasks: tasksWithParsedFields,
-			allTags
+			allTags,
+			moodForm,
+			mood: {
+				selectedPeriod,
+				rangeLabel,
+				trendPoints,
+				rollingAvgPoints,
+				distribution,
+				weekdayAvg,
+				calendarLogs,
+				todayLog: todayLog
+					? {
+							date: todayLog.date,
+							mood: todayLog.mood,
+							resolvedMood: resolveMoodLabel(todayLog.mood, todayLog.customMood),
+							notes: todayLog.notes
+						}
+					: null,
+				summary: {
+					loggedDays: moodEntries.length,
+					totalDays: moodRangeDates.length,
+					coveragePercentage:
+						moodRangeDates.length > 0
+							? Math.round((moodEntries.length / moodRangeDates.length) * 100)
+							: 0,
+					currentStreak,
+					mostFrequentMood: distribution[0]?.mood ?? null,
+					averageScore
+				}
+			}
 		};
 	} catch (error) {
 		logger.error('Failed to load tasks', { error, userId });
@@ -406,7 +657,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			activeTab,
 			agenda,
 			tasks: [],
-			allTags: []
+			allTags: [],
+			moodForm: await buildMoodForm(),
+			mood: emptyMood
 		};
 	}
 };
@@ -679,6 +932,68 @@ export const actions: Actions = {
 				message: 'Failed to update agenda item.',
 				logMessage: 'Failed to toggle Daily Agenda entry'
 			});
+		}
+	}),
+
+	upsertMood: requireAuth(async ({ request }, user) => {
+		const form = await superValidate(request, zod4(moodLogSchema));
+
+		if (!form.valid) {
+			logger.warn('Invalid mood log form data', { errors: form.errors, userId: user.id });
+			return fail(400, { form });
+		}
+
+		const today = getTodayString();
+		if (form.data.date > today) {
+			return setError(form, 'date', 'You cannot log a mood in the future');
+		}
+
+		try {
+			const db = getDb();
+			const existingMoodLog = await db.query.moodLogs.findFirst({
+				where: and(eq(moodLogs.userId, user.id), eq(moodLogs.date, form.data.date))
+			});
+
+			const customMood =
+				form.data.mood === 'custom' ? normalizeOptionalMoodText(form.data.customMood) : null;
+			const notes = normalizeOptionalMoodText(form.data.notes);
+
+			if (existingMoodLog) {
+				await db
+					.update(moodLogs)
+					.set({
+						mood: form.data.mood,
+						customMood,
+						notes,
+						updatedAt: new Date().toISOString()
+					})
+					.where(and(eq(moodLogs.id, existingMoodLog.id), eq(moodLogs.userId, user.id)));
+
+				logger.info('Mood log updated', { moodLogId: existingMoodLog.id, userId: user.id });
+				return message(form, { type: 'success', text: "Today's mood was updated." });
+			}
+
+			const moodLogId = generateId();
+			await db.insert(moodLogs).values({
+				id: moodLogId,
+				userId: user.id,
+				date: form.data.date,
+				mood: form.data.mood,
+				customMood,
+				notes,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString()
+			});
+
+			logger.info('Mood log created', { moodLogId, userId: user.id });
+			return message(form, { type: 'success', text: "Today's mood was logged." });
+		} catch (error) {
+			logger.error('Failed to upsert mood log', { error, userId: user.id });
+			return message(
+				form,
+				{ type: 'error', text: 'Failed to save your mood. Please try again.' },
+				{ status: 500 }
+			);
 		}
 	})
 };

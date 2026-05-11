@@ -68,7 +68,7 @@ const booleanishSchema = z
 		return z.NEVER;
 	});
 
-const TaskPageTabEnum = z.enum(['kanban', 'agenda']);
+const TaskPageTabEnum = z.enum(['kanban', 'agenda', 'mood']);
 
 const dailyAgendaWeekSchema = localDateStringSchema.optional().transform((value) => {
 	return getStartOfWeek(value ?? getTodayString());

@@ -30,6 +30,5 @@ export const moodLogSchema = z
 	});
 
 export const moodPeriodSchema = z.enum(moodPeriods);
-export const journalPageTabSchema = z.enum(['journal', 'mood']);
 
 export type MoodLogFormValues = z.infer<typeof moodLogSchema>;
