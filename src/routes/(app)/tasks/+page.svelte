@@ -147,7 +147,7 @@
 			url.searchParams.set('period', nextPeriod);
 		}
 
-		await goto(url.toString());
+		await goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
 	}
 </script>
 

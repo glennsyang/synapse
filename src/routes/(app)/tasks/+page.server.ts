@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { and, asc, eq, gte, like, lte, or } from 'drizzle-orm';
-import { message, superValidate } from 'sveltekit-superforms';
+import { message, setError, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import {
@@ -433,11 +433,6 @@ async function loadTaskBoardData(
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const userId = getUser(locals).id;
 	const today = getTodayString();
-	const selectedPeriod = getSelectedPeriod(url.searchParams.get('period'));
-	const moodRangeStart = getMoodRangeStart(today, selectedPeriod);
-	const moodRangeDates = getDateRange(moodRangeStart, today);
-	const calendarMonthStart = getStartOfMonth(today);
-	const rangeLabel = `${formatDateShort(moodRangeStart)} – ${formatDateShort(today)}`;
 
 	const pageState = dailyAgendaPageQuerySchema.safeParse({
 		tab: url.searchParams.get('tab') ?? undefined,
@@ -453,6 +448,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		state: url.searchParams.get('state') ?? undefined,
 		dueDate: url.searchParams.get('dueDate') ?? undefined
 	});
+
+	// Mood range vars are only needed when the mood tab is active — compute lazily.
+	const selectedPeriod =
+		activeTab === 'mood' ? getSelectedPeriod(url.searchParams.get('period')) : 'week';
+	const moodRangeStart = activeTab === 'mood' ? getMoodRangeStart(today, selectedPeriod) : today;
+	const moodRangeDates = activeTab === 'mood' ? getDateRange(moodRangeStart, today) : [];
+	const calendarMonthStart = activeTab === 'mood' ? getStartOfMonth(today) : today;
+	const rangeLabel =
+		activeTab === 'mood' ? `${formatDateShort(moodRangeStart)} – ${formatDateShort(today)}` : '';
 
 	const emptyMood = {
 		selectedPeriod,
@@ -500,6 +504,23 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	try {
 		const db = getDb();
+
+		if (activeTab !== 'mood') {
+			const [tasksWithParsedFields, allTags] = await Promise.all([
+				loadTaskBoardData(userId, filters.data),
+				getAllTags(userId)
+			]);
+
+			return {
+				activeTab,
+				agenda,
+				tasks: tasksWithParsedFields,
+				allTags,
+				moodForm: await buildMoodForm(),
+				mood: emptyMood
+			};
+		}
+
 		const [tasksWithParsedFields, allTags, moodEntries, calendarEntries] = await Promise.all([
 			loadTaskBoardData(userId, filters.data),
 			getAllTags(userId),
@@ -911,8 +932,7 @@ export const actions: Actions = {
 
 		const today = getTodayString();
 		if (form.data.date > today) {
-			form.errors.date = ['You cannot log a mood in the future'];
-			return fail(400, { form });
+			return setError(form, 'date', 'You cannot log a mood in the future');
 		}
 
 		try {
