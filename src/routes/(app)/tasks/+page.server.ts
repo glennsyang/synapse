@@ -534,12 +534,25 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		}));
 
 		// Rolling 7-day average: average over available logged points only (no interpolation)
-		const rollingAvgPoints = trendPoints.map((point) => {
+		const rollingAvgPoints: { date: string; rollingAvg: number }[] = [];
+		let windowStartIndex = 0;
+		let windowScoreSum = 0;
+
+		for (let pointIndex = 0; pointIndex < trendPoints.length; pointIndex += 1) {
+			const point = trendPoints[pointIndex];
 			const windowStart = addDaysToDateString(point.date, -6);
-			const windowPoints = trendPoints.filter((p) => p.date >= windowStart && p.date <= point.date);
-			const avg = windowPoints.reduce((sum, p) => sum + p.score, 0) / windowPoints.length;
-			return { date: point.date, rollingAvg: Number(avg.toFixed(1)) };
-		});
+
+			while (trendPoints[windowStartIndex] && trendPoints[windowStartIndex].date < windowStart) {
+				windowScoreSum -= trendPoints[windowStartIndex].score;
+				windowStartIndex += 1;
+			}
+
+			windowScoreSum += point.score;
+			const windowLength = pointIndex - windowStartIndex + 1;
+			const avg = windowScoreSum / windowLength;
+
+			rollingAvgPoints.push({ date: point.date, rollingAvg: Number(avg.toFixed(1)) });
+		}
 
 		const distributionMap = new Map<string, { count: number; fill: string }>();
 		for (const entry of moodEntries) {
