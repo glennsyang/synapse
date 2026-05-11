@@ -601,8 +601,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		const calendarLogs = calendarEntries.map((entry) => ({
 			date: entry.date,
 			score: getMoodScore(entry.mood),
-			resolvedMood: resolveMoodLabel(entry.mood, entry.customMood),
-			fill: getMoodChartColor(entry.mood)
+			resolvedMood: resolveMoodLabel(entry.mood, entry.customMood)
 		}));
 
 		const moodDates = new Set(moodEntries.map((e) => e.date));
