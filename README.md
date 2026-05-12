@@ -46,9 +46,9 @@ Synapse is a comprehensive personal productivity app that helps you capture and 
 
 ## Prerequisites
 
-- **Node.js**: `22.21.1` (required for better-sqlite3 compatibility)
+- **Node.js**: `22.22.2` (required for better-sqlite3 compatibility)
   - Use [nvm](https://github.com/nvm-sh/nvm) or [asdf](https://asdf-vm.com/) to manage Node versions
-  - Run `nvm use 22.21.1` or `asdf install nodejs 22.21.1`
+  - Run `nvm use 22.22.2` or `asdf install nodejs 22.22.2`
 
 ## Getting Started
 
