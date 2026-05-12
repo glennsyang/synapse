@@ -307,7 +307,7 @@
 						</p>
 					</div>
 				</div>
-				<VisitHealthPanel counts={data.visitHealthCounts} />
+				<VisitHealthPanel counts={data.visitHealthCounts} names={data.visitHealthNames} />
 			</div>
 		</div>
 
