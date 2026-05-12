@@ -2,8 +2,8 @@
 	import {
 		Book,
 		CalendarCheck,
-		CheckCircle,
 		CircleAlert,
+		CircleCheck,
 		Dumbbell,
 		Heart,
 		ListTodo,
@@ -53,7 +53,7 @@
 			iconClass: 'text-[oklch(var(--color-purple))]'
 		},
 		task: {
-			icon: CheckCircle,
+			icon: CircleCheck,
 			bgClass: 'bg-[oklch(var(--color-teal)/0.15)]',
 			iconClass: 'text-[oklch(var(--color-teal))]'
 		},
@@ -235,7 +235,7 @@
 				<div class="space-y-4">
 					<div class="flex items-center justify-between">
 						<div class="flex items-center gap-2 text-sm text-muted-foreground">
-							<CheckCircle class="size-4 text-[oklch(var(--color-green))]" />
+							<CircleCheck class="size-4 text-[oklch(var(--color-green))]" />
 							Completed this week
 						</div>
 						<div class="flex items-center gap-2">
