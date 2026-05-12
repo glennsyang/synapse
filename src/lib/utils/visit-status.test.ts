@@ -78,3 +78,43 @@ describe('visit status exemptions', () => {
 		expect(getStatusPriority('scheduled')).toBeLessThan(getStatusPriority('none'));
 	});
 });
+
+describe('visit status boundary thresholds', () => {
+	it('returns green well within the 9-month window', () => {
+		const date = dateDaysAgo(180);
+		const result = calculateVisitStatus(date);
+		expect(result.status).toBe('green');
+		expect(result.daysUntilStatusChange).toBeGreaterThan(0);
+	});
+
+	it('returns yellow in the 9-12 month range', () => {
+		const date = dateDaysAgo(300);
+		const result = calculateVisitStatus(date);
+		expect(result.status).toBe('yellow');
+		expect(result.daysUntilStatusChange).toBeGreaterThan(0);
+	});
+
+	it('returns yellow at 274 days (first reliable yellow day)', () => {
+		const date = dateDaysAgo(274);
+		expect(calculateVisitStatus(date).status).toBe('yellow');
+	});
+
+	it('returns red well beyond the 12-month mark', () => {
+		const date = dateDaysAgo(400);
+		const result = calculateVisitStatus(date);
+		expect(result.status).toBe('red');
+		expect(result.daysUntilStatusChange).toBeNull();
+	});
+
+	it('returns red at 365 days', () => {
+		const date = dateDaysAgo(365);
+		expect(calculateVisitStatus(date).status).toBe('red');
+	});
+
+	it('returns none when there is no visit date', () => {
+		const result = calculateVisitStatus(null);
+		expect(result.status).toBe('none');
+		expect(result.daysSinceLastVisit).toBeNull();
+		expect(result.daysUntilStatusChange).toBeNull();
+	});
+});

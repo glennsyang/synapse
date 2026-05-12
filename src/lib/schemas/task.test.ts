@@ -138,4 +138,31 @@ describe('task schemas', () => {
 
 		expect(result.success).toBe(false);
 	});
+
+	it('rejects priority 0 which is below the minimum of 1', () => {
+		expect(createTaskSchema.safeParse({ title: 'Task', priority: 0 }).success).toBe(false);
+	});
+
+	it('rejects priority 5 which is above the maximum of 4', () => {
+		expect(createTaskSchema.safeParse({ title: 'Task', priority: 5 }).success).toBe(false);
+	});
+
+	it('rejects an invalid dueDate format', () => {
+		expect(
+			createTaskSchema.safeParse({ title: 'Task', priority: 2, dueDate: '03/15/2026' }).success
+		).toBe(false);
+	});
+
+	it('accepts a null dueDate', () => {
+		const result = createTaskSchema.parse({ title: 'Task', priority: 2, dueDate: null });
+		expect(result.dueDate).toBeNull();
+	});
+
+	it('rejects a title that exceeds 200 characters', () => {
+		expect(createTaskSchema.safeParse({ title: 'T'.repeat(201), priority: 1 }).success).toBe(false);
+	});
+
+	it('rejects an empty title', () => {
+		expect(createTaskSchema.safeParse({ title: '', priority: 1 }).success).toBe(false);
+	});
 });
