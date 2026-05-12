@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lte, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, lte, ne, sql } from 'drizzle-orm';
 
 import { getDb } from '$lib/server/db';
 import {
@@ -21,9 +21,18 @@ import {
 	getWeekDates,
 	parseLocalDateString
 } from '$lib/utils/date';
+
+const appTodayLabelFormatter = new Intl.DateTimeFormat('en-US', {
+	timeZone: 'America/Los_Angeles',
+	weekday: 'long',
+	month: 'long',
+	day: 'numeric'
+});
+
 import { logger } from '$lib/utils/logger';
 import { createMarkdownExcerpt } from '$lib/utils/markdown';
 import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
+import { getWorkoutLabel } from '$lib/utils/workout';
 
 import type { PageServerLoad } from './$types';
 
@@ -40,6 +49,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
 	if (!user) {
 		return {
+			todayLabel: appTodayLabelFormatter.format(new Date()),
 			stats: {
 				journalThisWeek: 0,
 				journalLastWeek: 0,
@@ -70,9 +80,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// Dates for new analytics
 	const agenda6WeeksStart = addDaysToDateString(startOfThisWeekDate, -35);
 	const workout4WeeksStart = addDaysToDateString(today, -28);
-	const thisWeekStartIso = `${startOfThisWeekDate}T00:00:00.000Z`;
-	const endOfThisWeekIso = `${endOfThisWeekDate}T00:00:00.000Z`;
-	const lastWeekStartIso = `${startOfLastWeekDate}T00:00:00.000Z`;
+	// Buffered UTC range for task completion counts — app-local filtering happens in JS
+	const tasksCompletionRangeStartIso = `${addDaysToDateString(startOfLastWeekDate, -1)}T00:00:00.000Z`;
+	const tasksCompletionRangeEndIso = `${addDaysToDateString(endOfThisWeekDate, 1)}T00:00:00.000Z`;
 
 	const db = getDb();
 
@@ -86,8 +96,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			recentWorkoutRaw,
 			recentMeditationRaw,
 			agendaEntriesForTrend,
-			tasksCompletedThisWeekResult,
-			tasksCompletedLastWeekResult,
+			tasksCompletionRaw,
 			openHighPriorityResult,
 			openTotalResult,
 			workoutTypeBreakdownRaw,
@@ -169,28 +178,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 						sql`${dailyAgendaEntries.date} < ${endOfThisWeekDate}`
 					)
 				),
-			// Tasks completed this week
+			// Task completions this/last week — buffered UTC range, counted in app timezone
 			db
-				.select({ count: sql<number>`count(*)` })
+				.select({ completedAt: tasks.completedAt })
 				.from(tasks)
 				.where(
 					and(
 						eq(tasks.userId, user.id),
 						eq(tasks.state, 'done'),
-						gte(tasks.completedAt, thisWeekStartIso),
-						sql`${tasks.completedAt} < ${endOfThisWeekIso}`
-					)
-				),
-			// Tasks completed last week
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(tasks)
-				.where(
-					and(
-						eq(tasks.userId, user.id),
-						eq(tasks.state, 'done'),
-						gte(tasks.completedAt, lastWeekStartIso),
-						sql`${tasks.completedAt} < ${thisWeekStartIso}`
+						gte(tasks.completedAt, tasksCompletionRangeStartIso),
+						sql`${tasks.completedAt} < ${tasksCompletionRangeEndIso}`
 					)
 				),
 			// Open high priority tasks (priority 1 or 2)
@@ -214,16 +211,30 @@ export const load: PageServerLoad = async ({ locals }) => {
 				.select({ id: people.id, isExempt: people.isExempt })
 				.from(people)
 				.where(and(eq(people.userId, user.id), eq(people.isArchived, false))),
-			// All visits for this user (ordered to allow latest-per-person extraction)
-			db
-				.select({
-					personId: visits.personId,
-					date: visits.date,
-					followUpDate: visits.followUpDate
-				})
-				.from(visits)
-				.where(eq(visits.userId, user.id))
-				.orderBy(asc(visits.personId), desc(visits.date), desc(visits.createdAt)),
+			// Latest visit per non-archived person — window function keeps only rn=1
+			(() => {
+				const subq = db
+					.select({
+						personId: visits.personId,
+						date: visits.date,
+						followUpDate: visits.followUpDate,
+						rn: sql<number>`row_number() over (partition by ${visits.personId} order by ${visits.date} desc, ${visits.createdAt} desc)`.as(
+							'rn'
+						)
+					})
+					.from(visits)
+					.innerJoin(people, and(eq(visits.personId, people.id), eq(people.isArchived, false)))
+					.where(eq(visits.userId, user.id))
+					.as('latest_visits_subq');
+				return db
+					.select({
+						personId: subq.personId,
+						date: subq.date,
+						followUpDate: subq.followUpDate
+					})
+					.from(subq)
+					.where(sql`${subq.rn} = 1`);
+			})(),
 			// Recent completed tasks for activity feed
 			db.query.tasks.findMany({
 				where: and(eq(tasks.userId, user.id), eq(tasks.state, 'done')),
@@ -287,10 +298,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 			return { weekLabel, completionPct };
 		});
 
-		// 2. Task stats
+		// 2. Task stats — count completions per app-local week
+		const thisWeekDateSet = new Set(thisWeekDates);
+		const lastWeekDateSet = new Set(lastWeekDates);
+		let completedThisWeek = 0;
+		let completedLastWeek = 0;
+		for (const row of tasksCompletionRaw) {
+			if (row.completedAt === null) continue;
+			const localDate = getTodayString(new Date(row.completedAt));
+			if (thisWeekDateSet.has(localDate)) completedThisWeek++;
+			else if (lastWeekDateSet.has(localDate)) completedLastWeek++;
+		}
 		const taskStats = {
-			completedThisWeek: Number(tasksCompletedThisWeekResult[0]?.count || 0),
-			completedLastWeek: Number(tasksCompletedLastWeekResult[0]?.count || 0),
+			completedThisWeek,
+			completedLastWeek,
 			openHighPriority: Number(openHighPriorityResult[0]?.count || 0),
 			openTotal: Number(openTotalResult[0]?.count || 0)
 		};
@@ -300,28 +321,24 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.map((row) => ({ type: row.type, count: Number(row.count || 0) }))
 			.sort((a, b) => b.count - a.count);
 
-		// 4. Visit health counts
-		const latestVisitByPersonId = new Map<string, { date: string; followUpDate: string | null }>();
-		for (const visit of allVisitsRaw) {
-			if (!latestVisitByPersonId.has(visit.personId)) {
-				latestVisitByPersonId.set(visit.personId, {
-					date: visit.date,
-					followUpDate: visit.followUpDate
-				});
-			}
-		}
+		// 4. Visit health counts — allVisitsRaw already has at most one row per active person
+		const latestVisitByPersonId = new Map(
+			allVisitsRaw.map((v) => [v.personId, { date: v.date, followUpDate: v.followUpDate }])
+		);
 
 		const visitHealthCounts = {
 			critical: 0,
 			overdue: 0,
 			healthy: 0,
 			noVisits: 0,
-			total: allPeopleRaw.length
+			total: 0
 		};
+		// scheduled people have a future follow-up so count as healthy; exempt people are excluded
 		const statusKeyMap: Record<string, keyof Omit<typeof visitHealthCounts, 'total'>> = {
 			red: 'critical',
 			yellow: 'overdue',
 			green: 'healthy',
+			scheduled: 'healthy',
 			none: 'noVisits'
 		};
 		for (const person of allPeopleRaw) {
@@ -333,11 +350,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 				today
 			);
 			const key = statusKeyMap[status];
-			if (key) visitHealthCounts[key]++;
+			if (key) {
+				visitHealthCounts[key]++;
+				visitHealthCounts.total++;
+			}
 		}
 
 		// 5. Recent activity feed — merge all types, sort desc by timestamp, take top 10
-		const capitalizeFirst = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 		const recentActivity: ActivityItem[] = [
 			...recentJournalRaw.map((e) => ({
 				type: 'journal' as const,
@@ -351,7 +370,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				type: 'workout' as const,
 				id: w.id,
 				href: '/fitness',
-				title: `${capitalizeFirst(w.type)} Workout`,
+				title: `${getWorkoutLabel(w.type)} Workout`,
 				meta: `${formatDateMedium(w.date)}${w.time ? ` @ ${formatTime12Hour(w.time)}` : ''}${w.durationMinutes ? ` · ${w.durationMinutes} min` : ''}`,
 				timestamp: w.createdAt
 			})),
@@ -386,6 +405,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.slice(0, 10);
 
 		return {
+			todayLabel: appTodayLabelFormatter.format(new Date()),
 			stats: {
 				journalThisWeek: sumCountsByDate(journalCountByDate, thisWeekDates),
 				journalLastWeek: sumCountsByDate(journalCountByDate, lastWeekDates),
@@ -405,6 +425,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		logger.error('Failed to load dashboard data', { error });
 
 		return {
+			todayLabel: appTodayLabelFormatter.format(new Date()),
 			stats: {
 				journalThisWeek: 0,
 				journalLastWeek: 0,

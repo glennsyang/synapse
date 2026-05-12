@@ -84,13 +84,7 @@
 						{data.user.name}
 					</span>
 				</h1>
-				<p class="text-sm text-muted-foreground">
-					{new Date().toLocaleDateString('en-US', {
-						weekday: 'long',
-						month: 'long',
-						day: 'numeric'
-					})}
-				</p>
+				<p class="text-sm text-muted-foreground">{data.todayLabel}</p>
 			</div>
 
 			{#if data.taskStats.openHighPriority > 0}

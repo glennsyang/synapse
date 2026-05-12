@@ -187,6 +187,7 @@ export function getRollingDateRange(endDate: string, dayCount: number): string[]
 export function formatTimestampLong(timestamp: string): string {
 	const date = new Date(timestamp);
 	return date.toLocaleString('en-US', {
+		timeZone: APP_TIME_ZONE,
 		month: 'short',
 		day: 'numeric',
 		year: 'numeric',
@@ -207,6 +208,7 @@ export function formatTimestampLong(timestamp: string): string {
 export function formatTimestampMedium(timestamp: string): string {
 	const date = new Date(timestamp);
 	return date.toLocaleString('en-US', {
+		timeZone: APP_TIME_ZONE,
 		weekday: 'short',
 		month: 'short',
 		day: 'numeric',
@@ -227,6 +229,7 @@ export function formatTimestampMedium(timestamp: string): string {
 export function formatTimestampShort(timestamp: string): string {
 	const date = new Date(timestamp);
 	return date.toLocaleDateString('en-US', {
+		timeZone: APP_TIME_ZONE,
 		month: 'short',
 		day: 'numeric',
 		year: 'numeric'
@@ -245,6 +248,7 @@ export function formatTimestampShort(timestamp: string): string {
 export function formatTimeFromTimestamp(timestamp: string): string {
 	const date = new Date(timestamp);
 	return date.toLocaleTimeString('en-US', {
+		timeZone: APP_TIME_ZONE,
 		hour: 'numeric',
 		minute: '2-digit'
 	});
