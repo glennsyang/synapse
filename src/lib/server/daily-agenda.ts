@@ -34,13 +34,13 @@ export class DailyAgendaMutationError extends Error {
 	}
 }
 
-function assertDateIsEditable(date: string): void {
+export function assertDateIsEditable(date: string): void {
 	if (date < getTodayString()) {
 		throw new DailyAgendaMutationError('Historical items are read only', 'read_only');
 	}
 }
 
-function calculateCompletionPercentage(entries: Array<{ completed: boolean }>): number {
+export function calculateCompletionPercentage(entries: Array<{ completed: boolean }>): number {
 	if (entries.length === 0) {
 		return 0;
 	}
@@ -49,7 +49,7 @@ function calculateCompletionPercentage(entries: Array<{ completed: boolean }>): 
 	return Math.round((completedCount / entries.length) * 100);
 }
 
-function buildDateRangeLabel(startDate: string, endDate: string): string {
+export function buildDateRangeLabel(startDate: string, endDate: string): string {
 	const start = parseLocalDateString(startDate);
 	const end = parseLocalDateString(endDate);
 
@@ -66,7 +66,7 @@ function buildDateRangeLabel(startDate: string, endDate: string): string {
 	return `${startLabel} - ${endLabel}`;
 }
 
-function normalizeTemplateDays(daysOfWeek: number[]): number[] {
+export function normalizeTemplateDays(daysOfWeek: number[]): number[] {
 	const normalizedDays = Array.from(new Set(daysOfWeek))
 		.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
 		.sort((left, right) => left - right);
@@ -74,7 +74,7 @@ function normalizeTemplateDays(daysOfWeek: number[]): number[] {
 	return normalizedDays.length > 0 ? normalizedDays : [...EVERY_DAY_TEMPLATE_DAYS];
 }
 
-function parseTemplateDays(daysOfWeek: string): number[] {
+export function parseTemplateDays(daysOfWeek: string): number[] {
 	try {
 		const parsed = JSON.parse(daysOfWeek);
 		if (!Array.isArray(parsed)) {
@@ -88,11 +88,11 @@ function parseTemplateDays(daysOfWeek: string): number[] {
 	}
 }
 
-function serializeTemplateDays(daysOfWeek: number[]): string {
+export function serializeTemplateDays(daysOfWeek: number[]): string {
 	return JSON.stringify(normalizeTemplateDays(daysOfWeek));
 }
 
-function getEntriesToDeleteForDays(
+export function getEntriesToDeleteForDays(
 	entries: Array<{ id: string; date: string }>,
 	allowedDays: number[]
 ): string[] {

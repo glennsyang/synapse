@@ -103,4 +103,42 @@ describe('daily agenda schemas', () => {
 
 		expect(result.success).toBe(false);
 	});
+
+	it('parses booleanish truthy strings as true', () => {
+		for (const truthy of ['true', '1', 'on', true] as const) {
+			const result = toggleDailyAgendaEntrySchema.parse({
+				id: '123e4567-e89b-12d3-a456-426614174000',
+				completed: truthy
+			});
+			expect(result.completed).toBe(true);
+		}
+	});
+
+	it('parses booleanish falsy strings as false', () => {
+		for (const falsy of ['false', '0', '', false] as const) {
+			const result = toggleDailyAgendaEntrySchema.parse({
+				id: '123e4567-e89b-12d3-a456-426614174000',
+				completed: falsy
+			});
+			expect(result.completed).toBe(false);
+		}
+	});
+
+	it('rejects invalid day number -1 in daysOfWeek', () => {
+		expect(
+			createDailyAgendaTemplateSchema.safeParse({
+				title: 'Walk outside',
+				daysOfWeek: '-1,1,2'
+			}).success
+		).toBe(false);
+	});
+
+	it('rejects invalid day number 7 in daysOfWeek', () => {
+		expect(
+			createDailyAgendaTemplateSchema.safeParse({
+				title: 'Walk outside',
+				daysOfWeek: '1,2,7'
+			}).success
+		).toBe(false);
+	});
 });
