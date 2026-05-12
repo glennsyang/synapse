@@ -45,6 +45,57 @@ type ActivityItem = {
 	timestamp: string;
 };
 
+type VisitHealthBucket = 'critical' | 'overdue' | 'healthy' | 'noVisits';
+
+type VisitHealthResult = {
+	counts: Record<VisitHealthBucket, number> & { total: number };
+	names: Record<VisitHealthBucket, string[]>;
+};
+
+const STATUS_KEY_MAP: Record<string, VisitHealthBucket> = {
+	red: 'critical',
+	yellow: 'overdue',
+	green: 'healthy',
+	scheduled: 'healthy',
+	none: 'noVisits'
+};
+
+function buildVisitHealth(
+	peopleRaw: { id: string; name: string; isExempt: boolean }[],
+	visitsMap: Map<string, { date: string; followUpDate: string | null }>,
+	today: string
+): VisitHealthResult {
+	const counts: Record<VisitHealthBucket, number> & { total: number } = {
+		critical: 0,
+		overdue: 0,
+		healthy: 0,
+		noVisits: 0,
+		total: 0
+	};
+	const names: Record<VisitHealthBucket, string[]> = {
+		critical: [],
+		overdue: [],
+		healthy: [],
+		noVisits: []
+	};
+	for (const person of peopleRaw) {
+		const latestVisit = visitsMap.get(person.id);
+		const { status } = calculatePersonVisitStatus(
+			latestVisit?.date ?? null,
+			person.isExempt,
+			latestVisit?.followUpDate ?? null,
+			today
+		);
+		const key = STATUS_KEY_MAP[status];
+		if (key) {
+			counts[key]++;
+			counts.total++;
+			names[key].push(person.name);
+		}
+	}
+	return { counts, names };
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
 	if (!user) {
@@ -63,6 +114,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 			agendaCompletionTrend: [] as { weekLabel: string; completionPct: number }[],
 			workoutTypeBreakdown: [] as { type: string; count: number }[],
 			visitHealthCounts: { critical: 0, overdue: 0, healthy: 0, noVisits: 0, total: 0 },
+			visitHealthNames: {
+				critical: [] as string[],
+				overdue: [] as string[],
+				healthy: [] as string[],
+				noVisits: [] as string[]
+			},
 			recentActivity: [] as ActivityItem[]
 		};
 	}
@@ -208,7 +265,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				.groupBy(workoutLogs.type),
 			// All non-archived people for visit health counts
 			db
-				.select({ id: people.id, isExempt: people.isExempt })
+				.select({ id: people.id, name: people.name, isExempt: people.isExempt })
 				.from(people)
 				.where(and(eq(people.userId, user.id), eq(people.isArchived, false))),
 			// Latest visit per non-archived person — window function keeps only rn=1
@@ -325,36 +382,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const latestVisitByPersonId = new Map(
 			allVisitsRaw.map((v) => [v.personId, { date: v.date, followUpDate: v.followUpDate }])
 		);
-
-		const visitHealthCounts = {
-			critical: 0,
-			overdue: 0,
-			healthy: 0,
-			noVisits: 0,
-			total: 0
-		};
-		// scheduled people have a future follow-up so count as healthy; exempt people are excluded
-		const statusKeyMap: Record<string, keyof Omit<typeof visitHealthCounts, 'total'>> = {
-			red: 'critical',
-			yellow: 'overdue',
-			green: 'healthy',
-			scheduled: 'healthy',
-			none: 'noVisits'
-		};
-		for (const person of allPeopleRaw) {
-			const latestVisit = latestVisitByPersonId.get(person.id);
-			const { status } = calculatePersonVisitStatus(
-				latestVisit?.date ?? null,
-				person.isExempt,
-				latestVisit?.followUpDate ?? null,
-				today
-			);
-			const key = statusKeyMap[status];
-			if (key) {
-				visitHealthCounts[key]++;
-				visitHealthCounts.total++;
-			}
-		}
+		const { counts: visitHealthCounts, names: visitHealthNames } = buildVisitHealth(
+			allPeopleRaw,
+			latestVisitByPersonId,
+			today
+		);
 
 		// 5. Recent activity feed — merge all types, sort desc by timestamp, take top 10
 		const recentActivity: ActivityItem[] = [
@@ -371,7 +403,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 				id: w.id,
 				href: '/fitness',
 				title: `${getWorkoutLabel(w.type)} Workout`,
-				meta: `${formatDateMedium(w.date)}${w.time ? ` @ ${formatTime12Hour(w.time)}` : ''}${w.durationMinutes ? ` · ${w.durationMinutes} min` : ''}`,
+				meta: [
+					formatDateMedium(w.date),
+					w.time ? `@ ${formatTime12Hour(w.time)}` : '',
+					w.durationMinutes ? `· ${w.durationMinutes} min` : ''
+				]
+					.filter(Boolean)
+					.join(' '),
 				timestamp: w.createdAt
 			})),
 			...recentMeditationRaw.map((s) => ({
@@ -379,7 +417,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 				id: s.id,
 				href: '/meditation',
 				title: s.routine?.title ?? 'Meditation',
-				meta: `${formatTimestampMedium(s.completedAt)}${s.routine?.durationMinutes ? ` · ${s.routine.durationMinutes} min` : ''}`,
+				meta: [
+					formatTimestampMedium(s.completedAt),
+					s.routine?.durationMinutes ? `· ${s.routine.durationMinutes} min` : ''
+				]
+					.filter(Boolean)
+					.join(' '),
 				timestamp: s.completedAt
 			})),
 			...recentTaskRaw
@@ -419,6 +462,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			agendaCompletionTrend,
 			workoutTypeBreakdown,
 			visitHealthCounts,
+			visitHealthNames,
 			recentActivity
 		};
 	} catch (error) {
@@ -439,6 +483,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 			agendaCompletionTrend: [] as { weekLabel: string; completionPct: number }[],
 			workoutTypeBreakdown: [] as { type: string; count: number }[],
 			visitHealthCounts: { critical: 0, overdue: 0, healthy: 0, noVisits: 0, total: 0 },
+			visitHealthNames: {
+				critical: [] as string[],
+				overdue: [] as string[],
+				healthy: [] as string[],
+				noVisits: [] as string[]
+			},
 			recentActivity: [] as ActivityItem[]
 		};
 	}
