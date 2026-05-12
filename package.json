@@ -18,9 +18,11 @@
 		"check:dead-exports": "node scripts/check-dead-exports.mjs",
 		"check:no-explicit-any-reviewed-scope": "node scripts/check-no-explicit-any-reviewed-scope.mjs",
 		"check:all": "npm run format && npm run lint && npm run test",
-		"test:unit": "vitest",
 		"test:e2e": "playwright test",
 		"test": "npm run test:unit -- --run",
+		"test:unit": "vitest",
+		"test:ci": "npm run test:unit -- --run && npm run test:coverage",
+		"test:coverage": "vitest run --coverage",
 		"update-deps": "npm outdated || npm update",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate"
