@@ -133,7 +133,7 @@ src/
 - Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`, `RESEND_NEW_USER_ADDRESS`
 - Runtime/ops env var: `CRON_SECRET` (for `/api/cron/email-notifications`)
 - Validated in `src/env.ts` (production fail-fast + build/dev fallbacks)
-- Node.js version: **22.21.1** (required for better-sqlite3 compatibility)
+- Node.js version: **22.22.2** (required for better-sqlite3 compatibility)
 - Application timezone is fixed to Pacific time: `America/Los_Angeles`
 - All app-level date boundaries, `getTodayString()`-style helpers, week calculations, reminder cutoffs, and editability rules must use Pacific time instead of server local time or UTC
 

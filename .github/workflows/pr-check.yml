@@ -10,12 +10,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '22.21.1'
+          node-version: '22.22.2'
           cache: npm
 
       - name: Install dependencies
@@ -41,4 +41,12 @@ jobs:
 
       # Run tests
       - name: Run tests
-        run: npm run test
+        run: npm run test:ci
+
+      # Generate coverage report
+      - name: Report Coverage
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: './coverage/coverage-summary.json'
+          json-final-path: './coverage/coverage-final.json'
