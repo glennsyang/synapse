@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { getTodayString } from '$lib/utils/date';
+
 import {
 	calculatePersonVisitStatus,
 	calculateVisitStatus,
@@ -9,8 +11,8 @@ import {
 
 function dateDaysAgo(daysAgo: number): string {
 	const date = new Date();
-	date.setUTCDate(date.getUTCDate() - daysAgo);
-	return date.toISOString().split('T')[0];
+	date.setDate(date.getDate() - daysAgo);
+	return getTodayString(date);
 }
 
 describe('visit status exemptions', () => {
@@ -44,7 +46,7 @@ describe('visit status exemptions', () => {
 
 	it('marks person as scheduled when latest follow-up is today or later', () => {
 		const redVisitDate = dateDaysAgo(400);
-		const today = new Date().toISOString().split('T')[0];
+		const today = getTodayString();
 
 		const result = calculatePersonVisitStatus(redVisitDate, false, today, today);
 
@@ -55,7 +57,7 @@ describe('visit status exemptions', () => {
 
 	it('gives scheduled precedence over exempt', () => {
 		const redVisitDate = dateDaysAgo(400);
-		const today = new Date().toISOString().split('T')[0];
+		const today = getTodayString();
 
 		const result = calculatePersonVisitStatus(redVisitDate, true, today, today);
 
@@ -65,7 +67,7 @@ describe('visit status exemptions', () => {
 	it('returns normal status when latest follow-up is in the past', () => {
 		const redVisitDate = dateDaysAgo(400);
 		const yesterday = dateDaysAgo(1);
-		const today = new Date().toISOString().split('T')[0];
+		const today = getTodayString();
 
 		const result = calculatePersonVisitStatus(redVisitDate, false, yesterday, today);
 
