@@ -12,7 +12,7 @@ export const moodLogSchema = z
 		notes: z.string().trim().max(280, 'Notes must be 280 characters or fewer').default('')
 	})
 	.superRefine((data, ctx) => {
-		if (!isMoodValue(data.mood)) {
+		if (data.mood.length > 0 && !isMoodValue(data.mood)) {
 			ctx.addIssue({
 				code: 'custom',
 				message: 'Choose a valid mood',
