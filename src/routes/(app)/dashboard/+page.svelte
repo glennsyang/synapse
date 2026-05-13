@@ -54,8 +54,8 @@
 		},
 		task: {
 			icon: CircleCheck,
-			bgClass: 'bg-[oklch(var(--color-teal)/0.15)]',
-			iconClass: 'text-[oklch(var(--color-teal))]'
+			bgClass: 'bg-[oklch(var(--color-orange)/0.15)]',
+			iconClass: 'text-[oklch(var(--color-orange))]'
 		},
 		visit: {
 			icon: Users,
@@ -208,7 +208,7 @@
 					</div>
 					<div>
 						<h3 class="font-display text-sm font-semibold">Daily Agenda Completion</h3>
-						<p class="text-xs text-muted-foreground">6-week trend</p>
+						<p class="text-xs text-muted-foreground">8-week trend</p>
 					</div>
 				</div>
 				<AgendaCompletionChart trend={data.agendaCompletionTrend} />
