@@ -135,7 +135,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const meditationRangeEndIso = `${addDaysToDateString(endOfThisWeekDate, 1)}T00:00:00.000Z`;
 
 	// Dates for new analytics
-	const agenda6WeeksStart = addDaysToDateString(startOfThisWeekDate, -35);
+	const agenda8WeeksStart = addDaysToDateString(startOfThisWeekDate, -49);
 	const workout4WeeksStart = addDaysToDateString(today, -28);
 	// Buffered UTC range for task completion counts — app-local filtering happens in JS
 	const tasksCompletionRangeStartIso = `${addDaysToDateString(startOfLastWeekDate, -1)}T00:00:00.000Z`;
@@ -231,7 +231,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				.where(
 					and(
 						eq(dailyAgendaEntries.userId, user.id),
-						gte(dailyAgendaEntries.date, agenda6WeeksStart),
+						gte(dailyAgendaEntries.date, agenda8WeeksStart),
 						sql`${dailyAgendaEntries.date} < ${endOfThisWeekDate}`
 					)
 				),
@@ -337,9 +337,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 		// --- new analytics post-processing ---
 
-		// 1. Agenda completion trend (6 weeks, oldest first)
-		const agendaCompletionTrend = Array.from({ length: 6 }, (_, i) => {
-			const weekStart = addDaysToDateString(startOfThisWeekDate, -(5 - i) * 7);
+		// 1. Agenda completion trend (8 weeks, oldest first)
+		const agendaCompletionTrend = Array.from({ length: 8 }, (_, i) => {
+			const weekStart = addDaysToDateString(startOfThisWeekDate, -(7 - i) * 7);
 			const weekEnd = addDaysToDateString(weekStart, 7);
 			const entriesInWeek = agendaEntriesForTrend.filter(
 				(e) => e.date >= weekStart && e.date < weekEnd
