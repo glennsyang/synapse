@@ -87,7 +87,7 @@
 		"markdown-it": "^14.1.1",
 		"marked": "^18.0.3",
 		"mode-watcher": "^1.1.0",
-		"resend": "^6.10.0"
+		"resend": "^6.12.4"
 	},
 	"overrides": {
 		"hono": "4.12.5",
