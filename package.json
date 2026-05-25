@@ -84,7 +84,7 @@
 		"d3-shape": "^3.2.0",
 		"drizzle-kit": "^0.31.9",
 		"drizzle-orm": "^0.45.1",
-		"markdown-it": "^14.1.1",
+		"markdown-it": "^14.2.0",
 		"marked": "^18.0.3",
 		"mode-watcher": "^1.1.0",
 		"resend": "^6.10.0"
