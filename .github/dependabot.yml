@@ -7,8 +7,7 @@ updates:
       interval: weekly
       day: monday
       time: '06:00'
-      timezone: Etc/GMT+8
-    open-pull-requests-limit: 5
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 10
     labels:
-      - dependencies
       - dependabot
