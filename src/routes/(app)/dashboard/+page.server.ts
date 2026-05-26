@@ -69,7 +69,7 @@ type ItemBucket = {
 	titleDate: string;
 	last4: { total: number; completed: number };
 	prev4: { total: number; completed: number };
-	dow: { total: number[]; completed: number[] };
+	dowLast4: { total: number[]; completed: number[] };
 };
 
 const STATUS_KEY_MAP: Record<string, VisitHealthBucket> = {
@@ -179,6 +179,8 @@ function buildDateRanges(today: string): DashboardDateRanges {
 		tasksCompletionRangeEndIso: `${addDaysToDateString(endOfThisWeekDate, 1)}T00:00:00.000Z`
 	};
 }
+
+export const _buildDateRanges = buildDateRanges;
 
 // ── Database queries ───────────────────────────────────────────────────────────
 async function runDashboardQueries(
@@ -387,6 +389,17 @@ async function runDashboardQueries(
 
 type QueryData = Awaited<ReturnType<typeof runDashboardQueries>>;
 
+type AgendaItemStat = {
+	title: string;
+	completionPct: number;
+	prevCompletionPct: number;
+	dowCompletionPct: number[];
+	totalDays: number;
+};
+
+type AgendaRangeWindow = 'last4' | 'prev4';
+type AgendaTrendEntry = QueryData['agendaEntriesForTrend'][number];
+
 // ── Post-processing helpers ────────────────────────────────────────────────────
 function buildCountByDateMap(rows: { date: string; count: number }[]): Map<string, number> {
 	return new Map(rows.map((r) => [r.date, Number(r.count || 0)]));
@@ -521,65 +534,109 @@ function buildActivityFeed(
 		.slice(0, 10);
 }
 
+function getAgendaRangeWindow(
+	date: string,
+	ranges: Pick<DashboardDateRanges, 'agenda8WeeksStart' | 'last4WeeksStart' | 'endOfThisWeekDate'>
+): AgendaRangeWindow | null {
+	if (date >= ranges.last4WeeksStart && date < ranges.endOfThisWeekDate) {
+		return 'last4';
+	}
+
+	if (date >= ranges.agenda8WeeksStart && date < ranges.last4WeeksStart) {
+		return 'prev4';
+	}
+
+	return null;
+}
+
+function createItemBucket(entry: AgendaTrendEntry): ItemBucket {
+	return {
+		title: entry.title,
+		titleDate: entry.date,
+		last4: { total: 0, completed: 0 },
+		prev4: { total: 0, completed: 0 },
+		dowLast4: {
+			total: Array.from({ length: 7 }, () => 0),
+			completed: Array.from({ length: 7 }, () => 0)
+		}
+	};
+}
+
+function getOrCreateItemBucket(
+	itemBuckets: Map<string, ItemBucket>,
+	groupKey: string,
+	entry: AgendaTrendEntry
+): ItemBucket {
+	let bucket = itemBuckets.get(groupKey);
+	if (!bucket) {
+		bucket = createItemBucket(entry);
+		itemBuckets.set(groupKey, bucket);
+	}
+	return bucket;
+}
+
+function addEntryToBucket(
+	bucket: ItemBucket,
+	entry: AgendaTrendEntry,
+	window: AgendaRangeWindow
+): void {
+	if (entry.date > bucket.titleDate) {
+		bucket.title = entry.title;
+		bucket.titleDate = entry.date;
+	}
+
+	const period = window === 'last4' ? bucket.last4 : bucket.prev4;
+	period.total++;
+	if (entry.completed) period.completed++;
+
+	if (window === 'last4') {
+		const dowIndex = getISODayOfWeek(entry.date);
+		bucket.dowLast4.total[dowIndex]++;
+		if (entry.completed) bucket.dowLast4.completed[dowIndex]++;
+	}
+}
+
+function toPct(completed: number, total: number): number {
+	return total > 0 ? Math.round((completed / total) * 100) : 0;
+}
+
+function toDowCompletionPct(bucket: ItemBucket): number[] {
+	return bucket.dowLast4.total.map((tot, i) =>
+		tot > 0 ? Math.round((bucket.dowLast4.completed[i] / tot) * 100) : -1
+	);
+}
+
+function toAgendaItemStat(bucket: ItemBucket): AgendaItemStat {
+	return {
+		title: bucket.title,
+		completionPct: toPct(bucket.last4.completed, bucket.last4.total),
+		prevCompletionPct: toPct(bucket.prev4.completed, bucket.prev4.total),
+		dowCompletionPct: toDowCompletionPct(bucket),
+		totalDays: bucket.last4.total
+	};
+}
+
 function buildAgendaItemStats(
 	entries: QueryData['agendaEntriesForTrend'],
 	ranges: DashboardDateRanges
-): {
-	title: string;
-	completionPct: number;
-	prevCompletionPct: number;
-	dowCompletionPct: number[];
-	totalDays: number;
-}[] {
-	const { agenda8WeeksStart, endOfThisWeekDate, last4WeeksStart } = ranges;
+): AgendaItemStat[] {
 	const itemBuckets = new Map<string, ItemBucket>();
 
 	for (const entry of entries) {
-		const isLast4 = entry.date >= last4WeeksStart && entry.date < endOfThisWeekDate;
-		const isPrev4 = entry.date >= agenda8WeeksStart && entry.date < last4WeeksStart;
-		if (!isLast4 && !isPrev4) continue;
-
+		const window = getAgendaRangeWindow(entry.date, ranges);
+		if (!window) continue;
 		const groupKey = entry.templateGroupId ?? entry.title;
-		const dowIndex = getISODayOfWeek(entry.date);
-		let bucket = itemBuckets.get(groupKey);
-		if (!bucket) {
-			bucket = {
-				title: entry.title,
-				titleDate: entry.date,
-				last4: { total: 0, completed: 0 },
-				prev4: { total: 0, completed: 0 },
-				dow: {
-					total: Array.from<number>({ length: 7 }),
-					completed: Array.from<number>({ length: 7 })
-				}
-			};
-			itemBuckets.set(groupKey, bucket);
-		}
-		if (entry.date > bucket.titleDate) {
-			bucket.title = entry.title;
-			bucket.titleDate = entry.date;
-		}
-		const period = isLast4 ? bucket.last4 : bucket.prev4;
-		period.total++;
-		if (entry.completed) period.completed++;
-		bucket.dow.total[dowIndex]++;
-		if (entry.completed) bucket.dow.completed[dowIndex]++;
+		const bucket = getOrCreateItemBucket(itemBuckets, groupKey, entry);
+		addEntryToBucket(bucket, entry, window);
 	}
 
 	return Array.from(itemBuckets.values())
 		.filter((b) => b.last4.total + b.prev4.total >= 7)
-		.map((b) => ({
-			title: b.title,
-			completionPct: b.last4.total > 0 ? Math.round((b.last4.completed / b.last4.total) * 100) : 0,
-			prevCompletionPct:
-				b.prev4.total > 0 ? Math.round((b.prev4.completed / b.prev4.total) * 100) : 0,
-			dowCompletionPct: b.dow.total.map((tot, i) =>
-				tot > 0 ? Math.round((b.dow.completed[i] / tot) * 100) : -1
-			),
-			totalDays: b.last4.total + b.prev4.total
-		}))
+		.map(toAgendaItemStat)
 		.sort((a, b) => a.completionPct - b.completionPct);
 }
+
+export const _buildAgendaItemStats = buildAgendaItemStats;
 
 function buildTodayAgendaSummary(entries: QueryData['agendaEntriesForTrend'], today: string) {
 	const todayEntries = entries
