@@ -1,15 +1,4 @@
 <script lang="ts">
-	import {
-		CalendarCog,
-		CalendarDays,
-		ListFilter,
-		Plus,
-		Search,
-		SmilePlus,
-		SquareKanban
-	} from '@lucide/svelte';
-	import { onDestroy } from 'svelte';
-
 	import { goto } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import PageShell from '$lib/components/app/PageShell.svelte';
@@ -27,6 +16,17 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { TaskPageTab } from '$lib/types';
 	import { type MoodPeriod, moodPeriods } from '$lib/utils/mood';
+	import {
+		CalendarCog,
+		CalendarDays,
+		ListFilter,
+		Plus,
+		Search,
+		SmilePlus,
+		SquareKanban
+	} from '@lucide/svelte';
+	import { onDestroy } from 'svelte';
+
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -158,7 +158,7 @@
 		<div class="mobile-stack mb-4 justify-between gap-3 sm:mb-5 sm:flex-wrap lg:flex-nowrap">
 			<div class="min-w-0 flex-1">
 				<h1 class="font-display text-2xl font-bold sm:text-3xl">Tasks</h1>
-				<p class="text-sm text-muted-foreground sm:text-base">
+				<p class="text-muted-foreground text-sm sm:text-base">
 					Switch between your kanban board and your weekly Daily Agenda
 				</p>
 			</div>
@@ -166,7 +166,7 @@
 				{#if data.activeTab === 'agenda'}
 					<Button
 						type="button"
-						class="min-w-0 flex-1 text-white bg-orange-600 hover:bg-orange-700 sm:flex-none"
+						class="min-w-0 flex-1 bg-orange-600 text-white hover:bg-orange-700 sm:flex-none"
 						onclick={() => (defaultsDialogOpen = true)}
 					>
 						<CalendarCog class="mr-2 h-4 w-4" />
@@ -177,7 +177,7 @@
 					<Button
 						type="button"
 						href="/tasks/new"
-						class="min-w-0 flex-1 text-white bg-orange-600 hover:bg-orange-700 sm:w-auto sm:flex-none"
+						class="min-w-0 flex-1 bg-orange-600 text-white hover:bg-orange-700 sm:w-auto sm:flex-none"
 					>
 						<Plus class="mr-2 h-4 w-4" />
 						New Task
@@ -209,11 +209,11 @@
 
 		<Tabs.Root value={data.activeTab} class="w-full gap-3">
 			<Tabs.List
-				class="grid h-11 w-full grid-cols-3 rounded-xl bg-muted/75 p-1 text-muted-foreground"
+				class="bg-muted/75 text-muted-foreground grid h-11 w-full grid-cols-3 rounded-xl p-1"
 			>
 				<Tabs.Trigger
 					value="kanban"
-					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-orange-500"
+					class="font-display w-full justify-center border-b-2 border-transparent data-[state=active]:border-orange-500"
 					onclick={() => {
 						if (data.activeTab !== 'kanban') {
 							void openTaskTab('kanban');
@@ -225,7 +225,7 @@
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="agenda"
-					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-orange-500"
+					class="font-display w-full justify-center border-b-2 border-transparent data-[state=active]:border-orange-500"
 					onclick={() => {
 						if (data.activeTab !== 'agenda') {
 							void openTaskTab('agenda');
@@ -237,7 +237,7 @@
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="mood"
-					class="w-full justify-center font-display border-b-2 border-transparent data-[state=active]:border-orange-500"
+					class="font-display w-full justify-center border-b-2 border-transparent data-[state=active]:border-orange-500"
 					onclick={() => {
 						if (data.activeTab !== 'mood') {
 							void openTaskTab('mood');
@@ -254,12 +254,12 @@
 					<Collapsible.Root bind:open={filtersOpen}>
 						<Collapsible.Content id="tasks-filter-bar" class="w-full">
 							<div
-								class="grid gap-4 rounded-3xl border border-orange-200/80 bg-orange-50/55 p-4 shadow-sm dark:border-orange-500/25 dark:bg-orange-500/8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
+								class="grid gap-4 rounded-3xl border border-orange-200/80 bg-orange-50/55 p-4 shadow-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start dark:border-orange-500/25 dark:bg-orange-500/8"
 							>
-								<div class="min-w-0 w-full">
+								<div class="w-full min-w-0">
 									<div class="relative">
 										<Search
-											class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+											class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
 										/>
 										<Input
 											id="task-keyword-filter"
@@ -269,7 +269,7 @@
 											aria-label="Search tasks by keyword"
 											placeholder="Search title or description"
 											maxlength={200}
-											class="h-10 bg-background/90 pl-9"
+											class="bg-background/90 h-10 pl-9"
 										/>
 									</div>
 								</div>
@@ -285,7 +285,7 @@
 						</Collapsible.Content>
 					</Collapsible.Root>
 
-					<div class="min-w-0 w-full sm:min-h-80"><TaskKanbanView tasks={data.tasks} /></div>
+					<div class="w-full min-w-0 sm:min-h-80"><TaskKanbanView tasks={data.tasks} /></div>
 				{/if}
 			</Tabs.Content>
 

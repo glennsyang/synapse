@@ -1,10 +1,9 @@
 <script lang="ts">
-	import BarChartIcon from '@lucide/svelte/icons/bar-chart-2';
-	import { BarChart } from 'layerchart';
-
 	import * as Card from '$lib/components/ui/card';
 	import * as Chart from '$lib/components/ui/chart';
 	import { getMoodScoreLabel } from '$lib/utils/mood';
+	import BarChartIcon from '@lucide/svelte/icons/bar-chart-2';
+	import { BarChart } from 'layerchart';
 
 	interface WeekdayPoint {
 		day: string;
@@ -44,10 +43,10 @@
 	<Card.Content>
 		{#if !hasData}
 			<div
-				class="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 px-6 text-center"
+				class="border-border/80 bg-muted/20 flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center"
 			>
 				<p class="font-display text-xl font-semibold">No data yet</p>
-				<p class="mt-2 text-sm text-muted-foreground">
+				<p class="text-muted-foreground mt-2 text-sm">
 					Log moods across multiple days to see which days tend to feel best.
 				</p>
 			</div>

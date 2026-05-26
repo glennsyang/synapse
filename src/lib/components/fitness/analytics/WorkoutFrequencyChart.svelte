@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { BarChart } from 'layerchart';
-
 	import * as Card from '$lib/components/ui/card';
 	import * as Chart from '$lib/components/ui/chart';
 	import { workoutTypeOptions } from '$lib/utils/workout';
+	import { BarChart } from 'layerchart';
 
 	interface Workout {
 		id: string;
@@ -84,7 +83,7 @@
 	<Card.Content>
 		{#if workouts.length === 0}
 			<div
-				class="flex h-48 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground"
+				class="text-muted-foreground flex h-48 items-center justify-center rounded-lg border border-dashed text-sm"
 			>
 				Log workouts to see your weekly frequency
 			</div>
@@ -93,7 +92,7 @@
 				<BarChart
 					data={chartData}
 					x="week"
-					series={workoutTypeOptions.map(option => ({
+					series={workoutTypeOptions.map((option) => ({
 						key: option.value,
 						label: option.label,
 						color: chartConfig[option.value].color
@@ -112,10 +111,10 @@
 			</Chart.Container>
 		{/if}
 	</Card.Content>
-	<Card.Footer class="flex justify-between border-t pt-4 text-sm text-muted-foreground">
-		<span>This week: <span class="font-medium text-foreground">{totalThisWeek}</span></span>
+	<Card.Footer class="text-muted-foreground flex justify-between border-t pt-4 text-sm">
+		<span>This week: <span class="text-foreground font-medium">{totalThisWeek}</span></span>
 		<span>
-			Weekly streak: <span class="font-medium text-foreground">{weeklyStreak}</span>
+			Weekly streak: <span class="text-foreground font-medium">{weeklyStreak}</span>
 			{weeklyStreak === 1 ? 'week' : 'weeks'}
 		</span>
 	</Card.Footer>

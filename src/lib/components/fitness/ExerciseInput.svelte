@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { Plus, Trash2 } from '@lucide/svelte';
-
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import type { Exercise } from '$lib/types';
+	import { Plus, Trash2 } from '@lucide/svelte';
 
 	let { exercises = $bindable([]) }: { exercises: Exercise[] } = $props();
 
@@ -27,7 +26,7 @@
 	</div>
 
 	{#if exercises.length === 0}
-		<p class="py-4 text-center text-sm text-muted-foreground">
+		<p class="text-muted-foreground py-4 text-center text-sm">
 			No exercises added yet. Click "Add Exercise" to start.
 		</p>
 	{:else}

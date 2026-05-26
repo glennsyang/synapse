@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms';
-
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import {
@@ -10,6 +8,7 @@
 		FieldLabel
 	} from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { superForm } from 'sveltekit-superforms';
 
 	let { data } = $props();
 
@@ -23,7 +22,7 @@
 	});
 </script>
 
-<svelte:head> <title>Sign Up - Synapse</title> </svelte:head>
+<svelte:head><title>Sign Up - Synapse</title></svelte:head>
 
 <Card.Root class="mx-auto w-full max-w-sm">
 	<Card.Header class="text-center">

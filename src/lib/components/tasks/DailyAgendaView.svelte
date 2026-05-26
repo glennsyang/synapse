@@ -1,17 +1,4 @@
 <script lang="ts">
-	import {
-		CalendarDays,
-		ChevronLeft,
-		ChevronRight,
-		Pencil,
-		Plus,
-		Save,
-		Trash2,
-		X
-	} from '@lucide/svelte';
-	import type { ActionResult } from '@sveltejs/kit';
-	import { toast } from 'svelte-sonner';
-
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
@@ -24,6 +11,18 @@
 	import type { DailyAgendaData, DailyAgendaEntry, DailyAgendaTemplate } from '$lib/types';
 	import { cn } from '$lib/utils';
 	import { daysOfWeek, getStartOfWeek } from '$lib/utils/date';
+	import {
+		CalendarDays,
+		ChevronLeft,
+		ChevronRight,
+		Pencil,
+		Plus,
+		Save,
+		Trash2,
+		X
+	} from '@lucide/svelte';
+	import type { ActionResult } from '@sveltejs/kit';
+	import { toast } from 'svelte-sonner';
 
 	import DailyAgendaRadial from './DailyAgendaRadial.svelte';
 
@@ -363,13 +362,13 @@
 
 <div class="space-y-4">
 	<section
-		class="relative isolate overflow-hidden rounded-[1.65rem] border border-orange-200/80 bg-linear-to-br from-orange-50/95 via-background to-amber-50/80 p-4 shadow-[0_24px_64px_-38px_rgba(249,115,22,0.22)] dark:border-orange-500/22 dark:from-orange-500/10 dark:via-background dark:to-amber-500/5 dark:shadow-[0_24px_64px_-42px_rgba(249,115,22,0.16)] sm:p-5"
+		class="via-background dark:via-background relative isolate overflow-hidden rounded-[1.65rem] border border-orange-200/80 bg-linear-to-br from-orange-50/95 to-amber-50/80 p-4 shadow-[0_24px_64px_-38px_rgba(249,115,22,0.22)] sm:p-5 dark:border-orange-500/22 dark:from-orange-500/10 dark:to-amber-500/5 dark:shadow-[0_24px_64px_-42px_rgba(249,115,22,0.16)]"
 	>
 		<div
-			class="absolute -left-10 top-0 size-32 rounded-full bg-orange-300/20 blur-3xl dark:bg-orange-500/10"
+			class="absolute top-0 -left-10 size-32 rounded-full bg-orange-300/20 blur-3xl dark:bg-orange-500/10"
 		></div>
 		<div
-			class="absolute right-0 top-1/3 size-28 rounded-full bg-amber-200/28 blur-3xl dark:bg-amber-400/8"
+			class="absolute top-1/3 right-0 size-28 rounded-full bg-amber-200/28 blur-3xl dark:bg-amber-400/8"
 		></div>
 
 		<div class="relative space-y-3.5">
@@ -379,24 +378,24 @@
 				<div class="min-w-0 space-y-3">
 					<div class="flex flex-wrap items-center gap-2">
 						<div
-							class="flex min-w-0 items-center gap-1.5 rounded-[1.1rem] border border-orange-200/80 bg-background/78 p-1.5 shadow-xs backdrop-blur dark:border-orange-500/20 dark:bg-background/70"
+							class="bg-background/78 dark:bg-background/70 flex min-w-0 items-center gap-1.5 rounded-[1.1rem] border border-orange-200/80 p-1.5 shadow-xs backdrop-blur dark:border-orange-500/20"
 						>
 							<Button
 								href={buildAgendaHref(agenda.previousWeekStart)}
 								variant="outline"
 								size="icon"
-								class="size-10 rounded-2xl border-orange-200/70 bg-background/85 hover:bg-orange-50/80 dark:border-orange-500/20 dark:bg-background/70 dark:hover:bg-orange-500/10"
+								class="bg-background/85 dark:bg-background/70 size-10 rounded-2xl border-orange-200/70 hover:bg-orange-50/80 dark:border-orange-500/20 dark:hover:bg-orange-500/10"
 							>
 								<ChevronLeft class="size-4" />
 							</Button>
 							<div class="min-w-0 px-2 text-center sm:min-w-56">
 								<p
-									class="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"
+									class="text-muted-foreground text-[10px] font-semibold tracking-[0.16em] uppercase"
 								>
 									Week window
 								</p>
 								<p
-									class="mt-1 font-display text-sm font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-base"
+									class="font-display text-foreground mt-1 text-sm leading-tight font-semibold tracking-[-0.03em] sm:text-base"
 								>
 									{agenda.weekLabel}
 								</p>
@@ -405,7 +404,7 @@
 								href={buildAgendaHref(agenda.nextWeekStart)}
 								variant="outline"
 								size="icon"
-								class="size-10 rounded-2xl border-orange-200/70 bg-background/85 hover:bg-orange-50/80 dark:border-orange-500/20 dark:bg-background/70 dark:hover:bg-orange-500/10"
+								class="bg-background/85 dark:bg-background/70 size-10 rounded-2xl border-orange-200/70 hover:bg-orange-50/80 dark:border-orange-500/20 dark:hover:bg-orange-500/10"
 							>
 								<ChevronRight class="size-4" />
 							</Button>
@@ -415,7 +414,7 @@
 							<Button
 								href={buildAgendaHref(getStartOfWeek())}
 								variant="outline"
-								class="h-10 rounded-full border-orange-200/80 bg-background/78 px-4 text-[oklch(var(--color-orange))] shadow-xs backdrop-blur hover:bg-orange-50/80 dark:border-orange-500/20 dark:bg-background/70 dark:text-orange-200 dark:hover:bg-orange-500/10"
+								class="bg-background/78 dark:bg-background/70 h-10 rounded-full border-orange-200/80 px-4 text-[oklch(var(--color-orange))] shadow-xs backdrop-blur hover:bg-orange-50/80 dark:border-orange-500/20 dark:text-orange-200 dark:hover:bg-orange-500/10"
 							>
 								<CalendarDays class="mr-2 size-4" />
 								Current week
@@ -424,26 +423,26 @@
 					</div>
 
 					<div
-						class="rounded-[1.25rem] border border-orange-200/80 bg-background/82 p-3.5 shadow-xs backdrop-blur dark:border-orange-500/20 dark:bg-background/72"
+						class="bg-background/82 dark:bg-background/72 rounded-[1.25rem] border border-orange-200/80 p-3.5 shadow-xs backdrop-blur dark:border-orange-500/20"
 					>
 						<div class="flex flex-wrap items-center justify-between gap-2">
 							<div class="flex min-w-0 items-center gap-2">
 								<Badge
 									variant="outline"
-									class="rounded-full border-orange-200/80 bg-background/82 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[oklch(var(--color-orange))] dark:border-orange-500/25 dark:bg-background/70 dark:text-orange-200"
+									class="bg-background/82 dark:bg-background/70 rounded-full border-orange-200/80 px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] text-[oklch(var(--color-orange))] uppercase dark:border-orange-500/25 dark:text-orange-200"
 								>
 									Week comparison
 								</Badge>
-								<p class="text-[11px] text-muted-foreground">vs prior 7 days</p>
+								<p class="text-muted-foreground text-[11px]">vs prior 7 days</p>
 							</div>
 							<div
 								class={cn(
-									'inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] backdrop-blur',
+									'inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase backdrop-blur',
 									previousWindowHasActivity && completionDelta > 0
 										? 'border-emerald-300/80 bg-emerald-100/85 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200'
 										: previousWindowHasActivity && completionDelta < 0
 											? 'border-amber-300/80 bg-amber-100/90 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/12 dark:text-amber-200'
-											: 'border-orange-300/70 bg-background/80 text-[oklch(var(--color-orange))] dark:border-orange-500/30 dark:bg-background/70 dark:text-orange-200'
+											: 'bg-background/80 dark:bg-background/70 border-orange-300/70 text-[oklch(var(--color-orange))] dark:border-orange-500/30 dark:text-orange-200'
 								)}
 							>
 								{comparisonDeltaLabel}
@@ -453,7 +452,7 @@
 						<div class="mt-3 grid gap-2.5">
 							<div class="space-y-1.5">
 								<div class="flex items-center justify-between gap-3 text-[11px]">
-									<span class="font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+									<span class="text-muted-foreground font-semibold tracking-[0.16em] uppercase">
 										{agenda.isCurrentWeek ? 'This week' : 'Selected week'}
 									</span>
 									<span class="text-foreground">{clampedCurrentWindowAverage}%</span>
@@ -468,7 +467,7 @@
 
 							<div class="space-y-1.5">
 								<div class="flex items-center justify-between gap-3 text-[11px]">
-									<span class="font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+									<span class="text-muted-foreground font-semibold tracking-[0.16em] uppercase">
 										Prior week
 									</span>
 									<span class="text-foreground">
@@ -489,7 +488,7 @@
 							</div>
 						</div>
 
-						<p class="mt-2.5 text-[11px] leading-5 text-muted-foreground">{comparisonSummary}</p>
+						<p class="text-muted-foreground mt-2.5 text-[11px] leading-5">{comparisonSummary}</p>
 					</div>
 
 					{#if todayAlertState}
@@ -500,7 +499,7 @@
 								todayAlertState.className
 							)}
 						>
-							<Alert.Title class="text-sm font-semibold"> {todayAlertState.title} </Alert.Title>
+							<Alert.Title class="text-sm font-semibold">{todayAlertState.title}</Alert.Title>
 							<Alert.Description class="text-sm [&_p]:leading-5">
 								<p>{todayAlertState.description}</p>
 							</Alert.Description>
@@ -524,39 +523,39 @@
 	</section>
 
 	<div>
-		<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 min-[1200px]:grid-cols-7">
+		<div class="grid grid-cols-1 gap-2 min-[1200px]:grid-cols-7 sm:grid-cols-2 lg:grid-cols-4">
 			{#each agenda.days as day (day.date)}
 				<section
 					class={cn(
-						'flex min-w-0 flex-col rounded-[1.2rem] border border-orange-200/75 bg-background/95 p-3 shadow-sm dark:border-orange-500/18 dark:bg-background/92',
+						'bg-background/95 dark:bg-background/92 flex min-w-0 flex-col rounded-[1.2rem] border border-orange-200/75 p-3 shadow-sm dark:border-orange-500/18',
 						day.isToday &&
-							'border-orange-300 bg-linear-to-br from-orange-50/85 via-background to-orange-100/55 dark:border-orange-400/35 dark:from-orange-500/10 dark:to-orange-500/5',
+							'via-background border-orange-300 bg-linear-to-br from-orange-50/85 to-orange-100/55 dark:border-orange-400/35 dark:from-orange-500/10 dark:to-orange-500/5',
 						!day.isEditable && 'bg-slate-50/85 dark:bg-slate-950/25'
 					)}
 				>
 					<div class="mb-2.5 flex items-start justify-between gap-2">
 						<div>
 							<p
-								class="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+								class="text-muted-foreground text-[10px] font-semibold tracking-[0.18em] uppercase"
 							>
 								{day.shortDayName}
 							</p>
 							<div class="mt-0.5 flex items-baseline gap-1.5">
 								<h3
-									class="font-display text-2xl font-semibold leading-none tracking-[-0.03em] text-foreground"
+									class="font-display text-foreground text-2xl leading-none font-semibold tracking-[-0.03em]"
 								>
 									{day.dayNumber}
 								</h3>
-								<span class="text-xs text-muted-foreground">{day.monthLabel}</span>
+								<span class="text-muted-foreground text-xs">{day.monthLabel}</span>
 							</div>
 						</div>
 						<Badge
 							variant="secondary"
 							class={day.completionPercentage >= 80
-								? 'bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200 ring-1 ring-emerald-300/80 dark:ring-emerald-500/30'
+								? 'bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-300/80 dark:bg-emerald-500/20 dark:text-emerald-200 dark:ring-emerald-500/30'
 								: day.completionPercentage >= 40
-									? 'bg-orange-500/10 text-orange-700 dark:bg-orange-500/20 dark:text-orange-200 ring-1 ring-orange-300/80 dark:ring-orange-500/30'
-									: 'bg-red-500/10 text-red-700 dark:bg-red-500/20 dark:text-red-200 ring-1 ring-red-300/80 dark:ring-red-500/30'}
+									? 'bg-orange-500/10 text-orange-700 ring-1 ring-orange-300/80 dark:bg-orange-500/20 dark:text-orange-200 dark:ring-orange-500/30'
+									: 'bg-red-500/10 text-red-700 ring-1 ring-red-300/80 dark:bg-red-500/20 dark:text-red-200 dark:ring-red-500/30'}
 						>
 							{day.completionPercentage}%
 						</Badge>
@@ -569,7 +568,7 @@
 								style={`width: ${day.completionPercentage}%`}
 							></div>
 						</div>
-						<p class="mt-1.5 text-[11px] text-muted-foreground">
+						<p class="text-muted-foreground mt-1.5 text-[11px]">
 							{`${day.completedCount} of ${day.totalCount} done`}
 						</p>
 					</div>
@@ -577,7 +576,7 @@
 					<div class="flex flex-1 flex-col gap-2">
 						{#if day.entries.length === 0}
 							<div
-								class="rounded-lg border border-dashed border-orange-200/80 bg-background/75 px-2.5 py-3 text-xs text-muted-foreground dark:border-orange-500/18"
+								class="bg-background/75 text-muted-foreground rounded-lg border border-dashed border-orange-200/80 px-2.5 py-3 text-xs dark:border-orange-500/18"
 							>
 								{day.isEditable
 									? 'No agenda items yet. Add a day-only item below.'
@@ -595,7 +594,7 @@
 										errorMessage: 'Unable to update agenda item.',
 										afterSuccess: cancelEntryEdit
 									})}
-									class="rounded-lg border border-orange-200/80 bg-background/90 p-2.5 shadow-xs dark:border-orange-500/20"
+									class="bg-background/90 rounded-lg border border-orange-200/80 p-2.5 shadow-xs dark:border-orange-500/20"
 								>
 									<Input type="hidden" name="id" value={entry.id} />
 									<Input
@@ -653,13 +652,13 @@
 											disabled={!day.isEditable}
 											class="h-3.5 w-3.5 rounded border-orange-300 text-orange-600 focus:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50"
 											onchange={(event) => event.currentTarget.form?.requestSubmit()}
-										>
+										/>
 									</form>
 									<div class="min-w-0 flex-1">
 										<div class="flex min-h-3.5 items-center">
 											<p
 												class={cn(
-													'text-xs leading-4 text-foreground wrap-break-word',
+													'text-foreground text-xs leading-4 wrap-break-word',
 													entry.completed && 'text-muted-foreground line-through'
 												)}
 											>
@@ -667,7 +666,7 @@
 											</p>
 										</div>
 										{#if !day.isEditable}
-											<p class="mt-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+											<p class="text-muted-foreground mt-1 text-[11px] tracking-[0.16em] uppercase">
 												View only
 											</p>
 										{/if}
@@ -675,7 +674,7 @@
 
 									{#if day.isEditable && entry.sourceType === 'custom'}
 										<div
-											class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+											class="flex items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
 										>
 											<Button
 												type="button"
@@ -718,7 +717,7 @@
 									errorMessage: 'Unable to add agenda item.',
 									afterSuccess: cancelNewEntry
 								})}
-								class="rounded-lg border border-orange-200/80 bg-background/92 p-2.5 shadow-xs dark:border-orange-500/20"
+								class="bg-background/92 rounded-lg border border-orange-200/80 p-2.5 shadow-xs dark:border-orange-500/20"
 							>
 								<Input type="hidden" name="date" value={day.date} />
 								<Input
@@ -779,7 +778,7 @@
 				<div class="flex flex-wrap items-center gap-2">
 					<Badge
 						variant="secondary"
-						class="text-[oklch(var(--color-orange))] bg-[oklch(var(--color-orange)/0.1)] ring-1 ring-[oklch(var(--color-orange)/0.3)]"
+						class="bg-[oklch(var(--color-orange)/0.1)] text-[oklch(var(--color-orange))] ring-1 ring-[oklch(var(--color-orange)/0.3)]"
 					>
 						{agenda.templates.length}
 						defaults
@@ -821,7 +820,7 @@
 						</div>
 						<fieldset class="space-y-2">
 							<legend
-								class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+								class="text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase"
 							>
 								Apply on days
 							</legend>
@@ -829,7 +828,7 @@
 								{#each templateDayOptions as day (day.id)}
 									<label
 										class={cn(
-											'flex items-center gap-2 rounded-lg border bg-background/90 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors',
+											'bg-background/90 text-foreground flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
 											newTemplateDays.includes(day.id)
 												? 'border-orange-300/90 ring-1 ring-orange-300/70 dark:border-orange-500/45 dark:ring-orange-500/35'
 												: 'border-border/70'
@@ -845,7 +844,7 @@
 									</label>
 								{/each}
 							</div>
-							<p class="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+							<p class="text-muted-foreground text-[11px] font-medium tracking-[0.14em] uppercase">
 								Select at least one day.
 							</p>
 						</fieldset>
@@ -854,7 +853,7 @@
 
 				<div class="max-h-[50vh] space-y-2 overflow-y-auto pr-1">
 					{#each agenda.templates as template (template.id)}
-						<div class="rounded-2xl border border-border/70 bg-background p-3 shadow-xs">
+						<div class="border-border/70 bg-background rounded-2xl border p-3 shadow-xs">
 							{#if editingTemplateId === template.id}
 								<form
 									method="POST"
@@ -897,7 +896,7 @@
 									</div>
 									<fieldset class="space-y-2">
 										<legend
-											class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+											class="text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase"
 										>
 											Apply on days
 										</legend>
@@ -905,7 +904,7 @@
 											{#each templateDayOptions as day (day.id)}
 												<label
 													class={cn(
-														'flex items-center gap-2 rounded-lg border bg-background/90 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors',
+														'bg-background/90 text-foreground flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
 														editingTemplateDays.includes(day.id)
 															? 'border-orange-300/90 ring-1 ring-orange-300/70 dark:border-orange-500/45 dark:ring-orange-500/35'
 															: 'border-border/70'
@@ -922,7 +921,7 @@
 											{/each}
 										</div>
 										<p
-											class="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground"
+											class="text-muted-foreground text-[11px] font-medium tracking-[0.14em] uppercase"
 										>
 											Select at least one day.
 										</p>
@@ -931,11 +930,11 @@
 							{:else}
 								<div class="flex items-center justify-between gap-3">
 									<div class="min-w-0">
-										<p class="font-medium text-foreground wrap-break-word">{template.title}</p>
-										<p class="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+										<p class="text-foreground font-medium wrap-break-word">{template.title}</p>
+										<p class="text-muted-foreground mt-1 text-xs tracking-[0.14em] uppercase">
 											Default item
 										</p>
-										<p class="mt-1 text-xs text-muted-foreground">
+										<p class="text-muted-foreground mt-1 text-xs">
 											{formatTemplateDays(template.daysOfWeek)}
 										</p>
 									</div>
@@ -972,7 +971,7 @@
 						</div>
 					{:else}
 						<div
-							class="rounded-2xl border border-dashed border-orange-200/80 bg-orange-50/40 px-4 py-6 text-center text-sm text-muted-foreground dark:border-orange-500/20 dark:bg-orange-500/5"
+							class="text-muted-foreground rounded-2xl border border-dashed border-orange-200/80 bg-orange-50/40 px-4 py-6 text-center text-sm dark:border-orange-500/20 dark:bg-orange-500/5"
 						>
 							No defaults yet. Add a few recurring items to seed the planner each day.
 						</div>

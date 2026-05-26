@@ -1,9 +1,4 @@
 <script lang="ts">
-	import PlusIcon from '@lucide/svelte/icons/plus';
-	import { toast } from 'svelte-sonner';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms';
-
 	import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
 	import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -15,6 +10,10 @@
 	import type { Exercise } from '$lib/types';
 	import { getTodayString } from '$lib/utils/date';
 	import { workoutTypeOptions } from '$lib/utils/workout';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import { toast } from 'svelte-sonner';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
 	type LogWorkoutData = Infer<typeof logWorkoutSchema>;
 
@@ -165,14 +164,14 @@
 						<Label for="workout-date">Date</Label>
 						<Input id="workout-date" name="date" type="date" bind:value={$form.date} required />
 						{#if $errors.date}
-							<p class="text-sm text-destructive">{$errors.date}</p>
+							<p class="text-destructive text-sm">{$errors.date}</p>
 						{/if}
 					</div>
 					<div class="grid gap-2">
 						<Label for="workout-time">Time (optional)</Label>
 						<Input id="workout-time" name="time" type="time" bind:value={$form.time} />
 						{#if $errors.time}
-							<p class="text-sm text-destructive">{$errors.time}</p>
+							<p class="text-destructive text-sm">{$errors.time}</p>
 						{/if}
 					</div>
 				</div>
@@ -186,14 +185,13 @@
 							</Select.Trigger>
 							<Select.Content>
 								{#each workoutTypeOptions as option (option.value)}
-									<Select.Item value={option.value} label={option.label}
-										>{option.label}</Select.Item
+									<Select.Item value={option.value} label={option.label}>{option.label}</Select.Item
 									>
 								{/each}
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.type}
-							<p class="text-sm text-destructive">{$errors.type}</p>
+							<p class="text-destructive text-sm">{$errors.type}</p>
 						{/if}
 					</div>
 					<div class="grid gap-2">
@@ -206,7 +204,7 @@
 							placeholder="60"
 						/>
 						{#if $errors.durationMinutes}
-							<p class="text-sm text-destructive">{$errors.durationMinutes}</p>
+							<p class="text-destructive text-sm">{$errors.durationMinutes}</p>
 						{/if}
 					</div>
 				</div>
@@ -222,7 +220,7 @@
 							placeholder="10000"
 						/>
 						{#if $errors.steps}
-							<p class="text-sm text-destructive">{$errors.steps}</p>
+							<p class="text-destructive text-sm">{$errors.steps}</p>
 						{/if}
 					</div>
 				{/if}
@@ -231,7 +229,7 @@
 					<ExerciseInput bind:exercises={workoutExercises} />
 					<Input type="hidden" name="exercises" value={JSON.stringify(workoutExercises)} />
 					{#if $errors.exercises}
-						<p class="text-sm text-destructive">{$errors.exercises}</p>
+						<p class="text-destructive text-sm">{$errors.exercises}</p>
 					{/if}
 				{/if}
 
@@ -245,7 +243,7 @@
 						placeholder="How did the workout feel?"
 					/>
 					{#if $errors.notes}
-						<p class="text-sm text-destructive">{$errors.notes}</p>
+						<p class="text-destructive text-sm">{$errors.notes}</p>
 					{/if}
 				</div>
 			</div>

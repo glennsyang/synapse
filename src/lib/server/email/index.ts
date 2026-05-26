@@ -1,5 +1,3 @@
-import { Resend } from 'resend';
-
 import {
 	buildTasksDueTodayDigestTitle,
 	buildTasksDueTodayEmailHtml,
@@ -7,6 +5,7 @@ import {
 } from '$lib/server/email/tasks-due-today-digest';
 import { logger } from '$lib/utils/logger';
 import { getWorkoutEmoji, getWorkoutNotificationTag } from '$lib/utils/workout';
+import { Resend } from 'resend';
 
 import { getEnv } from '../../../env';
 

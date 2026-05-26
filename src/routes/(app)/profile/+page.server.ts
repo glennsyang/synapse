@@ -1,13 +1,12 @@
-import { eq } from 'drizzle-orm';
-import { message, superValidate } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
-
 import { changePasswordSchema, updateProfileSchema } from '$lib/schemas/auth';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { auth } from '$lib/server/auth';
 import { getDb } from '$lib/server/db';
 import { account, user } from '$lib/server/db/schema';
 import { logger } from '$lib/utils/logger';
+import { eq } from 'drizzle-orm';
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
 

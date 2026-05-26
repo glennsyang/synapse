@@ -1,9 +1,8 @@
+import { getBetterAuthErrorMessage } from '$lib/utils';
 import { isRedirect, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import type { ZodType } from 'zod';
-
-import { getBetterAuthErrorMessage } from '$lib/utils';
 
 interface CreateAuthLoadFormOptions {
 	includeQueryMessage?: boolean;

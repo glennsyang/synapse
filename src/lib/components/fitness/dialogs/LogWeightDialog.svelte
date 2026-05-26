@@ -1,14 +1,13 @@
 <script lang="ts">
-	import PlusIcon from '@lucide/svelte/icons/plus';
-	import { toast } from 'svelte-sonner';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms';
-
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import type { logWeightSchema } from '$lib/schemas/fitness';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import { toast } from 'svelte-sonner';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
 	type LogWeightData = Infer<typeof logWeightSchema>;
 
@@ -120,14 +119,14 @@
 					<Label for="weight-date">Date</Label>
 					<Input id="weight-date" name="date" type="date" bind:value={$form.date} required />
 					{#if $errors.date}
-						<p class="text-sm text-destructive">{$errors.date}</p>
+						<p class="text-destructive text-sm">{$errors.date}</p>
 					{/if}
 				</div>
 				<div class="grid gap-2">
 					<Label for="weight-time">Time (optional)</Label>
 					<Input id="weight-time" name="time" type="time" bind:value={$form.time} />
 					{#if $errors.time}
-						<p class="text-sm text-destructive">{$errors.time}</p>
+						<p class="text-destructive text-sm">{$errors.time}</p>
 					{/if}
 				</div>
 				<div class="grid gap-2">
@@ -142,7 +141,7 @@
 						required
 					/>
 					{#if $errors.weightLbs}
-						<p class="text-sm text-destructive">{$errors.weightLbs}</p>
+						<p class="text-destructive text-sm">{$errors.weightLbs}</p>
 					{/if}
 				</div>
 			</div>

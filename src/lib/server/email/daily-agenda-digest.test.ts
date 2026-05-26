@@ -1,6 +1,5 @@
-import { describe, expect, it } from 'vitest';
-
 import type { DailyAgendaEntry } from '$lib/types';
+import { describe, expect, it } from 'vitest';
 
 import {
 	buildDailyAgendaDigestMessage,

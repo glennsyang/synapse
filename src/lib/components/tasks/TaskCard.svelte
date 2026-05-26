@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Calendar, CircleCheck, EllipsisVertical, Pencil, Trash2 } from '@lucide/svelte/icons';
 	import { goto } from '$app/navigation';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import {
@@ -13,6 +12,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type { TaskState } from '$lib/schemas/task';
 	import { formatDateMedium, getDateUrgencyStatus } from '$lib/utils/date';
+	import { Calendar, CircleCheck, EllipsisVertical, Pencil, Trash2 } from '@lucide/svelte/icons';
 
 	interface Props {
 		task: TaskSummary;
@@ -45,7 +45,7 @@
 
 <article
 	class={[
-		'group relative overflow-hidden rounded-2xl border-[0.5px] bg-background/95 p-3.5 pl-4 shadow-[0_1px_0_rgba(15,23,42,0.04)] transition-colors hover:border-slate-300/80 hover:shadow-sm dark:border-slate-800/80 dark:bg-slate-950/75 dark:hover:border-slate-700/80',
+		'group bg-background/95 relative overflow-hidden rounded-2xl border-[0.5px] p-3.5 pl-4 shadow-[0_1px_0_rgba(15,23,42,0.04)] transition-colors hover:border-slate-300/80 hover:shadow-sm dark:border-slate-800/80 dark:bg-slate-950/75 dark:hover:border-slate-700/80',
 		isBlockedTask &&
 			'border-red-200/80 bg-[repeating-linear-gradient(-45deg,rgba(248,113,113,0.06)_0px,rgba(248,113,113,0.06)_8px,transparent_8px,transparent_16px)] dark:border-red-900/60 dark:bg-[repeating-linear-gradient(-45deg,rgba(248,113,113,0.09)_0px,rgba(248,113,113,0.09)_8px,rgba(2,6,23,0.78)_8px,rgba(2,6,23,0.78)_16px)]',
 		isDoneTask && 'opacity-85'
@@ -56,14 +56,14 @@
 	<div class="flex items-start justify-between gap-2">
 		<div class="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
 			<span
-				class="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground"
+				class="text-muted-foreground font-mono text-[10px] font-semibold tracking-[0.22em] uppercase"
 			>
 				{displayId}
 			</span>
 			<Badge
 				variant="outline"
 				class={[
-					'h-5 rounded-full px-2 text-[10px] font-semibold uppercase tracking-[0.14em]',
+					'h-5 rounded-full px-2 text-[10px] font-semibold tracking-[0.14em] uppercase',
 					priorityMeta.badgeClass
 				]}
 			>
@@ -78,7 +78,7 @@
 						{...props}
 						variant="ghost"
 						size="icon"
-						class="size-7 rounded-full text-muted-foreground hover:text-foreground"
+						class="text-muted-foreground hover:text-foreground size-7 rounded-full"
 						aria-label={`More actions for ${task.title}`}
 					>
 						<EllipsisVertical class="size-4" />
@@ -108,13 +108,13 @@
 	<div class="mt-2.5 space-y-1.5">
 		<a
 			href={editHref}
-			class="block text-[15px] font-semibold leading-5 text-foreground transition-colors hover:text-orange-700 hover:underline dark:hover:text-orange-300"
+			class="text-foreground block text-[15px] leading-5 font-semibold transition-colors hover:text-orange-700 hover:underline dark:hover:text-orange-300"
 		>
 			{task.title}
 		</a>
 
 		{#if task.description}
-			<p class="line-clamp-2 text-[13px] leading-5 text-muted-foreground">{task.description}</p>
+			<p class="text-muted-foreground line-clamp-2 text-[13px] leading-5">{task.description}</p>
 		{/if}
 	</div>
 

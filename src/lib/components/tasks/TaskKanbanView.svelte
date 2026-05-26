@@ -1,16 +1,15 @@
 <script lang="ts">
-	import { ChevronLeft, ChevronRight, Plus } from '@lucide/svelte/icons';
-	import { flip } from 'svelte/animate';
-	import type { DndEvent } from 'svelte-dnd-action';
-	import { dndzone } from 'svelte-dnd-action';
-	import { toast } from 'svelte-sonner';
-
 	import { Button } from '$lib/components/ui/button';
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 	import type { TaskState } from '$lib/schemas/task';
+	import { ChevronLeft, ChevronRight, Plus } from '@lucide/svelte/icons';
+	import type { DndEvent } from 'svelte-dnd-action';
+	import { dndzone } from 'svelte-dnd-action';
+	import { toast } from 'svelte-sonner';
+	import { flip } from 'svelte/animate';
 
-	import TaskCard from './TaskCard.svelte';
 	import { type TaskSummary, taskStateOptions } from './task-ui';
+	import TaskCard from './TaskCard.svelte';
 
 	interface Props {
 		tasks: TaskSummary[];
@@ -333,7 +332,7 @@
 
 						{#if boardTasks[column.value].length === 0}
 							<div
-								class="pointer-events-none absolute inset-0 flex items-center justify-center p-4 text-center text-sm font-medium text-muted-foreground"
+								class="text-muted-foreground pointer-events-none absolute inset-0 flex items-center justify-center p-4 text-center text-sm font-medium"
 							>
 								No {column.label.toLowerCase()} tasks yet.
 							</div>
@@ -366,7 +365,7 @@
 					</span>
 				</span>
 				<span
-					class="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 dark:text-slate-300"
+					class="inline-flex items-center gap-1 text-[11px] font-semibold tracking-[0.14em] text-slate-600 uppercase dark:text-slate-300"
 				>
 					Show
 					<ChevronRight class="size-4" />
@@ -376,7 +375,7 @@
 	</div>
 {:else}
 	<div
-		class="min-w-0 gap-2 pb-2 sm:grid min-h-[calc(100dvh-15rem)]"
+		class="min-h-[calc(100dvh-15rem)] min-w-0 gap-2 pb-2 sm:grid"
 		style={`grid-template-columns: ${desktopGridColumns};`}
 	>
 		{#each visibleColumns as column (column.value)}
@@ -432,7 +431,7 @@
 						</Button>
 					{/if}
 
-					<div class="relative flex-1 min-h-[calc(100dvh-20rem)]">
+					<div class="relative min-h-[calc(100dvh-20rem)] flex-1">
 						<div
 							class={[
 								'flex h-full min-h-full flex-col gap-2.5 overflow-hidden rounded-[1.45rem] border-[1.5px] border-dashed bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.72),transparent_38%)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-[border-color,background-color,box-shadow] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_42%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
@@ -455,7 +454,7 @@
 
 						{#if boardTasks[column.value].length === 0}
 							<div
-								class="pointer-events-none absolute inset-0 flex items-center justify-center p-5 text-center text-sm font-medium text-muted-foreground"
+								class="text-muted-foreground pointer-events-none absolute inset-0 flex items-center justify-center p-5 text-center text-sm font-medium"
 							>
 								No {column.label.toLowerCase()} tasks yet.
 							</div>
@@ -477,17 +476,17 @@
 				]}
 			>
 				<span
-					class="rounded-full bg-background/90 px-2 py-0.5 text-[11px] font-semibold text-slate-600 shadow-sm dark:bg-slate-950/75 dark:text-slate-200"
+					class="bg-background/90 rounded-full px-2 py-0.5 text-[11px] font-semibold text-slate-600 shadow-sm dark:bg-slate-950/75 dark:text-slate-200"
 				>
 					{doneColumn.count}
 				</span>
 				<span
-					class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700 dark:text-slate-100"
+					class="text-[10px] font-semibold tracking-[0.18em] text-slate-700 uppercase dark:text-slate-100"
 				>
 					Done
 				</span>
 				<span
-					class="flex flex-col items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-600 dark:text-slate-300"
+					class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[0.14em] text-slate-600 uppercase dark:text-slate-300"
 				>
 					<ChevronRight class="size-4 transition-transform group-hover:translate-x-0.5" />
 				</span>

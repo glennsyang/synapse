@@ -1,4 +1,5 @@
 import { logger } from '$lib/utils/logger';
+
 import { getEnv } from '../../../env';
 
 const env = getEnv();

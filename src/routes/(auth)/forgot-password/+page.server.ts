@@ -1,6 +1,3 @@
-import { message, superValidate } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
-
 import { forgotPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import {
@@ -9,6 +6,8 @@ import {
 	redirectIfAuthenticated
 } from '$lib/server/auth/form-helpers';
 import { logger } from '$lib/utils/logger';
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
 

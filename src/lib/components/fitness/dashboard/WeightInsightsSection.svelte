@@ -1,4 +1,9 @@
 <script lang="ts">
+	import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
+	import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
+	import WeightChart from '$lib/components/fitness/WeightChart.svelte';
+	import type { logWeightSchema, setGoalWeightSchema } from '$lib/schemas/fitness';
+	import { parseLocalDateString } from '$lib/utils/date';
 	import {
 		ArrowDown,
 		ArrowUp,
@@ -9,12 +14,6 @@
 		TrendingUp
 	} from '@lucide/svelte/icons';
 	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-
-	import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
-	import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
-	import WeightChart from '$lib/components/fitness/WeightChart.svelte';
-	import type { logWeightSchema, setGoalWeightSchema } from '$lib/schemas/fitness';
-	import { parseLocalDateString } from '$lib/utils/date';
 
 	import FitnessStatusCard from './FitnessStatusCard.svelte';
 
@@ -128,7 +127,11 @@
 			value={weeklyRate != null ? Math.abs(weeklyRate).toFixed(1) : '—'}
 			unit={weeklyRate != null ? 'lbs/wk' : ''}
 			icon={trendIcon}
-			trend={weeklyRate != null && weeklyRate < 0 ? 'positive' : weeklyRate != null && weeklyRate > 0 ? 'negative' : 'neutral'}
+			trend={weeklyRate != null && weeklyRate < 0
+				? 'positive'
+				: weeklyRate != null && weeklyRate > 0
+					? 'negative'
+					: 'neutral'}
 			trendLabel={weeksToGoal != null ? `~${weeksToGoal} weeks to goal` : undefined}
 		/>
 	</div>

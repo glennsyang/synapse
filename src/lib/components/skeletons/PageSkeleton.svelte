@@ -37,7 +37,7 @@
 	<!-- Content Area Skeleton -->
 	<div class="space-y-4">
 		{#each [1, 2, 3] as _ (_)}
-			<div class="rounded-lg border bg-card p-6 shadow-xs">
+			<div class="bg-card rounded-lg border p-6 shadow-xs">
 				<Skeleton class="mb-3 h-6 w-40" />
 				<div class="space-y-2">
 					<Skeleton class="h-4 w-full" />

@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { Check, ChevronsUpDown, X } from '@lucide/svelte';
-	import { SvelteSet } from 'svelte/reactivity';
-
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { Badge } from '$lib/components/ui/badge';
@@ -9,6 +6,8 @@
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
 	import { cn } from '$lib/utils';
+	import { Check, ChevronsUpDown, X } from '@lucide/svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	import { type TaskPriority, taskPriorityOptions } from './task-ui';
 
@@ -73,7 +72,7 @@
 						variant="outline"
 						role="combobox"
 						aria-expanded={open}
-						class="h-10 w-full justify-between bg-background/90"
+						class="bg-background/90 h-10 w-full justify-between"
 					>
 						<span class="truncate">
 							{selectedPriorities.length > 0
@@ -98,7 +97,7 @@
 							>
 								<div
 									class={cn(
-										'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+										'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
 										selectedPriorities.includes(option.value)
 											? 'bg-primary text-primary-foreground'
 											: 'opacity-50 [&_svg]:invisible'
@@ -118,7 +117,7 @@
 						<Command.Group>
 							<Command.Item
 								onSelect={clearAll}
-								class="justify-center text-center text-sm text-muted-foreground"
+								class="text-muted-foreground justify-center text-center text-sm"
 							>
 								Clear priorities
 							</Command.Item>
@@ -139,7 +138,7 @@
 						variant="ghost"
 						size="icon-sm"
 						onclick={() => removePriority(option.value)}
-						class="size-5 hover:text-destructive"
+						class="hover:text-destructive size-5"
 						aria-label={`Remove priority ${option.label}`}
 					>
 						<X class="h-3 w-3" />

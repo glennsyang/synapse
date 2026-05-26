@@ -11,7 +11,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -29,15 +29,18 @@ jobs:
       - name: Run npm audit
         run: npm audit --production --audit-level=high
 
-      - name: Run format
-        run: npm run format
+      - run: npm install --frozen-lockfile
+
+      # Run formatting
+      - name: Run Ox format
+        run: npm run fmt
 
       - name: Ensure no formatting changes
         run: git diff --exit-code
 
       # Run linting
-      - name: Run Biome lint
-        run: npm run lint
+      - name: Run Ox lint
+        run: npm run lint:github
 
       # Run type checking
       - name: Run Svelte check

@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { Flame, Target, TrendingDown, TrendingUp, UtensilsCrossed } from '@lucide/svelte/icons';
-	import { BarChart } from 'layerchart';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 	import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
 	import SetCalorieTargetDialog from '$lib/components/fitness/dialogs/SetCalorieTargetDialog.svelte';
 	import * as Card from '$lib/components/ui/card';
 	import * as Chart from '$lib/components/ui/chart';
 	import type { logMealSchema, setCalorieTargetSchema } from '$lib/schemas/fitness';
 	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
+	import { Flame, Target, TrendingDown, TrendingUp, UtensilsCrossed } from '@lucide/svelte/icons';
+	import { BarChart } from 'layerchart';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 	import FitnessStatusCard from './FitnessStatusCard.svelte';
 
@@ -117,9 +117,7 @@
 						? 'negative'
 						: 'neutral'
 				: 'neutral'}
-			trendLabel={todayPercentage != null
-				? `${todayPercentage}% of target`
-				: 'No target set'}
+			trendLabel={todayPercentage != null ? `${todayPercentage}% of target` : 'No target set'}
 		/>
 		<FitnessStatusCard
 			label="Remaining"
@@ -127,7 +125,11 @@
 			unit={target ? 'cal' : ''}
 			icon={Target}
 			trend={todayOver != null ? 'negative' : 'positive'}
-			trendLabel={todayOver != null ? 'Over target' : todayRemaining != null ? 'Under target' : 'Set a target'}
+			trendLabel={todayOver != null
+				? 'Over target'
+				: todayRemaining != null
+					? 'Under target'
+					: 'Set a target'}
 		/>
 		<FitnessStatusCard
 			label="7-Day Avg"
@@ -139,7 +141,13 @@
 					? `${avgDelta} cal over target avg`
 					: `${Math.abs(avgDelta)} cal under target avg`
 				: undefined}
-			trend={avgDelta != null ? (Math.abs(avgDelta) < 100 ? 'positive' : avgDelta > 200 ? 'negative' : 'neutral') : 'neutral'}
+			trend={avgDelta != null
+				? Math.abs(avgDelta) < 100
+					? 'positive'
+					: avgDelta > 200
+						? 'negative'
+						: 'neutral'
+				: 'neutral'}
 		/>
 		<FitnessStatusCard
 			label="Top Meal"

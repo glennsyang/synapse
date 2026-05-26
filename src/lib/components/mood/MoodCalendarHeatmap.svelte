@@ -1,10 +1,9 @@
 <script lang="ts">
-	import CalendarIcon from '@lucide/svelte/icons/calendar-days';
-
 	import * as Card from '$lib/components/ui/card';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { parseLocalDateString, toLocalDateString } from '$lib/utils/date';
 	import { getMoodScoreLabel } from '$lib/utils/mood';
+	import CalendarIcon from '@lucide/svelte/icons/calendar-days';
 
 	interface CalendarLog {
 		date: string;
@@ -96,7 +95,7 @@
 			<!-- Weekday header row -->
 			<div class="grid grid-cols-7 gap-1 text-center">
 				{#each weekdayHeaders as header, i (i)}
-					<div class="text-xs font-medium text-muted-foreground">{header}</div>
+					<div class="text-muted-foreground text-xs font-medium">{header}</div>
 				{/each}
 			</div>
 
@@ -113,7 +112,10 @@
 										'flex aspect-square w-full items-center justify-center rounded-md text-xs font-medium transition-colors',
 										!cell && 'pointer-events-none opacity-0',
 										cell && future && 'text-muted-foreground/40',
-										cell && !future && !log && 'bg-muted/40 text-muted-foreground hover:bg-muted/60',
+										cell &&
+											!future &&
+											!log &&
+											'bg-muted/40 text-muted-foreground hover:bg-muted/60',
 										cell && !future && log && scoreToBg(log.score),
 										cell && !future && log && 'text-white'
 									]}
@@ -125,7 +127,7 @@
 								<Tooltip.Content>
 									{#if log}
 										<span class="font-medium">{log.resolvedMood}</span>
-										<span class="ml-1 text-muted-foreground">
+										<span class="text-muted-foreground ml-1">
 											· {getMoodScoreLabel(log.score)} ({log.score})
 										</span>
 									{:else}
@@ -139,7 +141,7 @@
 			{/each}
 
 			<!-- Legend -->
-			<div class="flex items-center justify-end gap-2 pt-1 text-xs text-muted-foreground">
+			<div class="text-muted-foreground flex items-center justify-end gap-2 pt-1 text-xs">
 				<span>Low</span>
 				<div class="flex gap-0.5">
 					<div class="h-3 w-3 rounded-sm bg-orange-200 dark:bg-orange-900/60"></div>

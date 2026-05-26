@@ -1,4 +1,9 @@
 <script lang="ts">
+	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import {
 		Bold,
 		Heading,
@@ -11,11 +16,6 @@
 		Underline
 	} from '@lucide/svelte/icons';
 	import { marked } from 'marked';
-	import { Button } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Tabs from '$lib/components/ui/tabs';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import * as Tooltip from '$lib/components/ui/tooltip';
 
 	interface Props {
 		markdown?: string;
@@ -296,7 +296,7 @@
 	}
 </script>
 
-<div class="rounded-xl border border-[oklch(var(--color-blue)/0.22)] bg-background/90 shadow-sm">
+<div class="bg-background/90 rounded-xl border border-[oklch(var(--color-blue)/0.22)] shadow-sm">
 	<Tabs.Root bind:value={activeTab} class="gap-0">
 		<div class="flex flex-wrap items-center justify-between gap-3 border-b px-3 py-2">
 			<Tabs.List>
@@ -322,9 +322,9 @@
 								{/snippet}
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content align="start" sideOffset={6} class="w-28 rounded-lg">
-								<DropdownMenu.Item onclick={() => insertHeading(1)}> h1 </DropdownMenu.Item>
-								<DropdownMenu.Item onclick={() => insertHeading(2)}> h2 </DropdownMenu.Item>
-								<DropdownMenu.Item onclick={() => insertHeading(3)}> h3 </DropdownMenu.Item>
+								<DropdownMenu.Item onclick={() => insertHeading(1)}>h1</DropdownMenu.Item>
+								<DropdownMenu.Item onclick={() => insertHeading(2)}>h2</DropdownMenu.Item>
+								<DropdownMenu.Item onclick={() => insertHeading(3)}>h3</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 
@@ -474,7 +474,7 @@
 				<div class="prose prose-sm prose-slate dark:prose-invert">{@html previewHtml}</div>
 			{:else}
 				<div
-					class="flex min-h-40 items-center justify-center rounded-lg border border-dashed border-[oklch(var(--color-blue)/0.25)] bg-[oklch(var(--color-blue)/0.04)] px-4 text-center text-sm text-muted-foreground"
+					class="text-muted-foreground flex min-h-40 items-center justify-center rounded-lg border border-dashed border-[oklch(var(--color-blue)/0.25)] bg-[oklch(var(--color-blue)/0.04)] px-4 text-center text-sm"
 				>
 					<Pilcrow class="mr-2 h-4 w-4" />
 					Write something in the editor to preview your markdown here.

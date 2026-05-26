@@ -1,9 +1,4 @@
 <script lang="ts">
-	import { Activity, Dumbbell, Flame, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
-
-	import { SvelteSet } from 'svelte/reactivity';
-	import { toast } from 'svelte-sonner';
-
 	import { navigating, page } from '$app/state';
 	import PageShell from '$lib/components/app/PageShell.svelte';
 	import ActivityHistorySheet from '$lib/components/fitness/dashboard/ActivityHistorySheet.svelte';
@@ -22,6 +17,9 @@
 	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
+	import { Activity, Dumbbell, Flame, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
+	import { toast } from 'svelte-sonner';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	import type { PageData } from './$types.js';
 
@@ -247,11 +245,11 @@
 		<!-- Collapsible Sections -->
 		<Accordion.Root type="multiple" class="space-y-4">
 			<!-- Workouts Section -->
-			<Accordion.Item value="workouts" class="border-0 rounded-xl shadow-sm">
+			<Accordion.Item value="workouts" class="rounded-xl border-0 shadow-sm">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
 						<Dumbbell class="h-5 w-5 text-orange-500" />
-						<span class="font-semibold text-lg">Workouts</span>
+						<span class="text-lg font-semibold">Workouts</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">
@@ -260,11 +258,11 @@
 			</Accordion.Item>
 
 			<!-- Weight Section -->
-			<Accordion.Item value="weight" class="border-0 rounded-xl shadow-sm">
+			<Accordion.Item value="weight" class="rounded-xl border-0 shadow-sm">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
 						<Scale class="h-5 w-5 text-emerald-500" />
-						<span class="font-semibold text-lg">Weight</span>
+						<span class="text-lg font-semibold">Weight</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">
@@ -279,11 +277,11 @@
 			</Accordion.Item>
 
 			<!-- Nutrition Section -->
-			<Accordion.Item value="nutrition" class="border-0 rounded-xl shadow-sm">
+			<Accordion.Item value="nutrition" class="rounded-xl border-0 shadow-sm">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
 						<UtensilsCrossed class="h-5 w-5 text-sky-500" />
-						<span class="font-semibold text-lg">Nutrition</span>
+						<span class="text-lg font-semibold">Nutrition</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">
@@ -297,11 +295,11 @@
 			</Accordion.Item>
 
 			<!-- Habits & Reminders Section -->
-			<Accordion.Item value="reminders" class="border-0 rounded-xl shadow-sm">
+			<Accordion.Item value="reminders" class="rounded-xl border-0 shadow-sm">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
 						<Flame class="h-5 w-5 text-rose-500" />
-						<span class="font-semibold text-lg">Habits & Reminders</span>
+						<span class="text-lg font-semibold">Habits & Reminders</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">
@@ -321,11 +319,11 @@
 			</Accordion.Item>
 
 			<!-- Recent Activity Section -->
-			<Accordion.Item value="recent-activity" class="border-0 rounded-xl shadow-sm">
+			<Accordion.Item value="recent-activity" class="rounded-xl border-0 shadow-sm">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
 						<Activity class="h-5 w-5 text-purple-500" />
-						<span class="font-semibold text-lg">Recent Activity</span>
+						<span class="text-lg font-semibold">Recent Activity</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">

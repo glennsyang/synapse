@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { Dumbbell, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
-
 	import * as Card from '$lib/components/ui/card';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
 	import { getWorkoutChartColor, workoutTypeOptions } from '$lib/utils/workout';
+	import { Dumbbell, Scale, UtensilsCrossed } from '@lucide/svelte/icons';
 
 	interface Workout {
 		id: string;
@@ -123,7 +122,7 @@
 </script>
 
 <Card.Root
-	class="mb-6 overflow-hidden p-8 border border-green-200/75 bg-linear-to-br from-green-100/90 via-background to-green-50/85 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] dark:border-green-500/25 dark:from-green-500/12 dark:via-background dark:to-green-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)]"
+	class="via-background dark:via-background mb-6 overflow-hidden border border-green-200/75 bg-linear-to-br from-green-100/90 to-green-50/85 p-8 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] dark:border-green-500/25 dark:from-green-500/12 dark:to-green-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)]"
 >
 	<Card.Header class="pb-4">
 		<Card.Title class="font-display text-lg font-semibold">14-Day Momentum</Card.Title>
@@ -154,8 +153,8 @@
 						</Tooltip.Trigger>
 						<Tooltip.Content>
 							{day.workoutTypes.length > 0
-							? `${day.label}: ${day.workoutTypes.join(', ')}`
-							: day.label}
+								? `${day.label}: ${day.workoutTypes.join(', ')}`
+								: day.label}
 						</Tooltip.Content>
 					</Tooltip.Root>
 				{/each}
@@ -175,8 +174,8 @@
 							<Tooltip.Trigger>
 								<div
 									class="h-3 w-3 rounded-full transition-all {day.hasWeight
-								? 'bg-emerald-500'
-								: 'bg-zinc-700'}"
+										? 'bg-emerald-500'
+										: 'bg-zinc-700'}"
 								></div>
 							</Tooltip.Trigger>
 							<Tooltip.Content>
@@ -202,8 +201,8 @@
 						</Tooltip.Trigger>
 						<Tooltip.Content>
 							{day.calories !== null
-							? `${day.label}: ${day.calories} cal`
-							: `${day.label}: no data`}
+								? `${day.label}: ${day.calories} cal`
+								: `${day.label}: no data`}
 						</Tooltip.Content>
 					</Tooltip.Root>
 				{/each}
@@ -249,7 +248,7 @@
 		</div>
 	</Card.Content>
 
-	<Card.Footer class="border mb-6 bg-white">
-		<p class="text-xs italic text-foreground">{interpretation}</p>
+	<Card.Footer class="mb-6 border bg-white">
+		<p class="text-foreground text-xs italic">{interpretation}</p>
 	</Card.Footer>
 </Card.Root>

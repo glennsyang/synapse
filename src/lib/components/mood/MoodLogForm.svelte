@@ -1,9 +1,4 @@
 <script lang="ts">
-	import { CircleAlert } from '@lucide/svelte/icons';
-	import { fromAction } from 'svelte/attachments';
-	import { toast } from 'svelte-sonner';
-	import { type SuperValidated, superForm } from 'sveltekit-superforms';
-
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
@@ -11,6 +6,10 @@
 	import { Label } from '$lib/components/ui/label';
 	import type { MoodLogFormValues } from '$lib/schemas/mood';
 	import { moodOptions } from '$lib/utils/mood';
+	import { CircleAlert } from '@lucide/svelte/icons';
+	import { toast } from 'svelte-sonner';
+	import { fromAction } from 'svelte/attachments';
+	import { type SuperValidated, superForm } from 'sveltekit-superforms';
 
 	interface Props {
 		form: SuperValidated<MoodLogFormValues>;
@@ -41,14 +40,14 @@
 <Card.Root
 	class="border-[oklch(var(--color-orange)/0.18)] bg-[radial-gradient(circle_at_top,oklch(var(--color-orange)/0.14),transparent_65%)]"
 >
-	<Card.Header class="pb-3 pt-4">
+	<Card.Header class="pt-4 pb-3">
 		<div class="flex items-center justify-between gap-3">
 			<Card.Title class="font-display text-xl">How are you feeling today?</Card.Title>
 			{#if todayLog}
 				<div
-					class="rounded-xl border border-border/70 bg-background/80 px-3 py-1.5 text-right shadow-sm"
+					class="border-border/70 bg-background/80 rounded-xl border px-3 py-1.5 text-right shadow-sm"
 				>
-					<p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Logged</p>
+					<p class="text-muted-foreground text-xs tracking-[0.18em] uppercase">Logged</p>
 					<p class="font-display text-base font-semibold">{todayLog.resolvedMood}</p>
 				</div>
 			{/if}
@@ -70,8 +69,8 @@
 							class={[
 								'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
 								$form.mood === option.value
-								? 'border-orange-600 bg-orange-600 text-white shadow-sm'
-								: 'border-orange-200 bg-orange-50 text-orange-800 hover:border-orange-300 hover:bg-orange-100'
+									? 'border-orange-600 bg-orange-600 text-white shadow-sm'
+									: 'border-orange-200 bg-orange-50 text-orange-800 hover:border-orange-300 hover:bg-orange-100'
 							]}
 						>
 							{option.label}
@@ -120,7 +119,7 @@
 				{/if}
 			</div>
 
-			<div class="flex justify-end border-t border-border/60 pt-3">
+			<div class="border-border/60 flex justify-end border-t pt-3">
 				<Button
 					type="submit"
 					class=" bg-orange-600 hover:bg-orange-700"

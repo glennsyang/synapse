@@ -66,33 +66,33 @@
 </script>
 
 <section
-	class="relative isolate overflow-hidden rounded-[1.45rem] border border-orange-200/75 bg-linear-to-br from-orange-100/90 via-background to-amber-50/85 p-3.5 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] dark:border-orange-500/25 dark:from-orange-500/12 dark:via-background dark:to-amber-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)] sm:p-4"
+	class="via-background dark:via-background relative isolate overflow-hidden rounded-[1.45rem] border border-orange-200/75 bg-linear-to-br from-orange-100/90 to-amber-50/85 p-3.5 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] sm:p-4 dark:border-orange-500/25 dark:from-orange-500/12 dark:to-amber-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)]"
 >
 	<div
-		class="absolute -left-12 top-0 size-32 rounded-full bg-orange-300/24 blur-3xl dark:bg-orange-500/10"
+		class="absolute top-0 -left-12 size-32 rounded-full bg-orange-300/24 blur-3xl dark:bg-orange-500/10"
 	></div>
 	<div
-		class="absolute bottom-4 right-2 size-24 rounded-full bg-amber-200/28 blur-3xl dark:bg-amber-400/8"
+		class="absolute right-2 bottom-4 size-24 rounded-full bg-amber-200/28 blur-3xl dark:bg-amber-400/8"
 	></div>
 
 	<div class="relative space-y-3">
 		<div class="flex items-start justify-between gap-3">
 			<div class="min-w-0">
-				<p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+				<p class="text-muted-foreground text-[10px] font-semibold tracking-[0.2em] uppercase">
 					Week pulse
 				</p>
-				<p class="mt-1 text-xs leading-5 text-muted-foreground">
+				<p class="text-muted-foreground mt-1 text-xs leading-5">
 					{completionSummary}
 				</p>
 			</div>
 			<div
 				class={cn(
-					'inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] backdrop-blur',
+					'inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase backdrop-blur',
 					hasComparisonData && trendDelta > 0
 						? 'border-emerald-300/80 bg-emerald-100/85 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200'
 						: hasComparisonData && trendDelta < 0
 							? 'border-amber-300/80 bg-amber-100/90 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/12 dark:text-amber-200'
-							: 'border-orange-300/70 bg-background/80 text-[oklch(var(--color-orange))] dark:border-orange-500/30 dark:bg-background/70 dark:text-orange-200'
+							: 'bg-background/80 dark:bg-background/70 border-orange-300/70 text-[oklch(var(--color-orange))] dark:border-orange-500/30 dark:text-orange-200'
 				)}
 			>
 				{trendLabel}
@@ -104,13 +104,13 @@
 				class="absolute inset-3 rounded-full border border-white/50 bg-white/40 blur-2xl dark:border-orange-500/10 dark:bg-orange-500/5"
 			></div>
 			<div
-				class="relative w-full rounded-full border border-orange-200/80 bg-background/90 p-2.5 shadow-[0_18px_45px_-35px_rgba(249,115,22,0.38)] backdrop-blur dark:border-orange-500/22 dark:bg-background/85 dark:shadow-[0_18px_45px_-38px_rgba(249,115,22,0.22)]"
+				class="bg-background/90 dark:bg-background/85 relative w-full rounded-full border border-orange-200/80 p-2.5 shadow-[0_18px_45px_-35px_rgba(249,115,22,0.38)] backdrop-blur dark:border-orange-500/22 dark:shadow-[0_18px_45px_-38px_rgba(249,115,22,0.22)]"
 				role="img"
 				aria-label={ariaLabel}
 			>
 				<div class="relative mx-auto aspect-square w-full max-w-48">
 					<div
-						class="absolute inset-[15%] rounded-full bg-linear-to-br from-orange-100/75 via-background to-orange-50/65 dark:from-orange-500/10 dark:via-background dark:to-orange-500/5"
+						class="via-background dark:via-background absolute inset-[15%] rounded-full bg-linear-to-br from-orange-100/75 to-orange-50/65 dark:from-orange-500/10 dark:to-orange-500/5"
 					></div>
 					<svg viewBox="0 0 220 220" class="size-full overflow-visible" aria-hidden="true">
 						<defs>
@@ -159,28 +159,24 @@
 								fill="oklch(var(--color-orange) / 0.18)"
 								filter={`url(#${glowId})`}
 							></circle>
-							<circle
-								cx={gaugeDotX}
-								cy={gaugeDotY}
-								r="6.5"
-								fill="oklch(var(--color-orange))"
+							<circle cx={gaugeDotX} cy={gaugeDotY} r="6.5" fill="oklch(var(--color-orange))"
 							></circle>
 						{/if}
 					</svg>
 
 					<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
 						<p
-							class="font-display text-4xl font-semibold tracking-[-0.06em] text-foreground sm:text-5xl"
+							class="font-display text-foreground text-4xl font-semibold tracking-[-0.06em] sm:text-5xl"
 						>
 							{displayPercentage}%
 						</p>
 						{#if totalCount > 0}
-							<p class="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+							<p class="text-muted-foreground mt-1 text-[11px] tracking-[0.14em] uppercase">
 								{completedCount}/{totalCount}
 								done
 							</p>
 						{:else}
-							<p class="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+							<p class="text-muted-foreground mt-1 text-[11px] tracking-[0.14em] uppercase">
 								No items yet
 							</p>
 						{/if}

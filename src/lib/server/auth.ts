@@ -1,9 +1,10 @@
+import { getRequestEvent } from '$app/server';
+import { logger } from '$lib/utils/logger';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createAuthMiddleware } from 'better-auth/api';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
-import { getRequestEvent } from '$app/server';
-import { logger } from '$lib/utils/logger';
+
 import { getEnv } from '../../env';
 import { getDb } from './db';
 import * as schema from './db/schema';

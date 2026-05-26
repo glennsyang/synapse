@@ -60,7 +60,7 @@
 				<h1 class="font-display text-3xl font-bold tracking-tight md:text-4xl">{title}</h1>
 			</div>
 			{#if description}
-				<p class="text-base text-muted-foreground md:text-lg">{description}</p>
+				<p class="text-muted-foreground text-base md:text-lg">{description}</p>
 			{/if}
 		</div>
 

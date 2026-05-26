@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { Calendar, CircleX, ListFilter, Plus, Search } from '@lucide/svelte';
-	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import PageShell from '$lib/components/app/PageShell.svelte';
@@ -10,6 +8,9 @@
 	import * as Collapsible from '$lib/components/ui/collapsible';
 	import { Input } from '$lib/components/ui/input';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { Calendar, CircleX, ListFilter, Plus, Search } from '@lucide/svelte';
+	import { onDestroy } from 'svelte';
+
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -131,7 +132,7 @@
 		<div class="mobile-stack mb-4 justify-between gap-3 sm:mb-5 sm:flex-wrap lg:flex-nowrap">
 			<div class="min-w-0 flex-1">
 				<h1 class="font-display text-2xl font-bold sm:text-3xl">Journal</h1>
-				<p class="text-sm text-muted-foreground sm:text-base">
+				<p class="text-muted-foreground text-sm sm:text-base">
 					A reflective archive of days, fragments, and fully formed thoughts, arranged like a living
 					stack of pages
 				</p>
@@ -175,12 +176,12 @@
 			<Collapsible.Content class="w-full">
 				<div
 					id="journal-filter-bar"
-					class="mb-4 grid gap-4 rounded-3xl border border-blue-200/80 bg-blue-50/55 p-4 shadow-[0_18px_60px_-42px_rgba(59,130,246,0.35)] backdrop-blur-xl dark:border-blue-500/25 dark:bg-blue-500/8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
+					class="mb-4 grid gap-4 rounded-3xl border border-blue-200/80 bg-blue-50/55 p-4 shadow-[0_18px_60px_-42px_rgba(59,130,246,0.35)] backdrop-blur-xl lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start dark:border-blue-500/25 dark:bg-blue-500/8"
 				>
-					<div class="min-w-0 w-full">
+					<div class="w-full min-w-0">
 						<div class="relative">
 							<Search
-								class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+								class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
 							/>
 							<Input
 								id="journal-content-filter"
@@ -190,7 +191,7 @@
 								aria-label="Search journal entries by content"
 								placeholder="Search the words inside your entries"
 								maxlength={200}
-								class="h-11 bg-background/90 pl-9"
+								class="bg-background/90 h-11 pl-9"
 							/>
 						</div>
 					</div>
@@ -236,7 +237,7 @@
 					<p class="font-display mt-4 text-2xl font-semibold tracking-tight">
 						No pages in this slice of the archive yet.
 					</p>
-					<p class="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+					<p class="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6">
 						Try a different phrase or date, or start a new entry to keep the chronicle moving.
 					</p>
 					<Button

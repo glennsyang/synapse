@@ -1,4 +1,15 @@
 <script lang="ts">
+	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { daysOfWeek, formatTime12Hour, formatTimestampLong } from '$lib/utils/date';
 	import {
 		ArrowLeft,
 		Calendar,
@@ -12,18 +23,6 @@
 	} from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { superForm } from 'sveltekit-superforms';
-
-	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { daysOfWeek, formatTime12Hour, formatTimestampLong } from '$lib/utils/date';
 
 	import type { PageData } from './$types';
 
@@ -199,7 +198,7 @@
 		</Card.Header>
 		<Card.Content class="space-y-4">
 			<div class="flex items-center gap-4">
-				<div class="flex items-center gap-2 text-muted-foreground">
+				<div class="text-muted-foreground flex items-center gap-2">
 					<Clock class="h-5 w-5" />
 					<span>{data.routine.durationMinutes} minutes</span>
 				</div>
@@ -268,7 +267,7 @@
 						</p>
 					</div>
 				{:else}
-					<p class="text-sm text-muted-foreground">No schedule set</p>
+					<p class="text-muted-foreground text-sm">No schedule set</p>
 				{/if}
 			</Card.Content>
 			<Card.Footer class="flex gap-3">
@@ -301,7 +300,7 @@
 									{...props}
 									variant="ghost"
 									size="icon-sm"
-									class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
+									class="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 border border-white/55 bg-white/68 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
 									aria-label="Delete Schedule"
 									onclick={() => (showDeleteScheduleConfirm = true)}
 								>
@@ -317,7 +316,7 @@
 
 		<!-- Session History -->
 		<Card.Root>
-			<Card.Header> <Card.Title>Recent Sessions</Card.Title> </Card.Header>
+			<Card.Header><Card.Title>Recent Sessions</Card.Title></Card.Header>
 			<Card.Content>
 				{#if data.sessions.length > 0}
 					<div class="space-y-3">
@@ -326,11 +325,11 @@
 								<div>
 									<p class="text-sm font-medium">{formatTimestampLong(session.completedAt)}</p>
 									{#if session.preMoodRating && session.moodRating}
-										<p class="text-sm text-muted-foreground">
+										<p class="text-muted-foreground text-sm">
 											Mood: {session.preMoodRating} → {session.moodRating}
 										</p>
 									{:else if session.moodRating}
-										<p class="text-sm text-muted-foreground">Mood: {session.moodRating}/5</p>
+										<p class="text-muted-foreground text-sm">Mood: {session.moodRating}/5</p>
 									{/if}
 								</div>
 								<div class="flex shrink-0 gap-1">
@@ -358,9 +357,12 @@
 													{...props}
 													variant="ghost"
 													size="icon-sm"
-													class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
+													class="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 border border-white/55 bg-white/68 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
 													aria-label="Delete Session"
-													onclick={() => { sessionToDelete = session.id; showDeleteSessionConfirm = true; }}
+													onclick={() => {
+														sessionToDelete = session.id;
+														showDeleteSessionConfirm = true;
+													}}
 												>
 													<Trash2 class="h-4 w-4" />
 												</Button>
@@ -373,7 +375,7 @@
 						{/each}
 					</div>
 				{:else}
-					<p class="text-sm text-muted-foreground">No sessions yet</p>
+					<p class="text-muted-foreground text-sm">No sessions yet</p>
 				{/if}
 			</Card.Content>
 			{#if data.sessions.length > 5}
@@ -410,7 +412,7 @@
 					</Select.Content>
 				</Select.Root>
 				{#if $scheduleErrors.cadence}
-					<p class="text-sm text-destructive">{$scheduleErrors.cadence}</p>
+					<p class="text-destructive text-sm">{$scheduleErrors.cadence}</p>
 				{/if}
 			</div>
 
@@ -425,9 +427,7 @@
 								type="button"
 								variant={selectedDays.includes(day.id) ? 'default' : 'outline'}
 								size="sm"
-								class={selectedDays.includes(day.id)
-									? 'bg-purple-600 hover:bg-purple-700'
-									: ''}
+								class={selectedDays.includes(day.id) ? 'bg-purple-600 hover:bg-purple-700' : ''}
 								onclick={() => toggleDay(day.id)}
 							>
 								{day.shortName}
@@ -435,7 +435,7 @@
 						{/each}
 					</div>
 					{#if $scheduleErrors.days_of_week}
-						<p class="text-sm text-destructive">{$scheduleErrors.days_of_week}</p>
+						<p class="text-destructive text-sm">{$scheduleErrors.days_of_week}</p>
 					{/if}
 				</div>
 			{/if}
@@ -444,7 +444,7 @@
 				<Label for="time">Time</Label>
 				<Input id="time" name="time" type="time" bind:value={$scheduleForm.time} />
 				{#if $scheduleErrors.time}
-					<p class="text-sm text-destructive">{$scheduleErrors.time}</p>
+					<p class="text-destructive text-sm">{$scheduleErrors.time}</p>
 				{/if}
 			</div>
 
@@ -482,7 +482,7 @@
 					bind:value={$sessionForm.completed_at}
 				/>
 				{#if $sessionErrors.completed_at}
-					<p class="text-sm text-destructive">{$sessionErrors.completed_at}</p>
+					<p class="text-destructive text-sm">{$sessionErrors.completed_at}</p>
 				{/if}
 			</div>
 			<!-- Rating explanation -->
@@ -514,7 +514,7 @@
 					placeholder="1–5"
 				/>
 				{#if $sessionErrors.pre_mood_rating}
-					<p class="text-sm text-destructive">{$sessionErrors.pre_mood_rating}</p>
+					<p class="text-destructive text-sm">{$sessionErrors.pre_mood_rating}</p>
 				{/if}
 			</div>
 
@@ -530,7 +530,7 @@
 					placeholder="1–5"
 				/>
 				{#if $sessionErrors.mood_rating}
-					<p class="text-sm text-destructive">{$sessionErrors.mood_rating}</p>
+					<p class="text-destructive text-sm">{$sessionErrors.mood_rating}</p>
 				{/if}
 			</div>
 
@@ -544,7 +544,7 @@
 					rows={3}
 				/>
 				{#if $sessionErrors.notes}
-					<p class="text-sm text-destructive">{$sessionErrors.notes}</p>
+					<p class="text-destructive text-sm">{$sessionErrors.notes}</p>
 				{/if}
 			</div>
 
@@ -568,13 +568,13 @@
 <!-- Edit Routine Dialog -->
 <Dialog.Root bind:open={showEditDialog}>
 	<Dialog.Content class="sm:max-w-md">
-		<Dialog.Header> <Dialog.Title>Edit Routine</Dialog.Title> </Dialog.Header>
+		<Dialog.Header><Dialog.Title>Edit Routine</Dialog.Title></Dialog.Header>
 		<form method="POST" action="?/updateRoutine" use:updateEnhance class="space-y-4">
 			<div class="space-y-2">
 				<Label for="edit_title">Title</Label>
 				<Input id="edit_title" name="title" bind:value={$updateForm.title} />
 				{#if $updateErrors.title}
-					<p class="text-sm text-destructive">{$updateErrors.title}</p>
+					<p class="text-destructive text-sm">{$updateErrors.title}</p>
 				{/if}
 			</div>
 
@@ -592,7 +592,7 @@
 				<Label for="edit_link_url">Link URL</Label>
 				<Input id="edit_link_url" name="link_url" type="url" bind:value={$updateForm.link_url} />
 				{#if $updateErrors.link_url}
-					<p class="text-sm text-destructive">{$updateErrors.link_url}</p>
+					<p class="text-destructive text-sm">{$updateErrors.link_url}</p>
 				{/if}
 			</div>
 
@@ -605,7 +605,7 @@
 					bind:value={$updateForm.duration_minutes}
 				/>
 				{#if $updateErrors.duration_minutes}
-					<p class="text-sm text-destructive">{$updateErrors.duration_minutes}</p>
+					<p class="text-destructive text-sm">{$updateErrors.duration_minutes}</p>
 				{/if}
 			</div>
 
@@ -617,11 +617,11 @@
 					bind:value={$updateForm.mood_tags}
 					placeholder="Anxious, Focused"
 				/>
-				<p class="text-xs text-muted-foreground">
+				<p class="text-muted-foreground text-xs">
 					Comma-separated: Anxious, Low Energy, Focused, Pre-Sleep, General
 				</p>
 				{#if $updateErrors.mood_tags}
-					<p class="text-sm text-destructive">{$updateErrors.mood_tags}</p>
+					<p class="text-destructive text-sm">{$updateErrors.mood_tags}</p>
 				{/if}
 			</div>
 
@@ -678,7 +678,7 @@
 			<Dialog.Description>Update your meditation session details</Dialog.Description>
 		</Dialog.Header>
 		<form method="POST" action="?/updateSession" use:editSessionEnhance class="space-y-4">
-			<input type="hidden" name="id" bind:value={$editSessionForm.id}>
+			<input type="hidden" name="id" bind:value={$editSessionForm.id} />
 
 			<div class="space-y-2">
 				<Label for="edit_session_completed_at">Date & Time</Label>
@@ -689,7 +689,7 @@
 					bind:value={$editSessionForm.completed_at}
 				/>
 				{#if $editSessionErrors.completed_at}
-					<p class="text-sm text-destructive">{$editSessionErrors.completed_at}</p>
+					<p class="text-destructive text-sm">{$editSessionErrors.completed_at}</p>
 				{/if}
 			</div>
 
@@ -721,7 +721,7 @@
 					placeholder="1–5"
 				/>
 				{#if $editSessionErrors.pre_mood_rating}
-					<p class="text-sm text-destructive">{$editSessionErrors.pre_mood_rating}</p>
+					<p class="text-destructive text-sm">{$editSessionErrors.pre_mood_rating}</p>
 				{/if}
 			</div>
 
@@ -737,7 +737,7 @@
 					placeholder="1–5"
 				/>
 				{#if $editSessionErrors.mood_rating}
-					<p class="text-sm text-destructive">{$editSessionErrors.mood_rating}</p>
+					<p class="text-destructive text-sm">{$editSessionErrors.mood_rating}</p>
 				{/if}
 			</div>
 
@@ -751,7 +751,7 @@
 					rows={3}
 				/>
 				{#if $editSessionErrors.notes}
-					<p class="text-sm text-destructive">{$editSessionErrors.notes}</p>
+					<p class="text-destructive text-sm">{$editSessionErrors.notes}</p>
 				{/if}
 			</div>
 

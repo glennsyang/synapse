@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { ChartArea, Flame, TrendingUp } from '@lucide/svelte';
-	import type { SuperValidated } from 'sveltekit-superforms';
-
 	import MoodByDayOfWeekChart from '$lib/components/mood/MoodByDayOfWeekChart.svelte';
 	import MoodCalendarHeatmap from '$lib/components/mood/MoodCalendarHeatmap.svelte';
 	import MoodDistributionChart from '$lib/components/mood/MoodDistributionChart.svelte';
@@ -11,6 +8,8 @@
 	import type { MoodLogFormValues } from '$lib/schemas/mood';
 	import { getTodayString } from '$lib/utils/date';
 	import { type MoodPeriod, moodPeriods } from '$lib/utils/mood';
+	import { ChartArea, Flame, TrendingUp } from '@lucide/svelte';
+	import type { SuperValidated } from 'sveltekit-superforms';
 
 	type MoodTrendPoint = {
 		date: string;
@@ -92,28 +91,28 @@
 			class="flex flex-col items-center rounded-2xl border border-orange-200/70 bg-orange-50/60 px-3 py-3 text-center dark:border-orange-500/20 dark:bg-orange-500/8"
 		>
 			<Flame class="mb-1 h-4 w-4 text-orange-500" />
-			<p class="font-display text-2xl font-bold leading-none">{mood.summary.currentStreak}</p>
-			<p class="mt-1 text-xs text-muted-foreground">Day streak</p>
+			<p class="font-display text-2xl leading-none font-bold">{mood.summary.currentStreak}</p>
+			<p class="text-muted-foreground mt-1 text-xs">Day streak</p>
 		</div>
 		<div
 			class="flex flex-col items-center rounded-2xl border border-orange-200/70 bg-orange-50/60 px-3 py-3 text-center dark:border-orange-500/20 dark:bg-orange-500/8"
 		>
 			<ChartArea class="mb-1 h-4 w-4 text-orange-500" />
-			<p class="font-display text-2xl font-bold leading-none">{mood.summary.coveragePercentage}%</p>
-			<p class="mt-1 text-xs text-muted-foreground">Coverage</p>
+			<p class="font-display text-2xl leading-none font-bold">{mood.summary.coveragePercentage}%</p>
+			<p class="text-muted-foreground mt-1 text-xs">Coverage</p>
 		</div>
 		<div
 			class="flex flex-col items-center rounded-2xl border border-orange-200/70 bg-orange-50/60 px-3 py-3 text-center dark:border-orange-500/20 dark:bg-orange-500/8"
 		>
 			<TrendingUp class="mb-1 h-4 w-4 text-orange-500" />
-			<p class="font-display text-2xl font-bold leading-none">{avgMoodLabel}</p>
-			<p class="mt-1 text-xs text-muted-foreground">Avg score</p>
+			<p class="font-display text-2xl leading-none font-bold">{avgMoodLabel}</p>
+			<p class="text-muted-foreground mt-1 text-xs">Avg score</p>
 		</div>
 	</div>
 
 	<!-- Period selector -->
 	<div class="flex items-center justify-between gap-2">
-		<div class="flex items-center gap-2 text-sm text-muted-foreground">
+		<div class="text-muted-foreground flex items-center gap-2 text-sm">
 			<ChartArea class="h-4 w-4 text-[oklch(var(--color-orange))]" />
 			<span>{mood.rangeLabel}</span>
 		</div>

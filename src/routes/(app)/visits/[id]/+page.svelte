@@ -1,9 +1,4 @@
 <script lang="ts">
-	import { Archive, ArrowLeft, Calendar, Pencil, Trash2 } from '@lucide/svelte';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
-	import { zod4 } from 'sveltekit-superforms/adapters';
-
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
@@ -15,6 +10,10 @@
 	import { personSchema, visitSchema } from '$lib/schemas/visits';
 	import { formatDateLong, formatDateShort } from '$lib/utils/date';
 	import { getStatusLabel } from '$lib/utils/visit-status';
+	import { Archive, ArrowLeft, Calendar, Pencil, Trash2 } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
+	import { zod4 } from 'sveltekit-superforms/adapters';
 
 	import type { PageData } from './$types';
 
@@ -144,12 +143,14 @@
 				<h1 class="text-3xl font-bold">{data.person.name}</h1>
 				<div class="mt-2 flex items-center gap-2">
 					<span
-						class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold {statusBadge[data.person.status] ?? 'bg-gray-100 text-gray-800'}"
+						class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold {statusBadge[
+							data.person.status
+						] ?? 'bg-gray-100 text-gray-800'}"
 					>
 						{getStatusLabel(data.person.status)}
 					</span>
 					{#if data.person.daysSinceLastVisit !== null}
-						<span class="text-sm text-muted-foreground">
+						<span class="text-muted-foreground text-sm">
 							Last visit: {formatTimeSince(data.person.daysSinceLastVisit)}
 						</span>
 					{/if}
@@ -233,7 +234,7 @@
 		{#if data.visits.length === 0}
 			<Card.Root>
 				<Card.Content class="py-12 text-center">
-					<p class="mb-4 text-muted-foreground">No visits logged yet.</p>
+					<p class="text-muted-foreground mb-4">No visits logged yet.</p>
 					<Button onclick={openLogVisitDialogForCreate}>Log First Visit</Button>
 				</Card.Content>
 			</Card.Root>
@@ -247,20 +248,20 @@
 									<div class="mb-2 flex items-center gap-4">
 										<p class="font-semibold">{formatDateLong(visit.date)}</p>
 										{#if visit.time}
-											<span class="text-sm text-muted-foreground">{formatTime(visit.time)}</span>
+											<span class="text-muted-foreground text-sm">{formatTime(visit.time)}</span>
 										{/if}
 									</div>
 
 									{#if visit.companions && visit.companions.length > 0}
-										<p class="text-sm text-muted-foreground">With: {visit.companions.join(', ')}</p>
+										<p class="text-muted-foreground text-sm">With: {visit.companions.join(', ')}</p>
 									{/if}
 
 									{#if visit.notes}
-										<p class="mt-2 text-sm text-muted-foreground">Notes: {visit.notes}</p>
+										<p class="text-muted-foreground mt-2 text-sm">Notes: {visit.notes}</p>
 									{/if}
 
 									{#if visit.followUpDate}
-										<p class="mt-2 text-sm text-muted-foreground">
+										<p class="text-muted-foreground mt-2 text-sm">
 											Follow-up: {formatDateShort(visit.followUpDate)}
 										</p>
 									{/if}
@@ -343,7 +344,7 @@
 						aria-invalid={$visitErrors.date ? 'true' : undefined}
 					/>
 					{#if $visitErrors.date}
-						<p class="mt-1 text-sm text-destructive">{$visitErrors.date}</p>
+						<p class="text-destructive mt-1 text-sm">{$visitErrors.date}</p>
 					{/if}
 				</div>
 
@@ -357,7 +358,7 @@
 						aria-invalid={$visitErrors.time ? 'true' : undefined}
 					/>
 					{#if $visitErrors.time}
-						<p class="mt-1 text-sm text-destructive">{$visitErrors.time}</p>
+						<p class="text-destructive mt-1 text-sm">{$visitErrors.time}</p>
 					{/if}
 				</div>
 
@@ -372,7 +373,7 @@
 						aria-invalid={$visitErrors.companions ? 'true' : undefined}
 					/>
 					{#if $visitErrors.companions}
-						<p class="mt-1 text-sm text-destructive">{$visitErrors.companions}</p>
+						<p class="text-destructive mt-1 text-sm">{$visitErrors.companions}</p>
 					{/if}
 				</div>
 
@@ -397,7 +398,7 @@
 						aria-invalid={$visitErrors.followUpDate ? 'true' : undefined}
 					/>
 					{#if $visitErrors.followUpDate}
-						<p class="mt-1 text-sm text-destructive">{$visitErrors.followUpDate}</p>
+						<p class="text-destructive mt-1 text-sm">{$visitErrors.followUpDate}</p>
 					{/if}
 				</div>
 
@@ -439,7 +440,7 @@
 						aria-invalid={$editErrors.name ? 'true' : undefined}
 					/>
 					{#if $editErrors.name}
-						<p class="mt-1 text-sm text-destructive">{$editErrors.name}</p>
+						<p class="text-destructive mt-1 text-sm">{$editErrors.name}</p>
 					{/if}
 				</div>
 
@@ -449,12 +450,12 @@
 							id="edit-isExempt"
 							name="isExempt"
 							type="checkbox"
-							class="h-4 w-4 rounded border-input"
+							class="border-input h-4 w-4 rounded"
 							bind:checked={$editForm.isExempt}
-						>
+						/>
 						<Label for="edit-isExempt">Exempt from visit warning rules</Label>
 					</div>
-					<p class="text-xs text-muted-foreground">
+					<p class="text-muted-foreground text-xs">
 						{getEditStatusDescription($editForm.isExempt ?? false)}
 					</p>
 				</div>
