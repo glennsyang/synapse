@@ -12,22 +12,18 @@ import {
 } from '$lib/server/db/schema';
 import {
 	addDaysToDateString,
+	calendarDaysBetween,
 	formatDateMedium,
+	formatMonthDay,
 	formatTime12Hour,
 	formatTimestampMedium,
 	formatTimestampShort,
+	formatTodayLabel,
+	getISODayOfWeek,
 	getStartOfWeek,
 	getTodayString,
-	getWeekDates,
-	parseLocalDateString
+	getWeekDates
 } from '$lib/utils/date';
-
-const appTodayLabelFormatter = new Intl.DateTimeFormat('en-US', {
-	timeZone: 'America/Los_Angeles',
-	weekday: 'long',
-	month: 'long',
-	day: 'numeric'
-});
 
 import { logger } from '$lib/utils/logger';
 import { createMarkdownExcerpt } from '$lib/utils/markdown';
@@ -140,7 +136,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
 	if (!user) {
 		return {
-			todayLabel: appTodayLabelFormatter.format(new Date()),
+			todayLabel: formatTodayLabel(),
 			stats: {
 				journalThisWeek: 0,
 				journalLastWeek: 0,
@@ -173,7 +169,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			todayAgendaSummary: {
 				completed: 0,
 				total: 0,
-				items: [] as { title: string; completed: boolean }[]
+				items: [] as { id: string; title: string; completed: boolean }[]
 			}
 		};
 	}
@@ -284,9 +280,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 			// Agenda entries for 8-week completion trend + per-item scorecard
 			db
 				.select({
+					id: dailyAgendaEntries.id,
 					date: dailyAgendaEntries.date,
 					completed: dailyAgendaEntries.completed,
 					title: dailyAgendaEntries.title,
+					templateGroupId: dailyAgendaEntries.templateGroupId,
 					sortOrder: dailyAgendaEntries.sortOrder
 				})
 				.from(dailyAgendaEntries)
@@ -439,11 +437,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			const total = entriesInWeek.length;
 			const completed = entriesInWeek.filter((e) => e.completed).length;
 			const completionPct = total > 0 ? Math.round((completed / total) * 100) : 0;
-			const weekLabelDate = parseLocalDateString(weekStart);
-			const weekLabel = weekLabelDate.toLocaleDateString('en-US', {
-				month: 'short',
-				day: 'numeric'
-			});
+			const weekLabel = formatMonthDay(weekStart);
 			return { weekLabel, completionPct };
 		});
 
@@ -547,8 +541,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.slice(0, 10);
 
 		// 7. Agenda item stats — per-item completion rates + day-of-week patterns
-		const last4WeeksStart = addDaysToDateString(startOfThisWeekDate, -28);
+		const last4WeeksStart = addDaysToDateString(startOfThisWeekDate, -21);
 		type ItemBucket = {
+			title: string;
+			titleDate: string;
 			last4: { total: number; completed: number };
 			prev4: { total: number; completed: number };
 			dow: { total: number[]; completed: number[] };
@@ -558,24 +554,24 @@ export const load: PageServerLoad = async ({ locals }) => {
 			const isLast4 = entry.date >= last4WeeksStart && entry.date < endOfThisWeekDate;
 			const isPrev4 = entry.date >= agenda8WeeksStart && entry.date < last4WeeksStart;
 			if (!isLast4 && !isPrev4) continue;
-			const dateParts = entry.date.split('-');
-			const dowIndex =
-				(new Date(
-					Number.parseInt(dateParts[0], 10),
-					Number.parseInt(dateParts[1], 10) - 1,
-					Number.parseInt(dateParts[2], 10)
-				).getDay() +
-					6) %
-				7;
-			if (!itemBuckets.has(entry.title)) {
-				itemBuckets.set(entry.title, {
+			const groupKey = entry.templateGroupId ?? entry.title;
+			const dowIndex = getISODayOfWeek(entry.date);
+			if (!itemBuckets.has(groupKey)) {
+				itemBuckets.set(groupKey, {
+					title: entry.title,
+					titleDate: entry.date,
 					last4: { total: 0, completed: 0 },
 					prev4: { total: 0, completed: 0 },
 					dow: { total: new Array<number>(7).fill(0), completed: new Array<number>(7).fill(0) }
 				});
 			}
-			const bucket = itemBuckets.get(entry.title);
+			const bucket = itemBuckets.get(groupKey);
 			if (bucket) {
+				// Track the title from the most recent entry in case it was renamed.
+				if (entry.date > bucket.titleDate) {
+					bucket.title = entry.title;
+					bucket.titleDate = entry.date;
+				}
 				if (isLast4) {
 					bucket.last4.total++;
 					if (entry.completed) bucket.last4.completed++;
@@ -587,10 +583,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 				if (entry.completed) bucket.dow.completed[dowIndex]++;
 			}
 		}
-		const agendaItemStats = Array.from(itemBuckets.entries())
-			.filter(([, b]) => b.last4.total + b.prev4.total >= 7)
-			.map(([title, b]) => ({
-				title,
+		const agendaItemStats = Array.from(itemBuckets.values())
+			.filter((b) => b.last4.total + b.prev4.total >= 7)
+			.map((b) => ({
+				title: b.title,
 				completionPct:
 					b.last4.total > 0 ? Math.round((b.last4.completed / b.last4.total) * 100) : 0,
 				prevCompletionPct:
@@ -603,25 +599,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.sort((a, b) => a.completionPct - b.completionPct);
 
 		// 8. Days since last workout
-		const lastWorkoutDate = recentWorkoutRaw[0]?.date ?? null;
-		const daysSinceLastWorkout: number | null = (() => {
-			if (!lastWorkoutDate) return null;
-			const todayParts = today.split('-');
-			const workoutParts = lastWorkoutDate.split('-');
-			return Math.round(
-				(new Date(
-					Number.parseInt(todayParts[0], 10),
-					Number.parseInt(todayParts[1], 10) - 1,
-					Number.parseInt(todayParts[2], 10)
-				).getTime() -
-					new Date(
-						Number.parseInt(workoutParts[0], 10),
-						Number.parseInt(workoutParts[1], 10) - 1,
-						Number.parseInt(workoutParts[2], 10)
-					).getTime()) /
-					(1000 * 60 * 60 * 24)
-			);
-		})();
+		const lastWorkoutDate =
+			recentWorkoutRaw.reduce<string | null>(
+				(latestDate, workout) =>
+					!latestDate || workout.date > latestDate ? workout.date : latestDate,
+				null
+			) ?? null;
+		const daysSinceLastWorkout: number | null = lastWorkoutDate
+			? calendarDaysBetween(lastWorkoutDate, today)
+			: null;
 
 		// 9. Today's agenda summary
 		const todayEntries = agendaEntriesForTrend
@@ -630,11 +616,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const todayAgendaSummary = {
 			completed: todayEntries.filter((e) => e.completed).length,
 			total: todayEntries.length,
-			items: todayEntries.map((e) => ({ title: e.title, completed: e.completed }))
+			items: todayEntries.map((e) => ({ id: e.id, title: e.title, completed: e.completed }))
 		};
 
 		return {
-			todayLabel: appTodayLabelFormatter.format(new Date()),
+			todayLabel: formatTodayLabel(),
 			stats: {
 				journalThisWeek: sumCountsByDate(journalCountByDate, thisWeekDates),
 				journalLastWeek: sumCountsByDate(journalCountByDate, lastWeekDates),
@@ -659,7 +645,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		logger.error('Failed to load dashboard data', { error });
 
 		return {
-			todayLabel: appTodayLabelFormatter.format(new Date()),
+			todayLabel: formatTodayLabel(),
 			stats: {
 				journalThisWeek: 0,
 				journalLastWeek: 0,
@@ -692,7 +678,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			todayAgendaSummary: {
 				completed: 0,
 				total: 0,
-				items: [] as { title: string; completed: boolean }[]
+				items: [] as { id: string; title: string; completed: boolean }[]
 			}
 		};
 	}

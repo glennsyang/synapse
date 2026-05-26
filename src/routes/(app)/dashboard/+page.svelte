@@ -200,7 +200,7 @@
 						></div>
 					</div>
 					<div class="space-y-2.5">
-						{#each data.todayAgendaSummary.items as item (item.title)}
+						{#each data.todayAgendaSummary.items as item (item.id)}
 							<div class="flex items-center gap-2.5">
 								{#if item.completed}
 									<CircleCheck class="size-4 shrink-0 text-[oklch(var(--color-green))]" />
