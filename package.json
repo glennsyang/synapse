@@ -93,7 +93,8 @@
 	},
 	"lint-staged": {
 		"*.(js|ts|svelte)": [
-			"npm run fmt"
+			"npm run fmt",
+			"npm run lint"
 		],
 		"*.svelte": [
 			"svelte-check --threshold error"
