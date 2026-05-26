@@ -97,7 +97,7 @@ class Logger {
 					)
 				);
 			} catch {
-				errorPayload.error = String(error);
+				errorPayload.error = JSON.stringify(error);
 			}
 		}
 

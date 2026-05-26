@@ -548,7 +548,10 @@ function buildAgendaItemStats(
 				titleDate: entry.date,
 				last4: { total: 0, completed: 0 },
 				prev4: { total: 0, completed: 0 },
-				dow: { total: new Array<number>(7).fill(0), completed: new Array<number>(7).fill(0) }
+				dow: {
+					total: Array.from<number>({ length: 7 }),
+					completed: Array.from<number>({ length: 7 })
+				}
 			};
 			itemBuckets.set(groupKey, bucket);
 		}

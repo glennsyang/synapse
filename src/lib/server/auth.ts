@@ -66,7 +66,7 @@ export const auth = betterAuth({
 		},
 		onPasswordReset: async ({ user }) => {
 			logger.debug('🔐 Password reset completed', { userId: user.id });
-			sendAuthAlerts(
+			void sendAuthAlerts(
 				`Password reset completed for ${user.email}`,
 				'Synapse - Password Reset Completed',
 				2

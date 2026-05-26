@@ -19,7 +19,9 @@ export default defineConfig({
 		'!**/.env.example',
 		'!**/.env.test',
 		'**/*.db',
-		'src/lib/components/ui/**'
+		'src/lib/components/ui/**',
+		'src/lib/index.ts',
+		'**.test.ts'
 	],
 	options: {
 		typeAware: true,
