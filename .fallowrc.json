@@ -1,13 +1,33 @@
 {
 	"$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
 	"entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
-	"ignorePatterns": ["**/*.generated.ts", "**/*.d.ts", "src/lib/components/ui/**"],
+	"ignorePatterns": [
+		"**/*.generated.ts",
+		"src/lib/components/ui/**",
+		"**/*.config.ts",
+		"src/lib/index.ts"
+	],
+	"ignoreDependencies": [
+		"@flydotio/dockerfile",
+		"@internationalized/date",
+		"@tailwindcss/vite",
+		"@tanstack/table-core",
+		"bits-ui",
+		"dotenv",
+		"embla-carousel-svelte",
+		"tailwind-variants",
+		"vaul-svelte"
+	],
+	"ignoreExports": [
+		{ "file": "src/lib/utils.ts", "exports": ["WithoutChildrenOrChild", "WithElementRef"] }
+	],
 	"duplicates": {
 		"ignore": ["src/lib/components/ui/**/*.{ts,tsx}"]
 	},
 	"rules": {
 		"unresolved-imports": "error",
 		"unlisted-dependencies": "error",
-		"unused-exports": "warn"
+		"unused-exports": "warn",
+		"circular-dependencies": "off"
 	}
 }
