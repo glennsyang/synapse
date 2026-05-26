@@ -161,7 +161,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 				noVisits: [] as string[]
 			},
 			upcomingVisits: [] as { dayLabel: string; names: string[]; isToday: boolean }[],
-			recentActivity: [] as ActivityItem[]
+			recentActivity: [] as ActivityItem[],
+			agendaItemStats: [] as {
+				title: string;
+				completionPct: number;
+				prevCompletionPct: number;
+				dowCompletionPct: number[];
+				totalDays: number;
+			}[],
+			daysSinceLastWorkout: null as number | null,
+			todayAgendaSummary: {
+				completed: 0,
+				total: 0,
+				items: [] as { title: string; completed: boolean }[]
+			}
 		};
 	}
 
@@ -268,9 +281,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 					routine: true
 				}
 			}),
-			// Agenda entries for 6-week completion trend
+			// Agenda entries for 8-week completion trend + per-item scorecard
 			db
-				.select({ date: dailyAgendaEntries.date, completed: dailyAgendaEntries.completed })
+				.select({
+					date: dailyAgendaEntries.date,
+					completed: dailyAgendaEntries.completed,
+					title: dailyAgendaEntries.title,
+					sortOrder: dailyAgendaEntries.sortOrder
+				})
 				.from(dailyAgendaEntries)
 				.where(
 					and(
@@ -528,6 +546,93 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
 			.slice(0, 10);
 
+		// 7. Agenda item stats — per-item completion rates + day-of-week patterns
+		const last4WeeksStart = addDaysToDateString(startOfThisWeekDate, -28);
+		type ItemBucket = {
+			last4: { total: number; completed: number };
+			prev4: { total: number; completed: number };
+			dow: { total: number[]; completed: number[] };
+		};
+		const itemBuckets = new Map<string, ItemBucket>();
+		for (const entry of agendaEntriesForTrend) {
+			const isLast4 = entry.date >= last4WeeksStart && entry.date < endOfThisWeekDate;
+			const isPrev4 = entry.date >= agenda8WeeksStart && entry.date < last4WeeksStart;
+			if (!isLast4 && !isPrev4) continue;
+			const dateParts = entry.date.split('-');
+			const dowIndex =
+				(new Date(
+					Number.parseInt(dateParts[0], 10),
+					Number.parseInt(dateParts[1], 10) - 1,
+					Number.parseInt(dateParts[2], 10)
+				).getDay() +
+					6) %
+				7;
+			if (!itemBuckets.has(entry.title)) {
+				itemBuckets.set(entry.title, {
+					last4: { total: 0, completed: 0 },
+					prev4: { total: 0, completed: 0 },
+					dow: { total: new Array<number>(7).fill(0), completed: new Array<number>(7).fill(0) }
+				});
+			}
+			const bucket = itemBuckets.get(entry.title);
+			if (bucket) {
+				if (isLast4) {
+					bucket.last4.total++;
+					if (entry.completed) bucket.last4.completed++;
+				} else {
+					bucket.prev4.total++;
+					if (entry.completed) bucket.prev4.completed++;
+				}
+				bucket.dow.total[dowIndex]++;
+				if (entry.completed) bucket.dow.completed[dowIndex]++;
+			}
+		}
+		const agendaItemStats = Array.from(itemBuckets.entries())
+			.filter(([, b]) => b.last4.total + b.prev4.total >= 7)
+			.map(([title, b]) => ({
+				title,
+				completionPct:
+					b.last4.total > 0 ? Math.round((b.last4.completed / b.last4.total) * 100) : 0,
+				prevCompletionPct:
+					b.prev4.total > 0 ? Math.round((b.prev4.completed / b.prev4.total) * 100) : 0,
+				dowCompletionPct: b.dow.total.map((tot, i) =>
+					tot > 0 ? Math.round((b.dow.completed[i] / tot) * 100) : -1
+				),
+				totalDays: b.last4.total + b.prev4.total
+			}))
+			.sort((a, b) => a.completionPct - b.completionPct);
+
+		// 8. Days since last workout
+		const lastWorkoutDate = recentWorkoutRaw[0]?.date ?? null;
+		const daysSinceLastWorkout: number | null = (() => {
+			if (!lastWorkoutDate) return null;
+			const todayParts = today.split('-');
+			const workoutParts = lastWorkoutDate.split('-');
+			return Math.round(
+				(new Date(
+					Number.parseInt(todayParts[0], 10),
+					Number.parseInt(todayParts[1], 10) - 1,
+					Number.parseInt(todayParts[2], 10)
+				).getTime() -
+					new Date(
+						Number.parseInt(workoutParts[0], 10),
+						Number.parseInt(workoutParts[1], 10) - 1,
+						Number.parseInt(workoutParts[2], 10)
+					).getTime()) /
+					(1000 * 60 * 60 * 24)
+			);
+		})();
+
+		// 9. Today's agenda summary
+		const todayEntries = agendaEntriesForTrend
+			.filter((e) => e.date === today)
+			.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+		const todayAgendaSummary = {
+			completed: todayEntries.filter((e) => e.completed).length,
+			total: todayEntries.length,
+			items: todayEntries.map((e) => ({ title: e.title, completed: e.completed }))
+		};
+
 		return {
 			todayLabel: appTodayLabelFormatter.format(new Date()),
 			stats: {
@@ -545,7 +650,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 			visitHealthCounts,
 			visitHealthNames,
 			upcomingVisits,
-			recentActivity
+			recentActivity,
+			agendaItemStats,
+			daysSinceLastWorkout,
+			todayAgendaSummary
 		};
 	} catch (error) {
 		logger.error('Failed to load dashboard data', { error });
@@ -572,7 +680,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 				noVisits: [] as string[]
 			},
 			upcomingVisits: [] as { dayLabel: string; names: string[]; isToday: boolean }[],
-			recentActivity: [] as ActivityItem[]
+			recentActivity: [] as ActivityItem[],
+			agendaItemStats: [] as {
+				title: string;
+				completionPct: number;
+				prevCompletionPct: number;
+				dowCompletionPct: number[];
+				totalDays: number;
+			}[],
+			daysSinceLastWorkout: null as number | null,
+			todayAgendaSummary: {
+				completed: 0,
+				total: 0,
+				items: [] as { title: string; completed: boolean }[]
+			}
 		};
 	}
 };

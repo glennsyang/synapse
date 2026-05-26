@@ -2,6 +2,7 @@
 	import {
 		Book,
 		CalendarCheck,
+		Circle,
 		CircleAlert,
 		CircleCheck,
 		Dumbbell,
@@ -13,6 +14,7 @@
 
 	import { navigating } from '$app/state';
 	import AgendaCompletionChart from '$lib/components/dashboard/AgendaCompletionChart.svelte';
+	import AgendaItemScorecard from '$lib/components/dashboard/AgendaItemScorecard.svelte';
 	import VisitHealthPanel from '$lib/components/dashboard/VisitHealthPanel.svelte';
 	import WorkoutTypeChart from '$lib/components/dashboard/WorkoutTypeChart.svelte';
 	import DashboardSkeleton from '$lib/components/skeletons/DashboardSkeleton.svelte';
@@ -34,6 +36,34 @@
 	);
 	const taskDelta = $derived(
 		trendDelta(data.taskStats.completedThisWeek, data.taskStats.completedLastWeek)
+	);
+
+	const workoutGapLabel = $derived(
+		data.daysSinceLastWorkout === null
+			? 'No workouts logged yet'
+			: data.daysSinceLastWorkout === 0
+				? 'You worked out today!'
+				: data.daysSinceLastWorkout === 1
+					? 'Last workout: yesterday'
+					: `Last workout: ${data.daysSinceLastWorkout} days ago`
+	);
+
+	const workoutGapClass = $derived(
+		data.daysSinceLastWorkout === null
+			? 'text-muted-foreground'
+			: data.daysSinceLastWorkout === 0
+				? 'text-[oklch(var(--color-green))]'
+				: data.daysSinceLastWorkout <= 3
+					? 'text-muted-foreground'
+					: data.daysSinceLastWorkout <= 6
+						? 'text-amber-500'
+						: 'text-destructive'
+	);
+
+	const agendaProgressPct = $derived(
+		data.todayAgendaSummary.total > 0
+			? Math.round((data.todayAgendaSummary.completed / data.todayAgendaSummary.total) * 100)
+			: 0
 	);
 
 	const activityConfig = {
@@ -105,42 +135,12 @@
 			{/if}
 		</div>
 
-		<!-- ── Command Strip: 3 Stat Cards ───────────────────────────────────── -->
-		<div class="grid gap-4 sm:grid-cols-3">
-			<!-- Journal -->
-			<a
-				href="/journal"
-				class="group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
-			>
-				<div class="flex items-start justify-between">
-					<div class="rounded-xl bg-[oklch(var(--color-blue)/0.15)] p-2.5">
-						<Book class="size-5 text-[oklch(var(--color-blue))]" />
-					</div>
-					{#if journalDelta !== null}
-						<span
-							class="rounded-full px-2 py-0.5 text-xs font-semibold {journalDelta >= 0
-								? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
-								: 'bg-destructive/10 text-destructive'}"
-						>
-							{journalDelta >= 0 ? '+' : ''}{journalDelta}%
-						</span>
-					{/if}
-				</div>
-				<div class="mt-4">
-					<div class="font-display text-4xl font-bold tabular-nums leading-none">
-						{data.stats.journalThisWeek}
-					</div>
-					<p class="mt-1 text-sm text-muted-foreground">Journal entries this week</p>
-				</div>
-				<div
-					class="absolute inset-x-0 bottom-0 h-0.5 bg-[oklch(var(--color-blue))] opacity-0 transition-opacity group-hover:opacity-100"
-				></div>
-			</a>
-
-			<!-- Workouts -->
+		<!-- ── Primary Row: Workout Hero + Today's Agenda ───────────────────── -->
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-5">
+			<!-- Workout Hero Card -->
 			<a
 				href="/fitness"
-				class="group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
+				class="group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md md:col-span-3"
 			>
 				<div class="flex items-start justify-between">
 					<div class="rounded-xl bg-[oklch(var(--color-green)/0.15)] p-2.5">
@@ -157,49 +157,72 @@
 					{/if}
 				</div>
 				<div class="mt-4">
-					<div class="font-display text-4xl font-bold tabular-nums leading-none">
+					<div class="font-display text-5xl font-bold tabular-nums leading-none">
 						{data.stats.workoutsThisWeek}
 					</div>
-					<p class="mt-1 text-sm text-muted-foreground">Workouts this week</p>
+					<p class="mt-1.5 text-sm text-muted-foreground">Workouts this week</p>
+					<p class="mt-3 text-sm font-medium {workoutGapClass}">{workoutGapLabel}</p>
 				</div>
 				<div
 					class="absolute inset-x-0 bottom-0 h-0.5 bg-[oklch(var(--color-green))] opacity-0 transition-opacity group-hover:opacity-100"
 				></div>
 			</a>
 
-			<!-- Meditation -->
-			<a
-				href="/meditation"
-				class="group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
-			>
-				<div class="flex items-start justify-between">
-					<div class="rounded-xl bg-[oklch(var(--color-purple)/0.15)] p-2.5">
-						<Heart class="size-5 text-[oklch(var(--color-purple))]" />
+			<!-- Today's Agenda Summary -->
+			<div class="rounded-2xl border bg-card p-5 shadow-xs md:col-span-2">
+				<div class="mb-3 flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
+							<CalendarCheck class="size-4 text-[oklch(var(--color-orange))]" />
+						</div>
+						<div>
+							<h3 class="font-display text-sm font-semibold">Today's Agenda</h3>
+							<p class="text-xs text-muted-foreground">
+								{data.todayAgendaSummary.completed}
+								of {data.todayAgendaSummary.total} done
+							</p>
+						</div>
 					</div>
-					{#if meditationDelta !== null}
-						<span
-							class="rounded-full px-2 py-0.5 text-xs font-semibold {meditationDelta >= 0
-								? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
-								: 'bg-destructive/10 text-destructive'}"
-						>
-							{meditationDelta >= 0 ? '+' : ''}{meditationDelta}%
-						</span>
-					{/if}
+					<span
+						class="font-display text-2xl font-bold tabular-nums text-[oklch(var(--color-orange))]"
+					>
+						{agendaProgressPct}%
+					</span>
 				</div>
-				<div class="mt-4">
-					<div class="font-display text-4xl font-bold tabular-nums leading-none">
-						{data.stats.meditationThisWeek}
+
+				{#if data.todayAgendaSummary.total === 0}
+					<p class="py-4 text-sm text-muted-foreground">No agenda items for today.</p>
+				{:else}
+					<div class="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+						<div
+							class="h-full rounded-full bg-[oklch(var(--color-orange))] transition-all duration-500"
+							style="width: {agendaProgressPct}%"
+						></div>
 					</div>
-					<p class="mt-1 text-sm text-muted-foreground">Meditation sessions this week</p>
-				</div>
-				<div
-					class="absolute inset-x-0 bottom-0 h-0.5 bg-[oklch(var(--color-purple))] opacity-0 transition-opacity group-hover:opacity-100"
-				></div>
-			</a>
+					<div class="space-y-2.5">
+						{#each data.todayAgendaSummary.items as item (item.title)}
+							<div class="flex items-center gap-2.5">
+								{#if item.completed}
+									<CircleCheck class="size-4 shrink-0 text-[oklch(var(--color-green))]" />
+								{:else}
+									<Circle class="size-4 shrink-0 text-muted-foreground/40" />
+								{/if}
+								<span
+									class="text-sm {item.completed
+										? 'text-muted-foreground line-through'
+										: 'text-foreground'}"
+								>
+									{item.title}
+								</span>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
 		</div>
 
-		<!-- ── Analytics Row 1: Tasks ─────────────────────────────────────────── -->
-		<div class="grid gap-4 md:grid-cols-2">
+		<!-- ── Agenda Analytics ───────────────────────────────────────────────── -->
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			<!-- Agenda Completion Trend -->
 			<div class="rounded-2xl border bg-card p-5 shadow-xs">
 				<div class="mb-4 flex items-center gap-2">
@@ -212,6 +235,92 @@
 					</div>
 				</div>
 				<AgendaCompletionChart trend={data.agendaCompletionTrend} />
+			</div>
+
+			<!-- Agenda Item Scorecard -->
+			<div class="rounded-2xl border bg-card p-5 shadow-xs">
+				<div class="mb-4 flex items-center gap-2">
+					<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
+						<CalendarCheck class="size-4 text-[oklch(var(--color-orange))]" />
+					</div>
+					<div>
+						<h3 class="font-display text-sm font-semibold">Agenda Item Breakdown</h3>
+						<p class="text-xs text-muted-foreground">4-week completion · worst first</p>
+					</div>
+				</div>
+				<AgendaItemScorecard items={data.agendaItemStats} />
+			</div>
+		</div>
+
+		<!-- ── Secondary Strip: Journal + Meditation ─────────────────────────── -->
+		<div class="grid grid-cols-2 gap-4">
+			<a
+				href="/journal"
+				class="group flex items-center gap-3 rounded-2xl border bg-card/60 px-4 py-3.5 transition-colors hover:bg-card"
+			>
+				<div class="shrink-0 rounded-lg bg-[oklch(var(--color-blue)/0.15)] p-2">
+					<Book class="size-4 text-[oklch(var(--color-blue))]" />
+				</div>
+				<div class="min-w-0 flex-1">
+					<div class="flex items-center gap-2">
+						<span class="font-display text-xl font-bold tabular-nums">
+							{data.stats.journalThisWeek}
+						</span>
+						{#if journalDelta !== null}
+							<span
+								class="rounded-full px-1.5 py-0.5 text-xs font-semibold {journalDelta >= 0
+									? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
+									: 'bg-destructive/10 text-destructive'}"
+							>
+								{journalDelta >= 0 ? '+' : ''}{journalDelta}%
+							</span>
+						{/if}
+					</div>
+					<p class="truncate text-xs text-muted-foreground">Journal entries this week</p>
+				</div>
+			</a>
+
+			<a
+				href="/meditation"
+				class="group flex items-center gap-3 rounded-2xl border bg-card/60 px-4 py-3.5 transition-colors hover:bg-card"
+			>
+				<div class="shrink-0 rounded-lg bg-[oklch(var(--color-purple)/0.15)] p-2">
+					<Heart class="size-4 text-[oklch(var(--color-purple))]" />
+				</div>
+				<div class="min-w-0 flex-1">
+					<div class="flex items-center gap-2">
+						<span class="font-display text-xl font-bold tabular-nums">
+							{data.stats.meditationThisWeek}
+						</span>
+						{#if meditationDelta !== null}
+							<span
+								class="rounded-full px-1.5 py-0.5 text-xs font-semibold {meditationDelta >= 0
+									? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
+									: 'bg-destructive/10 text-destructive'}"
+							>
+								{meditationDelta >= 0 ? '+' : ''}{meditationDelta}%
+							</span>
+						{/if}
+					</div>
+					<p class="truncate text-xs text-muted-foreground">Meditation sessions this week</p>
+				</div>
+			</a>
+		</div>
+
+		<!-- ── Fitness + Tasks ────────────────────────────────────────────────── -->
+		<div class="grid gap-4 md:grid-cols-2">
+			<!-- Workout Type Breakdown -->
+			<div class="rounded-2xl border bg-card p-5 shadow-xs">
+				<div class="mb-4 flex items-center gap-2">
+					<div class="rounded-lg bg-[oklch(var(--color-green)/0.15)] p-1.5">
+						<Dumbbell class="size-4 text-[oklch(var(--color-green))]" />
+					</div>
+					<div>
+						<h3 class="font-display text-sm font-semibold">Workout Breakdown</h3>
+						<p class="text-xs text-muted-foreground">By type, last 4 weeks</p>
+					</div>
+				</div>
+				<WorkoutTypeChart breakdown={data.workoutTypeBreakdown} />
 			</div>
 
 			<!-- Task Stats -->
@@ -278,41 +387,24 @@
 			</div>
 		</div>
 
-		<!-- ── Analytics Row 2: Fitness + Visits ─────────────────────────────── -->
-		<div class="grid gap-4 md:grid-cols-2">
-			<!-- Workout Type Breakdown -->
-			<div class="rounded-2xl border bg-card p-5 shadow-xs">
-				<div class="mb-4 flex items-center gap-2">
-					<div class="rounded-lg bg-[oklch(var(--color-green)/0.15)] p-1.5">
-						<Dumbbell class="size-4 text-[oklch(var(--color-green))]" />
-					</div>
-					<div>
-						<h3 class="font-display text-sm font-semibold">Workout Breakdown</h3>
-						<p class="text-xs text-muted-foreground">By type, last 4 weeks</p>
-					</div>
+		<!-- ── Visit Health ───────────────────────────────────────────────────── -->
+		<div class="rounded-2xl border bg-card p-5 shadow-xs">
+			<div class="mb-4 flex items-center gap-2">
+				<div class="rounded-lg bg-[oklch(var(--color-pink)/0.15)] p-1.5">
+					<CalendarCheck class="size-4 text-[oklch(var(--color-pink))]" />
 				</div>
-				<WorkoutTypeChart breakdown={data.workoutTypeBreakdown} />
-			</div>
-
-			<!-- Visit Health -->
-			<div class="rounded-2xl border bg-card p-5 shadow-xs">
-				<div class="mb-4 flex items-center gap-2">
-					<div class="rounded-lg bg-[oklch(var(--color-pink)/0.15)] p-1.5">
-						<CalendarCheck class="size-4 text-[oklch(var(--color-pink))]" />
-					</div>
-					<div>
-						<h3 class="font-display text-sm font-semibold">Visit Health</h3>
-						<p class="text-xs text-muted-foreground">
-							<a href="/visits" class="hover:underline">View all →</a>
-						</p>
-					</div>
+				<div>
+					<h3 class="font-display text-sm font-semibold">Visit Health</h3>
+					<p class="text-xs text-muted-foreground">
+						<a href="/visits" class="hover:underline">View all →</a>
+					</p>
 				</div>
-				<VisitHealthPanel
-					counts={data.visitHealthCounts}
-					names={data.visitHealthNames}
-					upcomingVisits={data.upcomingVisits}
-				/>
 			</div>
+			<VisitHealthPanel
+				counts={data.visitHealthCounts}
+				names={data.visitHealthNames}
+				upcomingVisits={data.upcomingVisits}
+			/>
 		</div>
 
 		<!-- ── Recent Activity Feed ───────────────────────────────────────────── -->
