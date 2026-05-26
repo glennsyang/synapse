@@ -51,6 +51,7 @@
 				x="date"
 				xScale={scaleUtc()}
 				yDomain={[0, 250]}
+				y="weight"
 				series={[
 					{
 						key: 'weight',
@@ -60,17 +61,16 @@
 				]}
 				props={{
 					area: {
-            curve: curveNatural,
-            fillOpacity: 0.4,
-            line: { class: 'stroke-1' },
-            motion: 'tween',
-          },
+						curve: curveNatural,
+						fillOpacity: 0.4,
+						line: { class: 'stroke-1' },
+						motion: 'tween',
+					},
 					xAxis: {
 						format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 					},
 					yAxis: { ticks: yAxisTicks }
 				}}
-				legend
 			>
 				{#snippet tooltip()}
 					<Chart.Tooltip

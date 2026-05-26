@@ -63,11 +63,7 @@ const STATUS_KEY_MAP: Record<string, VisitHealthBucket> = {
 function getDayLabel(date: string, today: string, tomorrow: string): string {
 	if (date === today) return 'Today';
 	if (date === tomorrow) return 'Tomorrow';
-	return parseLocalDateString(date).toLocaleDateString('en-US', {
-		weekday: 'short',
-		month: 'short',
-		day: 'numeric'
-	});
+	return formatDateMedium(date);
 }
 
 type UpcomingVisitRow = { personId: string; personName: string; date: string };
@@ -99,7 +95,7 @@ function buildUpcomingVisits(
 		.sort(([a], [b]) => a.localeCompare(b))
 		.map(([date, inner]) => ({
 			dayLabel: getDayLabel(date, today, tomorrow),
-			names: Array.from(inner.values()),
+			names: Array.from(inner.values()).sort((a, b) => a.localeCompare(b)),
 			isToday: date === today
 		}));
 }
