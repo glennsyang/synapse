@@ -2,7 +2,7 @@
 	import { TrendingDown, TrendingUp } from '@lucide/svelte/icons';
 	import { scaleUtc } from 'd3-scale';
 	import { curveNatural } from 'd3-shape';
-	import { LineChart } from 'layerchart';
+	import { AreaChart } from 'layerchart';
 
 	import * as Card from '$lib/components/ui/card';
 	import * as Chart from '$lib/components/ui/chart/index.js';
@@ -32,8 +32,10 @@
 	);
 
 	const chartConfig = {
-		weight: { label: 'Weight', color: 'var(--chart-1)' }
+		weight: { label: 'Weight', color: 'var(--chart-2)' }
 	} satisfies Chart.ChartConfig;
+
+	const yAxisTicks = $derived([0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240]);
 </script>
 
 <Card.Root>
@@ -43,12 +45,12 @@
 	</Card.Header>
 	<Card.Content>
 		<Chart.Container config={chartConfig}>
-			<LineChart
-				points={{ r: 4 }}
+			<AreaChart
+				points={{ r: 5 }}
 				data={chartData}
 				x="date"
 				xScale={scaleUtc()}
-				axis="x"
+				yDomain={[0, 250]}
 				series={[
 					{
 						key: 'weight',
@@ -57,17 +59,18 @@
 					}
 				]}
 				props={{
-					spline: { curve: curveNatural, motion: 'tween', strokeWidth: 2 },
-					highlight: {
-						points: {
-							motion: 'none',
-							r: 6
-						}
-					},
+					area: {
+            curve: curveNatural,
+            fillOpacity: 0.4,
+            line: { class: "stroke-1" },
+            motion: "tween",
+          },
 					xAxis: {
 						format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-					}
+					},
+					yAxis: { ticks: yAxisTicks }
 				}}
+				legend
 			>
 				{#snippet tooltip()}
 					<Chart.Tooltip
@@ -77,10 +80,10 @@
 								day: 'numeric'
 							});
 						}}
-						indicator="line"
+						indicator="dot"
 					/>
 				{/snippet}
-			</LineChart>
+			</AreaChart>
 		</Chart.Container>
 	</Card.Content>
 	<Card.Footer>

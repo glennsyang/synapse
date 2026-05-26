@@ -16,7 +16,15 @@
 		noVisits: string[];
 	}
 
-	let { counts, names }: { counts: VisitHealthCounts; names: VisitHealthNames } = $props();
+	let {
+		counts,
+		names,
+		upcomingVisits
+	}: {
+		counts: VisitHealthCounts;
+		names: VisitHealthNames;
+		upcomingVisits: { dayLabel: string; names: string[]; isToday: boolean }[];
+	} = $props();
 
 	const stats = $derived([
 		{
@@ -110,5 +118,33 @@
 				</Tooltip.Root>
 			{/each}
 		</div>
+
+		{#if upcomingVisits.length > 0}
+			<div class="mt-1 border-t pt-3">
+				<p class="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+					Scheduled
+				</p>
+				<div class="space-y-1.5">
+					{#each upcomingVisits as day (day.dayLabel)}
+						<div class="flex items-start gap-2 text-xs">
+							<span
+								class="mt-0.5 size-1.5 shrink-0 rounded-full {day.isToday
+									? 'bg-[oklch(var(--color-pink))]'
+									: 'bg-muted-foreground/40'}"
+							></span>
+							<div>
+								<span
+									class="font-medium {day.isToday
+										? 'text-[oklch(var(--color-pink))]'
+										: ''}"
+									>{day.dayLabel}</span
+								>
+								<span class="ml-1 text-muted-foreground">{day.names.join(', ')}</span>
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
 	</div>
 </Tooltip.Provider>

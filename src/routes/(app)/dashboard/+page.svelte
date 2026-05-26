@@ -307,7 +307,11 @@
 						</p>
 					</div>
 				</div>
-				<VisitHealthPanel counts={data.visitHealthCounts} names={data.visitHealthNames} />
+				<VisitHealthPanel
+					counts={data.visitHealthCounts}
+					names={data.visitHealthNames}
+					upcomingVisits={data.upcomingVisits}
+				/>
 			</div>
 		</div>
 

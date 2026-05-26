@@ -60,6 +60,53 @@ const STATUS_KEY_MAP: Record<string, VisitHealthBucket> = {
 	none: 'noVisits'
 };
 
+function getDayLabel(date: string, today: string, tomorrow: string): string {
+	if (date === today) return 'Today';
+	if (date === tomorrow) return 'Tomorrow';
+	return parseLocalDateString(date).toLocaleDateString('en-US', {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric'
+	});
+}
+
+type UpcomingVisitRow = { personId: string; personName: string; date: string };
+type UpcomingFollowUpRow = { personId: string; personName: string; followUpDate: string | null };
+
+function buildUpcomingVisits(
+	byDateRaw: UpcomingVisitRow[],
+	byFollowUpRaw: UpcomingFollowUpRow[],
+	today: string
+): { dayLabel: string; names: string[]; isToday: boolean }[] {
+	const tomorrow = addDaysToDateString(today, 1);
+	const map = new Map<string, { personId: string; personName: string }[]>();
+
+	for (const v of byDateRaw) {
+		const existing = map.get(v.date) ?? [];
+		if (!existing.some((e) => e.personId === v.personId)) {
+			existing.push({ personId: v.personId, personName: v.personName });
+		}
+		map.set(v.date, existing);
+	}
+
+	for (const v of byFollowUpRaw) {
+		if (!v.followUpDate) continue;
+		const existing = map.get(v.followUpDate) ?? [];
+		if (!existing.some((e) => e.personId === v.personId)) {
+			existing.push({ personId: v.personId, personName: v.personName });
+		}
+		map.set(v.followUpDate, existing);
+	}
+
+	return Array.from(map.entries())
+		.sort(([a], [b]) => a.localeCompare(b))
+		.map(([date, persons]) => ({
+			dayLabel: getDayLabel(date, today, tomorrow),
+			names: persons.map((p) => p.personName),
+			isToday: date === today
+		}));
+}
+
 function buildVisitHealth(
 	peopleRaw: { id: string; name: string; isExempt: boolean }[],
 	visitsMap: Map<string, { date: string; followUpDate: string | null }>,
@@ -120,6 +167,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				healthy: [] as string[],
 				noVisits: [] as string[]
 			},
+			upcomingVisits: [] as { dayLabel: string; names: string[]; isToday: boolean }[],
 			recentActivity: [] as ActivityItem[]
 		};
 	}
@@ -137,6 +185,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// Dates for new analytics
 	const agenda8WeeksStart = addDaysToDateString(startOfThisWeekDate, -49);
 	const workout4WeeksStart = addDaysToDateString(today, -28);
+	const upcomingEndDate = addDaysToDateString(today, 7);
 	// Buffered UTC range for task completion counts — app-local filtering happens in JS
 	const tasksCompletionRangeStartIso = `${addDaysToDateString(startOfLastWeekDate, -1)}T00:00:00.000Z`;
 	const tasksCompletionRangeEndIso = `${addDaysToDateString(endOfThisWeekDate, 1)}T00:00:00.000Z`;
@@ -160,7 +209,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 			allPeopleRaw,
 			allVisitsRaw,
 			recentTaskRaw,
-			recentVisitRaw
+			recentVisitRaw,
+			upcomingVisitsByDateRaw,
+			upcomingFollowUpsByDateRaw
 		] = await Promise.all([
 			db
 				.select({
@@ -306,7 +357,37 @@ export const load: PageServerLoad = async ({ locals }) => {
 				with: {
 					person: { columns: { name: true } }
 				}
-			})
+			}),
+			// Visits with a date falling today–today+7
+			db
+				.select({ personId: visits.personId, personName: people.name, date: visits.date })
+				.from(visits)
+				.innerJoin(people, and(eq(visits.personId, people.id), eq(people.isArchived, false)))
+				.where(
+					and(
+						eq(visits.userId, user.id),
+						gte(visits.date, today),
+						lte(visits.date, upcomingEndDate)
+					)
+				)
+				.orderBy(visits.date),
+			// Visits whose follow-up date falls today–today+7
+			db
+				.select({
+					personId: visits.personId,
+					personName: people.name,
+					followUpDate: visits.followUpDate
+				})
+				.from(visits)
+				.innerJoin(people, and(eq(visits.personId, people.id), eq(people.isArchived, false)))
+				.where(
+					and(
+						eq(visits.userId, user.id),
+						gte(visits.followUpDate, today),
+						lte(visits.followUpDate, upcomingEndDate)
+					)
+				)
+				.orderBy(visits.followUpDate)
 		]);
 
 		const journalCountByDate = new Map<string, number>();
@@ -388,7 +469,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 			today
 		);
 
-		// 5. Recent activity feed — merge all types, sort desc by timestamp, take top 10
+		// 5. Upcoming visits — today and next 7 days (by visit date or follow-up date)
+		const upcomingVisits = buildUpcomingVisits(
+			upcomingVisitsByDateRaw,
+			upcomingFollowUpsByDateRaw,
+			today
+		);
+
+		// 6. Recent activity feed — merge all types, sort desc by timestamp, take top 10
 		const recentActivity: ActivityItem[] = [
 			...recentJournalRaw.map((e) => ({
 				type: 'journal' as const,
@@ -463,6 +551,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			workoutTypeBreakdown,
 			visitHealthCounts,
 			visitHealthNames,
+			upcomingVisits,
 			recentActivity
 		};
 	} catch (error) {
@@ -489,6 +578,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				healthy: [] as string[],
 				noVisits: [] as string[]
 			},
+			upcomingVisits: [] as { dayLabel: string; names: string[]; isToday: boolean }[],
 			recentActivity: [] as ActivityItem[]
 		};
 	}
