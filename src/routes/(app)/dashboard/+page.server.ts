@@ -394,7 +394,7 @@ type AgendaItemStat = {
 	completionPct: number;
 	prevCompletionPct: number;
 	dowCompletionPct: number[];
-	totalDays: number;
+	last4Days: number;
 };
 
 type AgendaRangeWindow = 'last4' | 'prev4';
@@ -612,7 +612,7 @@ function toAgendaItemStat(bucket: ItemBucket): AgendaItemStat {
 		completionPct: toPct(bucket.last4.completed, bucket.last4.total),
 		prevCompletionPct: toPct(bucket.prev4.completed, bucket.prev4.total),
 		dowCompletionPct: toDowCompletionPct(bucket),
-		totalDays: bucket.last4.total
+		last4Days: bucket.last4.total
 	};
 }
 
@@ -686,7 +686,7 @@ function emptyDashboardReturn() {
 			completionPct: number;
 			prevCompletionPct: number;
 			dowCompletionPct: number[];
-			totalDays: number;
+			last4Days: number;
 		}[],
 		daysSinceLastWorkout: null as number | null,
 		todayAgendaSummary: {
