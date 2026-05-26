@@ -41,11 +41,11 @@ import {
 	formatDateShort,
 	getDateRange,
 	getDateUrgencyStatus,
+	getISODayOfWeek,
 	getStartOfMonth,
 	getStartOfQuarter,
 	getStartOfWeek,
-	getTodayString,
-	parseLocalDateString
+	getTodayString
 } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import {
@@ -178,9 +178,8 @@ function buildWeekdayAvg(
 	const weekdayScores: number[][] = Array.from({ length: 7 }, () => []);
 
 	for (const entry of entries) {
-		const date = parseLocalDateString(entry.date);
-		// JS getDay(): 0=Sun…6=Sat → convert to Mon=0…Sun=6
-		const dayIndex = (date.getDay() + 6) % 7;
+		// Mon=0…Sun=6
+		const dayIndex = getISODayOfWeek(entry.date);
 		weekdayScores[dayIndex].push(getMoodScore(entry.mood));
 	}
 

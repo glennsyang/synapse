@@ -1,4 +1,4 @@
-import { getTodayString } from '$lib/utils/date';
+import { calendarDaysBetween, getTodayString } from '$lib/utils/date';
 
 /**
  * Visit status types
@@ -26,16 +26,6 @@ export interface PersonWithStatus {
 }
 
 /**
- * Calculate days between two dates
- */
-function daysBetween(date1: Date, date2: Date): number {
-	const MS_PER_DAY = 1000 * 60 * 60 * 24;
-	const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
-	const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
-	return Math.floor((utc2 - utc1) / MS_PER_DAY);
-}
-
-/**
  * Calculate visit status based on days since last visit
  * - No visits: 'none'
  * - 0–<9 months (0-273 days): 'green'
@@ -55,9 +45,7 @@ export function calculateVisitStatus(lastVisitDate: string | null): {
 		};
 	}
 
-	const today = new Date();
-	const visitDate = new Date(lastVisitDate);
-	const daysSince = daysBetween(visitDate, today);
+	const daysSince = calendarDaysBetween(lastVisitDate, getTodayString());
 
 	const NINE_MONTHS = 273; // ~9 months
 	const TWELVE_MONTHS = 365; // ~12 months
