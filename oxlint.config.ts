@@ -20,8 +20,7 @@ export default defineConfig({
 		'!**/.env.test',
 		'**/*.db',
 		'src/lib/components/ui/**',
-		'src/lib/index.ts',
-		'**.test.ts'
+		'src/lib/index.ts'
 	],
 	options: {
 		typeAware: true,

@@ -23,18 +23,25 @@ describe('moodLogSchema', () => {
 	it('rejects an invalid mood value', () => {
 		const result = moodLogSchema.safeParse({ ...validLog, mood: 'ecstatic' });
 		expect(result.success).toBe(false);
-		if (!result.success) {
-			expect(result.error.issues[0].message).toBe('Choose a valid mood');
-		}
+		expect(result).toMatchObject({
+			success: false,
+			error: {
+				issues: expect.arrayContaining([
+					expect.objectContaining({ message: 'Choose a valid mood' })
+				])
+			}
+		});
 	});
 
 	it('rejects a custom mood without a custom label', () => {
 		const result = moodLogSchema.safeParse({ ...validLog, mood: 'custom', customMood: '' });
 		expect(result.success).toBe(false);
-		if (!result.success) {
-			const paths = result.error.issues.map((e) => e.path.join('.'));
-			expect(paths).toContain('customMood');
-		}
+		expect(result).toMatchObject({
+			success: false,
+			error: {
+				issues: expect.arrayContaining([expect.objectContaining({ path: ['customMood'] })])
+			}
+		});
 	});
 
 	it('accepts a custom mood with a valid label', () => {

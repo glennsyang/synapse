@@ -30,7 +30,9 @@ describe('requireAuth', () => {
 	});
 
 	it('calls the handler and returns its result when the user is authenticated', async () => {
-		const handler = vi.fn().mockResolvedValue({ success: true });
+		const handler = vi
+			.fn<() => Promise<{ success: boolean }>>()
+			.mockResolvedValue({ success: true });
 		const wrapped = requireAuth(handler);
 
 		const result = await wrapped(makeEvent({ user: mockUser as App.Locals['user'] }));
@@ -65,13 +67,16 @@ describe('getUser', () => {
 
 	it('throws a redirect to /sign-in when the user is missing', () => {
 		const locals = makeLocals({ user: undefined });
-
-		expect(() => getUser(locals)).toThrow();
+		let caughtError: unknown;
 
 		try {
 			getUser(locals);
 		} catch (e) {
-			expect(isRedirect(e)).toBe(true);
+			caughtError = e;
 		}
+
+		expect(caughtError).toBeDefined();
+		expect(isRedirect(caughtError)).toBe(true);
+		expect((caughtError as { location: string }).location).toBe('/sign-in');
 	});
 });

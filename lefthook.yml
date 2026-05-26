@@ -1,9 +1,10 @@
+# lefthook.yml
+
 pre-commit:
-  parallel: true
   commands:
     # We delegate the pre-commit tasks to lint-staged
     lint-staged:
-      run: npx lint-staged
+      run: npx lint-staged --config lint-staged.config.ts
 
 pre-push:
   commands:

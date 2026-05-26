@@ -11,14 +11,14 @@
 
 	const DOW_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-	function _pctColorClass(pct: number): string {
+	function pctColorClass(pct: number): string {
 		if (pct < 0) return 'bg-muted text-muted-foreground';
 		if (pct >= 70) return 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]';
 		if (pct >= 40) return 'bg-amber-500/15 text-amber-600 dark:text-amber-400';
 		return 'bg-destructive/10 text-destructive';
 	}
 
-	function _dotColorClass(pct: number): string {
+	function dotColorClass(pct: number): string {
 		if (pct < 0) return 'bg-border/60'; // not scheduled
 		if (pct >= 70) return 'bg-[oklch(var(--color-green))]';
 		if (pct >= 40) return 'bg-amber-400';
@@ -57,7 +57,7 @@
 						</span>
 					</div>
 					<span
-						class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold {_pctColorClass(
+						class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold {pctColorClass(
 							item.completionPct
 						)}"
 					>
@@ -69,7 +69,7 @@
 					{#each item.dowCompletionPct as pct, i (i)}
 						<div class="flex flex-col items-center gap-0.5">
 							<div
-								class="size-2.5 rounded-full {_dotColorClass(pct)}"
+								class="size-2.5 rounded-full {dotColorClass(pct)}"
 								title={dotTitle(pct, DOW_LABELS[i] ?? '')}
 							></div>
 							<span class="text-muted-foreground/60 text-[9px] leading-none">{DOW_LABELS[i]}</span>
