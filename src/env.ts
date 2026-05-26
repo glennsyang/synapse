@@ -42,6 +42,18 @@ const ENV_FALLBACKS = {
 	NODE_ENV: 'development'
 } as const;
 
+function assertProductionVar(name: string, value: string | undefined, fallback: string): string {
+	if (!value) {
+		console.error(`❌ CRITICAL: ${name} is required in production`);
+		process.exit(1);
+	}
+	if (value === fallback) {
+		console.error(`❌ CRITICAL: Cannot use dummy ${name} in production`);
+		process.exit(1);
+	}
+	return value;
+}
+
 /**
  * Get environment variables with automatic fallback to build-time defaults.
  * This is the single source of truth for accessing environment variables.
@@ -73,43 +85,22 @@ export function getEnv() {
 		reminderAlertsUrl = env.REMINDER_ALERTS_URL || ENV_FALLBACKS.REMINDER_ALERTS_URL;
 	} else {
 		// In production: require real values, no fallbacks
-		if (!env.BETTER_AUTH_SECRET) {
-			console.error('❌ CRITICAL: BETTER_AUTH_SECRET is required in production');
-			process.exit(1);
-		}
-		if (env.BETTER_AUTH_SECRET === ENV_FALLBACKS.BETTER_AUTH_SECRET) {
-			console.error('❌ CRITICAL: Cannot use dummy BETTER_AUTH_SECRET in production');
-			process.exit(1);
-		}
-		if (!env.DATABASE_URL) {
-			console.error('❌ CRITICAL: DATABASE_URL is required in production');
-			process.exit(1);
-		}
-		if (env.DATABASE_URL === ENV_FALLBACKS.DATABASE_URL) {
-			console.error('❌ CRITICAL: Cannot use dummy DATABASE_URL in production');
-			process.exit(1);
-		}
-		if (!env.AUTH_ALERTS_URL) {
-			console.error('❌ CRITICAL: AUTH_ALERTS_URL is required in production');
-			process.exit(1);
-		}
-		if (env.AUTH_ALERTS_URL === ENV_FALLBACKS.AUTH_ALERTS_URL) {
-			console.error('❌ CRITICAL: Cannot use dummy AUTH_ALERTS_URL in production');
-			process.exit(1);
-		}
-		if (!env.REMINDER_ALERTS_URL) {
-			console.error('❌ CRITICAL: REMINDER_ALERTS_URL is required in production');
-			process.exit(1);
-		}
-		if (env.REMINDER_ALERTS_URL === ENV_FALLBACKS.REMINDER_ALERTS_URL) {
-			console.error('❌ CRITICAL: Cannot use dummy REMINDER_ALERTS_URL in production');
-			process.exit(1);
-		}
-
-		betterAuthSecret = env.BETTER_AUTH_SECRET;
-		databaseUrl = env.DATABASE_URL;
-		authAlertsUrl = env.AUTH_ALERTS_URL;
-		reminderAlertsUrl = env.REMINDER_ALERTS_URL;
+		betterAuthSecret = assertProductionVar(
+			'BETTER_AUTH_SECRET',
+			env.BETTER_AUTH_SECRET,
+			ENV_FALLBACKS.BETTER_AUTH_SECRET
+		);
+		databaseUrl = assertProductionVar('DATABASE_URL', env.DATABASE_URL, ENV_FALLBACKS.DATABASE_URL);
+		authAlertsUrl = assertProductionVar(
+			'AUTH_ALERTS_URL',
+			env.AUTH_ALERTS_URL,
+			ENV_FALLBACKS.AUTH_ALERTS_URL
+		);
+		reminderAlertsUrl = assertProductionVar(
+			'REMINDER_ALERTS_URL',
+			env.REMINDER_ALERTS_URL,
+			ENV_FALLBACKS.REMINDER_ALERTS_URL
+		);
 	}
 
 	return {

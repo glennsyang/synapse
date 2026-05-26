@@ -17,6 +17,13 @@ const appDateFormatter = new Intl.DateTimeFormat('en-US', {
 	day: '2-digit'
 });
 
+const appTodayLabelFormatter = new Intl.DateTimeFormat('en-US', {
+	timeZone: APP_TIME_ZONE,
+	weekday: 'long',
+	month: 'long',
+	day: 'numeric'
+});
+
 function formatDateParts(date: Date, formatter: Intl.DateTimeFormat): string {
 	const parts = formatter.formatToParts(date);
 	const year = parts.find((part) => part.type === 'year')?.value;
@@ -98,6 +105,36 @@ export function formatDateShort(dateString: string): string {
 		day: 'numeric',
 		year: 'numeric'
 	});
+}
+
+/**
+ * Format a YYYY-MM-DD date string as month and day only, with no year or weekday.
+ *
+ * @param dateString - Date in YYYY-MM-DD format
+ * @returns Formatted date string (e.g., "Feb 9")
+ *
+ * @example
+ * formatMonthDay('2026-02-09') // "Feb 9"
+ */
+export function formatMonthDay(dateString: string): string {
+	const date = parseLocalDate(dateString);
+	return date.toLocaleDateString('en-US', {
+		month: 'short',
+		day: 'numeric'
+	});
+}
+
+/**
+ * Format today's date as a long display label using the app timezone.
+ *
+ * @param referenceDate - Date to format (defaults to now)
+ * @returns Formatted label (e.g., "Monday, May 26")
+ *
+ * @example
+ * formatTodayLabel() // "Monday, May 26"
+ */
+export function formatTodayLabel(referenceDate: Date = new Date()): string {
+	return appTodayLabelFormatter.format(referenceDate);
 }
 
 /**
@@ -296,6 +333,40 @@ export function getDateUrgencyStatus(
 	}
 
 	return 'upcoming';
+}
+
+/**
+ * Return the ISO day-of-week index (0 = Monday, 6 = Sunday) for a YYYY-MM-DD date string.
+ * Uses UTC arithmetic to avoid server-timezone shifts.
+ *
+ * @param dateString - Date in YYYY-MM-DD format
+ * @returns Day index where 0 is Monday and 6 is Sunday
+ *
+ * @example
+ * getISODayOfWeek('2026-05-25') // 0 (Monday)
+ */
+export function getISODayOfWeek(dateString: string): number {
+	const [year, month, day] = dateString.split('-').map(Number);
+	return (new Date(Date.UTC(year, month - 1, day)).getUTCDay() + 6) % 7;
+}
+
+/**
+ * Calculate the number of calendar days between two YYYY-MM-DD date strings.
+ * Uses UTC arithmetic to avoid DST-induced off-by-one errors.
+ * Returns a negative number if endDate is before startDate.
+ *
+ * @param startDate - Earlier date in YYYY-MM-DD format
+ * @param endDate - Later date in YYYY-MM-DD format
+ * @returns Number of calendar days from startDate to endDate
+ *
+ * @example
+ * calendarDaysBetween('2026-05-20', '2026-05-26') // 6
+ */
+export function calendarDaysBetween(startDate: string, endDate: string): number {
+	const MS_PER_DAY = 1000 * 60 * 60 * 24;
+	const [sy, sm, sd] = startDate.split('-').map(Number);
+	const [ey, em, ed] = endDate.split('-').map(Number);
+	return Math.floor((Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / MS_PER_DAY);
 }
 
 export const daysOfWeek = [
