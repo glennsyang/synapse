@@ -19,11 +19,11 @@
 	let {
 		counts,
 		names,
-		upcomingVisits
+		upcomingVisits = []
 	}: {
 		counts: VisitHealthCounts;
 		names: VisitHealthNames;
-		upcomingVisits: { dayLabel: string; names: string[]; isToday: boolean }[];
+		upcomingVisits?: { dayLabel: string; names: string[]; isToday: boolean }[];
 	} = $props();
 
 	const stats = $derived([

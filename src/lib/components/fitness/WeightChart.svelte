@@ -62,8 +62,8 @@
 					area: {
             curve: curveNatural,
             fillOpacity: 0.4,
-            line: { class: "stroke-1" },
-            motion: "tween",
+            line: { class: 'stroke-1' },
+            motion: 'tween',
           },
 					xAxis: {
 						format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })

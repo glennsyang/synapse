@@ -79,30 +79,27 @@ function buildUpcomingVisits(
 	today: string
 ): { dayLabel: string; names: string[]; isToday: boolean }[] {
 	const tomorrow = addDaysToDateString(today, 1);
-	const map = new Map<string, { personId: string; personName: string }[]>();
+	// Outer key: date string. Inner key: personId → personName (O(1) dedup).
+	const map = new Map<string, Map<string, string>>();
 
 	for (const v of byDateRaw) {
-		const existing = map.get(v.date) ?? [];
-		if (!existing.some((e) => e.personId === v.personId)) {
-			existing.push({ personId: v.personId, personName: v.personName });
-		}
-		map.set(v.date, existing);
+		const inner = map.get(v.date) ?? new Map<string, string>();
+		inner.set(v.personId, v.personName);
+		map.set(v.date, inner);
 	}
 
 	for (const v of byFollowUpRaw) {
 		if (!v.followUpDate) continue;
-		const existing = map.get(v.followUpDate) ?? [];
-		if (!existing.some((e) => e.personId === v.personId)) {
-			existing.push({ personId: v.personId, personName: v.personName });
-		}
-		map.set(v.followUpDate, existing);
+		const inner = map.get(v.followUpDate) ?? new Map<string, string>();
+		inner.set(v.personId, v.personName);
+		map.set(v.followUpDate, inner);
 	}
 
 	return Array.from(map.entries())
 		.sort(([a], [b]) => a.localeCompare(b))
-		.map(([date, persons]) => ({
+		.map(([date, inner]) => ({
 			dayLabel: getDayLabel(date, today, tomorrow),
-			names: persons.map((p) => p.personName),
+			names: Array.from(inner.values()),
 			isToday: date === today
 		}));
 }
