@@ -4,7 +4,7 @@
 		completionPct: number;
 		prevCompletionPct: number;
 		dowCompletionPct: number[]; // index 0=Mon … 6=Sun, -1 = not scheduled that day
-		totalDays: number;
+		last4Days: number;
 	};
 
 	let { items }: { items: AgendaItemStat[] } = $props();
