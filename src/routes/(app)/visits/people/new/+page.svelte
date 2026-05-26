@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
-	import { zod4 } from 'sveltekit-superforms/adapters';
-
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { personSchema } from '$lib/schemas/visits';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
+	import { zod4 } from 'sveltekit-superforms/adapters';
 
 	import type { PageData } from './$types';
 
@@ -32,7 +31,7 @@
 <div class="container mx-auto max-w-2xl p-6">
 	<div class="mb-6">
 		<h1 class="text-3xl font-bold">Add Person</h1>
-		<p class="mt-1 text-muted-foreground">Add someone to track visits with</p>
+		<p class="text-muted-foreground mt-1">Add someone to track visits with</p>
 	</div>
 
 	<Card.Root>
@@ -51,14 +50,14 @@
 							aria-invalid={$errors.name ? 'true' : undefined}
 						/>
 						{#if $errors.name}
-							<p class="mt-1 text-sm text-destructive">{$errors.name}</p>
+							<p class="text-destructive mt-1 text-sm">{$errors.name}</p>
 						{/if}
 					</div>
 
 					<div class="flex gap-2">
 						<Button
 							type="submit"
-							class="text-white bg-pink-600 hover:bg-pink-700"
+							class="bg-pink-600 text-white hover:bg-pink-700"
 							disabled={$submitting}
 						>
 							{$submitting ? 'Adding...' : 'Add'}

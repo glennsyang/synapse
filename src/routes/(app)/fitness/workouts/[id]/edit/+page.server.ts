@@ -1,9 +1,3 @@
-import { fail, redirect } from '@sveltejs/kit';
-import { and, eq } from 'drizzle-orm';
-import { superValidate } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
-import { z } from 'zod';
-
 import {
 	deleteEntrySchema,
 	updateWorkoutSchema,
@@ -19,6 +13,11 @@ import { getDb } from '$lib/server/db';
 import { workoutExercises, workoutLogs } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
+import { fail, redirect } from '@sveltejs/kit';
+import { and, eq } from 'drizzle-orm';
+import { superValidate } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
+import { z } from 'zod';
 
 import type { Actions, PageServerLoad } from './$types';
 

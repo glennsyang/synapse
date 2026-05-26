@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { CircleAlert, CircleCheck, Lock, Pencil, Save, User, X } from '@lucide/svelte';
-	import { superForm } from 'sveltekit-superforms';
-
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Separator from '$lib/components/ui/separator';
+	import { CircleAlert, CircleCheck, Lock, Pencil, Save, User, X } from '@lucide/svelte';
+	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageProps } from './$types';
 
@@ -75,12 +74,12 @@
 	}
 </script>
 
-<svelte:head> <title>Profile</title> </svelte:head>
+<svelte:head><title>Profile</title></svelte:head>
 
 <div class="px-4 py-6 sm:px-0">
 	<div class="mb-8">
 		<h1 class="text-3xl font-bold tracking-tight">Profile</h1>
-		<p class="mt-2 text-muted-foreground">Manage your account information and security settings</p>
+		<p class="text-muted-foreground mt-2">Manage your account information and security settings</p>
 	</div>
 
 	<div class="space-y-6">
@@ -146,7 +145,7 @@
 								placeholder="Email cannot be changed"
 								class="bg-muted"
 							/>
-							<p class="mt-1 text-xs text-muted-foreground">Email address cannot be changed</p>
+							<p class="text-muted-foreground mt-1 text-xs">Email address cannot be changed</p>
 						</div>
 
 						{#if isEditingProfile}
@@ -154,7 +153,7 @@
 								<Button type="submit" size="sm" disabled={$profileSubmitting}>
 									{#if $profileSubmitting}
 										<div
-											class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"
+											class="border-primary mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
 										></div>
 									{:else}
 										<Save class="mr-2 h-4 w-4" />
@@ -271,7 +270,7 @@
 								<Button type="submit" size="sm" disabled={$passwordSubmitting}>
 									{#if $passwordSubmitting}
 										<div
-											class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"
+											class="border-primary mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
 										></div>
 									{:else}
 										<Save class="mr-2 h-4 w-4" />
@@ -292,7 +291,7 @@
 						</div>
 					</form>
 				{:else}
-					<div class="text-sm text-muted-foreground">
+					<div class="text-muted-foreground text-sm">
 						{#if passwordUpdatedAt}
 							<p>Password was last updated on {new Date(passwordUpdatedAt).toLocaleDateString()}</p>
 						{/if}

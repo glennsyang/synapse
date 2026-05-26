@@ -1,5 +1,3 @@
-import { and, desc, eq, gte, lte, ne, sql } from 'drizzle-orm';
-
 import { getDb } from '$lib/server/db';
 import {
 	dailyAgendaEntries,
@@ -24,11 +22,11 @@ import {
 	getTodayString,
 	getWeekDates
 } from '$lib/utils/date';
-
 import { logger } from '$lib/utils/logger';
 import { createMarkdownExcerpt } from '$lib/utils/markdown';
 import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
 import { getWorkoutLabel } from '$lib/utils/workout';
+import { and, desc, eq, gte, lte, ne, sql } from 'drizzle-orm';
 
 import type { PageServerLoad } from './$types';
 
@@ -550,7 +548,10 @@ function buildAgendaItemStats(
 				titleDate: entry.date,
 				last4: { total: 0, completed: 0 },
 				prev4: { total: 0, completed: 0 },
-				dow: { total: new Array<number>(7).fill(0), completed: new Array<number>(7).fill(0) }
+				dow: {
+					total: Array.from<number>({ length: 7 }),
+					completed: Array.from<number>({ length: 7 })
+				}
 			};
 			itemBuckets.set(groupKey, bucket);
 		}

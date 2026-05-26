@@ -72,11 +72,11 @@
 	<div class="flex h-full flex-col gap-3">
 		<div class="flex items-end gap-3">
 			<span
-				class="font-display text-5xl font-bold tabular-nums leading-none text-[oklch(var(--color-pink))]"
+				class="font-display text-5xl leading-none font-bold text-[oklch(var(--color-pink))] tabular-nums"
 			>
 				{counts.total}
 			</span>
-			<span class="mb-1 text-sm text-muted-foreground">
+			<span class="text-muted-foreground mb-1 text-sm">
 				{counts.total === 1 ? 'person' : 'people'}
 				tracked
 			</span>
@@ -103,17 +103,17 @@
 								<span class="size-2 shrink-0 rounded-full {stat.dotClass}"></span>
 								<div class="min-w-0">
 									<div
-										class="font-display text-xl font-bold tabular-nums leading-none {stat.valueClass}"
+										class="font-display text-xl leading-none font-bold tabular-nums {stat.valueClass}"
 									>
 										{stat.value}
 									</div>
-									<div class="mt-0.5 text-xs text-muted-foreground">{stat.label}</div>
+									<div class="text-muted-foreground mt-0.5 text-xs">{stat.label}</div>
 								</div>
 							</a>
 						{/snippet}
 					</Tooltip.Trigger>
 					{#if stat.names.length > 0}
-						<Tooltip.Content> {stat.names.join(', ')} </Tooltip.Content>
+						<Tooltip.Content>{stat.names.join(', ')}</Tooltip.Content>
 					{/if}
 				</Tooltip.Root>
 			{/each}
@@ -121,7 +121,7 @@
 
 		{#if upcomingVisits.length > 0}
 			<div class="mt-1 border-t pt-3">
-				<p class="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+				<p class="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
 					Scheduled
 				</p>
 				<div class="space-y-1.5">
@@ -133,13 +133,10 @@
 									: 'bg-muted-foreground/40'}"
 							></span>
 							<div>
-								<span
-									class="font-medium {day.isToday
-										? 'text-[oklch(var(--color-pink))]'
-										: ''}"
+								<span class="font-medium {day.isToday ? 'text-[oklch(var(--color-pink))]' : ''}"
 									>{day.dayLabel}</span
 								>
-								<span class="ml-1 text-muted-foreground">{day.names.join(', ')}</span>
+								<span class="text-muted-foreground ml-1">{day.names.join(', ')}</span>
 							</div>
 						</div>
 					{/each}

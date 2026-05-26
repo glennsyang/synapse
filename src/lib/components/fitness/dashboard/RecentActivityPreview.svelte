@@ -1,4 +1,10 @@
 <script lang="ts">
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { formatDateShort, formatTime12Hour } from '$lib/utils/date';
+	import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
 	import {
 		ChevronRight,
 		Dumbbell,
@@ -7,13 +13,6 @@
 		Trash2,
 		UtensilsCrossed
 	} from '@lucide/svelte/icons';
-
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { formatDateShort, formatTime12Hour } from '$lib/utils/date';
-	import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
 
 	interface Exercise {
 		exerciseName: string;
@@ -137,7 +136,9 @@
 					{#each feed as item (item.kind + item.data.id)}
 						{#if item.kind === 'workout'}
 							<li
-								class="group flex items-center gap-3 border-l-4 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 {getWorkoutBorderClass(item.data.type)}"
+								class="group flex items-center gap-3 border-l-4 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 {getWorkoutBorderClass(
+									item.data.type
+								)}"
 							>
 								<Dumbbell class="h-4 w-4 shrink-0 text-zinc-400" />
 								<div class="min-w-0 flex-1">
@@ -185,7 +186,7 @@
 													type="button"
 													variant="ghost"
 													size="icon"
-													class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+													class="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 w-7"
 													onclick={() => onDeleteWorkout(item.data.id)}
 												>
 													<Trash2 class="h-3.5 w-3.5" />
@@ -243,7 +244,7 @@
 													type="button"
 													variant="ghost"
 													size="icon"
-													class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+													class="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 w-7"
 													onclick={() => onDeleteWeight(item.data.id)}
 												>
 													<Trash2 class="h-3.5 w-3.5" />
@@ -297,7 +298,7 @@
 													type="button"
 													variant="ghost"
 													size="icon"
-													class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+													class="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 w-7"
 													onclick={() => onDeleteMeal(item.data.id)}
 												>
 													<Trash2 class="h-3.5 w-3.5" />

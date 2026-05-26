@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { Brain } from '@lucide/svelte/icons';
-
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { SidebarNav, User } from '$lib/types';
+	import { Brain } from '@lucide/svelte/icons';
 
 	import NavMain from './NavMain.svelte';
 	import NavUser from './NavUser.svelte';
@@ -23,7 +22,7 @@
 					{#snippet child({ props })}
 						<a href="/" data-sveltekit-preload-data="hover" {...props}>
 							<div
-								class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+								class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
 							>
 								<Brain class="size-5!" />
 							</div>
@@ -37,6 +36,6 @@
 			</Sidebar.MenuItem>
 		</Sidebar.Menu>
 	</Sidebar.Header>
-	<Sidebar.Content> <NavMain items={navItems.navMain} /> </Sidebar.Content>
-	<Sidebar.Footer> <NavUser {user} /> </Sidebar.Footer>
+	<Sidebar.Content><NavMain items={navItems.navMain} /></Sidebar.Content>
+	<Sidebar.Footer><NavUser {user} /></Sidebar.Footer>
 </Sidebar.Root>

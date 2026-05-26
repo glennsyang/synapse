@@ -1,15 +1,14 @@
 <script lang="ts">
-	import SettingsIcon from '@lucide/svelte/icons/settings';
-	import { toast } from 'svelte-sonner';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms';
-
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { setCalorieTargetSchema } from '$lib/schemas/fitness';
+	import SettingsIcon from '@lucide/svelte/icons/settings';
+	import { toast } from 'svelte-sonner';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
 	type SetCalorieTargetData = Infer<typeof setCalorieTargetSchema>;
 
@@ -69,7 +68,7 @@
 					type="button"
 					variant="ghost"
 					size="icon"
-					class="h-6 w-6 text-muted-foreground hover:text-foreground"
+					class="text-muted-foreground hover:text-foreground h-6 w-6"
 					onclick={() => (internalOpen = true)}
 					aria-label="Set calorie target"
 				>
@@ -100,7 +99,7 @@
 						required
 					/>
 					{#if $errors.targetCalories}
-						<p class="text-sm text-destructive">{$errors.targetCalories}</p>
+						<p class="text-destructive text-sm">{$errors.targetCalories}</p>
 					{/if}
 				</div>
 			</div>

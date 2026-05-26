@@ -1,7 +1,6 @@
+import type { User } from '$lib/types';
 import type { RequestEvent } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
-
-import type { User } from '$lib/types';
 
 /**
  * Authorization wrapper for SvelteKit actions.

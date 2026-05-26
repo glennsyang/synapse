@@ -7,7 +7,8 @@
 			"Bash(grep -r \"from-green\\\\|to-emerald\\\\|bg-gradient\" /Users/glennsheppard/Development/Personal/synapse/src --include=*.svelte -l)",
 			"Bash(npm run:*)",
 			"Bash(grep -v \"^$\")",
-			"Bash(npx biome:*)"
+			"Bash(npm run fmt:*)",
+			"Bash(npm run lint:*)"
 		]
 	}
 }

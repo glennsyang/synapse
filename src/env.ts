@@ -1,8 +1,6 @@
-import { z } from 'zod';
-
 import { building, dev } from '$app/environment';
-
 import { env } from '$env/dynamic/private';
+import { z } from 'zod';
 
 const envSchema = z.object({
 	DATABASE_URL: z.string().min(1),

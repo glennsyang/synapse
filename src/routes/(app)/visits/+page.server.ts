@@ -1,5 +1,3 @@
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
-
 import { getUser } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
@@ -10,6 +8,7 @@ import {
 	getStatusPriority,
 	type PersonWithStatus
 } from '$lib/utils/visit-status';
+import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 
 import type { PageServerLoad } from './$types';
 

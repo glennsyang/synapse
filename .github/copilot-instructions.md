@@ -40,6 +40,7 @@ src/
 - `npm run check`
 - `npm run lint`
 - `npm run lint:fix`
+- `npm run fmt`
 - `npm run test`
 - `npm run test:unit`
 - `npm run db:generate`
@@ -52,6 +53,7 @@ src/
 - Use `type` imports where applicable.
 - Use `snake_case` for DB columns and `camelCase` for TypeScript.
 - Use logger utility in `src/lib/utils/logger.ts`; avoid direct `console.log()` in app code.
+- Linting: **oxlint** (`npm run lint` / `npm run lint:fix`). Formatting: **oxfmt** (`npm run fmt`).
 
 ## Recent Changes
 

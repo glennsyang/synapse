@@ -1,15 +1,4 @@
 <script lang="ts">
-	import {
-		BellPlus,
-		Dumbbell,
-		EllipsisVertical,
-		Scale,
-		Settings,
-		Target,
-		UtensilsCrossed
-	} from '@lucide/svelte/icons';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-
 	import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
 	import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
 	import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
@@ -26,6 +15,16 @@
 		setGoalWeightSchema,
 		workoutReminderSchema
 	} from '$lib/schemas/fitness';
+	import {
+		BellPlus,
+		Dumbbell,
+		EllipsisVertical,
+		Scale,
+		Settings,
+		Target,
+		UtensilsCrossed
+	} from '@lucide/svelte/icons';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 	interface Props {
 		workoutForm: SuperValidated<Infer<typeof logWorkoutSchema>>;
@@ -48,7 +47,7 @@
 </script>
 
 <div
-	class="mb-4 rounded-2xl border border-green-200/75 bg-linear-to-br from-green-100/90 via-background to-green-50/85 p-6 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] dark:border-green-500/25 dark:from-green-500/12 dark:via-background dark:to-green-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)]"
+	class="via-background dark:via-background mb-4 rounded-2xl border border-green-200/75 bg-linear-to-br from-green-100/90 to-green-50/85 p-6 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] dark:border-green-500/25 dark:from-green-500/12 dark:to-green-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)]"
 >
 	<div class="flex items-start justify-between">
 		<div>
@@ -58,7 +57,7 @@
 
 		<!-- Dropdown Menu in top right -->
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger class={buttonVariants({ variant: "outline", size: "icon-sm" })}>
+			<DropdownMenu.Trigger class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}>
 				<EllipsisVertical />
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end" class="w-56">

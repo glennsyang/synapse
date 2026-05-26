@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { ModeWatcher } from 'mode-watcher';
-
 	import AppSidebar from '$lib/components/app/AppSidebar.svelte';
 	import SiteHeader from '$lib/components/app/SiteHeader.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { ModeWatcher } from 'mode-watcher';
 
 	import { navItems } from './sidebar';
 

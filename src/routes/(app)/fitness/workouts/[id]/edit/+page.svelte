@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
-	import { superForm } from 'sveltekit-superforms';
-
 	import ExerciseInput from '$lib/components/fitness/ExerciseInput.svelte';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
@@ -11,6 +8,8 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import type { Exercise } from '$lib/types';
+	import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
+	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageData } from './$types';
 
@@ -69,7 +68,7 @@
 	</div>
 
 	<Card.Root>
-		<Card.Header> <Card.Title>Workout Details</Card.Title> </Card.Header>
+		<Card.Header><Card.Title>Workout Details</Card.Title></Card.Header>
 		<Card.Content>
 			<form method="POST" action="?/update" use:enhance class="space-y-4">
 				<Input type="hidden" name="id" bind:value={$form.id} />
@@ -80,14 +79,14 @@
 						<Label for="workout-date">Date</Label>
 						<Input id="workout-date" name="date" type="date" bind:value={$form.date} required />
 						{#if $errors.date}
-							<p class="text-sm text-destructive">{$errors.date}</p>
+							<p class="text-destructive text-sm">{$errors.date}</p>
 						{/if}
 					</div>
 					<div class="grid gap-2">
 						<Label for="workout-time">Time (optional)</Label>
 						<Input id="workout-time" name="time" type="time" bind:value={$form.time} />
 						{#if $errors.time}
-							<p class="text-sm text-destructive">{$errors.time}</p>
+							<p class="text-destructive text-sm">{$errors.time}</p>
 						{/if}
 					</div>
 				</div>
@@ -103,7 +102,7 @@
 						</Select.Content>
 					</Select.Root>
 					{#if $errors.type}
-						<p class="text-sm text-destructive">{$errors.type}</p>
+						<p class="text-destructive text-sm">{$errors.type}</p>
 					{/if}
 				</div>
 
@@ -117,14 +116,14 @@
 						placeholder="60"
 					/>
 					{#if $errors.durationMinutes}
-						<p class="text-sm text-destructive">{$errors.durationMinutes}</p>
+						<p class="text-destructive text-sm">{$errors.durationMinutes}</p>
 					{/if}
 				</div>
 
 				{#if $form.type === 'strength'}
 					<ExerciseInput bind:exercises={workoutExercises} />
 					{#if $errors.exercises}
-						<p class="text-sm text-destructive">{$errors.exercises}</p>
+						<p class="text-destructive text-sm">{$errors.exercises}</p>
 					{/if}
 				{/if}
 
@@ -138,7 +137,7 @@
 						placeholder="How did the workout feel?"
 					/>
 					{#if $errors.notes}
-						<p class="text-sm text-destructive">{$errors.notes}</p>
+						<p class="text-destructive text-sm">{$errors.notes}</p>
 					{/if}
 				</div>
 

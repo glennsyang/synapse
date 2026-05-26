@@ -1,9 +1,4 @@
 <script lang="ts">
-	import BellPlusIcon from '@lucide/svelte/icons/bell-plus';
-	import { toast } from 'svelte-sonner';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms';
-
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
@@ -12,6 +7,10 @@
 	import type { workoutReminderSchema } from '$lib/schemas/fitness';
 	import { daysOfWeek } from '$lib/utils/date';
 	import { workoutTypeOptions } from '$lib/utils/workout';
+	import BellPlusIcon from '@lucide/svelte/icons/bell-plus';
+	import { toast } from 'svelte-sonner';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
 	type WorkoutReminderData = Infer<typeof workoutReminderSchema>;
 
@@ -93,21 +92,20 @@
 							</Select.Trigger>
 							<Select.Content>
 								{#each workoutTypeOptions as option (option.value)}
-									<Select.Item value={option.value} label={option.label}
-										>{option.label}</Select.Item
+									<Select.Item value={option.value} label={option.label}>{option.label}</Select.Item
 									>
 								{/each}
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.workoutType}
-							<p class="text-sm text-destructive">{$errors.workoutType}</p>
+							<p class="text-destructive text-sm">{$errors.workoutType}</p>
 						{/if}
 					</div>
 					<div class="grid gap-2">
 						<Label for="r-time">Time</Label>
 						<Input id="r-time" name="time" type="time" bind:value={$form.time} required />
 						{#if $errors.time}
-							<p class="text-sm text-destructive">{$errors.time}</p>
+							<p class="text-destructive text-sm">{$errors.time}</p>
 						{/if}
 					</div>
 				</div>
@@ -115,14 +113,14 @@
 				<div class="grid gap-2">
 					<Label for="r-cadence">Frequency</Label>
 					<Select.Root type="single" name="cadence" bind:value={$form.cadence}>
-						<Select.Trigger id="r-cadence"> {$form.cadence || 'Select frequency'} </Select.Trigger>
+						<Select.Trigger id="r-cadence">{$form.cadence || 'Select frequency'}</Select.Trigger>
 						<Select.Content>
 							<Select.Item value="daily" label="Daily">Daily</Select.Item>
 							<Select.Item value="weekly" label="Weekly">Weekly</Select.Item>
 						</Select.Content>
 					</Select.Root>
 					{#if $errors.cadence}
-						<p class="text-sm text-destructive">{$errors.cadence}</p>
+						<p class="text-destructive text-sm">{$errors.cadence}</p>
 					{/if}
 				</div>
 
@@ -157,7 +155,7 @@
 							{/each}
 						</div>
 						{#if $errors.daysOfWeek}
-							<p class="text-sm text-destructive">{$errors.daysOfWeek}</p>
+							<p class="text-destructive text-sm">{$errors.daysOfWeek}</p>
 						{/if}
 					</div>
 				{/if}
@@ -168,7 +166,7 @@
 						<Button {...props} type="button" variant="outline">Cancel</Button>
 					{/snippet}
 				</Dialog.Close>
-				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700"> Create </Button>
+				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700">Create</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

@@ -1,15 +1,14 @@
 <script lang="ts">
-	import TargetIcon from '@lucide/svelte/icons/target';
-	import { toast } from 'svelte-sonner';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms';
-
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { setGoalWeightSchema } from '$lib/schemas/fitness';
+	import TargetIcon from '@lucide/svelte/icons/target';
+	import { toast } from 'svelte-sonner';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
 	type SetGoalWeightData = Infer<typeof setGoalWeightSchema>;
 
@@ -69,7 +68,7 @@
 					type="button"
 					variant="ghost"
 					size="icon"
-					class="h-6 w-6 text-muted-foreground hover:text-foreground"
+					class="text-muted-foreground hover:text-foreground h-6 w-6"
 					onclick={() => (internalOpen = true)}
 					aria-label="Set goal weight"
 				>
@@ -101,7 +100,7 @@
 						required
 					/>
 					{#if $errors.targetWeightLbs}
-						<p class="text-sm text-destructive">{$errors.targetWeightLbs}</p>
+						<p class="text-destructive text-sm">{$errors.targetWeightLbs}</p>
 					{/if}
 				</div>
 			</div>

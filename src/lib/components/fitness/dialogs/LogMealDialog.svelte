@@ -1,9 +1,4 @@
 <script lang="ts">
-	import PlusIcon from '@lucide/svelte/icons/plus';
-	import { toast } from 'svelte-sonner';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-	import { superForm } from 'sveltekit-superforms';
-
 	import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -11,6 +6,10 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import type { logMealSchema, MealType } from '$lib/schemas/fitness';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import { toast } from 'svelte-sonner';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 
 	type LogMealData = Infer<typeof logMealSchema>;
 
@@ -124,7 +123,7 @@
 					<Label for="meal-date">Date</Label>
 					<Input id="meal-date" name="date" type="date" bind:value={$form.date} required />
 					{#if $errors.date}
-						<p class="text-sm text-destructive">{$errors.date}</p>
+						<p class="text-destructive text-sm">{$errors.date}</p>
 					{/if}
 				</div>
 				<div class="grid grid-cols-2 gap-4">
@@ -142,7 +141,7 @@
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.timeOfDay}
-							<p class="text-sm text-destructive">{$errors.timeOfDay}</p>
+							<p class="text-destructive text-sm">{$errors.timeOfDay}</p>
 						{/if}
 					</div>
 					<div class="grid gap-2">
@@ -155,7 +154,7 @@
 							placeholder="500"
 						/>
 						{#if $errors.caloriesEstimate}
-							<p class="text-sm text-destructive">{$errors.caloriesEstimate}</p>
+							<p class="text-destructive text-sm">{$errors.caloriesEstimate}</p>
 						{/if}
 					</div>
 				</div>
@@ -170,7 +169,7 @@
 						required
 					/>
 					{#if $errors.description}
-						<p class="text-sm text-destructive">{$errors.description}</p>
+						<p class="text-destructive text-sm">{$errors.description}</p>
 					{/if}
 				</div>
 			</div>

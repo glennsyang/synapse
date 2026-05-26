@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { Activity, Clock, Dumbbell, Flame } from '@lucide/svelte/icons';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-
 	import WorkoutFrequencyChart from '$lib/components/fitness/analytics/WorkoutFrequencyChart.svelte';
 	import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
 	import type { logWorkoutSchema } from '$lib/schemas/fitness';
 	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
+	import { Activity, Clock, Dumbbell, Flame } from '@lucide/svelte/icons';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 	import FitnessStatusCard from './FitnessStatusCard.svelte';
 
@@ -111,8 +110,16 @@
 			value={insights.thisWeekCount}
 			unit="sessions"
 			icon={Dumbbell}
-			trend={insights.thisWeekCount >= 3 ? 'positive' : insights.thisWeekCount >= 1 ? 'neutral' : 'negative'}
-			trendLabel={insights.thisWeekCount >= 3 ? 'Strong week' : insights.thisWeekCount >= 1 ? 'Keep going' : 'Start your week'}
+			trend={insights.thisWeekCount >= 3
+				? 'positive'
+				: insights.thisWeekCount >= 1
+					? 'neutral'
+					: 'negative'}
+			trendLabel={insights.thisWeekCount >= 3
+				? 'Strong week'
+				: insights.thisWeekCount >= 1
+					? 'Keep going'
+					: 'Start your week'}
 		/>
 		<FitnessStatusCard
 			label="Streak"
@@ -120,7 +127,11 @@
 			unit={insights.streak === 1 ? 'day' : 'days'}
 			icon={Flame}
 			trend={insights.streak >= 3 ? 'positive' : 'neutral'}
-			trendLabel={insights.streak >= 3 ? 'On a roll' : insights.streak > 0 ? 'Keep it up' : 'Start today'}
+			trendLabel={insights.streak >= 3
+				? 'On a roll'
+				: insights.streak > 0
+					? 'Keep it up'
+					: 'Start today'}
 		/>
 		<FitnessStatusCard
 			label="Avg Session"

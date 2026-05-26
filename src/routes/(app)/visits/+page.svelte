@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { CalendarCheck, Plus } from '@lucide/svelte';
-
 	import { replaceState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import PageShell from '$lib/components/app/PageShell.svelte';
@@ -12,6 +10,7 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { formatDateShort } from '$lib/utils/date';
 	import { getStatusLabel, type VisitStatus } from '$lib/utils/visit-status';
+	import { CalendarCheck, Plus } from '@lucide/svelte';
 
 	import type { PageData } from './$types';
 
@@ -112,7 +111,7 @@
 		<div class="mb-6 flex items-center justify-between">
 			<div>
 				<h1 class="font-display text-3xl font-bold">Visit Tracking</h1>
-				<p class="mt-1 text-muted-foreground">Track visits made with your group</p>
+				<p class="text-muted-foreground mt-1">Track visits made with your group</p>
 			</div>
 			<Button
 				title="Add Person"
@@ -129,7 +128,7 @@
 		<Tabs.Root value={activeTab} onValueChange={handleTabChange} class="mb-6 w-full">
 			<div class="w-full overflow-x-auto pb-1">
 				<Tabs.List
-					class="font-display inline-flex h-10 min-w-max items-center justify-start rounded-md bg-muted p-1 text-muted-foreground"
+					class="font-display bg-muted text-muted-foreground inline-flex h-10 min-w-max items-center justify-start rounded-md p-1"
 				>
 					<Tabs.Trigger
 						value="all"
@@ -192,7 +191,7 @@
 									<Card.Content
 										class="flex min-h-56 flex-col items-center justify-center py-12 text-center"
 									>
-										<p class="mb-4 text-muted-foreground">
+										<p class="text-muted-foreground mb-4">
 											{isScheduledTab ? 'No scheduled follow-up visits found.' : 'No people found.'}
 										</p>
 										<Button href="/visits/people/new">Add Your First Person</Button>
@@ -210,9 +209,9 @@
 												? 'border-l-red-500'
 												: person.status === 'scheduled'
 													? 'border-l-purple-500'
-												: person.status === 'exempt'
-													? 'border-l-gray-500'
-													: 'border-l-gray-400'}
+													: person.status === 'exempt'
+														? 'border-l-gray-500'
+														: 'border-l-gray-400'}
 								<a href="/visits/{person.id}">
 									<Card.Root class="border-l-4 transition-shadow hover:shadow-md {borderColor}">
 										<Card.Header>
@@ -228,16 +227,16 @@
 																	? 'destructive'
 																	: person.status === 'scheduled'
 																		? 'secondary'
-																	: 'outline'}
+																		: 'outline'}
 														class={person.status === 'green'
 															? 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-200'
 															: person.status === 'yellow'
 																? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-200'
 																: person.status === 'red'
 																	? 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900 dark:text-red-200'
-																		: person.status === 'scheduled'
-																			? 'bg-purple-100 text-purple-800 hover:bg-purple-100 dark:bg-purple-900 dark:text-purple-200'
-																	: ''}
+																	: person.status === 'scheduled'
+																		? 'bg-purple-100 text-purple-800 hover:bg-purple-100 dark:bg-purple-900 dark:text-purple-200'
+																		: ''}
 													>
 														{getStatusLabel(person.status)}
 													</Badge>
@@ -246,7 +245,7 @@
 										</Card.Header>
 										<Card.Content>
 											{#if person.lastVisit}
-												<div class="text-sm text-muted-foreground">
+												<div class="text-muted-foreground text-sm">
 													{#if isScheduledTab && person.nextFollowUpDate}
 														<Alert.Root variant="destructive" class="mb-2">
 															<CalendarCheck class="h-4 w-4" />
@@ -268,16 +267,14 @@
 													{#if person.daysUntilStatusChange !== null}
 														<p class="mt-1 text-xs">
 															{person.daysUntilStatusChange}
-															day{person.daysUntilStatusChange !== 1
-																? 's'
-																: ''}
+															day{person.daysUntilStatusChange !== 1 ? 's' : ''}
 															until
 															{person.status === 'green' ? 'overdue' : 'critical'}
 														</p>
 													{/if}
 												</div>
 											{:else}
-												<p class="text-sm text-muted-foreground">No visits logged yet</p>
+												<p class="text-muted-foreground text-sm">No visits logged yet</p>
 											{/if}
 										</Card.Content>
 									</Card.Root>

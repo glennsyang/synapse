@@ -1,8 +1,4 @@
 <script lang="ts">
-	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
-
 	import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
@@ -10,6 +6,9 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { MOOD_TAGS } from '$lib/schemas/meditation';
+	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageData } from './$types';
 
@@ -54,7 +53,7 @@
 						aria-invalid={$errors.title ? 'true' : undefined}
 					/>
 					{#if $errors.title}
-						<p class="text-sm text-destructive">{$errors.title}</p>
+						<p class="text-destructive text-sm">{$errors.title}</p>
 					{/if}
 				</div>
 
@@ -69,7 +68,7 @@
 						rows={3}
 					/>
 					{#if $errors.description}
-						<p class="text-sm text-destructive">{$errors.description}</p>
+						<p class="text-destructive text-sm">{$errors.description}</p>
 					{/if}
 				</div>
 
@@ -84,11 +83,11 @@
 						placeholder="https://youtube.com/watch?v=..."
 						aria-invalid={$errors.link_url ? 'true' : undefined}
 					/>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-muted-foreground text-sm">
 						Link to a YouTube video, audio file, or guided meditation resource
 					</p>
 					{#if $errors.link_url}
-						<p class="text-sm text-destructive">{$errors.link_url}</p>
+						<p class="text-destructive text-sm">{$errors.link_url}</p>
 					{/if}
 				</div>
 
@@ -105,7 +104,7 @@
 						aria-invalid={$errors.duration_minutes ? 'true' : undefined}
 					/>
 					{#if $errors.duration_minutes}
-						<p class="text-sm text-destructive">{$errors.duration_minutes}</p>
+						<p class="text-destructive text-sm">{$errors.duration_minutes}</p>
 					{/if}
 				</div>
 
@@ -119,11 +118,11 @@
 						placeholder="Anxious, Focused"
 						aria-invalid={$errors.mood_tags ? 'true' : undefined}
 					/>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-muted-foreground text-sm">
 						Comma-separated list. Allowed: {MOOD_TAGS.join(', ')}
 					</p>
 					{#if $errors.mood_tags}
-						<p class="text-sm text-destructive">{$errors.mood_tags}</p>
+						<p class="text-destructive text-sm">{$errors.mood_tags}</p>
 					{/if}
 				</div>
 

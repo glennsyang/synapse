@@ -40,7 +40,7 @@
 
 {#if items.length === 0}
 	<div
-		class="flex min-h-28 items-center justify-center rounded-xl border border-dashed border-border/60 text-sm text-muted-foreground"
+		class="border-border/60 text-muted-foreground flex min-h-28 items-center justify-center rounded-xl border border-dashed text-sm"
 	>
 		Complete more agenda items to see your breakdown.
 	</div>
@@ -57,7 +57,9 @@
 						</span>
 					</div>
 					<span
-						class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold {_pctColorClass(item.completionPct)}"
+						class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold {_pctColorClass(
+							item.completionPct
+						)}"
 					>
 						{item.completionPct}%
 					</span>
@@ -70,7 +72,7 @@
 								class="size-2.5 rounded-full {_dotColorClass(pct)}"
 								title={dotTitle(pct, DOW_LABELS[i] ?? '')}
 							></div>
-							<span class="text-[9px] leading-none text-muted-foreground/60">{DOW_LABELS[i]}</span>
+							<span class="text-muted-foreground/60 text-[9px] leading-none">{DOW_LABELS[i]}</span>
 						</div>
 					{/each}
 				</div>

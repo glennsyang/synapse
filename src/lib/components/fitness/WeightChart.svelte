@@ -1,11 +1,10 @@
 <script lang="ts">
+	import * as Card from '$lib/components/ui/card';
+	import * as Chart from '$lib/components/ui/chart/index.js';
 	import { TrendingDown, TrendingUp } from '@lucide/svelte/icons';
 	import { scaleUtc } from 'd3-scale';
 	import { curveNatural } from 'd3-shape';
 	import { AreaChart } from 'layerchart';
-
-	import * as Card from '$lib/components/ui/card';
-	import * as Chart from '$lib/components/ui/chart/index.js';
 
 	interface Props {
 		title: string;
@@ -64,7 +63,7 @@
 						curve: curveNatural,
 						fillOpacity: 0.4,
 						line: { class: 'stroke-1' },
-						motion: 'tween',
+						motion: 'tween'
 					},
 					xAxis: {
 						format: (v: Date) => v.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -92,12 +91,12 @@
 				<div class="flex justify-evenly gap-4">
 					{#if goalWeight}
 						<div class="backdrop-blur-sm">
-							<p class="text-xs text-muted-foreground">Goal</p>
+							<p class="text-muted-foreground text-xs">Goal</p>
 							<p class="text-sm font-semibold">{goalWeight} lbs</p>
 						</div>
 					{/if}
 					<div class="backdrop-blur-sm">
-						<p class="text-xs text-muted-foreground">Latest</p>
+						<p class="text-muted-foreground text-xs">Latest</p>
 						<p class="text-sm font-semibold">{entries[0].weightLbs} lbs</p>
 					</div>
 					{#if entries.length >= 2}
@@ -110,7 +109,7 @@
 								<TrendingDown class="size-4 text-green-600" />
 							{:else if change > 0}
 								<span class="text-destructive">Trending up by {change.toFixed(1)} lbs</span>
-								<TrendingUp class="size-4 text-destructive" />
+								<TrendingUp class="text-destructive size-4" />
 							{:else}
 								<span>No change</span>
 							{/if}

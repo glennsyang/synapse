@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms';
-
 	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Field, FieldGroup, FieldLabel } from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageData } from './$types';
 
@@ -24,7 +23,7 @@
 	const hasToken = $derived(() => !!token);
 </script>
 
-<svelte:head> <title>Reset Password - Synapse</title> </svelte:head>
+<svelte:head><title>Reset Password - Synapse</title></svelte:head>
 
 {#if !hasToken}
 	<div class="space-y-4 text-center">
@@ -74,7 +73,7 @@
 				{/if}
 
 				<FieldGroup>
-					<Field> <Input type="hidden" name="token" bind:value={data.token} /> </Field>
+					<Field><Input type="hidden" name="token" bind:value={data.token} /></Field>
 
 					<Field>
 						<FieldLabel for="password">New Password</FieldLabel>

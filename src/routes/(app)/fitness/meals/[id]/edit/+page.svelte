@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
-	import { superForm } from 'sveltekit-superforms';
-
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import LongTextInput from '$lib/components/shared/LongTextInput.svelte';
 	import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
@@ -10,6 +7,8 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
+	import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
+	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageData } from './$types';
 
@@ -42,7 +41,7 @@
 	</div>
 
 	<Card.Root>
-		<Card.Header> <Card.Title>Meal Details</Card.Title> </Card.Header>
+		<Card.Header><Card.Title>Meal Details</Card.Title></Card.Header>
 		<Card.Content>
 			<form method="POST" action="?/update" use:enhance class="space-y-4">
 				<Input type="hidden" name="id" bind:value={$form.id} />
@@ -51,7 +50,7 @@
 					<Label for="meal-date">Date</Label>
 					<Input id="meal-date" name="date" type="date" bind:value={$form.date} required />
 					{#if $errors.date}
-						<p class="text-sm text-destructive">{$errors.date}</p>
+						<p class="text-destructive text-sm">{$errors.date}</p>
 					{/if}
 				</div>
 
@@ -67,7 +66,7 @@
 						</Select.Content>
 					</Select.Root>
 					{#if $errors.timeOfDay}
-						<p class="text-sm text-destructive">{$errors.timeOfDay}</p>
+						<p class="text-destructive text-sm">{$errors.timeOfDay}</p>
 					{/if}
 				</div>
 
@@ -81,7 +80,7 @@
 						required
 					/>
 					{#if $errors.description}
-						<p class="text-sm text-destructive">{$errors.description}</p>
+						<p class="text-destructive text-sm">{$errors.description}</p>
 					{/if}
 				</div>
 
@@ -95,7 +94,7 @@
 						placeholder="500"
 					/>
 					{#if $errors.caloriesEstimate}
-						<p class="text-sm text-destructive">{$errors.caloriesEstimate}</p>
+						<p class="text-destructive text-sm">{$errors.caloriesEstimate}</p>
 					{/if}
 				</div>
 

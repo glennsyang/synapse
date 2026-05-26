@@ -1,9 +1,5 @@
 <script lang="ts">
-	import { ArrowLeft } from '@lucide/svelte';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
 	import { goto } from '$app/navigation';
-
 	import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
 	import { taskPriorityOptions, taskStateOptions } from '$lib/components/tasks/task-ui';
 	import { Button } from '$lib/components/ui/button';
@@ -12,6 +8,9 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import { ArrowLeft } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageData } from './$types';
 
@@ -60,7 +59,7 @@
 	</div>
 
 	<Card.Root>
-		<Card.Header> <Card.Title>Task Details</Card.Title> </Card.Header>
+		<Card.Header><Card.Title>Task Details</Card.Title></Card.Header>
 		<Card.Content>
 			<form method="POST" use:enhance class="space-y-4">
 				<div class="space-y-2">
@@ -74,7 +73,7 @@
 						aria-invalid={$errors.title ? 'true' : undefined}
 					/>
 					{#if $errors.title}
-						<p class="text-sm text-destructive">{$errors.title}</p>
+						<p class="text-destructive text-sm">{$errors.title}</p>
 					{/if}
 				</div>
 
@@ -88,7 +87,7 @@
 						rows={4}
 					/>
 					{#if $errors.description}
-						<p class="text-sm text-destructive">{$errors.description}</p>
+						<p class="text-destructive text-sm">{$errors.description}</p>
 					{/if}
 				</div>
 
@@ -104,8 +103,7 @@
 						>
 							<Select.Trigger class="w-full">
 								<div class="flex items-center gap-2">
-									<span
-										class={`h-2.5 w-2.5 rounded-full ${selectedPriorityOption.dotClass}`}
+									<span class={`h-2.5 w-2.5 rounded-full ${selectedPriorityOption.dotClass}`}
 									></span>
 									<span>{selectedPriorityOption.valueLabel}</span>
 								</div>
@@ -122,7 +120,7 @@
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.priority}
-							<p class="text-sm text-destructive">{$errors.priority}</p>
+							<p class="text-destructive text-sm">{$errors.priority}</p>
 						{/if}
 					</div>
 
@@ -147,7 +145,7 @@
 							</Select.Content>
 						</Select.Root>
 						{#if $errors.state}
-							<p class="text-sm text-destructive">{$errors.state}</p>
+							<p class="text-destructive text-sm">{$errors.state}</p>
 						{/if}
 					</div>
 
@@ -161,7 +159,7 @@
 							aria-invalid={$errors.dueDate ? 'true' : undefined}
 						/>
 						{#if $errors.dueDate}
-							<p class="text-sm text-destructive">{$errors.dueDate}</p>
+							<p class="text-destructive text-sm">{$errors.dueDate}</p>
 						{/if}
 					</div>
 				</div>
@@ -175,21 +173,21 @@
 						bind:value={$form.tags}
 						placeholder="Comma-separated tags (e.g., #urgent, #waiting)"
 					/>
-					<p class="text-xs text-muted-foreground">Separate tags with commas</p>
+					<p class="text-muted-foreground text-xs">Separate tags with commas</p>
 					{#if $errors.tags}
-						<p class="text-sm text-destructive">{$errors.tags}</p>
+						<p class="text-destructive text-sm">{$errors.tags}</p>
 					{/if}
 				</div>
 
 				{#if $message}
-					<div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{$message}</div>
+					<div class="bg-destructive/10 text-destructive rounded-md p-3 text-sm">{$message}</div>
 				{/if}
 
 				<div class="flex gap-2">
 					<Button
 						type="submit"
 						disabled={$submitting}
-						class="text-white bg-orange-600 hover:bg-orange-700"
+						class="bg-orange-600 text-white hover:bg-orange-700"
 					>
 						{$submitting ? 'Creating...' : 'Create'}
 					</Button>

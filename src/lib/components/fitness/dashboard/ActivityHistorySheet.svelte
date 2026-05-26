@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { Dumbbell, Pencil, Scale, Trash2, UtensilsCrossed } from '@lucide/svelte/icons';
-
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { formatDateMedium, formatTime12Hour } from '$lib/utils/date';
 	import { getWorkoutBadgeClass, getWorkoutLabel } from '$lib/utils/workout';
+	import { Dumbbell, Pencil, Scale, Trash2, UtensilsCrossed } from '@lucide/svelte/icons';
 
 	interface Exercise {
 		exerciseName: string;
@@ -159,7 +158,8 @@
 			{#each filters as f (f.value)}
 				<button
 					type="button"
-					class="flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-all {filter === f.value
+					class="flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-all {filter ===
+					f.value
 						? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-zinc-100'
 						: 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'}"
 					onclick={() => (filter = f.value)}
@@ -178,7 +178,7 @@
 			{#each grouped as group (group.date)}
 				<div>
 					<h3
-						class="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400"
+						class="mb-2 text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400"
 					>
 						{group.label}
 					</h3>
@@ -218,7 +218,10 @@
 														variant="ghost"
 														size="icon"
 														class="h-7 w-7"
-														onclick={() => { onEditWorkout(item.data); open = false; }}
+														onclick={() => {
+															onEditWorkout(item.data);
+															open = false;
+														}}
 													>
 														<Pencil class="h-3.5 w-3.5" />
 													</Button>
@@ -234,8 +237,11 @@
 														type="button"
 														variant="ghost"
 														size="icon"
-														class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
-														onclick={() => { onDeleteWorkout(item.data.id); open = false; }}
+														class="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 w-7"
+														onclick={() => {
+															onDeleteWorkout(item.data.id);
+															open = false;
+														}}
 													>
 														<Trash2 class="h-3.5 w-3.5" />
 													</Button>
@@ -271,7 +277,10 @@
 														variant="ghost"
 														size="icon"
 														class="h-7 w-7"
-														onclick={() => { onEditWeight(item.data); open = false; }}
+														onclick={() => {
+															onEditWeight(item.data);
+															open = false;
+														}}
 													>
 														<Pencil class="h-3.5 w-3.5" />
 													</Button>
@@ -287,8 +296,11 @@
 														type="button"
 														variant="ghost"
 														size="icon"
-														class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
-														onclick={() => { onDeleteWeight(item.data.id); open = false; }}
+														class="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 w-7"
+														onclick={() => {
+															onDeleteWeight(item.data.id);
+															open = false;
+														}}
 													>
 														<Trash2 class="h-3.5 w-3.5" />
 													</Button>
@@ -324,7 +336,10 @@
 														variant="ghost"
 														size="icon"
 														class="h-7 w-7"
-														onclick={() => { onEditMeal(item.data); open = false; }}
+														onclick={() => {
+															onEditMeal(item.data);
+															open = false;
+														}}
 													>
 														<Pencil class="h-3.5 w-3.5" />
 													</Button>
@@ -340,8 +355,11 @@
 														type="button"
 														variant="ghost"
 														size="icon"
-														class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
-														onclick={() => { onDeleteMeal(item.data.id); open = false; }}
+														class="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 w-7"
+														onclick={() => {
+															onDeleteMeal(item.data.id);
+															open = false;
+														}}
 													>
 														<Trash2 class="h-3.5 w-3.5" />
 													</Button>

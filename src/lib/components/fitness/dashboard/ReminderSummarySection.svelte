@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { Bell, BellOff } from '@lucide/svelte/icons';
-	import type { Infer, SuperValidated } from 'sveltekit-superforms';
-
 	import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
 	import ReminderCard from '$lib/components/fitness/entries/ReminderCard.svelte';
 	import * as Card from '$lib/components/ui/card';
 	import type { workoutReminderSchema } from '$lib/schemas/fitness';
+	import { Bell, BellOff } from '@lucide/svelte/icons';
+	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 	interface Reminder {
 		id: string;

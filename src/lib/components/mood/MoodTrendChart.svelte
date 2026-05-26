@@ -1,12 +1,11 @@
 <script lang="ts">
-	import AreaChartIcon from '@lucide/svelte/icons/chart-area';
-	import { scaleUtc } from 'd3-scale';
-	import { AreaChart } from 'layerchart';
-
 	import * as Card from '$lib/components/ui/card';
 	import * as Chart from '$lib/components/ui/chart';
 	import { parseLocalDateString } from '$lib/utils/date';
 	import { getMoodScoreLabel } from '$lib/utils/mood';
+	import AreaChartIcon from '@lucide/svelte/icons/chart-area';
+	import { scaleUtc } from 'd3-scale';
+	import { AreaChart } from 'layerchart';
 
 	interface MoodTrendPoint {
 		date: string;
@@ -57,10 +56,10 @@
 	<Card.Content>
 		{#if points.length < 2}
 			<div
-				class="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 px-6 text-center"
+				class="border-border/80 bg-muted/20 flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center"
 			>
 				<p class="font-display text-xl font-semibold">Add a little more data</p>
-				<p class="mt-2 max-w-md text-sm text-muted-foreground">
+				<p class="text-muted-foreground mt-2 max-w-md text-sm">
 					The area chart becomes useful once you have at least two logged days in the selected
 					range.
 				</p>
@@ -118,9 +117,9 @@
 			</Chart.Container>
 		{/if}
 	</Card.Content>
-	<Card.Footer class="border-t border-border/60 pt-4 text-sm text-muted-foreground">
+	<Card.Footer class="border-border/60 text-muted-foreground border-t pt-4 text-sm">
 		{#if averageScore !== null}
-			Average mood score: <span class="ml-1 font-medium text-foreground">{averageScore}</span>
+			Average mood score: <span class="text-foreground ml-1 font-medium">{averageScore}</span>
 		{:else}
 			Mood score scale runs from Sad (1) to Happy (7).
 		{/if}

@@ -1,8 +1,7 @@
 <script lang="ts">
+	import * as Chart from '$lib/components/ui/chart/index.js';
 	import { scalePoint } from 'd3-scale';
 	import { AreaChart } from 'layerchart';
-
-	import * as Chart from '$lib/components/ui/chart/index.js';
 
 	interface TrendPoint {
 		weekLabel: string;
@@ -25,7 +24,7 @@
 <div class="flex h-full flex-col gap-3">
 	<div class="flex items-end gap-3">
 		<span
-			class="font-display text-5xl font-bold tabular-nums leading-none text-[oklch(var(--color-orange))]"
+			class="font-display text-5xl leading-none font-bold text-[oklch(var(--color-orange))] tabular-nums"
 		>
 			{currentWeekPct}<span class="text-2xl font-semibold">%</span>
 		</span>
@@ -42,7 +41,7 @@
 
 	{#if trend.length < 2}
 		<div
-			class="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border/60 text-sm text-muted-foreground"
+			class="border-border/60 text-muted-foreground flex flex-1 items-center justify-center rounded-xl border border-dashed text-sm"
 		>
 			Complete more daily agenda items to see your trend.
 		</div>

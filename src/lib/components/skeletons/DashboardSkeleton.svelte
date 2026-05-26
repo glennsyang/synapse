@@ -22,7 +22,7 @@
 	<!-- Command Strip: 3 Stat Cards Skeleton -->
 	<div class="grid gap-4 sm:grid-cols-3">
 		{#each [1, 2, 3] as i (i)}
-			<div class="rounded-2xl border bg-card p-5 shadow-xs">
+			<div class="bg-card rounded-2xl border p-5 shadow-xs">
 				<div class="flex items-start justify-between">
 					<Skeleton class="size-10 rounded-xl" />
 					<Skeleton class="h-5 w-12 rounded-full" />
@@ -37,7 +37,7 @@
 
 	<!-- Analytics Row 1 Skeleton -->
 	<div class="grid gap-4 md:grid-cols-2">
-		<div class="rounded-2xl border bg-card p-5 shadow-xs">
+		<div class="bg-card rounded-2xl border p-5 shadow-xs">
 			<div class="mb-4 flex items-center gap-2">
 				<Skeleton class="size-7 rounded-lg" />
 				<div class="space-y-1">
@@ -48,7 +48,7 @@
 			<Skeleton class="h-12 w-24" />
 			<Skeleton class="mt-3 h-32 w-full rounded-lg" />
 		</div>
-		<div class="rounded-2xl border bg-card p-5 shadow-xs">
+		<div class="bg-card rounded-2xl border p-5 shadow-xs">
 			<div class="mb-4 flex items-center gap-2">
 				<Skeleton class="size-7 rounded-lg" />
 				<div class="space-y-1">
@@ -73,7 +73,7 @@
 	<!-- Analytics Row 2 Skeleton -->
 	<div class="grid gap-4 md:grid-cols-2">
 		{#each [1, 2] as i (i)}
-			<div class="rounded-2xl border bg-card p-5 shadow-xs">
+			<div class="bg-card rounded-2xl border p-5 shadow-xs">
 				<div class="mb-4 flex items-center gap-2">
 					<Skeleton class="size-7 rounded-lg" />
 					<div class="space-y-1">
@@ -88,7 +88,7 @@
 	</div>
 
 	<!-- Activity Feed Skeleton -->
-	<div class="rounded-2xl border bg-card shadow-xs">
+	<div class="bg-card rounded-2xl border shadow-xs">
 		<div class="border-b px-5 py-4">
 			<Skeleton class="h-4 w-32" />
 		</div>

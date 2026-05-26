@@ -11,11 +11,13 @@
  * Logs all sent emails in email_notifications table to prevent duplicates.
  */
 
-import { and, eq, sql } from 'drizzle-orm';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
+import { and, eq, sql } from 'drizzle-orm';
+
 import { loadDailyAgendaEntriesForDate } from '../daily-agenda';
 import { getDb } from '../db';
+import { sendReminderAlerts } from '../notifications';
 import {
 	emailNotifications,
 	meditationRoutines,
@@ -26,7 +28,6 @@ import {
 	visits,
 	workoutReminders
 } from './../db/schema';
-import { sendReminderAlerts } from '../notifications';
 import {
 	buildDailyAgendaDigestMessage,
 	buildDailyAgendaDigestTitle,
@@ -389,7 +390,9 @@ async function processVisitWarnings(): Promise<void> {
 			.get();
 
 		if (recentWarning) {
-			logger.debug(`   ⏭️  Already sent ${warningStatus} warning for ${person.name} in last 7 days`);
+			logger.debug(
+				`   ⏭️  Already sent ${warningStatus} warning for ${person.name} in last 7 days`
+			);
 			continue;
 		}
 

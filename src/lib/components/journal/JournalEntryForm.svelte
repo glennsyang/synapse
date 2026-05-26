@@ -1,8 +1,4 @@
 <script lang="ts">
-	import { ArrowLeft, ChevronDown, CircleAlert, Info, Thermometer } from '@lucide/svelte/icons';
-	import { fromAction } from 'svelte/attachments';
-	import { toast } from 'svelte-sonner';
-	import { type SuperValidated, superForm } from 'sveltekit-superforms';
 	import ContentSection from '$lib/components/app/ContentSection.svelte';
 	import PageShell from '$lib/components/app/PageShell.svelte';
 	import SectionHeader from '$lib/components/app/SectionHeader.svelte';
@@ -17,6 +13,10 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { JournalEntryFormValues } from '$lib/schemas/journal';
 	import { getCurrentWeather } from '$lib/utils/journal-context';
+	import { ArrowLeft, ChevronDown, CircleAlert, Info, Thermometer } from '@lucide/svelte/icons';
+	import { toast } from 'svelte-sonner';
+	import { fromAction } from 'svelte/attachments';
+	import { type SuperValidated, superForm } from 'sveltekit-superforms';
 
 	const starterPrompts = [
 		"What's one thing that went well today?",
@@ -93,12 +93,12 @@
 	>
 		<form method="POST" action={formAction} {@attach fromAction(enhance)} class="space-y-6">
 			<div
-				class="px-2 py-3 sm:rounded-2xl sm:border sm:border-[oklch(var(--color-blue)/0.2)] sm:bg-white/88 sm:p-5 sm:shadow-sm sm:dark:bg-slate-950/72 md:p-7"
+				class="px-2 py-3 sm:rounded-2xl sm:border sm:border-[oklch(var(--color-blue)/0.2)] sm:bg-white/88 sm:p-5 sm:shadow-sm md:p-7 sm:dark:bg-slate-950/72"
 			>
 				<div class="space-y-2">
-					<h2 class="font-display text-2xl font-bold text-foreground md:text-3xl">Today's Story</h2>
+					<h2 class="font-display text-foreground text-2xl font-bold md:text-3xl">Today's Story</h2>
 					{#if isNewMode}
-						<p class="text-sm italic text-[oklch(var(--color-blue)/0.68)]">{starterPrompt}</p>
+						<p class="text-sm text-[oklch(var(--color-blue)/0.68)] italic">{starterPrompt}</p>
 					{/if}
 				</div>
 
@@ -121,18 +121,21 @@
 
 					<Collapsible.Root bind:open={metadataOpen}>
 						<div
-							class="rounded-2xl border border-[oklch(var(--color-blue)/0.18)] bg-background/92 px-4 py-3 shadow-sm md:px-5"
+							class="bg-background/92 rounded-2xl border border-[oklch(var(--color-blue)/0.18)] px-4 py-3 shadow-sm md:px-5"
 						>
 							<Collapsible.Trigger class="w-full text-left">
 								<div class="flex items-center justify-between gap-4">
 									<div class="space-y-2">
 										<Badge variant="outline">Metadata</Badge>
-										<p class="text-sm leading-6 text-muted-foreground">
+										<p class="text-muted-foreground text-sm leading-6">
 											Capture the context around the entry without interrupting the writing flow.
 										</p>
 									</div>
 									<ChevronDown
-										class={['h-4 w-4 shrink-0 text-muted-foreground transition-transform', metadataOpen && 'rotate-180']}
+										class={[
+											'text-muted-foreground h-4 w-4 shrink-0 transition-transform',
+											metadataOpen && 'rotate-180'
+										]}
 									/>
 								</div>
 							</Collapsible.Trigger>
@@ -170,7 +173,7 @@
 									<div class="space-y-2">
 										<div class="flex items-center gap-2">
 											<Label for="weatherTemp">Temperature (°C)</Label>
-											<Info class="h-3.5 w-3.5 text-muted-foreground" />
+											<Info class="text-muted-foreground h-3.5 w-3.5" />
 										</div>
 										<div class="flex items-center gap-2">
 											<Input

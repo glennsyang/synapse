@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { Check, ChevronsUpDown, X } from '@lucide/svelte';
-
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { Badge } from '$lib/components/ui/badge';
@@ -8,6 +6,7 @@
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
 	import { cn } from '$lib/utils';
+	import { Check, ChevronsUpDown, X } from '@lucide/svelte';
 
 	const durationOptions = [
 		{ value: 10, label: '10 min' },
@@ -56,7 +55,7 @@
 						variant="outline"
 						role="combobox"
 						aria-expanded={open}
-						class="h-10 w-full justify-between bg-background/90"
+						class="bg-background/90 h-10 w-full justify-between"
 					>
 						<span class="truncate">
 							{selectedDuration !== null ? `${selectedDuration} min` : 'Duration'}
@@ -72,7 +71,7 @@
 							<Command.Item value={option.label} onSelect={() => toggleDuration(option.value)}>
 								<div
 									class={cn(
-										'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+										'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
 										selectedDuration === option.value
 											? 'bg-primary text-primary-foreground'
 											: 'opacity-50 [&_svg]:invisible'
@@ -89,7 +88,7 @@
 						<Command.Group>
 							<Command.Item
 								onSelect={() => updateUrl(null)}
-								class="justify-center text-center text-sm text-muted-foreground"
+								class="text-muted-foreground justify-center text-center text-sm"
 							>
 								Clear duration
 							</Command.Item>
@@ -112,7 +111,7 @@
 					variant="ghost"
 					size="icon-sm"
 					onclick={() => updateUrl(null)}
-					class="size-5 hover:text-destructive"
+					class="hover:text-destructive size-5"
 					aria-label="Remove duration filter"
 				>
 					<X class="h-3 w-3" />

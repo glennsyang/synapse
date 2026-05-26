@@ -1,18 +1,4 @@
 <script lang="ts">
-	import {
-		CirclePlay,
-		Clock,
-		ListFilter,
-		Pencil,
-		Plus,
-		Search,
-		Sparkles,
-		Trash2
-	} from '@lucide/svelte';
-	import { onDestroy } from 'svelte';
-	import { toast } from 'svelte-sonner';
-	import { superForm } from 'sveltekit-superforms';
-
 	import { goto } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import PageShell from '$lib/components/app/PageShell.svelte';
@@ -31,6 +17,20 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
+	import {
+		CirclePlay,
+		Clock,
+		ListFilter,
+		Pencil,
+		Plus,
+		Search,
+		Sparkles,
+		Trash2
+	} from '@lucide/svelte';
+	import { onDestroy } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
+
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -166,7 +166,7 @@
 		>
 			<div class="min-w-0 flex-1">
 				<h1 class="font-display text-2xl font-bold sm:text-3xl">Meditation</h1>
-				<p class="text-sm text-muted-foreground sm:text-base">
+				<p class="text-muted-foreground text-sm sm:text-base">
 					Manage routines and track your practice
 				</p>
 			</div>
@@ -206,7 +206,7 @@
 
 		<Tabs.Root value={activeTab} class="w-full gap-3">
 			<Tabs.List
-				class="grid h-11 w-full grid-cols-2 rounded-xl bg-muted/75 p-1 text-muted-foreground"
+				class="bg-muted/75 text-muted-foreground grid h-11 w-full grid-cols-2 rounded-xl p-1"
 			>
 				<Tabs.Trigger
 					value="routines"
@@ -235,12 +235,12 @@
 					<Collapsible.Root bind:open={filtersOpen}>
 						<Collapsible.Content id="meditation-filter-bar" class="w-full">
 							<div
-								class="grid gap-4 rounded-3xl border border-purple-200/80 bg-purple-50/55 p-4 shadow-sm dark:border-purple-500/25 dark:bg-purple-500/8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
+								class="grid gap-4 rounded-3xl border border-purple-200/80 bg-purple-50/55 p-4 shadow-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start dark:border-purple-500/25 dark:bg-purple-500/8"
 							>
-								<div class="min-w-0 w-full">
+								<div class="w-full min-w-0">
 									<div class="relative">
 										<Search
-											class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+											class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
 										/>
 										<Input
 											id="routine-keyword-filter"
@@ -250,7 +250,7 @@
 											aria-label="Search routines by keyword"
 											placeholder="Search title or description"
 											maxlength={200}
-											class="h-10 bg-background/90 pl-9"
+											class="bg-background/90 h-10 pl-9"
 										/>
 									</div>
 								</div>
@@ -273,7 +273,7 @@
 										<div class="flex-1">
 											<Card.Title class="font-display text-lg">{routine.title}</Card.Title>
 											{#if routine.description}
-												<p class="mt-2 text-sm text-muted-foreground">{routine.description}</p>
+												<p class="text-muted-foreground mt-2 text-sm">{routine.description}</p>
 											{/if}
 										</div>
 										{#if routine.isPredefined}
@@ -288,7 +288,7 @@
 									</div>
 								</Card.Header>
 								<Card.Content class="space-y-3">
-									<div class="flex items-center gap-2 text-sm text-muted-foreground">
+									<div class="text-muted-foreground flex items-center gap-2 text-sm">
 										<Clock class="h-4 w-4" />
 										<span>{routine.durationMinutes} minutes</span>
 									</div>
@@ -310,8 +310,7 @@
 										<CirclePlay class="mr-2 h-4 w-4" />
 										Practice
 									</Button>
-									<Button href="/meditation/routines/{routine.id}" variant="outline"
-										>Details</Button
+									<Button href="/meditation/routines/{routine.id}" variant="outline">Details</Button
 									>
 								</Card.Footer>
 							</Card.Root>
@@ -342,13 +341,13 @@
 									<div class="flex items-start justify-between border-b pb-4 last:border-b-0">
 										<div class="flex-1">
 											<h3 class="font-medium">{session.routine.title}</h3>
-											<p class="text-sm text-muted-foreground">
+											<p class="text-muted-foreground text-sm">
 												{formatTimestampShort(session.completedAt)}
 												at
 												{formatTimeFromTimestamp(session.completedAt)}
 											</p>
 											{#if session.notes}
-												<p class="mt-2 text-sm text-muted-foreground">{session.notes}</p>
+												<p class="text-muted-foreground mt-2 text-sm">{session.notes}</p>
 											{/if}
 										</div>
 										<div class="flex flex-col items-end gap-2">
@@ -359,7 +358,7 @@
 											{:else if session.moodRating}
 												<Badge variant="outline">Mood: {session.moodRating}/5</Badge>
 											{/if}
-											<span class="text-sm text-muted-foreground"
+											<span class="text-muted-foreground text-sm"
 												>{session.routine.durationMinutes}
 												min</span
 											>
@@ -388,9 +387,12 @@
 																{...props}
 																variant="ghost"
 																size="icon-sm"
-																class="border border-white/55 bg-white/68 text-destructive shadow-sm backdrop-blur-xl hover:bg-destructive/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-destructive/15"
+																class="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 border border-white/55 bg-white/68 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
 																aria-label="Delete Session"
-																onclick={() => { sessionToDelete = session.id; showDeleteSessionConfirm = true; }}
+																onclick={() => {
+																	sessionToDelete = session.id;
+																	showDeleteSessionConfirm = true;
+																}}
 															>
 																<Trash2 class="h-4 w-4" />
 															</Button>
@@ -404,7 +406,7 @@
 								{/each}
 							</div>
 						{:else}
-							<p class="py-8 text-center text-muted-foreground">
+							<p class="text-muted-foreground py-8 text-center">
 								No sessions completed yet. Start practicing to build your history!
 							</p>
 						{/if}
@@ -433,7 +435,7 @@
 			<Dialog.Description>{selectedSession?.routine.title}</Dialog.Description>
 		</Dialog.Header>
 		<form method="POST" action="?/updateSession" use:editSessionEnhance class="space-y-4">
-			<input type="hidden" name="id" bind:value={$editSessionForm.id}>
+			<input type="hidden" name="id" bind:value={$editSessionForm.id} />
 
 			<div class="space-y-2">
 				<Label for="hist_completed_at">Date & Time</Label>
@@ -444,7 +446,7 @@
 					bind:value={$editSessionForm.completed_at}
 				/>
 				{#if $editSessionErrors.completed_at}
-					<p class="text-sm text-destructive">{$editSessionErrors.completed_at}</p>
+					<p class="text-destructive text-sm">{$editSessionErrors.completed_at}</p>
 				{/if}
 			</div>
 
@@ -476,7 +478,7 @@
 					placeholder="1–5"
 				/>
 				{#if $editSessionErrors.pre_mood_rating}
-					<p class="text-sm text-destructive">{$editSessionErrors.pre_mood_rating}</p>
+					<p class="text-destructive text-sm">{$editSessionErrors.pre_mood_rating}</p>
 				{/if}
 			</div>
 
@@ -492,7 +494,7 @@
 					placeholder="1–5"
 				/>
 				{#if $editSessionErrors.mood_rating}
-					<p class="text-sm text-destructive">{$editSessionErrors.mood_rating}</p>
+					<p class="text-destructive text-sm">{$editSessionErrors.mood_rating}</p>
 				{/if}
 			</div>
 
@@ -506,7 +508,7 @@
 					rows={3}
 				/>
 				{#if $editSessionErrors.notes}
-					<p class="text-sm text-destructive">{$editSessionErrors.notes}</p>
+					<p class="text-destructive text-sm">{$editSessionErrors.notes}</p>
 				{/if}
 			</div>
 

@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
-	import { superForm } from 'sveltekit-superforms';
-
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import PageFormShell from '$lib/components/shared/PageFormShell.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { ArrowLeft, Trash2 } from '@lucide/svelte/icons';
+	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageData } from './$types';
 
@@ -40,7 +39,7 @@
 	</div>
 
 	<Card.Root>
-		<Card.Header> <Card.Title>Weight Entry</Card.Title> </Card.Header>
+		<Card.Header><Card.Title>Weight Entry</Card.Title></Card.Header>
 		<Card.Content>
 			<form method="POST" action="?/update" use:enhance class="space-y-4">
 				<Input type="hidden" name="id" bind:value={$form.id} />
@@ -49,7 +48,7 @@
 					<Label for="weight-date">Date</Label>
 					<Input id="weight-date" name="date" type="date" bind:value={$form.date} required />
 					{#if $errors.date}
-						<p class="text-sm text-destructive">{$errors.date}</p>
+						<p class="text-destructive text-sm">{$errors.date}</p>
 					{/if}
 				</div>
 
@@ -57,7 +56,7 @@
 					<Label for="weight-time">Time (optional)</Label>
 					<Input id="weight-time" name="time" type="time" bind:value={$form.time} />
 					{#if $errors.time}
-						<p class="text-sm text-destructive">{$errors.time}</p>
+						<p class="text-destructive text-sm">{$errors.time}</p>
 					{/if}
 				</div>
 
@@ -72,7 +71,7 @@
 						required
 					/>
 					{#if $errors.weightLbs}
-						<p class="text-sm text-destructive">{$errors.weightLbs}</p>
+						<p class="text-destructive text-sm">{$errors.weightLbs}</p>
 					{/if}
 				</div>
 

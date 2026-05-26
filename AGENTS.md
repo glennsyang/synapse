@@ -32,9 +32,9 @@ Synapse is a modern second-brain application providing journaling, todo manageme
   - `build` – Build the app
   - `preview` – Preview the production build locally
   - `check`, `check:watch` – Type/lint/check project
-  - `format` – Run Prettier write mode
-  - `lint` – Run Prettier and ESLint
-  - `lint:fix` – Run Prettier and ESLint with auto-fix
+  - `fmt` – Format code with oxfmt
+  - `lint` – Run oxlint checks
+  - `lint:fix` – Run oxlint with auto-fixes
   - `test`, `test:unit` – Vitest unit tests
   - `db:migrate`, `db:generate` – Drizzle database actions
 
@@ -53,7 +53,7 @@ Synapse is a modern second-brain application providing journaling, todo manageme
 - Use single quotes for strings.
 - Avoid using `any` type entirely - use proper typing, generics, or `unknown` instead.
 - **NEVER use `console.log()`** - always use the logger utility from `src/lib/utils/logger.ts` instead.
-- Follows ESLint (`eslint.config.js`) and Prettier conventions.
+- Uses **oxlint** for linting and **oxfmt** for formatting (Oxc toolchain). Run `npm run lint` and `npm run fmt`.
 - Uses Tailwind CSS for consistent styling.
 
 ## Svelte/SvelteKit Reactive Patterns

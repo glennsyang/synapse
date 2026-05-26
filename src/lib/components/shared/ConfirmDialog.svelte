@@ -1,10 +1,9 @@
 <script lang="ts">
-	import type { ActionResult } from '@sveltejs/kit';
-	import { toast } from 'svelte-sonner';
-
 	import { enhance } from '$app/forms';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import type { ActionResult } from '@sveltejs/kit';
+	import { toast } from 'svelte-sonner';
 
 	import Input from '../ui/input/input.svelte';
 
@@ -54,7 +53,7 @@
 	<Dialog.Content class="sm:max-w-106.25">
 		<Dialog.Header>
 			<Dialog.Title>{title}</Dialog.Title>
-			<Dialog.Description> {message} </Dialog.Description>
+			<Dialog.Description>{message}</Dialog.Description>
 		</Dialog.Header>
 		<form
 			method="POST"
@@ -79,7 +78,7 @@
 		>
 			<Input type="hidden" name="id" value={id} />
 			{#if hiddenFields}
-				{#each Object.entries(hiddenFields) as [ name, value ] (name)}
+				{#each Object.entries(hiddenFields) as [name, value] (name)}
 					<Input type="hidden" {name} value={String(value)} />
 				{/each}
 			{/if}

@@ -19,7 +19,7 @@
 		class="flex flex-col gap-1.5 rounded-2xl bg-gradient-to-br {gradient} p-4 shadow-md transition-all"
 	>
 		<div class="flex items-center justify-between">
-			<p class="text-xs font-medium uppercase tracking-wider text-white/70">{label}</p>
+			<p class="text-xs font-medium tracking-wider text-white/70 uppercase">{label}</p>
 			{#if Icon}
 				<Icon class="h-4 w-4 text-white/70" />
 			{/if}
@@ -41,7 +41,7 @@
 		class="flex flex-col gap-1.5 rounded-2xl border-0 bg-white p-4 shadow-sm transition-all dark:bg-zinc-900"
 	>
 		<div class="flex items-center justify-between">
-			<p class="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+			<p class="text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
 				{label}
 			</p>
 			{#if Icon}

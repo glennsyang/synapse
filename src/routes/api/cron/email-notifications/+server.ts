@@ -1,8 +1,7 @@
-import type { RequestHandler } from '@sveltejs/kit';
-import { json } from '@sveltejs/kit';
-
 import { runEmailNotifications } from '$lib/server/email/email-notifications';
 import { logger } from '$lib/utils/logger';
+import type { RequestHandler } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const authHeader = request.headers.get('authorization');

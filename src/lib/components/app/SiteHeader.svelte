@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { Moon, Sun } from '@lucide/svelte/icons';
-	import { toggleMode } from 'mode-watcher';
-
 	import { page } from '$app/state';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { Moon, Sun } from '@lucide/svelte/icons';
+	import { toggleMode } from 'mode-watcher';
 
 	// Helper to get page title from URL
 	function getPageTitle(): string {

@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { Bell, BellOff, Trash2 } from '@lucide/svelte/icons';
-
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { daysOfWeek, formatTime12Hour } from '$lib/utils/date';
 	import { getWorkoutBadgeClass, getWorkoutLabel } from '$lib/utils/workout';
+	import { Bell, BellOff, Trash2 } from '@lucide/svelte/icons';
 
 	interface Reminder {
 		id: string;
@@ -49,10 +48,10 @@
 		>
 		<div>
 			<p class="text-sm font-medium">{formatTime12Hour(reminder.time)}</p>
-			<p class="text-xs text-muted-foreground">
+			<p class="text-muted-foreground text-xs">
 				{scheduleText}
 				{#if !reminder.enabled}
-					<span class="ml-1 text-muted-foreground">(Disabled)</span>
+					<span class="text-muted-foreground ml-1">(Disabled)</span>
 				{/if}
 			</p>
 		</div>
@@ -90,7 +89,7 @@
 						type="button"
 						variant="ghost"
 						size="icon"
-						class="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+						class="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 w-7"
 						onclick={() => onDelete(reminder.id)}
 						aria-label="Delete reminder"
 					>

@@ -1,4 +1,10 @@
 <script lang="ts">
+	import { navigating } from '$app/state';
+	import AgendaCompletionChart from '$lib/components/dashboard/AgendaCompletionChart.svelte';
+	import AgendaItemScorecard from '$lib/components/dashboard/AgendaItemScorecard.svelte';
+	import VisitHealthPanel from '$lib/components/dashboard/VisitHealthPanel.svelte';
+	import WorkoutTypeChart from '$lib/components/dashboard/WorkoutTypeChart.svelte';
+	import DashboardSkeleton from '$lib/components/skeletons/DashboardSkeleton.svelte';
 	import {
 		Book,
 		CalendarCheck,
@@ -11,13 +17,6 @@
 		Users
 	} from '@lucide/svelte/icons';
 	import { fade } from 'svelte/transition';
-
-	import { navigating } from '$app/state';
-	import AgendaCompletionChart from '$lib/components/dashboard/AgendaCompletionChart.svelte';
-	import AgendaItemScorecard from '$lib/components/dashboard/AgendaItemScorecard.svelte';
-	import VisitHealthPanel from '$lib/components/dashboard/VisitHealthPanel.svelte';
-	import WorkoutTypeChart from '$lib/components/dashboard/WorkoutTypeChart.svelte';
-	import DashboardSkeleton from '$lib/components/skeletons/DashboardSkeleton.svelte';
 
 	let { data } = $props();
 
@@ -114,7 +113,7 @@
 						{data.user.name}
 					</span>
 				</h1>
-				<p class="text-sm text-muted-foreground">{data.todayLabel}</p>
+				<p class="text-muted-foreground text-sm">{data.todayLabel}</p>
 			</div>
 
 			{#if data.taskStats.openHighPriority > 0}
@@ -125,10 +124,7 @@
 					<CircleAlert class="size-4 shrink-0 text-amber-500" />
 					<span class="text-amber-600 dark:text-amber-400">
 						<span class="font-bold">{data.taskStats.openHighPriority}</span>
-						high-priority task{data
-							.taskStats.openHighPriority !== 1
-							? 's'
-							: ''}
+						high-priority task{data.taskStats.openHighPriority !== 1 ? 's' : ''}
 						open
 					</span>
 				</a>
@@ -140,7 +136,7 @@
 			<!-- Workout Hero Card -->
 			<a
 				href="/fitness"
-				class="group relative overflow-hidden rounded-2xl border bg-card p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md md:col-span-3"
+				class="group bg-card relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md md:col-span-3"
 			>
 				<div class="flex items-start justify-between">
 					<div class="rounded-xl bg-[oklch(var(--color-green)/0.15)] p-2.5">
@@ -157,10 +153,10 @@
 					{/if}
 				</div>
 				<div class="mt-4">
-					<div class="font-display text-5xl font-bold tabular-nums leading-none">
+					<div class="font-display text-5xl leading-none font-bold tabular-nums">
 						{data.stats.workoutsThisWeek}
 					</div>
-					<p class="mt-1.5 text-sm text-muted-foreground">Workouts this week</p>
+					<p class="text-muted-foreground mt-1.5 text-sm">Workouts this week</p>
 					<p class="mt-3 text-sm font-medium {workoutGapClass}">{workoutGapLabel}</p>
 				</div>
 				<div
@@ -169,7 +165,7 @@
 			</a>
 
 			<!-- Today's Agenda Summary -->
-			<div class="rounded-2xl border bg-card p-5 shadow-xs md:col-span-2">
+			<div class="bg-card rounded-2xl border p-5 shadow-xs md:col-span-2">
 				<div class="mb-3 flex items-center justify-between">
 					<div class="flex items-center gap-2">
 						<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
@@ -177,23 +173,23 @@
 						</div>
 						<div>
 							<h3 class="font-display text-sm font-semibold">Today's Agenda</h3>
-							<p class="text-xs text-muted-foreground">
+							<p class="text-muted-foreground text-xs">
 								{data.todayAgendaSummary.completed}
 								of {data.todayAgendaSummary.total} done
 							</p>
 						</div>
 					</div>
 					<span
-						class="font-display text-2xl font-bold tabular-nums text-[oklch(var(--color-orange))]"
+						class="font-display text-2xl font-bold text-[oklch(var(--color-orange))] tabular-nums"
 					>
 						{agendaProgressPct}%
 					</span>
 				</div>
 
 				{#if data.todayAgendaSummary.total === 0}
-					<p class="py-4 text-sm text-muted-foreground">No agenda items for today.</p>
+					<p class="text-muted-foreground py-4 text-sm">No agenda items for today.</p>
 				{:else}
-					<div class="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+					<div class="bg-muted mb-4 h-1.5 w-full overflow-hidden rounded-full">
 						<div
 							class="h-full rounded-full bg-[oklch(var(--color-orange))] transition-all duration-500"
 							style="width: {agendaProgressPct}%"
@@ -205,7 +201,7 @@
 								{#if item.completed}
 									<CircleCheck class="size-4 shrink-0 text-[oklch(var(--color-green))]" />
 								{:else}
-									<Circle class="size-4 shrink-0 text-muted-foreground/40" />
+									<Circle class="text-muted-foreground/40 size-4 shrink-0" />
 								{/if}
 								<span
 									class="text-sm {item.completed
@@ -224,28 +220,28 @@
 		<!-- ── Agenda Analytics ───────────────────────────────────────────────── -->
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			<!-- Agenda Completion Trend -->
-			<div class="rounded-2xl border bg-card p-5 shadow-xs">
+			<div class="bg-card rounded-2xl border p-5 shadow-xs">
 				<div class="mb-4 flex items-center gap-2">
 					<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
 						<CalendarCheck class="size-4 text-[oklch(var(--color-orange))]" />
 					</div>
 					<div>
 						<h3 class="font-display text-sm font-semibold">Daily Agenda Completion</h3>
-						<p class="text-xs text-muted-foreground">8-week trend</p>
+						<p class="text-muted-foreground text-xs">8-week trend</p>
 					</div>
 				</div>
 				<AgendaCompletionChart trend={data.agendaCompletionTrend} />
 			</div>
 
 			<!-- Agenda Item Scorecard -->
-			<div class="rounded-2xl border bg-card p-5 shadow-xs">
+			<div class="bg-card rounded-2xl border p-5 shadow-xs">
 				<div class="mb-4 flex items-center gap-2">
 					<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
 						<CalendarCheck class="size-4 text-[oklch(var(--color-orange))]" />
 					</div>
 					<div>
 						<h3 class="font-display text-sm font-semibold">Agenda Item Breakdown</h3>
-						<p class="text-xs text-muted-foreground">4-week completion · worst first</p>
+						<p class="text-muted-foreground text-xs">4-week completion · worst first</p>
 					</div>
 				</div>
 				<AgendaItemScorecard items={data.agendaItemStats} />
@@ -256,7 +252,7 @@
 		<div class="grid grid-cols-2 gap-4">
 			<a
 				href="/journal"
-				class="group flex items-center gap-3 rounded-2xl border bg-card/60 px-4 py-3.5 transition-colors hover:bg-card"
+				class="group bg-card/60 hover:bg-card flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-colors"
 			>
 				<div class="shrink-0 rounded-lg bg-[oklch(var(--color-blue)/0.15)] p-2">
 					<Book class="size-4 text-[oklch(var(--color-blue))]" />
@@ -276,13 +272,13 @@
 							</span>
 						{/if}
 					</div>
-					<p class="truncate text-xs text-muted-foreground">Journal entries this week</p>
+					<p class="text-muted-foreground truncate text-xs">Journal entries this week</p>
 				</div>
 			</a>
 
 			<a
 				href="/meditation"
-				class="group flex items-center gap-3 rounded-2xl border bg-card/60 px-4 py-3.5 transition-colors hover:bg-card"
+				class="group bg-card/60 hover:bg-card flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-colors"
 			>
 				<div class="shrink-0 rounded-lg bg-[oklch(var(--color-purple)/0.15)] p-2">
 					<Heart class="size-4 text-[oklch(var(--color-purple))]" />
@@ -302,7 +298,7 @@
 							</span>
 						{/if}
 					</div>
-					<p class="truncate text-xs text-muted-foreground">Meditation sessions this week</p>
+					<p class="text-muted-foreground truncate text-xs">Meditation sessions this week</p>
 				</div>
 			</a>
 		</div>
@@ -310,34 +306,34 @@
 		<!-- ── Fitness + Tasks ────────────────────────────────────────────────── -->
 		<div class="grid gap-4 md:grid-cols-2">
 			<!-- Workout Type Breakdown -->
-			<div class="rounded-2xl border bg-card p-5 shadow-xs">
+			<div class="bg-card rounded-2xl border p-5 shadow-xs">
 				<div class="mb-4 flex items-center gap-2">
 					<div class="rounded-lg bg-[oklch(var(--color-green)/0.15)] p-1.5">
 						<Dumbbell class="size-4 text-[oklch(var(--color-green))]" />
 					</div>
 					<div>
 						<h3 class="font-display text-sm font-semibold">Workout Breakdown</h3>
-						<p class="text-xs text-muted-foreground">By type, last 4 weeks</p>
+						<p class="text-muted-foreground text-xs">By type, last 4 weeks</p>
 					</div>
 				</div>
 				<WorkoutTypeChart breakdown={data.workoutTypeBreakdown} />
 			</div>
 
 			<!-- Task Stats -->
-			<div class="rounded-2xl border bg-card p-5 shadow-xs">
+			<div class="bg-card rounded-2xl border p-5 shadow-xs">
 				<div class="mb-4 flex items-center gap-2">
 					<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
 						<ListTodo class="size-4 text-[oklch(var(--color-orange))]" />
 					</div>
 					<div>
 						<h3 class="font-display text-sm font-semibold">Tasks</h3>
-						<p class="text-xs text-muted-foreground">This week vs last week</p>
+						<p class="text-muted-foreground text-xs">This week vs last week</p>
 					</div>
 				</div>
 
 				<div class="space-y-4">
 					<div class="flex items-center justify-between">
-						<div class="flex items-center gap-2 text-sm text-muted-foreground">
+						<div class="text-muted-foreground flex items-center gap-2 text-sm">
 							<CircleCheck class="size-4 text-[oklch(var(--color-green))]" />
 							Completed this week
 						</div>
@@ -356,29 +352,29 @@
 							{/if}
 						</div>
 					</div>
-					<div class="h-px bg-border/60"></div>
+					<div class="bg-border/60 h-px"></div>
 					<div class="flex items-center justify-between">
-						<span class="text-sm text-muted-foreground">Completed last week</span>
-						<span class="font-display text-2xl font-bold tabular-nums text-muted-foreground">
+						<span class="text-muted-foreground text-sm">Completed last week</span>
+						<span class="font-display text-muted-foreground text-2xl font-bold tabular-nums">
 							{data.taskStats.completedLastWeek}
 						</span>
 					</div>
-					<div class="h-px bg-border/60"></div>
+					<div class="bg-border/60 h-px"></div>
 					<div class="flex items-center justify-between">
-						<div class="flex items-center gap-2 text-sm text-muted-foreground">
+						<div class="text-muted-foreground flex items-center gap-2 text-sm">
 							<CircleAlert class="size-4 text-amber-500" />
 							Open high-priority
 						</div>
 						<a
 							href="/tasks"
-							class="font-display text-2xl font-bold tabular-nums text-amber-500 hover:underline"
+							class="font-display text-2xl font-bold text-amber-500 tabular-nums hover:underline"
 						>
 							{data.taskStats.openHighPriority}
 						</a>
 					</div>
-					<div class="h-px bg-border/60"></div>
+					<div class="bg-border/60 h-px"></div>
 					<div class="flex items-center justify-between">
-						<span class="text-sm text-muted-foreground">Open total</span>
+						<span class="text-muted-foreground text-sm">Open total</span>
 						<a href="/tasks" class="font-display text-2xl font-bold tabular-nums hover:underline">
 							{data.taskStats.openTotal}
 						</a>
@@ -388,14 +384,14 @@
 		</div>
 
 		<!-- ── Visit Health ───────────────────────────────────────────────────── -->
-		<div class="rounded-2xl border bg-card p-5 shadow-xs">
+		<div class="bg-card rounded-2xl border p-5 shadow-xs">
 			<div class="mb-4 flex items-center gap-2">
 				<div class="rounded-lg bg-[oklch(var(--color-pink)/0.15)] p-1.5">
 					<CalendarCheck class="size-4 text-[oklch(var(--color-pink))]" />
 				</div>
 				<div>
 					<h3 class="font-display text-sm font-semibold">Visit Health</h3>
-					<p class="text-xs text-muted-foreground">
+					<p class="text-muted-foreground text-xs">
 						<a href="/visits" class="hover:underline">View all →</a>
 					</p>
 				</div>
@@ -408,7 +404,7 @@
 		</div>
 
 		<!-- ── Recent Activity Feed ───────────────────────────────────────────── -->
-		<div class="rounded-2xl border bg-card shadow-xs">
+		<div class="bg-card rounded-2xl border shadow-xs">
 			<div class="border-b px-5 py-4">
 				<h3 class="font-display text-sm font-semibold">Recent Activity</h3>
 			</div>
@@ -418,18 +414,18 @@
 					{@const Icon = cfg.icon}
 					<a
 						href={item.href}
-						class="flex items-start gap-3 px-5 py-3.5 transition-colors hover:bg-muted/40"
+						class="hover:bg-muted/40 flex items-start gap-3 px-5 py-3.5 transition-colors"
 					>
 						<div class="mt-0.5 shrink-0 rounded-md p-1.5 {cfg.bgClass}">
 							<Icon class="size-3.5 {cfg.iconClass}" />
 						</div>
 						<div class="min-w-0 flex-1">
 							<p class="truncate text-sm font-medium">{item.title}</p>
-							<p class="mt-0.5 text-xs text-muted-foreground">{item.meta}</p>
+							<p class="text-muted-foreground mt-0.5 text-xs">{item.meta}</p>
 						</div>
 					</a>
 				{:else}
-					<div class="px-5 py-8 text-center text-sm text-muted-foreground">
+					<div class="text-muted-foreground px-5 py-8 text-center text-sm">
 						No recent activity yet. Start tracking to see your history here.
 					</div>
 				{/each}

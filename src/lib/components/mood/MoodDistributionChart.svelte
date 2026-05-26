@@ -1,9 +1,8 @@
 <script lang="ts">
-	import PieChartIcon from '@lucide/svelte/icons/chart-pie';
-	import { PieChart } from 'layerchart';
-
 	import * as Card from '$lib/components/ui/card';
 	import * as Chart from '$lib/components/ui/chart';
+	import PieChartIcon from '@lucide/svelte/icons/chart-pie';
+	import { PieChart } from 'layerchart';
 
 	interface MoodDistributionPoint {
 		mood: string;
@@ -46,10 +45,10 @@
 	<Card.Content>
 		{#if distribution.length === 0}
 			<div
-				class="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 px-6 text-center"
+				class="border-border/80 bg-muted/20 flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center"
 			>
 				<p class="font-display text-xl font-semibold">No mood history yet</p>
-				<p class="mt-2 max-w-md text-sm text-muted-foreground">
+				<p class="text-muted-foreground mt-2 max-w-md text-sm">
 					Once you log a few days, the chart will show which moods are leading this period.
 				</p>
 			</div>
@@ -76,10 +75,10 @@
 					<div
 						class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center"
 					>
-						<p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">Total logs</p>
+						<p class="text-muted-foreground text-xs tracking-[0.18em] uppercase">Total logs</p>
 						<p class="font-display text-4xl font-bold">{totalLogs}</p>
 						{#if mostFrequentMood}
-							<p class="mt-1 text-sm text-muted-foreground">Top mood: {mostFrequentMood}</p>
+							<p class="text-muted-foreground mt-1 text-sm">Top mood: {mostFrequentMood}</p>
 						{/if}
 					</div>
 				</div>
@@ -87,13 +86,13 @@
 				<div class="space-y-2.5">
 					{#each distribution as item (item.mood)}
 						<div
-							class="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-background/70 px-3 py-2"
+							class="border-border/70 bg-background/70 flex items-center justify-between gap-3 rounded-xl border px-3 py-2"
 						>
 							<div class="flex items-center gap-3">
 								<span class="h-3 w-3 rounded-full" style={`background:${item.fill}`}></span>
 								<div>
-									<p class="font-medium text-foreground">{item.mood}</p>
-									<p class="text-xs text-muted-foreground">
+									<p class="text-foreground font-medium">{item.mood}</p>
+									<p class="text-muted-foreground text-xs">
 										{item.count}
 										day{item.count === 1 ? '' : 's'}
 									</p>
