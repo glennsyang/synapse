@@ -10,7 +10,7 @@ Runs on every push and pull request to `main` and `develop` branches.
 
 **Jobs:**
 
-1. **Lint** - Runs Biome checks
+1. **Lint** - Runs oxlint checks
 2. **Type Check** - Validates TypeScript types
 3. **Test** - Runs unit tests with Vitest
 4. **Build** - Builds the application
