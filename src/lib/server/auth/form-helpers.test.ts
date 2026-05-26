@@ -1,4 +1,5 @@
 import { isRedirect, redirect } from '@sveltejs/kit';
+import type { Redirect } from '@sveltejs/kit';
 import { describe, expect, it } from 'vitest';
 
 import { mapAuthActionError, redirectIfAuthenticated } from './form-helpers';
@@ -8,15 +9,16 @@ const mockUser = { id: 'user_123', name: 'Alice', email: 'alice@example.com' };
 describe('redirectIfAuthenticated', () => {
 	it('throws a redirect to /dashboard when the user is authenticated', () => {
 		expect.assertions(2);
+		let caughtError: unknown;
 
 		try {
 			redirectIfAuthenticated(mockUser as App.Locals['user']);
 		} catch (e) {
-			expect(isRedirect(e)).toBe(true);
-			if (isRedirect(e)) {
-				expect(e.location).toBe('/dashboard');
-			}
+			caughtError = e;
 		}
+
+		expect(isRedirect(caughtError)).toBe(true);
+		expect((caughtError as Redirect).location).toBe('/dashboard');
 	});
 
 	it('does not throw when the user is null', () => {
@@ -32,6 +34,7 @@ describe('mapAuthActionError', () => {
 	it('re-throws a redirect error unchanged', () => {
 		// Create a redirect via the SvelteKit helper, which throws
 		let redirectError: unknown;
+		let caughtError: unknown;
 		try {
 			redirect(302, '/sign-in');
 		} catch (e) {
@@ -42,8 +45,10 @@ describe('mapAuthActionError', () => {
 		try {
 			mapAuthActionError(redirectError, 'fallback message');
 		} catch (e) {
-			expect(isRedirect(e)).toBe(true);
+			caughtError = e;
 		}
+
+		expect(isRedirect(caughtError)).toBe(true);
 	});
 
 	it('returns the fallback message for non-redirect errors', () => {

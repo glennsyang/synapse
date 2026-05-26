@@ -189,13 +189,15 @@ describe('assertDateIsEditable', () => {
 	});
 
 	it('sets the error code to read_only', () => {
+		let caughtError: unknown;
+
 		try {
 			assertDateIsEditable('2026-05-11');
 		} catch (e) {
-			expect(e).toBeInstanceOf(DailyAgendaMutationError);
-			if (e instanceof DailyAgendaMutationError) {
-				expect(e.code).toBe('read_only');
-			}
+			caughtError = e;
 		}
+
+		expect(caughtError).toBeInstanceOf(DailyAgendaMutationError);
+		expect((caughtError as DailyAgendaMutationError).code).toBe('read_only');
 	});
 });

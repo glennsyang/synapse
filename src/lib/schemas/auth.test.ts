@@ -78,10 +78,12 @@ describe('registerSchema', () => {
 			confirmPassword: 'DifferentPass1!'
 		});
 		expect(result.success).toBe(false);
-		if (!result.success) {
-			const paths = result.error.issues.map((e) => e.path.join('.'));
-			expect(paths).toContain('confirmPassword');
-		}
+		expect(result).toMatchObject({
+			success: false,
+			error: {
+				issues: expect.arrayContaining([expect.objectContaining({ path: ['confirmPassword'] })])
+			}
+		});
 	});
 });
 
