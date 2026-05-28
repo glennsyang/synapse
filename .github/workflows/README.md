@@ -4,32 +4,63 @@ This directory contains GitHub Actions workflows for automated CI/CD.
 
 ## Workflows
 
-### CI/CD Pipeline (`ci-cd.yml`)
+### PR Checks (`pr-check.yml`)
 
-Runs on every push and pull request to `main` and `develop` branches.
+Runs on every pull request.
 
-**Jobs:**
+**Checks performed:**
 
-1. **Lint** - Runs oxlint checks
-2. **Type Check** - Validates TypeScript types
-3. **Test** - Runs unit tests with Vitest
-4. **Build** - Builds the application
-5. **Deploy** - Deploys to Fly.io (only on `main` branch pushes)
+1. **Security audit** - Runs `npm audit --production --audit-level=high`
+2. **Formatting** - Runs `npm run fmt` and fails if files are changed
+3. **Lint** - Runs `npm run lint:github`
+4. **Type checks** - Runs `npm run check`
+5. **Tests** - Runs `npm run test:ci`
+6. **Coverage report** - Publishes Vitest coverage summary on PRs
 
-### Dependency Review (`dependency-review.yml`)
+### Fly Deploy (`fly-deploy.yml`)
 
-Runs on pull requests to review dependency changes for security vulnerabilities.
+Runs on pushes to `main`.
 
-### Security Audit (`security-audit.yml`)
+**Pipeline:**
 
-Runs `npm audit` weekly and on pushes/PRs to `main` to check for vulnerable dependencies.
+1. Install dependencies
+2. Run security audit, lint, type checks, and tests
+3. Deploy to Fly.io only if all checks pass
+
+### Scheduled Notifications (`cron.yml`)
+
+Runs every 10 minutes and can be triggered manually.
+
+**Job:**
+
+1. Calls the app's scheduled notifications endpoint with cron auth
+
+### Database Backup (`backup-database.yml`)
+
+Manual workflow (`workflow_dispatch`) for operational backups.
+
+**Job:**
+
+1. Dumps the production SQLite database from Fly.io
+2. Compresses and uploads backup as a workflow artifact (30-day retention)
+3. Opens an issue on failure and auto-closes existing backup-failure issues on success
+
+### Semgrep Security Scan (`semgrep.yml`)
+
+Runs on pull requests, pushes to `main`, and manual trigger.
+
+**Job:**
+
+1. Runs Semgrep SAST rulesets
+2. Uploads SARIF results to GitHub Security
 
 ## Required Secrets
 
 Configure these secrets in your GitHub repository settings:
 
-- `FLY_API_TOKEN` - Fly.io API token for deployments (get from `fly auth token`)
-- `BETTER_AUTH_SECRET` - Secret for Better Auth (optional for builds)
+- `FLY_API_TOKEN` - Fly.io API token used by deploy and database backup workflows
+- `APP_URL` - Base app URL used by the scheduled notifications workflow (for cron endpoint calls)
+- `CRON_SECRET` - Bearer token used to authenticate scheduled notifications calls
 
 ## Setup
 
@@ -37,9 +68,13 @@ Configure these secrets in your GitHub repository settings:
 2. Navigate to **Security** > **Secrets and variables** > **Actions**
 3. Add the required secrets
 
-## Manual Deployment
+## Manual Runs
 
-You can manually trigger deployments from the Actions tab by re-running the deploy job.
+You can manually trigger supported workflows from the Actions tab:
+
+- **Database Backup** via `backup-database.yml`
+- **Scheduled Notifications** via `cron.yml`
+- **Semgrep Security Scan** via `semgrep.yml`
 
 ## Disabling Workflows
 
