@@ -32,13 +32,13 @@
 		resetForm: false,
 		invalidateAll: true,
 		onUpdate: ({ form }) => {
-			if (form.message.type === 'success') {
-				toast.success(form.message.text);
+			if (form.message?.type === 'success') {
+				toast.success(form.message?.text);
 				makeConfettiBurst();
 			}
 
-			if (form.message.type === 'error') {
-				toast.error(form.message.text);
+			if (form.message?.type === 'error') {
+				toast.error(form.message?.text);
 			}
 		}
 	});
