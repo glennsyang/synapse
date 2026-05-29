@@ -24,6 +24,7 @@
 	import type { ActionResult } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 
+	import Confetti from '../shared/Confetti.svelte';
 	import DailyAgendaRadial from './DailyAgendaRadial.svelte';
 
 	interface Props {
@@ -55,6 +56,7 @@
 	let editingEntryTitle = $state('');
 	let agendaDeleteDialogOpen = $state(false);
 	let pendingAgendaDelete = $state<AgendaDeleteDialogState | null>(null);
+	let celebrationBurstId = $state(0);
 
 	function normalizeTemplateDays(days: number[]): number[] {
 		const selected = new Set(days);
@@ -230,6 +232,19 @@
 		};
 	});
 
+	function shouldCelebrateAgendaToggle(
+		day: DailyAgendaData['days'][number],
+		entry: DailyAgendaEntry
+	) {
+		return (
+			agenda.isCurrentWeek &&
+			day.isToday &&
+			!entry.completed &&
+			day.totalCount > 0 &&
+			day.completedCount + 1 >= day.totalCount
+		);
+	}
+
 	type AgendaActionData = {
 		agendaAction?: {
 			type?: 'success' | 'error' | 'validation-error';
@@ -357,6 +372,10 @@
 		return entry.sourceType === 'default'
 			? 'bg-slate-100/95 ring-slate-300/70 dark:bg-slate-900/85 dark:ring-slate-700/70'
 			: 'bg-background/90 ring-border/60 dark:bg-background/82';
+	}
+
+	function makeConfettiBurst() {
+		celebrationBurstId += 1;
 	}
 </script>
 
@@ -636,7 +655,12 @@
 										action={buildAgendaActionHref('toggleAgendaEntry')}
 										use:enhance={createAgendaEnhance({
 											errorMessage: 'Unable to update agenda item.',
-											silentSuccess: true
+											silentSuccess: true,
+											afterSuccess: () => {
+												if (shouldCelebrateAgendaToggle(day, entry)) {
+													makeConfettiBurst();
+												}
+											}
 										})}
 										class="shrink-0"
 									>
@@ -986,6 +1010,8 @@
 			</Dialog.Footer>
 		</Dialog.Content>
 	</Dialog.Root>
+
+	<Confetti burstId={celebrationBurstId} />
 
 	<ConfirmDialog
 		bind:open={agendaDeleteDialogOpen}

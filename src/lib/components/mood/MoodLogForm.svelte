@@ -8,8 +8,9 @@
 	import { moodOptions } from '$lib/utils/mood';
 	import { CircleAlert } from '@lucide/svelte/icons';
 	import { toast } from 'svelte-sonner';
-	import { fromAction } from 'svelte/attachments';
 	import { type SuperValidated, superForm } from 'sveltekit-superforms';
+
+	import Confetti from '../shared/Confetti.svelte';
 
 	interface Props {
 		form: SuperValidated<MoodLogFormValues>;
@@ -20,18 +21,24 @@
 	}
 
 	let { form: initialForm, todayLog }: Props = $props();
+	let celebrationBurstId = $state(0);
+
+	function makeConfettiBurst() {
+		celebrationBurstId += 1;
+	}
 
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, message, submitting } = superForm(initialForm, {
+	const { form, errors, enhance, submitting } = superForm(initialForm, {
 		resetForm: false,
 		invalidateAll: true,
-		onUpdate: () => {
-			if ($message?.type === 'success') {
-				toast.success($message.text);
+		onUpdate: ({ form }) => {
+			if (form.message.type === 'success') {
+				toast.success(form.message.text);
+				makeConfettiBurst();
 			}
 
-			if ($message?.type === 'error') {
-				toast.error($message.text);
+			if (form.message.type === 'error') {
+				toast.error(form.message.text);
 			}
 		}
 	});
@@ -55,7 +62,7 @@
 	</Card.Header>
 
 	<Card.Content>
-		<form method="POST" action="?/upsertMood" {@attach fromAction(enhance)} class="space-y-3">
+		<form method="POST" action="?/upsertMood" use:enhance class="space-y-3">
 			<Input type="hidden" name="date" bind:value={$form.date} />
 			<Input type="hidden" name="mood" bind:value={$form.mood} />
 
@@ -132,3 +139,5 @@
 		</form>
 	</Card.Content>
 </Card.Root>
+
+<Confetti burstId={celebrationBurstId} />

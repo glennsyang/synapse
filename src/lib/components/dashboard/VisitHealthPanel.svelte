@@ -100,7 +100,12 @@
 								{...props}
 								class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors {stat.bgClass}"
 							>
-								<span class="size-2 shrink-0 rounded-full {stat.dotClass}"></span>
+								<span
+									class="size-2 shrink-0 rounded-full {stat.dotClass} {stat.label === 'Critical' &&
+									stat.value > 0
+										? 'critical-dot-pulse'
+										: ''}"
+								></span>
 								<div class="min-w-0">
 									<div
 										class="font-display text-xl leading-none font-bold tabular-nums {stat.valueClass}"
@@ -145,3 +150,29 @@
 		{/if}
 	</div>
 </Tooltip.Provider>
+
+<style>
+	.critical-dot-pulse {
+		animation: critical-dot-pulse 1.4s ease-in-out infinite;
+		transform-origin: center;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.critical-dot-pulse {
+			animation: none;
+		}
+	}
+
+	@keyframes critical-dot-pulse {
+		0%,
+		100% {
+			transform: scale(0.9);
+			opacity: 0.55;
+		}
+
+		50% {
+			transform: scale(1.15);
+			opacity: 1;
+		}
+	}
+</style>
