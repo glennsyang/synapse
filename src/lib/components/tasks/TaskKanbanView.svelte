@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 	import type { TaskState } from '$lib/schemas/task';
@@ -8,6 +9,7 @@
 	import { toast } from 'svelte-sonner';
 	import { flip } from 'svelte/animate';
 
+	import Confetti from '../shared/Confetti.svelte';
 	import { type TaskSummary, taskStateOptions } from './task-ui';
 	import TaskCard from './TaskCard.svelte';
 
@@ -37,6 +39,7 @@
 	let isDragging = $state(false);
 	let isSavingMove = $state(false);
 	let dragSnapshot = $state<BoardTasksByState | null>(null);
+	let celebrationBurstId = $state(0);
 
 	let isMobileLayout = $derived(isMobileQuery.current);
 
@@ -172,6 +175,10 @@
 			if (!response.ok) {
 				throw new Error('move-failed');
 			}
+
+			if (payload.fromState !== 'done' && payload.toState === 'done') {
+				makeConfettiBurst();
+			}
 		} catch {
 			boardTasks = cloneBoardTasksByState(snapshot);
 			toast.error('Could not save task move. The board was restored.');
@@ -234,25 +241,44 @@
 		dragSnapshot = null;
 	}
 
-	function handleStateChange(taskId: string, newState: TaskState) {
-		const form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '?/updateState';
+	async function submitStateChange(taskId: string, newState: TaskState): Promise<Response> {
+		const formData = new FormData();
+		formData.set('id', taskId);
+		formData.set('state', newState);
 
-		const idInput = document.createElement('input');
-		idInput.type = 'hidden';
-		idInput.name = 'id';
-		idInput.value = taskId;
+		return fetch('?/updateState', {
+			method: 'POST',
+			body: formData
+		});
+	}
 
-		const stateInput = document.createElement('input');
-		stateInput.type = 'hidden';
-		stateInput.name = 'state';
-		stateInput.value = newState;
+	async function handleStateChange(taskId: string, newState: TaskState, previousState: TaskState) {
+		if (isSavingMove || previousState === newState) {
+			return;
+		}
 
-		form.appendChild(idInput);
-		form.appendChild(stateInput);
-		document.body.appendChild(form);
-		form.submit();
+		isSavingMove = true;
+
+		try {
+			const response = await submitStateChange(taskId, newState);
+			if (!response.ok) {
+				throw new Error('update-failed');
+			}
+
+			if (previousState !== 'done' && newState === 'done') {
+				makeConfettiBurst();
+			}
+
+			await invalidateAll();
+		} catch {
+			toast.error('Could not update the task state. Please try again.');
+		} finally {
+			isSavingMove = false;
+		}
+	}
+
+	function makeConfettiBurst() {
+		celebrationBurstId += 1;
 	}
 
 	const getCreateHref = (state: TaskState) => `/tasks/new?state=${state}`;
@@ -324,7 +350,8 @@
 								<div animate:flip={{ duration: flipDurationMs }} aria-label={task.title}>
 									<TaskCard
 										{task}
-										onStateChange={(newState) => handleStateChange(task.id, newState)}
+										onStateChange={(newState) =>
+											void handleStateChange(task.id, newState, task.state)}
 									/>
 								</div>
 							{/each}
@@ -446,7 +473,8 @@
 								<div animate:flip={{ duration: flipDurationMs }} aria-label={task.title}>
 									<TaskCard
 										{task}
-										onStateChange={(newState) => handleStateChange(task.id, newState)}
+										onStateChange={(newState) =>
+											void handleStateChange(task.id, newState, task.state)}
 									/>
 								</div>
 							{/each}
@@ -494,3 +522,5 @@
 		{/if}
 	</div>
 {/if}
+
+<Confetti burstId={celebrationBurstId} />
