@@ -75,7 +75,7 @@
 		"oxlint": "^1.67.0",
 		"oxlint-tsgolint": "^0.23.0",
 		"svelte": "^5.55.1",
-		"svelte-check": "^4.3.4",
+		"svelte-check": "^4.5.0",
 		"svelte-dnd-action": "^0.9.69",
 		"svelte-sonner": "^1.1.0",
 		"sveltekit-superforms": "^2.29.1",
