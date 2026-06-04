@@ -10,7 +10,7 @@ Runs on every pull request.
 
 **Checks performed:**
 
-1. **Security audit** - Runs `npm audit --production --audit-level=high`
+1. **Security audit** - Runs `npm audit --omit=dev --audit-level=high`
 2. **Formatting** - Runs `npm run fmt` and fails if files are changed
 3. **Lint** - Runs `npm run lint:github`
 4. **Type checks** - Runs `npm run check`
