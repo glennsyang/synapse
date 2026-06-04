@@ -16,7 +16,7 @@ jobs:
       # Install dependencies
       - uses: actions/setup-node@v6
         with:
-          node-version: '22.22.2'
+          node-version: '22.22.3'
           cache: 'npm'
 
       - name: Install dependencies
@@ -24,7 +24,7 @@ jobs:
 
       # Run security audit
       - name: Run npm audit
-        run: npm audit --production --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Setup environment for type checking
         run: cp .env.example .env

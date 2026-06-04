@@ -43,7 +43,7 @@ Synapse is a modern second-brain application providing journaling, todo manageme
 - Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`, `RESEND_NEW_USER_ADDRESS`
 - Runtime/ops env var: `CRON_SECRET` (required for `/api/cron/email-notifications`)
 - Validated in `src/env.ts` using Zod schema
-- Node.js version: **22.22.2** (required for better-sqlite3 compatibility)
+- Node.js version: **22.22.3** (required for better-sqlite3 compatibility)
 - Application timezone is fixed to Pacific time: `America/Los_Angeles`
 - All app-level "today", day boundaries, week calculations, and editability cutoffs must use Pacific time, never server local time or UTC
 
@@ -162,10 +162,10 @@ $effect(() => {
 
 ## Node.js Version
 
-**CRITICAL**: This project requires **Node.js version 22.22.2** for development and production to ensure compatibility with better-sqlite3 and other native dependencies.
+**CRITICAL**: This project requires **Node.js version 22.22.3** for development and production to ensure compatibility with better-sqlite3 and other native dependencies.
 
-- **Before running ANY commands**, verify Node version: `node -v` should show `v22.22.2`
-- **If you encounter terminal errors**, first check and switch Node version: `nvm use 22.22.2`
+- **Before running ANY commands**, verify Node version: `node -v` should show `v22.22.3`
+- **If you encounter terminal errors**, first check and switch Node version: `nvm use 22.22.3`
 - Use a version manager (nvm or asdf) to manage Node versions
 - This version is **non-negotiable** - other versions may cause build failures or runtime errors
 
