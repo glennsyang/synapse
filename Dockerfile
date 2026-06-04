@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1
 
 # Adjust NODE_VERSION as desired
-ARG NODE_VERSION=22.22.2
+ARG NODE_VERSION=22.22.3
 FROM node:${NODE_VERSION}-slim AS base
 
 # 1. Install curl and CA certificates (required for HTTPS downloads)
