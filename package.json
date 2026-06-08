@@ -50,7 +50,7 @@
 		"@playwright/test": "^1.60.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.4",
 		"@sveltejs/adapter-node": "^5.5.4",
-		"@sveltejs/kit": "^2.49.2",
+		"@sveltejs/kit": "^2.63.1",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.1.18",
