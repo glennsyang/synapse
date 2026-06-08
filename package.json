@@ -60,7 +60,7 @@
 		"@types/d3-scale": "^4.0.9",
 		"@types/d3-shape": "^3.1.7",
 		"@types/markdown-it": "^14.1.2",
-		"@types/node": "^25.7.0",
+		"@types/node": "^25.9.2",
 		"@vitest/coverage-v8": "^4.1.7",
 		"bits-ui": "^2.16.5",
 		"clsx": "^2.1.1",
