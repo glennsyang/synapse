@@ -1,6 +1,7 @@
 import { getUser } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
+import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import {
@@ -16,10 +17,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	try {
 		const db = getDb();
 		const today = getTodayString();
+		const userId = getUser(locals).id;
+		const visitStatusThresholds = await getVisitStatusThresholdsForUser(userId, db);
 
 		// Load all people for the user
 		const userPeople = await db.query.people.findMany({
-			where: and(eq(people.userId, getUser(locals).id), eq(people.isArchived, false)),
+			where: and(eq(people.userId, userId), eq(people.isArchived, false)),
 			orderBy: [desc(people.createdAt)]
 		});
 
@@ -28,7 +31,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		if (userPeople.length > 0) {
 			const orderedVisits = await db.query.visits.findMany({
 				where: and(
-					eq(visits.userId, getUser(locals).id),
+					eq(visits.userId, userId),
 					inArray(
 						visits.personId,
 						userPeople.map((person) => person.id)
@@ -54,7 +57,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 				latestVisit?.date ?? null,
 				person.isExempt,
 				latestFollowUpDate,
-				today
+				today,
+				visitStatusThresholds
 			);
 
 			return {

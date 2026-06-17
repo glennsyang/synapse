@@ -1,3 +1,4 @@
+import { convertVisitThresholdToDays } from '$lib/utils/visit-status';
 import { z } from 'zod';
 
 export const registerSchema = z
@@ -49,6 +50,39 @@ export const resetPasswordSchema = z
 export const updateProfileSchema = z.object({
 	name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters')
 });
+
+const visitSettingsUnitSchema = z.enum(['days', 'months']);
+
+export const updateVisitStatusSettingsSchema = z
+	.object({
+		thresholdUnit: visitSettingsUnitSchema.default('days'),
+		recentToOverdueValue: z.coerce
+			.number()
+			.refine((value) => Number.isFinite(value), 'Please enter a valid number')
+			.positive('Value must be greater than 0'),
+		overdueToCriticalValue: z.coerce
+			.number()
+			.refine((value) => Number.isFinite(value), 'Please enter a valid number')
+			.positive('Value must be greater than 0')
+	})
+	.refine(
+		(data) => {
+			const recentToOverdueDays = convertVisitThresholdToDays(
+				data.recentToOverdueValue,
+				data.thresholdUnit
+			);
+			const overdueToCriticalDays = convertVisitThresholdToDays(
+				data.overdueToCriticalValue,
+				data.thresholdUnit
+			);
+
+			return overdueToCriticalDays > recentToOverdueDays;
+		},
+		{
+			path: ['overdueToCriticalValue'],
+			message: 'Overdue to critical threshold must be greater than recent to overdue threshold'
+		}
+	);
 
 export const changePasswordSchema = z
 	.object({

@@ -1,4 +1,5 @@
-import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
+import { getTodayString } from '$lib/utils/date';
+import { calculatePersonVisitStatus, type VisitStatusThresholds } from '$lib/utils/visit-status';
 
 type VisitWarningStatus = 'yellow' | 'critical';
 
@@ -11,9 +12,17 @@ const visitWarningDateFormatter = new Intl.DateTimeFormat('en-US', {
 
 export function getVisitWarningStatus(
 	lastVisitDate: string,
-	latestFollowUpDate: string | null = null
+	latestFollowUpDate: string | null = null,
+	visitStatusThresholds?: Partial<VisitStatusThresholds> | null,
+	today: string = getTodayString()
 ): VisitWarningStatus | null {
-	const { status } = calculatePersonVisitStatus(lastVisitDate, false, latestFollowUpDate);
+	const { status } = calculatePersonVisitStatus(
+		lastVisitDate,
+		false,
+		latestFollowUpDate,
+		today,
+		visitStatusThresholds
+	);
 
 	if (status === 'yellow') {
 		return 'yellow';

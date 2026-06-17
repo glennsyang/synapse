@@ -15,6 +15,7 @@
 		setGoalWeightSchema,
 		workoutReminderSchema
 	} from '$lib/schemas/fitness';
+	import { cn } from '$lib/utils';
 	import {
 		BellPlus,
 		Dumbbell,
@@ -57,33 +58,53 @@
 
 		<!-- Dropdown Menu in top right -->
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}>
+			<DropdownMenu.Trigger
+				class={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'size-10 sm:size-7')}
+			>
 				<EllipsisVertical />
 			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end" class="w-56">
-				<DropdownMenu.Item class="cursor-pointer" onclick={() => (showLogWorkout = true)}>
+			<DropdownMenu.Content align="end" class="w-64 sm:w-56">
+				<DropdownMenu.Item
+					class="cursor-pointer py-3 sm:py-1.5"
+					onclick={() => (showLogWorkout = true)}
+				>
 					<Dumbbell class="mr-3 h-4 w-4" />
 					Log Workout
 				</DropdownMenu.Item>
-				<DropdownMenu.Item class="cursor-pointer" onclick={() => (showLogWeight = true)}>
+				<DropdownMenu.Item
+					class="cursor-pointer py-3 sm:py-1.5"
+					onclick={() => (showLogWeight = true)}
+				>
 					<Scale class="mr-3 h-4 w-4" />
 					Log Weight
 				</DropdownMenu.Item>
-				<DropdownMenu.Item class="cursor-pointer" onclick={() => (showLogMeal = true)}>
+				<DropdownMenu.Item
+					class="cursor-pointer py-3 sm:py-1.5"
+					onclick={() => (showLogMeal = true)}
+				>
 					<UtensilsCrossed class="mr-3 h-4 w-4" />
 					Log Meal
 				</DropdownMenu.Item>
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item class="cursor-pointer" onclick={() => (showSetGoalWeight = true)}>
+				<DropdownMenu.Item
+					class="cursor-pointer py-3 sm:py-1.5"
+					onclick={() => (showSetGoalWeight = true)}
+				>
 					<Target class="mr-3 h-4 w-4" />
 					Set Goal Weight
 				</DropdownMenu.Item>
-				<DropdownMenu.Item class="cursor-pointer" onclick={() => (showSetCalorieTarget = true)}>
+				<DropdownMenu.Item
+					class="cursor-pointer py-3 sm:py-1.5"
+					onclick={() => (showSetCalorieTarget = true)}
+				>
 					<Settings class="mr-3 h-4 w-4" />
 					Set Calorie Target
 				</DropdownMenu.Item>
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item class="cursor-pointer" onclick={() => (showCreateReminder = true)}>
+				<DropdownMenu.Item
+					class="cursor-pointer py-3 sm:py-1.5"
+					onclick={() => (showCreateReminder = true)}
+				>
 					<BellPlus class="mr-3 h-4 w-4" />
 					Create Reminder
 				</DropdownMenu.Item>

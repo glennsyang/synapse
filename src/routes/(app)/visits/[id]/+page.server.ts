@@ -4,6 +4,7 @@ import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
 import { generateId } from '$lib/server/db/utils';
+import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
@@ -20,10 +21,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	}
 
 	const db = getDb();
+	const userId = getUser(locals).id;
 
 	// Load person
 	const person = await db.query.people.findFirst({
-		where: and(eq(people.id, params.id), eq(people.userId, getUser(locals).id))
+		where: and(eq(people.id, params.id), eq(people.userId, userId))
 	});
 
 	if (!person) {
@@ -44,6 +46,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		...visit,
 		companions: visit.companions ? JSON.parse(visit.companions) : null
 	}));
+	const visitStatusThresholds = await getVisitStatusThresholdsForUser(userId, db);
 
 	// Calculate status
 	const latestVisit = personVisits[0];
@@ -51,7 +54,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		latestVisit?.date ?? null,
 		person.isExempt,
 		latestVisit?.followUpDate ?? null,
-		getTodayString()
+		getTodayString(),
+		visitStatusThresholds
 	);
 
 	// Initialize forms
