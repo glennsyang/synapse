@@ -8,6 +8,7 @@ import {
 	visits,
 	workoutLogs
 } from '$lib/server/db/schema';
+import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import {
 	addDaysToDateString,
 	calendarDaysBetween,
@@ -24,7 +25,7 @@ import {
 } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import { createMarkdownExcerpt } from '$lib/utils/markdown';
-import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
+import { calculatePersonVisitStatus, type VisitStatusThresholds } from '$lib/utils/visit-status';
 import { getWorkoutLabel } from '$lib/utils/workout';
 import { and, desc, eq, gte, lte, ne, sql } from 'drizzle-orm';
 
@@ -123,7 +124,8 @@ function buildUpcomingVisits(
 function buildVisitHealth(
 	peopleRaw: { id: string; name: string; isExempt: boolean }[],
 	visitsMap: Map<string, { date: string; followUpDate: string | null }>,
-	today: string
+	today: string,
+	visitStatusThresholds: VisitStatusThresholds
 ): VisitHealthResult {
 	const counts: Record<VisitHealthBucket, number> & { total: number } = {
 		critical: 0,
@@ -144,7 +146,8 @@ function buildVisitHealth(
 			latestVisit?.date ?? null,
 			person.isExempt,
 			latestVisit?.followUpDate ?? null,
-			today
+			today,
+			visitStatusThresholds
 		);
 		const key = STATUS_KEY_MAP[status];
 		if (key) {
@@ -706,7 +709,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const db = getDb();
 
 	try {
-		const data = await runDashboardQueries(db, user.id, ranges);
+		const [data, visitStatusThresholds] = await Promise.all([
+			runDashboardQueries(db, user.id, ranges),
+			getVisitStatusThresholdsForUser(user.id, db)
+		]);
 
 		const journalCountByDate = buildCountByDateMap(data.journalDateCounts);
 		const workoutCountByDate = buildCountByDateMap(data.workoutDateCounts);
@@ -721,7 +727,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const { counts: visitHealthCounts, names: visitHealthNames } = buildVisitHealth(
 			data.allPeopleRaw,
 			latestVisitByPersonId,
-			today
+			today,
+			visitStatusThresholds
 		);
 
 		return {

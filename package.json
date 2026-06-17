@@ -1,6 +1,6 @@
 {
 	"name": "synapse",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -36,7 +36,7 @@
 		"canvas-confetti": "^1.9.4",
 		"d3-scale": "^4.0.2",
 		"d3-shape": "^3.2.0",
-		"drizzle-kit": "^0.31.9",
+		"drizzle-kit": "^0.31.10",
 		"drizzle-orm": "^0.45.1",
 		"markdown-it": "^14.1.1",
 		"marked": "^18.0.3",
@@ -71,7 +71,7 @@
 		"layerchart": "^2.0.0-next.51",
 		"lefthook": "^2.1.9",
 		"lint-staged": "^17.0.7",
-		"oxfmt": "^0.54.0",
+		"oxfmt": "^0.55.0",
 		"oxlint": "^1.67.0",
 		"oxlint-tsgolint": "^0.23.0",
 		"svelte": "^5.55.1",

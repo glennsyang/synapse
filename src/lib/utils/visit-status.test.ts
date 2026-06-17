@@ -4,8 +4,12 @@ import { describe, expect, it } from 'vitest';
 import {
 	calculatePersonVisitStatus,
 	calculateVisitStatus,
+	convertVisitThresholdFromDays,
+	convertVisitThresholdToDays,
+	DEFAULT_VISIT_STATUS_THRESHOLDS,
 	getStatusLabel,
-	getStatusPriority
+	getStatusPriority,
+	normalizeVisitStatusThresholds
 } from './visit-status';
 
 function dateDaysAgo(daysAgo: number): string {
@@ -117,5 +121,46 @@ describe('visit status boundary thresholds', () => {
 		expect(result.status).toBe('none');
 		expect(result.daysSinceLastVisit).toBeNull();
 		expect(result.daysUntilStatusChange).toBeNull();
+	});
+
+	it('supports custom boundary thresholds', () => {
+		const today = getTodayString();
+		const customThresholds = {
+			recentToOverdueDays: 90,
+			overdueToCriticalDays: 120
+		};
+
+		expect(calculateVisitStatus(dateDaysAgo(50), today, customThresholds).status).toBe('green');
+		expect(calculateVisitStatus(dateDaysAgo(100), today, customThresholds).status).toBe('yellow');
+		expect(calculateVisitStatus(dateDaysAgo(130), today, customThresholds).status).toBe('red');
+	});
+});
+
+describe('visit threshold normalization and conversion', () => {
+	it('falls back to defaults when threshold ordering is invalid', () => {
+		expect(
+			normalizeVisitStatusThresholds({
+				recentToOverdueDays: 200,
+				overdueToCriticalDays: 180
+			})
+		).toEqual(DEFAULT_VISIT_STATUS_THRESHOLDS);
+	});
+
+	it('round-trips between days and months without drift for defaults', () => {
+		const recentMonths = convertVisitThresholdFromDays(
+			DEFAULT_VISIT_STATUS_THRESHOLDS.recentToOverdueDays,
+			'months'
+		);
+		const criticalMonths = convertVisitThresholdFromDays(
+			DEFAULT_VISIT_STATUS_THRESHOLDS.overdueToCriticalDays,
+			'months'
+		);
+
+		expect(convertVisitThresholdToDays(recentMonths, 'months')).toBe(
+			DEFAULT_VISIT_STATUS_THRESHOLDS.recentToOverdueDays
+		);
+		expect(convertVisitThresholdToDays(criticalMonths, 'months')).toBe(
+			DEFAULT_VISIT_STATUS_THRESHOLDS.overdueToCriticalDays
+		);
 	});
 });

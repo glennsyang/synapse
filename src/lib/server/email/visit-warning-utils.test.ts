@@ -27,6 +27,18 @@ describe('visit warning utilities', () => {
 		expect(getVisitWarningStatus(redVisitDate)).toBe('critical');
 	});
 
+	it('uses custom thresholds when provided', () => {
+		const nowYellowByCustomRules = dateDaysAgo(100);
+		const nowCriticalByCustomRules = dateDaysAgo(150);
+		const thresholds = {
+			recentToOverdueDays: 90,
+			overdueToCriticalDays: 120
+		};
+
+		expect(getVisitWarningStatus(nowYellowByCustomRules, null, thresholds)).toBe('yellow');
+		expect(getVisitWarningStatus(nowCriticalByCustomRules, null, thresholds)).toBe('critical');
+	});
+
 	it('suppresses warnings when latest visit has a scheduled follow-up', () => {
 		const redVisitDate = dateDaysAgo(400);
 		const futureFollowUpDate = dateDaysAgo(-10);

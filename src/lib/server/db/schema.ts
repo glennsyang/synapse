@@ -669,3 +669,30 @@ export const visitsRelations = relations(visits, ({ one }) => ({
 		references: [user.id]
 	})
 }));
+
+/**
+ * Visit Status Settings
+ * Per-user thresholds for visit status transitions.
+ */
+export const visitStatusSettings = sqliteTable('visit_status_settings', {
+	id: text('id').primaryKey().$defaultFn(generateId),
+	userId: text('user_id')
+		.notNull()
+		.unique()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	recentToOverdueDays: integer('recent_to_overdue_days').notNull(),
+	overdueToCriticalDays: integer('overdue_to_critical_days').notNull(),
+	createdAt: text('created_at')
+		.notNull()
+		.$defaultFn(() => new Date().toISOString()),
+	updatedAt: text('updated_at')
+		.notNull()
+		.$defaultFn(() => new Date().toISOString())
+});
+
+export const visitStatusSettingsRelations = relations(visitStatusSettings, ({ one }) => ({
+	user: one(user, {
+		fields: [visitStatusSettings.userId],
+		references: [user.id]
+	})
+}));

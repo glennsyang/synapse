@@ -11,6 +11,7 @@
  * Logs all sent emails in email_notifications table to prevent duplicates.
  */
 
+import { getVisitStatusThresholdsByUserIds } from '$lib/server/visit-status-settings';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import { and, eq, sql } from 'drizzle-orm';
@@ -341,6 +342,10 @@ async function processVisitWarnings(): Promise<void> {
 		.all();
 
 	logger.debug(`   Found ${allPeople.length} people to check`);
+	const visitThresholdsByUserId = await getVisitStatusThresholdsByUserIds(
+		allPeople.map(({ user: userData }) => userData.id),
+		db
+	);
 
 	let sentCount = 0;
 
@@ -364,7 +369,11 @@ async function processVisitWarnings(): Promise<void> {
 			continue;
 		}
 
-		const warningStatus = getVisitWarningStatus(lastVisit.date, lastVisit.followUpDate);
+		const warningStatus = getVisitWarningStatus(
+			lastVisit.date,
+			lastVisit.followUpDate,
+			visitThresholdsByUserId.get(userData.id)
+		);
 		if (!warningStatus) {
 			continue;
 		}

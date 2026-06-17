@@ -3,22 +3,61 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Separator from '$lib/components/ui/separator';
-	import { CircleAlert, CircleCheck, Lock, Pencil, Save, User, X } from '@lucide/svelte';
+	import {
+		convertVisitThresholdFromDays,
+		convertVisitThresholdToDays
+	} from '$lib/utils/visit-status';
+	import {
+		CircleAlert,
+		CircleCheck,
+		Lock,
+		Pencil,
+		Save,
+		SlidersHorizontal,
+		User,
+		X
+	} from '@lucide/svelte';
 	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
+	type FormMessage =
+		| string
+		| {
+				type?: string;
+				text?: string;
+		  }
+		| null
+		| undefined;
+
+	function getMessageText(message: FormMessage): string {
+		if (typeof message === 'string') {
+			return message;
+		}
+
+		if (message && typeof message.text === 'string') {
+			return message.text;
+		}
+
+		return '';
+	}
+
+	function isSuccessMessage(message: FormMessage): boolean {
+		if (message && typeof message === 'object' && message.type === 'success') {
+			return true;
+		}
+
+		return getMessageText(message).toLowerCase().includes('success');
+	}
+
 	// Profile form
 	// svelte-ignore state_referenced_locally
 	const profileFormStore = superForm(data.profileForm, {
 		onUpdate: ({ form }) => {
-			if (form.message) {
-				// Reset editing state on success
-				if (form.message.includes('successfully')) {
-					isEditingProfile = false;
-				}
+			if (isSuccessMessage(form.message as FormMessage)) {
+				isEditingProfile = false;
 			}
 		}
 	});
@@ -35,11 +74,8 @@
 	const passwordFormStore = superForm(data.passwordForm, {
 		resetForm: true,
 		onUpdate: ({ form }) => {
-			if (form.message) {
-				// Reset editing state and form on success
-				if (form.message.includes('successfully')) {
-					isEditingPassword = false;
-				}
+			if (isSuccessMessage(form.message as FormMessage)) {
+				isEditingPassword = false;
 			}
 		}
 	});
@@ -51,9 +87,27 @@
 		submitting: passwordSubmitting
 	} = passwordFormStore;
 
+	// Visit settings form
+	// svelte-ignore state_referenced_locally
+	const visitSettingsFormStore = superForm(data.visitSettingsForm, {
+		onUpdate: ({ form }) => {
+			if (isSuccessMessage(form.message as FormMessage)) {
+				isEditingVisitSettings = false;
+			}
+		}
+	});
+
+	const {
+		form: visitSettingsForm,
+		errors: visitSettingsErrors,
+		message: visitSettingsMessage,
+		submitting: visitSettingsSubmitting
+	} = visitSettingsFormStore;
+
 	// Profile editing state
 	let isEditingProfile = $state(false);
 	let isEditingPassword = $state(false);
+	let isEditingVisitSettings = $state(false);
 
 	// Derived values from data
 	const userEmail = $derived(data.user?.email || '');
@@ -72,6 +126,63 @@
 		$passwordForm.confirmPassword = '';
 		isEditingPassword = false;
 	}
+
+	function setVisitSettingsUnit(nextUnit: 'days' | 'months') {
+		const currentUnit = $visitSettingsForm.thresholdUnit;
+		if (nextUnit === currentUnit) {
+			return;
+		}
+
+		const recentToOverdueInDays = convertVisitThresholdToDays(
+			Number($visitSettingsForm.recentToOverdueValue),
+			currentUnit
+		);
+		const overdueToCriticalInDays = convertVisitThresholdToDays(
+			Number($visitSettingsForm.overdueToCriticalValue),
+			currentUnit
+		);
+
+		$visitSettingsForm.thresholdUnit = nextUnit;
+		$visitSettingsForm.recentToOverdueValue = convertVisitThresholdFromDays(
+			Number.isFinite(recentToOverdueInDays)
+				? recentToOverdueInDays
+				: data.visitThresholds.recentToOverdueDays,
+			nextUnit
+		);
+		$visitSettingsForm.overdueToCriticalValue = convertVisitThresholdFromDays(
+			Number.isFinite(overdueToCriticalInDays)
+				? overdueToCriticalInDays
+				: data.visitThresholds.overdueToCriticalDays,
+			nextUnit
+		);
+	}
+
+	function resetVisitSettingsForm() {
+		$visitSettingsForm.thresholdUnit = 'days';
+		$visitSettingsForm.recentToOverdueValue = data.visitThresholds.recentToOverdueDays;
+		$visitSettingsForm.overdueToCriticalValue = data.visitThresholds.overdueToCriticalDays;
+		isEditingVisitSettings = false;
+	}
+
+	const visitThresholdSummary = $derived.by(() => {
+		const recentToOverdueInDays = convertVisitThresholdToDays(
+			Number($visitSettingsForm.recentToOverdueValue),
+			$visitSettingsForm.thresholdUnit
+		);
+		const overdueToCriticalInDays = convertVisitThresholdToDays(
+			Number($visitSettingsForm.overdueToCriticalValue),
+			$visitSettingsForm.thresholdUnit
+		);
+
+		return {
+			recentToOverdueDays: Number.isFinite(recentToOverdueInDays)
+				? recentToOverdueInDays
+				: data.visitThresholds.recentToOverdueDays,
+			overdueToCriticalDays: Number.isFinite(overdueToCriticalInDays)
+				? overdueToCriticalInDays
+				: data.visitThresholds.overdueToCriticalDays
+		};
+	});
 </script>
 
 <svelte:head><title>Profile</title></svelte:head>
@@ -103,18 +214,16 @@
 					<div class="space-y-4">
 						{#if $profileMessage}
 							<div
-								class="flex items-center gap-2 rounded-md p-3 {$profileMessage.includes(
-									'successfully'
-								)
+								class="flex items-center gap-2 rounded-md p-3 {isSuccessMessage($profileMessage)
 									? 'border border-green-200 bg-green-50 text-green-700'
 									: 'border border-red-200 bg-red-50 text-red-700'}"
 							>
-								{#if $profileMessage.includes('successfully')}
+								{#if isSuccessMessage($profileMessage)}
 									<CircleCheck class="h-4 w-4" />
 								{:else}
 									<CircleAlert class="h-4 w-4" />
 								{/if}
-								<span class="text-sm">{$profileMessage}</span>
+								<span class="text-sm">{getMessageText($profileMessage)}</span>
 							</div>
 						{/if}
 						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -179,6 +288,174 @@
 
 		<Separator.Root />
 
+		<!-- Visit Settings Section -->
+		<div class="overflow-hidden rounded-lg border shadow">
+			<div class="p-6">
+				<div class="mb-4 flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<SlidersHorizontal class="h-5 w-5" />
+						<h2 class="text-xl font-semibold">Settings</h2>
+					</div>
+					{#if !isEditingVisitSettings}
+						<Button size="sm" variant="outline" onclick={() => (isEditingVisitSettings = true)}>
+							<Pencil class="mr-2 h-4 w-4" />
+							Edit
+						</Button>
+					{/if}
+				</div>
+
+				<form method="POST" action="?/updateVisitSettings">
+					<div class="space-y-4">
+						{#if $visitSettingsMessage}
+							<div
+								class="flex items-center gap-2 rounded-md p-3 {isSuccessMessage(
+									$visitSettingsMessage
+								)
+									? 'border border-green-200 bg-green-50 text-green-700'
+									: 'border border-red-200 bg-red-50 text-red-700'}"
+							>
+								{#if isSuccessMessage($visitSettingsMessage)}
+									<CircleCheck class="h-4 w-4" />
+								{:else}
+									<CircleAlert class="h-4 w-4" />
+								{/if}
+								<span class="text-sm">{getMessageText($visitSettingsMessage)}</span>
+							</div>
+						{/if}
+
+						{#if isEditingVisitSettings}
+							<div class="space-y-4">
+								<p class="text-muted-foreground text-sm">
+									Customize when a person becomes overdue and critical based on days since the last
+									visit.
+								</p>
+
+								<div class="flex items-center gap-2">
+									<Label class="text-sm font-medium">Unit</Label>
+									<div class="inline-flex rounded-md border p-1">
+										<Button
+											type="button"
+											size="sm"
+											variant={$visitSettingsForm.thresholdUnit === 'days' ? 'default' : 'ghost'}
+											onclick={() => setVisitSettingsUnit('days')}
+										>
+											Days
+										</Button>
+										<Button
+											type="button"
+											size="sm"
+											variant={$visitSettingsForm.thresholdUnit === 'months' ? 'default' : 'ghost'}
+											onclick={() => setVisitSettingsUnit('months')}
+										>
+											Months
+										</Button>
+									</div>
+									<input
+										type="hidden"
+										name="thresholdUnit"
+										bind:value={$visitSettingsForm.thresholdUnit}
+									/>
+								</div>
+
+								<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+									<div>
+										<Label for="recentToOverdueValue" class="mb-2 block text-sm font-medium">
+											Recent to Overdue ({$visitSettingsForm.thresholdUnit})
+										</Label>
+										<Input
+											id="recentToOverdueValue"
+											name="recentToOverdueValue"
+											type="number"
+											step={$visitSettingsForm.thresholdUnit === 'months' ? '0.01' : '1'}
+											bind:value={$visitSettingsForm.recentToOverdueValue}
+											class={$visitSettingsErrors.recentToOverdueValue ? 'border-red-400' : ''}
+											required
+										/>
+										{#if $visitSettingsErrors.recentToOverdueValue}
+											<p class="mt-1 text-sm text-red-600">
+												{$visitSettingsErrors.recentToOverdueValue}
+											</p>
+										{/if}
+									</div>
+
+									<div>
+										<Label for="overdueToCriticalValue" class="mb-2 block text-sm font-medium">
+											Overdue to Critical ({$visitSettingsForm.thresholdUnit})
+										</Label>
+										<Input
+											id="overdueToCriticalValue"
+											name="overdueToCriticalValue"
+											type="number"
+											step={$visitSettingsForm.thresholdUnit === 'months' ? '0.01' : '1'}
+											bind:value={$visitSettingsForm.overdueToCriticalValue}
+											class={$visitSettingsErrors.overdueToCriticalValue ? 'border-red-400' : ''}
+											required
+										/>
+										{#if $visitSettingsErrors.overdueToCriticalValue}
+											<p class="mt-1 text-sm text-red-600">
+												{$visitSettingsErrors.overdueToCriticalValue}
+											</p>
+										{/if}
+									</div>
+								</div>
+
+								<p class="text-muted-foreground text-xs">
+									Saved as {visitThresholdSummary.recentToOverdueDays} days and
+									{visitThresholdSummary.overdueToCriticalDays} days.
+								</p>
+
+								<div class="flex gap-2 pt-2">
+									<Button type="submit" size="sm" disabled={$visitSettingsSubmitting}>
+										{#if $visitSettingsSubmitting}
+											<div
+												class="border-primary mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
+											></div>
+										{:else}
+											<Save class="mr-2 h-4 w-4" />
+										{/if}
+										Save
+									</Button>
+									<Button
+										type="button"
+										size="sm"
+										variant="outline"
+										onclick={resetVisitSettingsForm}
+										disabled={$visitSettingsSubmitting}
+									>
+										<X class="mr-2 h-4 w-4" />
+										Cancel
+									</Button>
+								</div>
+							</div>
+						{:else}
+							<div class="text-muted-foreground space-y-2 text-sm">
+								<p>
+									Recent to Overdue:
+									<strong class="text-foreground ml-1">
+										{data.visitThresholds.recentToOverdueDays} days (~{convertVisitThresholdFromDays(
+											data.visitThresholds.recentToOverdueDays,
+											'months'
+										)} months)
+									</strong>
+								</p>
+								<p>
+									Overdue to Critical:
+									<strong class="text-foreground ml-1">
+										{data.visitThresholds.overdueToCriticalDays} days (~{convertVisitThresholdFromDays(
+											data.visitThresholds.overdueToCriticalDays,
+											'months'
+										)} months)
+									</strong>
+								</p>
+							</div>
+						{/if}
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<Separator.Root />
+
 		<!-- Password Change Section -->
 		<div class="overflow-hidden rounded-lg border shadow">
 			<div class="p-6">
@@ -200,18 +477,16 @@
 						<div class="space-y-4">
 							{#if $passwordMessage}
 								<div
-									class="flex items-center gap-2 rounded-md p-3 {$passwordMessage.includes(
-										'successfully'
-									)
+									class="flex items-center gap-2 rounded-md p-3 {isSuccessMessage($passwordMessage)
 										? 'border border-green-200 bg-green-50 text-green-700'
 										: 'border border-red-200 bg-red-50 text-red-700'}"
 								>
-									{#if $passwordMessage.includes('successfully')}
+									{#if isSuccessMessage($passwordMessage)}
 										<CircleCheck class="h-4 w-4" />
 									{:else}
 										<CircleAlert class="h-4 w-4" />
 									{/if}
-									<span class="text-sm">{$passwordMessage}</span>
+									<span class="text-sm">{getMessageText($passwordMessage)}</span>
 								</div>
 							{/if}
 							<div>
