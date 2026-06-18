@@ -5,6 +5,7 @@
 		"**/*.generated.ts",
 		"src/lib/components/ui/**",
 		"**/*.config.ts",
+		"src/env.ts",
 		"src/lib/index.ts"
 	],
 	"ignoreDependencies": [
