@@ -42,15 +42,19 @@ import {
 	sendMeditationReminderEmail,
 	sendScheduledVisitReminderEmail,
 	sendTasksDueTodayEmail,
+	sendVisitTodayReminderEmail,
 	sendVisitWarningEmail,
 	sendWorkoutReminderEmail
 } from './index';
 import {
 	buildScheduledVisitReminderEntityId,
 	buildScheduledVisitReminderSubject,
+	buildVisitTodayReminderEntityId,
+	buildVisitTodayReminderSubject,
 	formatReminderDate,
 	getDateDaysAhead,
-	SCHEDULED_VISIT_REMINDER_NOTIFICATION_TYPE
+	SCHEDULED_VISIT_REMINDER_NOTIFICATION_TYPE,
+	VISIT_TODAY_REMINDER_NOTIFICATION_TYPE
 } from './scheduled-visit-reminder-utils';
 import {
 	buildTasksDueTodayDigestMessage,
@@ -180,17 +184,17 @@ async function processWorkoutReminders(
 			continue;
 		}
 
-		// Check if time matches within a 10-minute window
-		// Since cron runs every 10 minutes, this ensures we catch the reminder
+		// Send if reminder time has already passed today.
+		// Using >= instead of a fixed window because GitHub Actions cron scheduling
+		// is not guaranteed to run at exact intervals — it can be significantly delayed.
+		// Duplicate sends are prevented by the alreadySentToday check below.
 		const [reminderHour, reminderMinute] = reminder.time.split(':');
 		const reminderTimeInMinutes =
 			Number.parseInt(reminderHour, 10) * 60 + Number.parseInt(reminderMinute || '0', 10);
 		const currentTimeInMinutes =
 			Number.parseInt(currentHour, 10) * 60 + Number.parseInt(currentMinute, 10);
 
-		// Send if within 10 minutes of reminder time
-		const timeDiff = Math.abs(currentTimeInMinutes - reminderTimeInMinutes);
-		if (timeDiff > 10) {
+		if (currentTimeInMinutes < reminderTimeInMinutes) {
 			continue;
 		}
 
@@ -268,17 +272,17 @@ async function processMeditationReminders(
 			continue;
 		}
 
-		// Check if time matches within a 10-minute window
-		// Since cron runs every 10 minutes, this ensures we catch the reminder
+		// Send if reminder time has already passed today.
+		// Using >= instead of a fixed window because GitHub Actions cron scheduling
+		// is not guaranteed to run at exact intervals — it can be significantly delayed.
+		// Duplicate sends are prevented by the alreadySentToday check below.
 		const [scheduleHour, scheduleMinute] = schedule.time.split(':');
 		const scheduleTimeInMinutes =
 			Number.parseInt(scheduleHour, 10) * 60 + Number.parseInt(scheduleMinute || '0', 10);
 		const currentTimeInMinutes =
 			Number.parseInt(currentHour, 10) * 60 + Number.parseInt(currentMinute, 10);
 
-		// Send if within 10 minutes of reminder time
-		const timeDiff = Math.abs(currentTimeInMinutes - scheduleTimeInMinutes);
-		if (timeDiff > 10) {
+		if (currentTimeInMinutes < scheduleTimeInMinutes) {
 			continue;
 		}
 
@@ -646,6 +650,71 @@ async function processTasksDueTodayDigests(
 }
 
 /**
+ * Process visit reminders for visits scheduled today
+ */
+async function processVisitsTodayReminders(todayPacific: string): Promise<void> {
+	logger.debug("\n🗓️ Processing today's visit reminders...");
+
+	// Find all visits where followUpDate is today
+	const todayVisits = db
+		.select({
+			visit: visits,
+			person: people,
+			user: user
+		})
+		.from(visits)
+		.innerJoin(people, eq(visits.personId, people.id))
+		.innerJoin(user, eq(visits.userId, user.id))
+		.where(and(eq(visits.followUpDate, todayPacific), eq(people.isArchived, false)))
+		.all();
+
+	logger.debug(`   Found ${todayVisits.length} visits scheduled for today`);
+
+	let sentCount = 0;
+
+	for (const { visit, person, user: userData } of todayVisits) {
+		if (person.isExempt) {
+			logger.debug(`   ⏭️  Skipping exempt person ${person.name}`);
+			continue;
+		}
+
+		const entityId = buildVisitTodayReminderEntityId(visit.id);
+
+		if (await alreadySentToday(userData.id, VISIT_TODAY_REMINDER_NOTIFICATION_TYPE, entityId)) {
+			logger.debug(`   ⏭️  Already sent today reminder for ${person.name} today`);
+			continue;
+		}
+
+		const formattedDate = formatReminderDate(todayPacific);
+		const subject = buildVisitTodayReminderSubject(person.name);
+
+		logger.debug(
+			`   📧 Sending visit-today reminder to ${userData.email} (${person.name} on ${todayPacific})`
+		);
+
+		try {
+			await sendVisitTodayReminderEmail(userData.email, userData.name, person.name, formattedDate);
+
+			await sendReminderNotification(
+				`You have a visit with ${person.name} today, ${formattedDate}.`,
+				'Synapse - Visit Today',
+				'busts_in_silhouette',
+				3
+			);
+
+			await logNotification(userData.id, VISIT_TODAY_REMINDER_NOTIFICATION_TYPE, entityId, subject);
+
+			sentCount++;
+			logger.debug(`   ✅ Sent successfully`);
+		} catch (error) {
+			logger.error(`   ❌ Failed to send:`, { error });
+		}
+	}
+
+	logger.debug(`   📊 Sent ${sentCount} visit-today reminders`);
+}
+
+/**
  * Process scheduled visit reminders (one week before follow-up date)
  */
 async function processScheduledVisitReminders(): Promise<void> {
@@ -774,6 +843,7 @@ export async function runEmailNotifications(): Promise<{ ok: true } | { ok: fals
 		await processWorkoutReminders(currentDay, currentHour, currentMinute);
 		await processMeditationReminders(currentDay, currentHour, currentMinute);
 		await processVisitWarnings();
+		await processVisitsTodayReminders(todayPacific);
 		await processScheduledVisitReminders();
 
 		logger.debug('\n✅ Email notifications cron job completed successfully!');

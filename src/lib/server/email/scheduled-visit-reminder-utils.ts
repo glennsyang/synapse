@@ -28,3 +28,13 @@ export function buildScheduledVisitReminderEntityId(visitId: string): string {
 export function buildScheduledVisitReminderSubject(personName: string): string {
 	return `[Synapse] 📅 Upcoming visit with ${personName} in one week`;
 }
+
+export const VISIT_TODAY_REMINDER_NOTIFICATION_TYPE = 'visit_today_reminder';
+
+export function buildVisitTodayReminderEntityId(visitId: string): string {
+	return `visit_today:${visitId}`;
+}
+
+export function buildVisitTodayReminderSubject(personName: string): string {
+	return `[Synapse] 🗓️ You have a visit with ${personName} today`;
+}
