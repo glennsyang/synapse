@@ -1,8 +1,5 @@
+import { AUTH_ALERTS_URL, REMINDER_ALERTS_URL } from '$app/env/private';
 import { logger } from '$lib/utils/logger';
-
-import { getEnv } from '../../../env';
-
-const env = getEnv();
 
 /**
  * Sends a notification to your phone
@@ -12,7 +9,7 @@ const env = getEnv();
  */
 export async function sendAuthAlerts(message: string, title = 'App Alert', priority = 3) {
 	try {
-		const response = await fetch(`${env.AUTH_ALERTS_URL}`, {
+		const response = await fetch(`${AUTH_ALERTS_URL}`, {
 			method: 'POST',
 			body: message,
 			headers: {
@@ -42,7 +39,7 @@ export async function sendReminderAlerts(
 	tags = 'rotating_light'
 ) {
 	try {
-		const response = await fetch(`${env.REMINDER_ALERTS_URL}`, {
+		const response = await fetch(`${REMINDER_ALERTS_URL}`, {
 			method: 'POST',
 			body: message,
 			headers: {

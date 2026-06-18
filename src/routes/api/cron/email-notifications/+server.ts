@@ -1,3 +1,4 @@
+import { CRON_SECRET } from '$app/env/private';
 import { runEmailNotifications } from '$lib/server/email/email-notifications';
 import { logger } from '$lib/utils/logger';
 import type { RequestHandler } from '@sveltejs/kit';
@@ -5,7 +6,7 @@ import { json } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const authHeader = request.headers.get('authorization');
-	const expectedToken = process.env.CRON_SECRET;
+	const expectedToken = CRON_SECRET;
 
 	if (!expectedToken || expectedToken.trim().length === 0) {
 		logger.error('❌ CRON_SECRET is missing; rejecting cron execution');
