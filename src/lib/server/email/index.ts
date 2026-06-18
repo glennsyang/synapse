@@ -1,3 +1,4 @@
+import { RESEND_API_KEY, RESEND_FROM_ADDRESS } from '$app/env/private';
 import {
 	buildTasksDueTodayDigestTitle,
 	buildTasksDueTodayEmailHtml,
@@ -7,19 +8,15 @@ import { logger } from '$lib/utils/logger';
 import { getWorkoutEmoji, getWorkoutNotificationTag } from '$lib/utils/workout';
 import { Resend } from 'resend';
 
-import { getEnv } from '../../../env';
-
-const env = getEnv();
-
 // Initialize Resend email client
-const resend = new Resend(env.RESEND_API_KEY);
+const resend = new Resend(RESEND_API_KEY);
 
 export async function sendVerificationEmail(to: string, name: string, verificationUrl: string) {
 	logger.debug('📧 Sending Verification Email to:', { to });
 
 	try {
 		await resend.emails.send({
-			from: env.RESEND_FROM_ADDRESS,
+			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: '[Synapse] Verify your email address',
 			html: `
@@ -70,7 +67,7 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
 
 	try {
 		await resend.emails.send({
-			from: env.RESEND_FROM_ADDRESS,
+			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: '[Synapse] Reset your password',
 			html: `
@@ -121,7 +118,7 @@ export async function sendNewUserEmail(to: string, name: string, email: string) 
 
 	try {
 		await resend.emails.send({
-			from: env.RESEND_FROM_ADDRESS,
+			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: '[Synapse] New User was registered!',
 			html: `Hi ${name || email}!<br><br>Welcome to Synapse! We're excited to have you on board.<br><br>Thank you,<br>Synapse Team`
@@ -144,7 +141,7 @@ export async function sendWorkoutReminderEmail(
 
 	try {
 		await resend.emails.send({
-			from: process.env.RESEND_FROM_ADDRESS || '',
+			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: `[Synapse] ${emoji} Time for your ${workoutType} workout!`,
 			html: `
@@ -199,7 +196,7 @@ export async function sendMeditationReminderEmail(
 
 	try {
 		await resend.emails.send({
-			from: process.env.RESEND_FROM_ADDRESS || '',
+			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: '[Synapse] 🧘 Time for your meditation practice',
 			html: `
@@ -262,7 +259,7 @@ export async function sendVisitWarningEmail(
 
 	try {
 		await resend.emails.send({
-			from: process.env.RESEND_FROM_ADDRESS || '',
+			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: `[Synapse] 👥 It's been a while since you saw ${personName}`,
 			html: `
@@ -323,7 +320,7 @@ export async function sendTasksDueTodayEmail(
 
 	try {
 		await resend.emails.send({
-			from: env.RESEND_FROM_ADDRESS,
+			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: title,
 			html: buildTasksDueTodayEmailHtml(name, tasks, dateString)
@@ -344,7 +341,7 @@ export async function sendScheduledVisitReminderEmail(
 
 	try {
 		await resend.emails.send({
-			from: env.RESEND_FROM_ADDRESS,
+			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: `[Synapse] 📅 Upcoming visit with ${personName} in one week`,
 			html: `
@@ -404,7 +401,7 @@ export async function sendVisitTodayReminderEmail(
 
 	try {
 		await resend.emails.send({
-			from: env.RESEND_FROM_ADDRESS,
+			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: `[Synapse] 🗓️ You have a visit with ${personName} today`,
 			html: `

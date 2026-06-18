@@ -1,4 +1,4 @@
-import { building, dev } from '$app/environment';
+import { building, dev } from '$app/env';
 import { auth } from '$lib/server/auth';
 import { generateId } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
