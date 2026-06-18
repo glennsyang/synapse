@@ -394,6 +394,63 @@ export async function sendScheduledVisitReminderEmail(
 	}
 }
 
+export async function sendVisitTodayReminderEmail(
+	to: string,
+	name: string,
+	personName: string,
+	formattedDate: string
+) {
+	logger.debug('📧 Sending Visit Today Reminder Email to:', { to });
+
+	try {
+		await resend.emails.send({
+			from: env.RESEND_FROM_ADDRESS,
+			to,
+			subject: `[Synapse] 🗓️ You have a visit with ${personName} today`,
+			html: `
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<meta charset="utf-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Visit Today Reminder</title>
+				</head>
+				<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+					<div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+						<h1 style="color: white; margin: 0; font-size: 28px;">🗓️ Visit Today</h1>
+					</div>
+					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">
+							This is a reminder that you have a scheduled visit with <strong>${personName}</strong> today, <strong>${formattedDate}</strong>.
+						</p>
+						<div style="background: #dcfce7; border-left: 4px solid #22c55e; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+							<p style="margin: 0; font-size: 16px; font-weight: 600; color: #15803d;">
+								🗓️ Visit with ${personName} — Today, ${formattedDate}
+							</p>
+						</div>
+						<p style="font-size: 16px; margin-bottom: 20px;">
+							Make it a great visit!
+						</p>
+						<div style="background: #e5e7eb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+							<p style="margin: 0; font-size: 14px; color: #6b7280;">
+								💡 <em>"You should know well the appearance of your flock. Take good care of your sheep."</em>
+							</p>
+						</div>
+					</div>
+					<div style="text-align: center; margin-top: 20px; padding: 20px; color: #9ca3af; font-size: 12px;">
+						<p>Synapse - Your Personal Second Brain</p>
+					</div>
+				</body>
+				</html>
+			`
+		});
+	} catch (error) {
+		logger.error('❌ Failed to send visit today reminder email:', { error });
+		return error;
+	}
+}
+
 export function getNotificationTag(workoutType: string): string {
 	return getWorkoutNotificationTag(workoutType);
 }
