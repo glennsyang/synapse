@@ -37,6 +37,7 @@ data/
 *.db-wal
 
 # docs
+docs/security-review/
 docs/structure-review/
 
 # Sentry Config File
