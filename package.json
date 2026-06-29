@@ -41,7 +41,7 @@
 		"markdown-it": "^14.1.1",
 		"marked": "^18.0.3",
 		"mode-watcher": "^1.1.0",
-		"resend": "^6.10.0"
+		"resend": "^6.16.0"
 	},
 	"devDependencies": {
 		"@flydotio/dockerfile": "^0.7.10",
