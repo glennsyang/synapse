@@ -476,23 +476,7 @@ export const actions: Actions = {
 		try {
 			const db = getDb();
 
-			// Verify ownership
-			const existing = await db.query.workoutReminders.findFirst({
-				where: eq(workoutReminders.id, form.data.id)
-			});
-
-			if (!existing || existing.userId !== user.id) {
-				return message(
-					form,
-					{
-						type: 'error',
-						text: 'Reminder not found or access denied.'
-					},
-					{ status: 404 }
-				);
-			}
-
-			await db
+			const result = await db
 				.update(workoutReminders)
 				.set({
 					workoutType: form.data.workoutType,
@@ -502,7 +486,16 @@ export const actions: Actions = {
 					enabled: form.data.enabled,
 					updatedAt: new Date().toISOString()
 				})
-				.where(eq(workoutReminders.id, form.data.id));
+				.where(and(eq(workoutReminders.id, form.data.id), eq(workoutReminders.userId, user.id)))
+				.returning({ id: workoutReminders.id });
+
+			if (result.length === 0) {
+				return message(
+					form,
+					{ type: 'error', text: 'Reminder not found or access denied.' },
+					{ status: 404 }
+				);
+			}
 
 			logger.info('Workout reminder updated', {
 				reminderId: form.data.id,
@@ -533,16 +526,14 @@ export const actions: Actions = {
 		try {
 			const db = getDb();
 
-			// Verify ownership
-			const existing = await db.query.workoutReminders.findFirst({
-				where: eq(workoutReminders.id, form.data.id)
-			});
+			const result = await db
+				.delete(workoutReminders)
+				.where(and(eq(workoutReminders.id, form.data.id), eq(workoutReminders.userId, user.id)))
+				.returning({ id: workoutReminders.id });
 
-			if (!existing || existing.userId !== user.id) {
+			if (result.length === 0) {
 				return fail(404, { error: 'Workout reminder not found' });
 			}
-
-			await db.delete(workoutReminders).where(eq(workoutReminders.id, form.data.id));
 
 			logger.info('Workout reminder deleted', { reminderId: form.data.id, userId: user.id });
 		} catch (error) {

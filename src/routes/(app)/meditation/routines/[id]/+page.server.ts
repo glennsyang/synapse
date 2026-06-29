@@ -323,7 +323,7 @@ export const actions: Actions = {
 					moodTags: moodTagsJson,
 					updatedAt: new Date().toISOString()
 				})
-				.where(eq(meditationRoutines.id, routineId));
+				.where(and(eq(meditationRoutines.id, routineId), eq(meditationRoutines.userId, user.id)));
 
 			logger.info('Meditation routine updated', {
 				routineId: routineId,
@@ -374,7 +374,9 @@ export const actions: Actions = {
 					notes: form.data.notes || null,
 					updatedAt: new Date().toISOString()
 				})
-				.where(eq(meditationSessions.id, form.data.id));
+				.where(
+					and(eq(meditationSessions.id, form.data.id), eq(meditationSessions.userId, user.id))
+				);
 
 			logger.info('Meditation session updated', { sessionId: form.data.id, userId: user.id });
 			return message(form, { type: 'success', text: 'Session updated successfully!' });
@@ -430,7 +432,15 @@ export const actions: Actions = {
 				return fail(403, { error: 'Cannot delete this routine' });
 			}
 
-			await db.delete(meditationRoutines).where(eq(meditationRoutines.id, routineId));
+			await db
+				.delete(meditationRoutines)
+				.where(
+					and(
+						eq(meditationRoutines.id, routineId),
+						eq(meditationRoutines.userId, user.id),
+						eq(meditationRoutines.isPredefined, false)
+					)
+				);
 
 			logger.info('Meditation routine deleted', {
 				routineId: routineId,
