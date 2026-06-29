@@ -11,6 +11,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createAuthMiddleware } from 'better-auth/api';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
+import { buildResetUrl } from './auth-reset-url';
 import { getDb } from './db';
 import * as schema from './db/schema';
 import { sendNewUserEmail, sendPasswordResetEmail, sendVerificationEmail } from './email';
@@ -34,6 +35,7 @@ export const auth = betterAuth({
 		autoSignIn: false,
 		minPasswordLength: 12,
 		maxPasswordLength: 128,
+		revokeSessionsOnPasswordReset: true,
 		resetPasswordTokenExpiresIn: 60 * 10, // 10 minutes
 		sendVerificationEmail: async ({
 			user,
@@ -54,12 +56,12 @@ export const auth = betterAuth({
 			);
 		},
 		sendResetPassword: async ({ user, url, token }) => {
-			const urlObj = new URL(url, 'http://localhost');
-			const callbackUrl = urlObj.searchParams.get('callbackUrl');
-			if (!callbackUrl) {
+			const urlObj = new URL(url);
+			const callbackURL = urlObj.searchParams.get('callbackUrl');
+			if (!callbackURL) {
 				throw new Error('Missing callbackUrl in reset password URL');
 			}
-			const resetUrl = `${callbackUrl}?token=${token}`;
+			const resetUrl = buildResetUrl(callbackURL, token);
 			void sendPasswordResetEmail(user.email, user.name, resetUrl);
 			void sendAuthAlerts(
 				`Password reset requested for ${user.email}`,
@@ -68,7 +70,11 @@ export const auth = betterAuth({
 			);
 		},
 		onPasswordReset: async ({ user }) => {
-			logger.debug('🔐 Password reset completed', { userId: user.id });
+			logger.info('🔐 Security event: password reset completed and sessions revoked', {
+				userId: user.id,
+				email: user.email,
+				timestamp: new Date().toISOString()
+			});
 			void sendAuthAlerts(
 				`Password reset completed for ${user.email}`,
 				'Synapse - Password Reset Completed',
@@ -80,7 +86,7 @@ export const auth = betterAuth({
 		sendOnSignUp: true,
 		autoSignInAfterVerification: true,
 		sendVerificationEmail: async ({ user, url, token }) => {
-			logger.debug('✉️ Sending verification email', { userId: user.id });
+			logger.debug('✉️ Sending verification email');
 			const verifyUrl = `${url}&token=${token}`;
 			void sendVerificationEmail(user.email, user.name, verifyUrl);
 			void sendAuthAlerts(
