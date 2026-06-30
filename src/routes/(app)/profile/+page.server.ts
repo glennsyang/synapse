@@ -7,7 +7,11 @@ import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { auth } from '$lib/server/auth';
 import { getDb } from '$lib/server/db';
 import { account, user, visitStatusSettings } from '$lib/server/db/schema';
-import { generateId } from '$lib/server/db/utils';
+import {
+	generateId,
+	withAuditFieldsForCreate,
+	withAuditFieldsForUpdate
+} from '$lib/server/db/utils';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { logger } from '$lib/utils/logger';
 import {
@@ -161,7 +165,7 @@ export const actions: Actions = {
 					.set({
 						recentToOverdueDays: normalizedThresholds.recentToOverdueDays,
 						overdueToCriticalDays: normalizedThresholds.overdueToCriticalDays,
-						updatedAt: new Date().toISOString()
+						...withAuditFieldsForUpdate()
 					})
 					.where(eq(visitStatusSettings.userId, currentUser.id));
 			} else {
@@ -170,8 +174,7 @@ export const actions: Actions = {
 					userId: currentUser.id,
 					recentToOverdueDays: normalizedThresholds.recentToOverdueDays,
 					overdueToCriticalDays: normalizedThresholds.overdueToCriticalDays,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForCreate()
 				});
 			}
 

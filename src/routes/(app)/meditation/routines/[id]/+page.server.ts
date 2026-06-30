@@ -8,7 +8,11 @@ import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
-import { generateId } from '$lib/server/db/utils';
+import {
+	generateId,
+	withAuditFieldsForCreate,
+	withAuditFieldsForUpdate
+} from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq, or } from 'drizzle-orm';
@@ -163,7 +167,7 @@ export const actions: Actions = {
 						daysOfWeek: daysOfWeekJson,
 						time: form.data.time,
 						enabled: true,
-						updatedAt: new Date().toISOString()
+						...withAuditFieldsForUpdate()
 					})
 					.where(eq(meditationSchedules.id, existingSchedule.id));
 
@@ -183,8 +187,7 @@ export const actions: Actions = {
 					daysOfWeek: daysOfWeekJson,
 					time: form.data.time,
 					enabled: true,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForCreate()
 				});
 
 				logger.info('Meditation schedule created', {
@@ -260,8 +263,7 @@ export const actions: Actions = {
 					preMoodRating: form.data.pre_mood_rating || null,
 					moodRating: form.data.mood_rating || null,
 					notes: form.data.notes || null,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForCreate()
 				});
 
 			logger.info('Meditation session completed', {
@@ -321,7 +323,7 @@ export const actions: Actions = {
 					linkUrl: form.data.link_url,
 					durationMinutes: form.data.duration_minutes,
 					moodTags: moodTagsJson,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(meditationRoutines.id, routineId), eq(meditationRoutines.userId, user.id)));
 
@@ -372,7 +374,7 @@ export const actions: Actions = {
 					preMoodRating: form.data.pre_mood_rating ?? null,
 					moodRating: form.data.mood_rating ?? null,
 					notes: form.data.notes || null,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(
 					and(eq(meditationSessions.id, form.data.id), eq(meditationSessions.userId, user.id))

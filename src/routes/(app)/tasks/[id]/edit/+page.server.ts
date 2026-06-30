@@ -12,6 +12,7 @@ import {
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { tasks } from '$lib/server/db/schema';
+import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq, ne, sql } from 'drizzle-orm';
@@ -25,7 +26,7 @@ function buildTaskUpdateData(
 	existingState: string
 ): Record<string, unknown> {
 	const updateData: Record<string, unknown> = {
-		updatedAt: new Date().toISOString()
+		...withAuditFieldsForUpdate()
 	};
 
 	if (formData.title !== undefined) updateData.title = formData.title;

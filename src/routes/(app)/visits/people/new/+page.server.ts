@@ -2,7 +2,7 @@ import { personSchema } from '$lib/schemas/visits';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { people } from '$lib/server/db/schema';
-import { generateId } from '$lib/server/db/utils';
+import { generateId, withAuditFieldsForCreate } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
@@ -27,15 +27,16 @@ export const actions: Actions = {
 		try {
 			const personId = generateId();
 
-			await getDb().insert(people).values({
-				id: personId,
-				userId: user.id,
-				name: form.data.name,
-				isExempt: false,
-				isArchived: false,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
-			});
+			await getDb()
+				.insert(people)
+				.values({
+					id: personId,
+					userId: user.id,
+					name: form.data.name,
+					isExempt: false,
+					isArchived: false,
+					...withAuditFieldsForCreate()
+				});
 
 			logger.info('Person created', { personId, userId: user.id });
 		} catch (error) {

@@ -2,7 +2,7 @@ import { createRoutineSchema, MOOD_TAGS, type MoodTag } from '$lib/schemas/medit
 import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines } from '$lib/server/db/schema';
-import { generateId } from '$lib/server/db/utils';
+import { generateId, withAuditFieldsForCreate } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
@@ -66,8 +66,7 @@ export const actions: Actions = {
 					durationMinutes: form.data.duration_minutes,
 					moodTags: moodTagsJson,
 					isPredefined: false,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForCreate()
 				});
 
 			logger.info('Meditation routine created', { routineId, userId: locals.user.id });

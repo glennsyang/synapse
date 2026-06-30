@@ -2,6 +2,7 @@ import { journalEntrySchema } from '$lib/schemas/journal';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
+import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
@@ -64,7 +65,7 @@ export const actions: Actions = {
 					content: form.data.content as string,
 					location,
 					weather,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(journalEntries.id, entryId), eq(journalEntries.userId, user.id)));
 

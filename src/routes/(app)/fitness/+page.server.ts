@@ -23,7 +23,11 @@ import {
 	workoutLogs,
 	workoutReminders
 } from '$lib/server/db/schema';
-import { generateId } from '$lib/server/db/utils';
+import {
+	generateId,
+	withAuditFieldsForCreate,
+	withAuditFieldsForUpdate
+} from '$lib/server/db/utils';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
@@ -175,8 +179,7 @@ export const actions: Actions = {
 				date: form.data.date,
 				time: form.data.time || null,
 				weightLbs: form.data.weightLbs,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
+				...withAuditFieldsForCreate()
 			});
 
 			logger.info('Weight entry logged', { entryId, userId: user.id });
@@ -221,7 +224,7 @@ export const actions: Actions = {
 					.set({
 						targetWeightLbs: form.data.targetWeightLbs,
 						setDate: today,
-						updatedAt: new Date().toISOString()
+						...withAuditFieldsForUpdate()
 					})
 					.where(eq(goalWeights.userId, user.id));
 			} else {
@@ -230,8 +233,7 @@ export const actions: Actions = {
 					userId: user.id,
 					targetWeightLbs: form.data.targetWeightLbs,
 					setDate: today,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForCreate()
 				});
 			}
 
@@ -390,7 +392,7 @@ export const actions: Actions = {
 					.set({
 						targetCalories: form.data.targetCalories,
 						setDate: today,
-						updatedAt: new Date().toISOString()
+						...withAuditFieldsForUpdate()
 					})
 					.where(eq(dailyCalorieTargets.userId, user.id));
 			} else {
@@ -399,8 +401,7 @@ export const actions: Actions = {
 					userId: user.id,
 					targetCalories: form.data.targetCalories,
 					setDate: today,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForCreate()
 				});
 			}
 
@@ -440,8 +441,7 @@ export const actions: Actions = {
 				daysOfWeek: form.data.daysOfWeek || null,
 				time: form.data.time,
 				enabled: form.data.enabled,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
+				...withAuditFieldsForCreate()
 			});
 
 			logger.info('Workout reminder created', { reminderId, userId: user.id });
@@ -484,7 +484,7 @@ export const actions: Actions = {
 					daysOfWeek: form.data.daysOfWeek || null,
 					time: form.data.time,
 					enabled: form.data.enabled,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(workoutReminders.id, form.data.id), eq(workoutReminders.userId, user.id)))
 				.returning({ id: workoutReminders.id });
@@ -574,7 +574,7 @@ export const actions: Actions = {
 					date: form.data.date,
 					time: form.data.time || null,
 					weightLbs: form.data.weightLbs,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(weightEntries.id, form.data.id), eq(weightEntries.userId, user.id)));
 
@@ -664,7 +664,7 @@ export const actions: Actions = {
 						durationMinutes: form.data.durationMinutes || null,
 						steps: form.data.steps || null,
 						notes: form.data.notes || null,
-						updatedAt: new Date().toISOString()
+						...withAuditFieldsForUpdate()
 					})
 					.where(and(eq(workoutLogs.id, form.data.id), eq(workoutLogs.userId, user.id)));
 
@@ -679,8 +679,7 @@ export const actions: Actions = {
 							sets: exercise.sets || null,
 							reps: exercise.reps || null,
 							weightLbs: exercise.weightLbs || null,
-							createdAt: new Date().toISOString(),
-							updatedAt: new Date().toISOString()
+							...withAuditFieldsForCreate()
 						}))
 					);
 				}
@@ -753,7 +752,7 @@ export const actions: Actions = {
 					timeOfDay: form.data.timeOfDay,
 					description: form.data.description,
 					caloriesEstimate: form.data.caloriesEstimate || null,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(mealLogs.id, form.data.id), eq(mealLogs.userId, user.id)));
 

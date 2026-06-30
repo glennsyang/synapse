@@ -2,6 +2,7 @@ import { editSessionSchema, routineFilterSchema } from '$lib/schemas/meditation'
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
+import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
 import { fail } from '@sveltejs/kit';
 import { and, desc, eq, like, or } from 'drizzle-orm';
@@ -144,7 +145,7 @@ export const actions: Actions = {
 					preMoodRating: form.data.pre_mood_rating ?? null,
 					moodRating: form.data.mood_rating ?? null,
 					notes: form.data.notes || null,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(eq(meditationSessions.id, form.data.id));
 
