@@ -65,18 +65,16 @@
 	// Generate a unique form ID based on the editing context and instance
 	const formId = $derived(editEntry ? `edit-workout-${editEntry.id}` : `log-workout-${instanceId}`);
 
+	type FormMessage = { type: 'success' | 'error'; text: string };
+
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance } = superForm(formData, {
+	const { form, errors, enhance, message } = superForm(formData, {
 		id: formId,
 		resetForm: !isEditing,
 		onUpdate: ({ form }) => {
 			if (!form.valid) return;
-
-			const msg = form.message as { type: string; text: string } | null | undefined;
-			if (msg?.type === 'error') {
-				toast.error(msg.text);
-				return;
-			}
+			const msg = form.message as FormMessage | null | undefined;
+			if (msg?.type === 'error') return;
 
 			if (open !== undefined) {
 				onClose?.();
@@ -247,6 +245,9 @@
 					{/if}
 				</div>
 			</div>
+			{#if ($message as FormMessage | null)?.type === 'error'}
+				<p class="text-destructive py-2 text-sm">{($message as FormMessage).text}</p>
+			{/if}
 			<Dialog.Footer>
 				<Dialog.Close>
 					{#snippet child({ props })}
