@@ -79,7 +79,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 export const actions: Actions = {
 	logVisit: requireAuth(async ({ request, params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		const form = await superValidate(request, zod4(visitSchema));
@@ -98,7 +98,7 @@ export const actions: Actions = {
 			});
 
 			if (!person) {
-				throw error(404, 'Person not found');
+				return fail(404, { error: 'Person not found' });
 			}
 
 			const companions = toCommaSeparatedJson(form.data.companions);
@@ -143,7 +143,7 @@ export const actions: Actions = {
 
 	updateVisit: requireAuth(async ({ request, params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		const formData = await request.formData();
@@ -156,7 +156,7 @@ export const actions: Actions = {
 		}
 
 		if (typeof visitId !== 'string' || !visitId) {
-			throw error(400, 'Visit ID is required');
+			return fail(400, { error: 'Visit ID is required' });
 		}
 
 		try {
@@ -171,7 +171,7 @@ export const actions: Actions = {
 			});
 
 			if (!visit) {
-				throw error(404, 'Visit not found');
+				return fail(404, { error: 'Visit not found' });
 			}
 
 			const companions = toCommaSeparatedJson(form.data.companions);
@@ -215,7 +215,7 @@ export const actions: Actions = {
 
 	updatePerson: requireAuth(async ({ request, params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		const form = await superValidate(request, zod4(personSchema));
@@ -234,7 +234,7 @@ export const actions: Actions = {
 			});
 
 			if (!person) {
-				throw error(404, 'Person not found');
+				return fail(404, { error: 'Person not found' });
 			}
 
 			await db
@@ -267,7 +267,7 @@ export const actions: Actions = {
 
 	archivePerson: requireAuth(async ({ params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		try {
@@ -279,7 +279,7 @@ export const actions: Actions = {
 			});
 
 			if (!person) {
-				throw error(404, 'Person not found');
+				return fail(404, { error: 'Person not found' });
 			}
 
 			await db
@@ -293,7 +293,7 @@ export const actions: Actions = {
 			logger.info('Person archived', { personId: params.id, userId: user.id });
 		} catch (err) {
 			logger.error('Failed to archive person', { error: err });
-			throw error(500, 'Failed to archive person');
+			return fail(500, { error: 'Failed to archive person' });
 		}
 
 		throw redirect(303, '/visits');
@@ -301,7 +301,7 @@ export const actions: Actions = {
 
 	deletePerson: requireAuth(async ({ params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		try {
@@ -313,7 +313,7 @@ export const actions: Actions = {
 			});
 
 			if (!person) {
-				throw error(404, 'Person not found');
+				return fail(404, { error: 'Person not found' });
 			}
 
 			// Delete person (cascades to visits)
@@ -322,7 +322,7 @@ export const actions: Actions = {
 			logger.info('Person deleted', { personId: params.id, userId: user.id });
 		} catch (err) {
 			logger.error('Failed to delete person', { error: err });
-			throw error(500, 'Failed to delete person');
+			return fail(500, { error: 'Failed to delete person' });
 		}
 
 		throw redirect(303, '/visits');
@@ -333,7 +333,7 @@ export const actions: Actions = {
 		const visitId = formData.get('visitId') as string;
 
 		if (!visitId) {
-			throw error(400, 'Visit ID is required');
+			return fail(400, { error: 'Visit ID is required' });
 		}
 
 		try {
@@ -345,7 +345,7 @@ export const actions: Actions = {
 			});
 
 			if (!visit) {
-				throw error(404, 'Visit not found');
+				return fail(404, { error: 'Visit not found' });
 			}
 
 			await db.delete(visits).where(and(eq(visits.id, visitId), eq(visits.userId, user.id)));
@@ -355,7 +355,7 @@ export const actions: Actions = {
 			return { success: true };
 		} catch (err) {
 			logger.error('Failed to delete visit', { error: err });
-			throw error(500, 'Failed to delete visit');
+			return fail(500, { error: 'Failed to delete visit' });
 		}
 	})
 };
