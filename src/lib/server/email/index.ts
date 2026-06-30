@@ -5,7 +5,7 @@ import {
 	type TasksDueTodayTaskSummary
 } from '$lib/server/email/tasks-due-today-digest';
 import { logger } from '$lib/utils/logger';
-import { getWorkoutEmoji, getWorkoutNotificationTag } from '$lib/utils/workout';
+import { getWorkoutEmoji } from '$lib/utils/workout';
 import { Resend } from 'resend';
 
 // Initialize Resend email client
@@ -446,8 +446,4 @@ export async function sendVisitTodayReminderEmail(
 		logger.error('❌ Failed to send visit today reminder email:', { error });
 		return error;
 	}
-}
-
-export function getNotificationTag(workoutType: string): string {
-	return getWorkoutNotificationTag(workoutType);
 }

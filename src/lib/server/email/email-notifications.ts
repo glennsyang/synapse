@@ -14,6 +14,7 @@
 import { getVisitStatusThresholdsByUserIds } from '$lib/server/visit-status-settings';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
+import { getWorkoutNotificationTag } from '$lib/utils/workout';
 import { and, eq, sql } from 'drizzle-orm';
 
 import { loadDailyAgendaEntriesForDate } from '../daily-agenda';
@@ -38,7 +39,6 @@ import {
 	isWithinDailyDigestWindow
 } from './daily-agenda-digest';
 import {
-	getNotificationTag,
 	sendMeditationReminderEmail,
 	sendScheduledVisitReminderEmail,
 	sendTasksDueTodayEmail,
@@ -220,7 +220,7 @@ async function processWorkoutReminders(
 			await sendReminderNotification(
 				`You scheduled a ${reminder.workoutType} workout for today.`,
 				'Workout Reminder',
-				getNotificationTag(reminder.workoutType)
+				getWorkoutNotificationTag(reminder.workoutType)
 			);
 
 			await logNotification(

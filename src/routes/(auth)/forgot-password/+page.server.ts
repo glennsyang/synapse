@@ -1,3 +1,4 @@
+import { BETTER_AUTH_BASE_URL } from '$app/env/private';
 import { forgotPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import {
@@ -19,7 +20,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, url }) => {
+	default: async ({ request }) => {
 		const form = await superValidate(request, zod4(forgotPasswordSchema));
 
 		if (!form.valid) {
@@ -31,7 +32,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const redirectTo = `${url.origin}/reset-password`;
+			const redirectTo = `${BETTER_AUTH_BASE_URL}/reset-password`;
 
 			await auth.api.requestPasswordReset({
 				body: {

@@ -5,6 +5,29 @@ import { logger } from '$lib/utils/logger';
 import type { Handle, HandleServerError, ResolveOptions } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 
+// Fixed-window rate limiter for non-GET, non-auth mutations (60 req / 60 s per IP).
+// Prevents scripted abuse of task/journal/fitness/visit endpoints.
+const mutationRateMap = new Map<string, { count: number; windowStart: number }>();
+const MUTATION_LIMIT = 60;
+const MUTATION_WINDOW_MS = 60_000;
+
+function isMutationRateLimited(ip: string): boolean {
+	const now = Date.now();
+	const entry = mutationRateMap.get(ip);
+	if (!entry || now - entry.windowStart >= MUTATION_WINDOW_MS) {
+		mutationRateMap.set(ip, { count: 1, windowStart: now });
+		// Prune stale entries when the map grows large to avoid unbounded memory use.
+		if (mutationRateMap.size > 10_000) {
+			for (const [key, val] of mutationRateMap) {
+				if (now - val.windowStart >= MUTATION_WINDOW_MS) mutationRateMap.delete(key);
+			}
+		}
+		return false;
+	}
+	entry.count += 1;
+	return entry.count > MUTATION_LIMIT;
+}
+
 export const handle: Handle = async ({ event, resolve }) => {
 	// Generate a per-request CSP nonce
 	const nonceArray = new Uint8Array(16);
@@ -25,10 +48,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return new Response(undefined, { status: 404 });
 	}
 
-	if (event.url.pathname === '/todos' || event.url.pathname.startsWith('/todos/')) {
-		const target = new URL(event.url);
-		target.pathname = event.url.pathname.replace(/^\/todos(?=\/|$)/, '/tasks');
-		return Response.redirect(target, 307);
+	if (
+		event.request.method !== 'GET' &&
+		!event.url.pathname.startsWith('/api/auth') &&
+		isMutationRateLimited(event.getClientAddress())
+	) {
+		return new Response('Too Many Requests', { status: 429 });
 	}
 
 	// Generate unique request ID for logging
