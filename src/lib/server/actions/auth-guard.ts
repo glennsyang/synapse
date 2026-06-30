@@ -18,10 +18,13 @@ import { fail, redirect } from '@sveltejs/kit';
  *   })
  * };
  */
-export function requireAuth<T>(
-	handler: (event: RequestEvent, user: User) => Promise<T>
-): (event: RequestEvent) => Promise<T | ReturnType<typeof fail>> {
-	return async (event: RequestEvent) => {
+export function requireAuth<
+	T,
+	Params extends Partial<Record<string, string>> = Partial<Record<string, string>>
+>(
+	handler: (event: RequestEvent<Params>, user: User) => Promise<T>
+): (event: RequestEvent<Params>) => Promise<T | ReturnType<typeof fail>> {
+	return async (event: RequestEvent<Params>) => {
 		if (!event.locals.user) {
 			return fail(401, { error: 'Unauthorized' });
 		}

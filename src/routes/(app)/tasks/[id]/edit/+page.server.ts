@@ -81,7 +81,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	update: requireAuth(async ({ request, params }, user) => {
-		const taskId = params.id as string;
+		const taskId = params.id;
 
 		const form = await superValidate(request, zod4(updateTaskSchema));
 
@@ -182,7 +182,7 @@ export const actions: Actions = {
 	}),
 
 	delete: requireAuth(async ({ request, params }, user) => {
-		const taskId = params.id as string;
+		const taskId = params.id;
 		const form = await superValidate(request, zod4(deleteTaskSchema));
 
 		if (!form.valid || form.data.id !== taskId) {

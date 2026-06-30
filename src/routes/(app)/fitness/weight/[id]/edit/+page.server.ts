@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	update: requireAuth(async ({ request, params }, user) => {
-		const entryId = params.id as string;
+		const entryId = params.id;
 		const form = await superValidate(request, zod4(updateWeightSchema));
 
 		if (!form.valid) {
@@ -82,7 +82,7 @@ export const actions: Actions = {
 	}),
 
 	delete: requireAuth(async ({ request, params }, user) => {
-		const entryId = params.id as string;
+		const entryId = params.id;
 		const form = await superValidate(request, zod4(deleteEntrySchema));
 
 		if (!form.valid || form.data.id !== entryId) {

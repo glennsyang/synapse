@@ -38,7 +38,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions: Actions = {
 	update: requireAuth(async ({ request, params }, user) => {
-		const entryId = params.id as string;
+		const entryId = params.id;
 		const form = await superValidate(request, zod4(journalEntrySchema));
 
 		if (!form.valid) {
@@ -79,7 +79,7 @@ export const actions: Actions = {
 	}),
 
 	delete: requireAuth(async ({ request, params }, user) => {
-		const entryId = params.id as string;
+		const entryId = params.id;
 		const formData = await request.formData();
 		const submittedId = formData.get('id');
 
