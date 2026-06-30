@@ -125,4 +125,4 @@ export const actions: Actions = {
 	updateSession: requireAuth(async ({ request }, user) => handleUpdateSession(request, user.id)),
 
 	deleteSession: requireAuth(async ({ request }, user) => handleDeleteSession(request, user.id))
-};
+} satisfies Actions;

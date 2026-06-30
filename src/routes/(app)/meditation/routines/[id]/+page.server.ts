@@ -394,4 +394,4 @@ export const actions: Actions = {
 
 		throw redirect(303, '/meditation');
 	})
-};
+} satisfies Actions;
