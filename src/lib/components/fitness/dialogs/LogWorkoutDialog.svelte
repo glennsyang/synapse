@@ -70,16 +70,22 @@
 		id: formId,
 		resetForm: !isEditing,
 		onUpdate: ({ form }) => {
-			if (form.valid) {
-				if (open !== undefined) {
-					onClose?.();
-				} else {
-					internalOpen = false;
-				}
-				workoutExercises = [];
-				toast.success(isEditing ? 'Workout updated successfully!' : 'Workout logged successfully!');
-				onClose?.();
+			if (!form.valid) return;
+
+			const msg = form.message as { type: string; text: string } | null | undefined;
+			if (msg?.type === 'error') {
+				toast.error(msg.text);
+				return;
 			}
+
+			if (open !== undefined) {
+				onClose?.();
+			} else {
+				internalOpen = false;
+			}
+			workoutExercises = [];
+			toast.success(isEditing ? 'Workout updated successfully!' : 'Workout logged successfully!');
+			onClose?.();
 		},
 		onError: ({ result }) => {
 			toast.error(`Error: ${result.error.message}`);
