@@ -5,10 +5,19 @@ import {
 	updateRoutineSchema
 } from '$lib/schemas/meditation';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
+import {
+	handleDeleteSession,
+	handleUpdateSession
+} from '$lib/server/actions/meditation-session-actions';
 import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
-import { generateId } from '$lib/server/db/utils';
+import {
+	generateId,
+	withAuditFieldsForCreate,
+	withAuditFieldsForUpdate
+} from '$lib/server/db/utils';
+import { safeParse } from '$lib/utils';
 import { logger } from '$lib/utils/logger';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq, or } from 'drizzle-orm';
@@ -18,10 +27,7 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	if (!locals.user) {
-		logger.warn('Unauthorized access attempt to meditation routine page');
-		throw redirect(302, '/sign-in');
-	}
+	const userId = getUser(locals).id;
 
 	try {
 		const db = getDb();
@@ -30,7 +36,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		const routine = await db.query.meditationRoutines.findFirst({
 			where: and(
 				eq(meditationRoutines.id, params.id),
-				or(eq(meditationRoutines.userId, locals.user.id), eq(meditationRoutines.isPredefined, true))
+				or(eq(meditationRoutines.userId, userId), eq(meditationRoutines.isPredefined, true))
 			)
 		});
 
@@ -39,7 +45,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		}
 
 		// Check permissions for user-created routines
-		if (!routine.isPredefined && routine.userId !== locals.user.id) {
+		if (!routine.isPredefined && routine.userId !== userId) {
 			throw error(403, 'Unauthorized to view this routine');
 		}
 
@@ -47,7 +53,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		const schedule = await db.query.meditationSchedules.findFirst({
 			where: and(
 				eq(meditationSchedules.routineId, params.id),
-				eq(meditationSchedules.userId, locals.user.id)
+				eq(meditationSchedules.userId, userId)
 			)
 		});
 
@@ -55,7 +61,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		const sessions = await db.query.meditationSessions.findMany({
 			where: and(
 				eq(meditationSessions.routineId, params.id),
-				eq(meditationSessions.userId, locals.user.id)
+				eq(meditationSessions.userId, userId)
 			),
 			orderBy: [desc(meditationSessions.completedAt)],
 			limit: 20
@@ -64,13 +70,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		// Parse JSON fields
 		const parsedRoutine = {
 			...routine,
-			moodTags: routine.moodTags ? JSON.parse(routine.moodTags) : []
+			moodTags: safeParse<string[]>(routine.moodTags, [])
 		};
 
 		const parsedSchedule = schedule
 			? {
 					...schedule,
-					daysOfWeek: schedule.daysOfWeek ? JSON.parse(schedule.daysOfWeek) : null
+					daysOfWeek: safeParse<number[] | null>(schedule.daysOfWeek, null)
 				}
 			: null;
 
@@ -140,7 +146,7 @@ export const actions: Actions = {
 			// Parse days_of_week if provided (stored as JSON array string e.g. "[0,1,6]")
 			const daysOfWeekJson = form.data.days_of_week
 				? JSON.stringify(
-						(JSON.parse(form.data.days_of_week) as number[])
+						safeParse<number[]>(form.data.days_of_week, [])
 							.filter((d) => !Number.isNaN(d) && d >= 0 && d <= 6)
 							.sort((a, b) => a - b)
 					)
@@ -163,7 +169,7 @@ export const actions: Actions = {
 						daysOfWeek: daysOfWeekJson,
 						time: form.data.time,
 						enabled: true,
-						updatedAt: new Date().toISOString()
+						...withAuditFieldsForUpdate()
 					})
 					.where(eq(meditationSchedules.id, existingSchedule.id));
 
@@ -183,8 +189,7 @@ export const actions: Actions = {
 					daysOfWeek: daysOfWeekJson,
 					time: form.data.time,
 					enabled: true,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForCreate()
 				});
 
 				logger.info('Meditation schedule created', {
@@ -260,8 +265,7 @@ export const actions: Actions = {
 					preMoodRating: form.data.pre_mood_rating || null,
 					moodRating: form.data.mood_rating || null,
 					notes: form.data.notes || null,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForCreate()
 				});
 
 			logger.info('Meditation session completed', {
@@ -321,7 +325,7 @@ export const actions: Actions = {
 					linkUrl: form.data.link_url,
 					durationMinutes: form.data.duration_minutes,
 					moodTags: moodTagsJson,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(meditationRoutines.id, routineId), eq(meditationRoutines.userId, user.id)));
 
@@ -346,72 +350,9 @@ export const actions: Actions = {
 		}
 	}),
 
-	updateSession: requireAuth(async ({ request }, user) => {
-		const form = await superValidate(request, zod4(editSessionSchema));
+	updateSession: requireAuth(async ({ request }, user) => handleUpdateSession(request, user.id)),
 
-		if (!form.valid) {
-			logger.warn('Invalid edit session form data', { errors: form.errors });
-			return fail(400, { form });
-		}
-
-		try {
-			const db = getDb();
-
-			const session = await db.query.meditationSessions.findFirst({
-				where: and(eq(meditationSessions.id, form.data.id), eq(meditationSessions.userId, user.id))
-			});
-
-			if (!session) {
-				return fail(404, { form });
-			}
-
-			await db
-				.update(meditationSessions)
-				.set({
-					completedAt: new Date(form.data.completed_at).toISOString(),
-					preMoodRating: form.data.pre_mood_rating ?? null,
-					moodRating: form.data.mood_rating ?? null,
-					notes: form.data.notes || null,
-					updatedAt: new Date().toISOString()
-				})
-				.where(
-					and(eq(meditationSessions.id, form.data.id), eq(meditationSessions.userId, user.id))
-				);
-
-			logger.info('Meditation session updated', { sessionId: form.data.id, userId: user.id });
-			return message(form, { type: 'success', text: 'Session updated successfully!' });
-		} catch (err) {
-			logger.error('Failed to update session', { error: err });
-			return message(
-				form,
-				{ type: 'error', text: 'An error occurred while updating the session.' },
-				{ status: 500 }
-			);
-		}
-	}),
-
-	deleteSession: requireAuth(async ({ request }, user) => {
-		const formData = await request.formData();
-		const sessionId = formData.get('session_id') as string;
-
-		if (!sessionId) {
-			return fail(400, { error: 'Session ID is required' });
-		}
-
-		try {
-			const db = getDb();
-
-			await db
-				.delete(meditationSessions)
-				.where(and(eq(meditationSessions.id, sessionId), eq(meditationSessions.userId, user.id)));
-
-			logger.info('Meditation session deleted', { sessionId, userId: user.id });
-			return { success: true };
-		} catch (err) {
-			logger.error('Failed to delete session', { error: err });
-			return fail(500, { error: 'Failed to delete session' });
-		}
-	}),
+	deleteSession: requireAuth(async ({ request }, user) => handleDeleteSession(request, user.id)),
 
 	deleteRoutine: requireAuth(async ({ params }, user) => {
 		const routineId = params.id as string;
@@ -453,4 +394,4 @@ export const actions: Actions = {
 
 		throw redirect(303, '/meditation');
 	})
-};
+} satisfies Actions;

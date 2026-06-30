@@ -2,7 +2,7 @@ import { journalEntrySchema } from '$lib/schemas/journal';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
-import { generateId } from '$lib/server/db/utils';
+import { generateId, withAuditFieldsForCreate } from '$lib/server/db/utils';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
@@ -42,16 +42,17 @@ export const actions: Actions = {
 
 			const entryId = generateId();
 
-			await getDb().insert(journalEntries).values({
-				id: entryId,
-				userId: user.id,
-				date: form.data.date,
-				content: form.data.content,
-				location,
-				weather,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
-			});
+			await getDb()
+				.insert(journalEntries)
+				.values({
+					id: entryId,
+					userId: user.id,
+					date: form.data.date,
+					content: form.data.content,
+					location,
+					weather,
+					...withAuditFieldsForCreate()
+				});
 
 			logger.info('Journal entry created', { entryId, userId: user.id });
 		} catch (error) {

@@ -6,6 +6,7 @@ import {
 } from '$lib/server/actions/edit-route-helpers';
 import { getDb } from '$lib/server/db';
 import { mealLogs } from '$lib/server/db/schema';
+import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
@@ -68,7 +69,7 @@ export const actions: Actions = {
 					timeOfDay: form.data.timeOfDay,
 					description: form.data.description,
 					caloriesEstimate: form.data.caloriesEstimate || null,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(mealLogs.id, mealId), eq(mealLogs.userId, user.id)));
 

@@ -86,12 +86,6 @@
 		}
 	});
 
-	// $effect(() => {
-	// 	if (workoutExercises.length > 0) {
-	// 		$form.exercises = JSON.stringify(workoutExercises);
-	// 	}
-	// });
-
 	// Populate form fields when editing
 	$effect(() => {
 		if (editEntry) {

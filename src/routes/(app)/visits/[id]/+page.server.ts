@@ -3,12 +3,17 @@ import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
-import { generateId } from '$lib/server/db/utils';
+import {
+	generateId,
+	withAuditFieldsForCreate,
+	withAuditFieldsForUpdate
+} from '$lib/server/db/utils';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
+import { safeParse } from '$lib/utils';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -23,63 +28,69 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const db = getDb();
 	const userId = getUser(locals).id;
 
-	// Load person
-	const person = await db.query.people.findFirst({
-		where: and(eq(people.id, params.id), eq(people.userId, userId))
-	});
+	try {
+		// Load person
+		const person = await db.query.people.findFirst({
+			where: and(eq(people.id, params.id), eq(people.userId, userId))
+		});
 
-	if (!person) {
-		throw error(404, 'Person not found');
+		if (!person) {
+			throw error(404, 'Person not found');
+		}
+
+		if (person.isArchived) {
+			throw redirect(303, '/visits');
+		}
+
+		// Load all visits for this person
+		const personVisits = await db.query.visits.findMany({
+			where: eq(visits.personId, params.id),
+			orderBy: [desc(visits.date)]
+		});
+
+		const parsedVisits = personVisits.map((visit) => ({
+			...visit,
+			companions: safeParse<string[] | null>(visit.companions, null)
+		}));
+		const visitStatusThresholds = await getVisitStatusThresholdsForUser(userId, db);
+
+		// Calculate status
+		const latestVisit = personVisits[0];
+		const statusInfo = calculatePersonVisitStatus(
+			latestVisit?.date ?? null,
+			person.isExempt,
+			latestVisit?.followUpDate ?? null,
+			getTodayString(),
+			visitStatusThresholds
+		);
+
+		// Initialize forms
+		const visitForm = await superValidate(zod4(visitSchema));
+		visitForm.data.date = getTodayString(); // Set default to today
+
+		const editForm = await superValidate(person, zod4(personSchema));
+
+		return {
+			person: {
+				...person,
+				status: statusInfo.status,
+				daysSinceLastVisit: statusInfo.daysSinceLastVisit
+			},
+			visits: parsedVisits,
+			visitForm,
+			editForm
+		};
+	} catch (err) {
+		if (isHttpError(err) || isRedirect(err)) throw err;
+		logger.error('Failed to load visit page data', { error: err, personId: params.id, userId });
+		throw error(500, 'Failed to load page data');
 	}
-
-	if (person.isArchived) {
-		throw redirect(303, '/visits');
-	}
-
-	// Load all visits for this person
-	const personVisits = await db.query.visits.findMany({
-		where: eq(visits.personId, params.id),
-		orderBy: [desc(visits.date)]
-	});
-
-	const parsedVisits = personVisits.map((visit) => ({
-		...visit,
-		companions: visit.companions ? JSON.parse(visit.companions) : null
-	}));
-	const visitStatusThresholds = await getVisitStatusThresholdsForUser(userId, db);
-
-	// Calculate status
-	const latestVisit = personVisits[0];
-	const statusInfo = calculatePersonVisitStatus(
-		latestVisit?.date ?? null,
-		person.isExempt,
-		latestVisit?.followUpDate ?? null,
-		getTodayString(),
-		visitStatusThresholds
-	);
-
-	// Initialize forms
-	const visitForm = await superValidate(zod4(visitSchema));
-	visitForm.data.date = getTodayString(); // Set default to today
-
-	const editForm = await superValidate(person, zod4(personSchema));
-
-	return {
-		person: {
-			...person,
-			status: statusInfo.status,
-			daysSinceLastVisit: statusInfo.daysSinceLastVisit
-		},
-		visits: parsedVisits,
-		visitForm,
-		editForm
-	};
 };
 
 export const actions: Actions = {
 	logVisit: requireAuth(async ({ request, params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		const form = await superValidate(request, zod4(visitSchema));
@@ -98,7 +109,7 @@ export const actions: Actions = {
 			});
 
 			if (!person) {
-				throw error(404, 'Person not found');
+				return fail(404, { error: 'Person not found' });
 			}
 
 			const companions = toCommaSeparatedJson(form.data.companions);
@@ -114,8 +125,7 @@ export const actions: Actions = {
 				companions,
 				notes: form.data.notes || null,
 				followUpDate: form.data.followUpDate || null,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
+				...withAuditFieldsForCreate()
 			});
 
 			logger.info('Visit logged', {
@@ -143,7 +153,7 @@ export const actions: Actions = {
 
 	updateVisit: requireAuth(async ({ request, params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		const formData = await request.formData();
@@ -156,7 +166,7 @@ export const actions: Actions = {
 		}
 
 		if (typeof visitId !== 'string' || !visitId) {
-			throw error(400, 'Visit ID is required');
+			return fail(400, { error: 'Visit ID is required' });
 		}
 
 		try {
@@ -171,7 +181,7 @@ export const actions: Actions = {
 			});
 
 			if (!visit) {
-				throw error(404, 'Visit not found');
+				return fail(404, { error: 'Visit not found' });
 			}
 
 			const companions = toCommaSeparatedJson(form.data.companions);
@@ -184,7 +194,7 @@ export const actions: Actions = {
 					companions,
 					notes: form.data.notes || null,
 					followUpDate: form.data.followUpDate || null,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(
 					and(eq(visits.id, visitId), eq(visits.userId, user.id), eq(visits.personId, params.id))
@@ -215,7 +225,7 @@ export const actions: Actions = {
 
 	updatePerson: requireAuth(async ({ request, params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		const form = await superValidate(request, zod4(personSchema));
@@ -234,7 +244,7 @@ export const actions: Actions = {
 			});
 
 			if (!person) {
-				throw error(404, 'Person not found');
+				return fail(404, { error: 'Person not found' });
 			}
 
 			await db
@@ -242,7 +252,7 @@ export const actions: Actions = {
 				.set({
 					name: form.data.name,
 					isExempt: form.data.isExempt,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(people.id, params.id), eq(people.userId, user.id)));
 
@@ -267,7 +277,7 @@ export const actions: Actions = {
 
 	archivePerson: requireAuth(async ({ params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		try {
@@ -279,21 +289,21 @@ export const actions: Actions = {
 			});
 
 			if (!person) {
-				throw error(404, 'Person not found');
+				return fail(404, { error: 'Person not found' });
 			}
 
 			await db
 				.update(people)
 				.set({
 					isArchived: true,
-					updatedAt: new Date().toISOString()
+					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(people.id, params.id), eq(people.userId, user.id)));
 
 			logger.info('Person archived', { personId: params.id, userId: user.id });
 		} catch (err) {
 			logger.error('Failed to archive person', { error: err });
-			throw error(500, 'Failed to archive person');
+			return fail(500, { error: 'Failed to archive person' });
 		}
 
 		throw redirect(303, '/visits');
@@ -301,7 +311,7 @@ export const actions: Actions = {
 
 	deletePerson: requireAuth(async ({ params }, user) => {
 		if (!params.id) {
-			throw error(400, 'Person ID is required');
+			return fail(400, { error: 'Person ID is required' });
 		}
 
 		try {
@@ -313,7 +323,7 @@ export const actions: Actions = {
 			});
 
 			if (!person) {
-				throw error(404, 'Person not found');
+				return fail(404, { error: 'Person not found' });
 			}
 
 			// Delete person (cascades to visits)
@@ -322,7 +332,7 @@ export const actions: Actions = {
 			logger.info('Person deleted', { personId: params.id, userId: user.id });
 		} catch (err) {
 			logger.error('Failed to delete person', { error: err });
-			throw error(500, 'Failed to delete person');
+			return fail(500, { error: 'Failed to delete person' });
 		}
 
 		throw redirect(303, '/visits');
@@ -333,7 +343,7 @@ export const actions: Actions = {
 		const visitId = formData.get('visitId') as string;
 
 		if (!visitId) {
-			throw error(400, 'Visit ID is required');
+			return fail(400, { error: 'Visit ID is required' });
 		}
 
 		try {
@@ -345,7 +355,7 @@ export const actions: Actions = {
 			});
 
 			if (!visit) {
-				throw error(404, 'Visit not found');
+				return fail(404, { error: 'Visit not found' });
 			}
 
 			await db.delete(visits).where(and(eq(visits.id, visitId), eq(visits.userId, user.id)));
@@ -355,7 +365,7 @@ export const actions: Actions = {
 			return { success: true };
 		} catch (err) {
 			logger.error('Failed to delete visit', { error: err });
-			throw error(500, 'Failed to delete visit');
+			return fail(500, { error: 'Failed to delete visit' });
 		}
 	})
 };

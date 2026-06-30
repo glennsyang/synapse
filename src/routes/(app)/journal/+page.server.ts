@@ -2,6 +2,7 @@ import { journalFilterSchema } from '$lib/schemas/journal';
 import { getUser } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
+import { safeParse } from '$lib/utils';
 import { logger } from '$lib/utils/logger';
 import { and, desc, eq, like } from 'drizzle-orm';
 
@@ -43,7 +44,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 		const parsedEntries = entries.map((entry: typeof journalEntries.$inferSelect) => ({
 			...entry,
-			weather: entry.weather ? JSON.parse(entry.weather) : null
+			weather: safeParse<Record<string, unknown> | null>(entry.weather, null)
 		}));
 
 		return {

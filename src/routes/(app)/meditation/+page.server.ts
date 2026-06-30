@@ -1,11 +1,15 @@
 import { editSessionSchema, routineFilterSchema } from '$lib/schemas/meditation';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
+import {
+	handleDeleteSession,
+	handleUpdateSession
+} from '$lib/server/actions/meditation-session-actions';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
+import { safeParse } from '$lib/utils';
 import { logger } from '$lib/utils/logger';
-import { fail } from '@sveltejs/kit';
 import { and, desc, eq, like, or } from 'drizzle-orm';
-import { message, superValidate } from 'sveltekit-superforms';
+import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
@@ -71,7 +75,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// Parse moodTags JSON for each routine
 		const parsedRoutines = routines.map((routine) => ({
 			...routine,
-			moodTags: routine.moodTags ? JSON.parse(routine.moodTags) : []
+			moodTags: safeParse<string[]>(routine.moodTags, [])
 		}));
 
 		// Fetch all schedules for user
@@ -85,7 +89,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// Parse daysOfWeek JSON for each schedule
 		const parsedSchedules = schedules.map((schedule) => ({
 			...schedule,
-			daysOfWeek: schedule.daysOfWeek ? JSON.parse(schedule.daysOfWeek) : null
+			daysOfWeek: safeParse<number[] | null>(schedule.daysOfWeek, null)
 		}));
 
 		// Fetch recent sessions for history
@@ -118,68 +122,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	updateSession: requireAuth(async ({ request }, user) => {
-		const form = await superValidate(request, zod4(editSessionSchema));
+	updateSession: requireAuth(async ({ request }, user) => handleUpdateSession(request, user.id)),
 
-		if (!form.valid) {
-			logger.warn('Invalid edit session form data', { errors: form.errors });
-			return fail(400, { form });
-		}
-
-		try {
-			const db = getDb();
-
-			const session = await db.query.meditationSessions.findFirst({
-				where: and(eq(meditationSessions.id, form.data.id), eq(meditationSessions.userId, user.id))
-			});
-
-			if (!session) {
-				return fail(404, { form });
-			}
-
-			await db
-				.update(meditationSessions)
-				.set({
-					completedAt: new Date(form.data.completed_at).toISOString(),
-					preMoodRating: form.data.pre_mood_rating ?? null,
-					moodRating: form.data.mood_rating ?? null,
-					notes: form.data.notes || null,
-					updatedAt: new Date().toISOString()
-				})
-				.where(eq(meditationSessions.id, form.data.id));
-
-			logger.info('Meditation session updated', { sessionId: form.data.id, userId: user.id });
-			return message(form, { type: 'success', text: 'Session updated successfully!' });
-		} catch (err) {
-			logger.error('Failed to update session', { error: err });
-			return message(
-				form,
-				{ type: 'error', text: 'An error occurred while updating the session.' },
-				{ status: 500 }
-			);
-		}
-	}),
-
-	deleteSession: requireAuth(async ({ request }, user) => {
-		const formData = await request.formData();
-		const sessionId = formData.get('session_id') as string;
-
-		if (!sessionId) {
-			return fail(400, { error: 'Session ID is required' });
-		}
-
-		try {
-			const db = getDb();
-
-			await db
-				.delete(meditationSessions)
-				.where(and(eq(meditationSessions.id, sessionId), eq(meditationSessions.userId, user.id)));
-
-			logger.info('Meditation session deleted', { sessionId, userId: user.id });
-			return { success: true };
-		} catch (err) {
-			logger.error('Failed to delete session', { error: err });
-			return fail(500, { error: 'Failed to delete session' });
-		}
-	})
-};
+	deleteSession: requireAuth(async ({ request }, user) => handleDeleteSession(request, user.id))
+} satisfies Actions;

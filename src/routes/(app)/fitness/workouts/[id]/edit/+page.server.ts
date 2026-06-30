@@ -11,7 +11,11 @@ import {
 } from '$lib/server/actions/edit-route-helpers';
 import { getDb } from '$lib/server/db';
 import { workoutExercises, workoutLogs } from '$lib/server/db/schema';
-import { generateId } from '$lib/server/db/utils';
+import {
+	generateId,
+	withAuditFieldsForCreate,
+	withAuditFieldsForUpdate
+} from '$lib/server/db/utils';
 import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
@@ -121,7 +125,7 @@ export const actions: Actions = {
 						durationMinutes: form.data.durationMinutes || null,
 						steps: form.data.steps || null,
 						notes: form.data.notes || null,
-						updatedAt: new Date().toISOString()
+						...withAuditFieldsForUpdate()
 					})
 					.where(and(eq(workoutLogs.id, workoutId), eq(workoutLogs.userId, user.id)));
 
@@ -136,8 +140,7 @@ export const actions: Actions = {
 							sets: exercise.sets || null,
 							reps: exercise.reps || null,
 							weightLbs: exercise.weightLbs || null,
-							createdAt: new Date().toISOString(),
-							updatedAt: new Date().toISOString()
+							...withAuditFieldsForCreate()
 						}))
 					);
 				}
