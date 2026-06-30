@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import { editSessionSchema, routineFilterSchema } from '$lib/schemas/meditation';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import {
@@ -7,7 +8,6 @@ import {
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
 import { safeParse } from '$lib/utils';
-import { logger } from '$lib/utils/logger';
 import { and, desc, eq, like, or } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';

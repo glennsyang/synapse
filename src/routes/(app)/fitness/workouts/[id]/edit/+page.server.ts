@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import {
 	deleteEntrySchema,
 	updateWorkoutSchema,
@@ -16,7 +17,6 @@ import {
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
-import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';

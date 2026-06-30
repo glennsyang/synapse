@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import {
 	deleteEntrySchema,
 	logMealSchema,
@@ -29,7 +30,6 @@ import {
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
 import { getTodayString } from '$lib/utils/date';
-import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';

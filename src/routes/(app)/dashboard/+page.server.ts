@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import { getDb } from '$lib/server/db';
 import {
 	dailyAgendaEntries,
@@ -20,7 +21,6 @@ import {
 	formatTodayLabel,
 	getTodayString
 } from '$lib/utils/date';
-import { logger } from '$lib/utils/logger';
 import { createMarkdownExcerpt } from '$lib/utils/markdown';
 import { calculatePersonVisitStatus, type VisitStatusThresholds } from '$lib/utils/visit-status';
 import { getWorkoutLabel } from '$lib/utils/workout';

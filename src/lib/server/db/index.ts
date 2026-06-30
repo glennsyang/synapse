@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 import { DATABASE_URL } from '$app/env/private';
-import { logger } from '$lib/utils/logger';
+import { logger } from '$lib';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 

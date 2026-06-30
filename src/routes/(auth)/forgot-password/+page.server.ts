@@ -1,4 +1,5 @@
 import { BETTER_AUTH_BASE_URL } from '$app/env/private';
+import { logger } from '$lib';
 import { forgotPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import {
@@ -6,7 +7,6 @@ import {
 	mapAuthActionError,
 	redirectIfAuthenticated
 } from '$lib/server/auth/form-helpers';
-import { logger } from '$lib/utils/logger';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 

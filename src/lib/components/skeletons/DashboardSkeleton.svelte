@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { cn } from '$lib';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-	import { cn } from '$lib/utils.js';
 
 	let {
 		class: className,

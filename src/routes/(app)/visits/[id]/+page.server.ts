@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import { personSchema, visitSchema } from '$lib/schemas/visits';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
@@ -11,7 +12,6 @@ import {
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { safeParse } from '$lib/utils';
 import { getTodayString } from '$lib/utils/date';
-import { logger } from '$lib/utils/logger';
 import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';

@@ -1,7 +1,7 @@
 import { building, dev } from '$app/env';
+import { logger } from '$lib';
 import { auth } from '$lib/server/auth';
 import { generateId } from '$lib/server/db/utils';
-import { logger } from '$lib/utils/logger';
 import type { Handle, HandleServerError, ResolveOptions } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 

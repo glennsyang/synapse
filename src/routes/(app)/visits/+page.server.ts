@@ -1,10 +1,10 @@
+import { logger } from '$lib';
 import { getUser } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { safeParse } from '$lib/utils';
 import { getTodayString } from '$lib/utils/date';
-import { logger } from '$lib/utils/logger';
 import {
 	calculatePersonVisitStatus,
 	getStatusPriority,

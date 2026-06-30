@@ -1,8 +1,8 @@
 import { timingSafeEqual } from 'node:crypto';
 
 import { CRON_SECRET } from '$app/env/private';
+import { logger } from '$lib';
 import { runEmailNotifications } from '$lib/server/email/email-notifications';
-import { logger } from '$lib/utils/logger';
 import { json } from '@sveltejs/kit';
 
 import type { RequestHandler } from './$types';

@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import {
 	completeSessionSchema,
 	editSessionSchema,
@@ -18,7 +19,6 @@ import {
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
 import { safeParse } from '$lib/utils';
-import { logger } from '$lib/utils/logger';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq, or } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';

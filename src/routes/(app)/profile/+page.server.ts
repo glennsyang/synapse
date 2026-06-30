@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import {
 	changePasswordSchema,
 	updateProfileSchema,
@@ -13,7 +14,6 @@ import {
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
-import { logger } from '$lib/utils/logger';
 import {
 	convertVisitThresholdToDays,
 	normalizeVisitStatusThresholds
