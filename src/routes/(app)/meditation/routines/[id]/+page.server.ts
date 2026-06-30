@@ -5,6 +5,10 @@ import {
 	updateRoutineSchema
 } from '$lib/schemas/meditation';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
+import {
+	handleDeleteSession,
+	handleUpdateSession
+} from '$lib/server/actions/meditation-session-actions';
 import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
@@ -346,72 +350,9 @@ export const actions: Actions = {
 		}
 	}),
 
-	updateSession: requireAuth(async ({ request }, user) => {
-		const form = await superValidate(request, zod4(editSessionSchema));
+	updateSession: requireAuth(async ({ request }, user) => handleUpdateSession(request, user.id)),
 
-		if (!form.valid) {
-			logger.warn('Invalid edit session form data', { errors: form.errors });
-			return fail(400, { form });
-		}
-
-		try {
-			const db = getDb();
-
-			const session = await db.query.meditationSessions.findFirst({
-				where: and(eq(meditationSessions.id, form.data.id), eq(meditationSessions.userId, user.id))
-			});
-
-			if (!session) {
-				return fail(404, { form });
-			}
-
-			await db
-				.update(meditationSessions)
-				.set({
-					completedAt: new Date(form.data.completed_at).toISOString(),
-					preMoodRating: form.data.pre_mood_rating ?? null,
-					moodRating: form.data.mood_rating ?? null,
-					notes: form.data.notes || null,
-					...withAuditFieldsForUpdate()
-				})
-				.where(
-					and(eq(meditationSessions.id, form.data.id), eq(meditationSessions.userId, user.id))
-				);
-
-			logger.info('Meditation session updated', { sessionId: form.data.id, userId: user.id });
-			return message(form, { type: 'success', text: 'Session updated successfully!' });
-		} catch (err) {
-			logger.error('Failed to update session', { error: err });
-			return message(
-				form,
-				{ type: 'error', text: 'An error occurred while updating the session.' },
-				{ status: 500 }
-			);
-		}
-	}),
-
-	deleteSession: requireAuth(async ({ request }, user) => {
-		const formData = await request.formData();
-		const sessionId = formData.get('session_id') as string;
-
-		if (!sessionId) {
-			return fail(400, { error: 'Session ID is required' });
-		}
-
-		try {
-			const db = getDb();
-
-			await db
-				.delete(meditationSessions)
-				.where(and(eq(meditationSessions.id, sessionId), eq(meditationSessions.userId, user.id)));
-
-			logger.info('Meditation session deleted', { sessionId, userId: user.id });
-			return { success: true };
-		} catch (err) {
-			logger.error('Failed to delete session', { error: err });
-			return fail(500, { error: 'Failed to delete session' });
-		}
-	}),
+	deleteSession: requireAuth(async ({ request }, user) => handleDeleteSession(request, user.id)),
 
 	deleteRoutine: requireAuth(async ({ params }, user) => {
 		const routineId = params.id as string;
