@@ -3,8 +3,9 @@ import { timingSafeEqual } from 'node:crypto';
 import { CRON_SECRET } from '$app/env/private';
 import { runEmailNotifications } from '$lib/server/email/email-notifications';
 import { logger } from '$lib/utils/logger';
-import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
+
+import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const authHeader = request.headers.get('authorization');
