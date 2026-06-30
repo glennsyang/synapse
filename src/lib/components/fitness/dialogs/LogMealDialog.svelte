@@ -51,7 +51,7 @@
 	const formId = $derived(editEntry ? `edit-meal-${editEntry.id}` : `log-meal-${instanceId}`);
 
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance } = superForm(formData, {
+	const { form, errors, enhance, message, submitting } = superForm(formData, {
 		id: formId,
 		resetForm: !isEditing,
 		onUpdate: ({ form }) => {
@@ -64,9 +64,14 @@
 				toast.success(isEditing ? 'Meal updated successfully!' : 'Meal logged successfully!');
 				onClose?.();
 			}
+			if ($message?.type === 'error') {
+				toast.error(`Error ${isEditing ? 'updating' : 'logging'} meal. Reason: ${$message.text}`);
+			}
 		},
 		onError: ({ result }) => {
-			toast.error(`Error: ${result.error.message}`);
+			toast.error(
+				`There was an error ${isEditing ? 'updating' : 'logging'} meal: ${result.error.message}`
+			);
 		}
 	});
 
@@ -121,7 +126,14 @@
 			<div class="grid gap-4 py-4">
 				<div class="grid gap-2">
 					<Label for="meal-date">Date</Label>
-					<Input id="meal-date" name="date" type="date" bind:value={$form.date} required />
+					<Input
+						id="meal-date"
+						name="date"
+						type="date"
+						bind:value={$form.date}
+						class={$errors.date ? 'border-destructive' : ''}
+						required
+					/>
 					{#if $errors.date}
 						<p class="text-destructive text-sm">{$errors.date}</p>
 					{/if}
@@ -151,6 +163,7 @@
 							name="caloriesEstimate"
 							type="number"
 							bind:value={$form.caloriesEstimate}
+							class={$errors.caloriesEstimate ? 'border-destructive' : ''}
 							placeholder="500"
 						/>
 						{#if $errors.caloriesEstimate}
@@ -164,6 +177,7 @@
 						id="meal-description"
 						name="description"
 						bind:value={$form.description}
+						class={$errors.description ? 'border-destructive' : ''}
 						rows={3}
 						placeholder="e.g., Chicken salad with olive oil dressing"
 						required
@@ -174,13 +188,13 @@
 				</div>
 			</div>
 			<Dialog.Footer>
-				<Dialog.Close>
-					{#snippet child({ props })}
-						<Button {...props} type="button" variant="outline">Cancel</Button>
-					{/snippet}
-				</Dialog.Close>
-				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700">
-					{isEditing ? 'Update' : 'Save'}
+				<Dialog.Close><Button type="reset" variant="outline">Cancel</Button></Dialog.Close>
+				<Button
+					type="submit"
+					disabled={$submitting}
+					class="bg-green-600 text-white hover:bg-green-700"
+				>
+					{$submitting ? 'Saving...' : isEditing ? 'Update' : 'Save'}
 				</Button>
 			</Dialog.Footer>
 		</form>

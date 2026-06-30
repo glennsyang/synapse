@@ -26,7 +26,7 @@
 	const dialogOpen = $derived(open !== undefined ? open : internalOpen);
 
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance } = superForm(formData, {
+	const { form, errors, enhance, message, submitting } = superForm(formData, {
 		onUpdate: ({ form }) => {
 			if (form.valid) {
 				if (open !== undefined) {
@@ -37,9 +37,12 @@
 				toast.success('Goal weight set successfully!');
 				onClose?.();
 			}
+			if ($message?.type === 'error') {
+				toast.error(`Error setting goal weight. Reason: ${$message.text}`);
+			}
 		},
 		onError: ({ result }) => {
-			toast.error(`Error setting goal weight: ${result.error.message}`);
+			toast.error(`There was an error setting goal weight: ${result.error.message}`);
 		}
 	});
 
@@ -96,6 +99,7 @@
 						type="number"
 						step="0.1"
 						bind:value={$form.targetWeightLbs}
+						class={$errors.targetWeightLbs ? 'border-red-400' : ''}
 						placeholder="150.0"
 						required
 					/>
@@ -105,12 +109,13 @@
 				</div>
 			</div>
 			<Dialog.Footer>
-				<Dialog.Close>
-					{#snippet child({ props })}
-						<Button {...props} type="button" variant="outline">Cancel</Button>
-					{/snippet}
-				</Dialog.Close>
-				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700">Set Goal</Button>
+				<Dialog.Close><Button type="reset" variant="outline">Cancel</Button></Dialog.Close>
+				<Button
+					type="submit"
+					disabled={$submitting}
+					class="bg-green-600 text-white hover:bg-green-700"
+					>{$submitting ? 'Setting...' : 'Set Goal'}</Button
+				>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

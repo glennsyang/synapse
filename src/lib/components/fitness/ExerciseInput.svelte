@@ -31,7 +31,7 @@
 		</p>
 	{:else}
 		<div class="space-y-4">
-			{#each exercises as exercise, index (exercise.exerciseName + index)}
+			{#each exercises as exercise, index (index)}
 				<div class="grid gap-3 rounded-lg border p-4">
 					<div class="flex items-center justify-between">
 						<Label class="text-sm font-medium">Exercise {index + 1}</Label>
