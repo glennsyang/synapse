@@ -70,8 +70,6 @@ import {
 	getVisitWarningStatus
 } from './visit-warning-utils';
 
-const db = getDb();
-
 /**
  * Check if this reminder should fire today based on cadence and days_of_week
  */
@@ -99,6 +97,7 @@ async function alreadySentToday(
 	notificationType: string,
 	entityId: string
 ): Promise<boolean> {
+	const db = getDb();
 	const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
 	const existing = db
@@ -126,6 +125,7 @@ async function logNotification(
 	entityId: string,
 	subject: string
 ): Promise<void> {
+	const db = getDb();
 	await db.insert(emailNotifications).values({
 		userId,
 		notificationType,
@@ -162,6 +162,7 @@ async function processWorkoutReminders(
 	currentHour: string,
 	currentMinute: string
 ): Promise<void> {
+	const db = getDb();
 	logger.debug('\n💪 Processing workout reminders...');
 
 	const reminders = db
@@ -248,6 +249,7 @@ async function processMeditationReminders(
 	currentHour: string,
 	currentMinute: string
 ): Promise<void> {
+	const db = getDb();
 	logger.debug('\n🧘 Processing meditation reminders...');
 
 	const schedules = db
@@ -332,6 +334,7 @@ async function processMeditationReminders(
  * Process visit warnings (people in yellow/red visit status)
  */
 async function processVisitWarnings(): Promise<void> {
+	const db = getDb();
 	logger.debug('\n👥 Processing visit warnings...');
 
 	// Get all people with their last visit date
@@ -453,6 +456,7 @@ async function processVisitWarnings(): Promise<void> {
 }
 
 async function alreadySentDailyAgendaDigest(userId: string, dateString: string): Promise<boolean> {
+	const db = getDb();
 	const existing = db
 		.select({ id: emailNotifications.id })
 		.from(emailNotifications)
@@ -472,6 +476,7 @@ async function alreadySentTasksDueTodayDigest(
 	userId: string,
 	dateString: string
 ): Promise<boolean> {
+	const db = getDb();
 	const existing = db
 		.select({ id: emailNotifications.id })
 		.from(emailNotifications)
@@ -491,6 +496,7 @@ async function loadTasksDueToday(
 	userId: string,
 	dateString: string
 ): Promise<TasksDueTodayTaskSummary[]> {
+	const db = getDb();
 	const dueTodayTasks = await db.query.tasks.findMany({
 		where: and(
 			eq(tasks.userId, userId),
@@ -526,6 +532,7 @@ async function processDailyAgendaDigests(
 	currentMinute: string,
 	todayPacific: string
 ): Promise<void> {
+	const db = getDb();
 	logger.debug('\n🗓️ Processing daily agenda digests...');
 
 	if (!isWithinDailyDigestWindow(currentHour, currentMinute)) {
@@ -588,6 +595,7 @@ async function processTasksDueTodayDigests(
 	currentMinute: string,
 	todayPacific: string
 ): Promise<void> {
+	const db = getDb();
 	logger.debug('\n🗂️ Processing Tasks due-today digests...');
 
 	if (!isWithinDailyDigestWindow(currentHour, currentMinute)) {
@@ -653,6 +661,7 @@ async function processTasksDueTodayDigests(
  * Process visit reminders for visits scheduled today
  */
 async function processVisitsTodayReminders(todayPacific: string): Promise<void> {
+	const db = getDb();
 	logger.debug("\n🗓️ Processing today's visit reminders...");
 
 	// Find all visits where followUpDate is today
@@ -718,6 +727,7 @@ async function processVisitsTodayReminders(todayPacific: string): Promise<void> 
  * Process scheduled visit reminders (one week before follow-up date)
  */
 async function processScheduledVisitReminders(): Promise<void> {
+	const db = getDb();
 	logger.debug('\n📅 Processing scheduled visit reminders...');
 
 	const oneWeekFromNow = getDateDaysAhead(new Date(), 7);
