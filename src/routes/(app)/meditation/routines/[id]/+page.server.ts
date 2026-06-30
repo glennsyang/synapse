@@ -22,10 +22,7 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	if (!locals.user) {
-		logger.warn('Unauthorized access attempt to meditation routine page');
-		throw redirect(302, '/sign-in');
-	}
+	const userId = getUser(locals).id;
 
 	try {
 		const db = getDb();
@@ -34,7 +31,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		const routine = await db.query.meditationRoutines.findFirst({
 			where: and(
 				eq(meditationRoutines.id, params.id),
-				or(eq(meditationRoutines.userId, locals.user.id), eq(meditationRoutines.isPredefined, true))
+				or(eq(meditationRoutines.userId, userId), eq(meditationRoutines.isPredefined, true))
 			)
 		});
 
@@ -43,7 +40,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		}
 
 		// Check permissions for user-created routines
-		if (!routine.isPredefined && routine.userId !== locals.user.id) {
+		if (!routine.isPredefined && routine.userId !== userId) {
 			throw error(403, 'Unauthorized to view this routine');
 		}
 
@@ -51,7 +48,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		const schedule = await db.query.meditationSchedules.findFirst({
 			where: and(
 				eq(meditationSchedules.routineId, params.id),
-				eq(meditationSchedules.userId, locals.user.id)
+				eq(meditationSchedules.userId, userId)
 			)
 		});
 
@@ -59,7 +56,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		const sessions = await db.query.meditationSessions.findMany({
 			where: and(
 				eq(meditationSessions.routineId, params.id),
-				eq(meditationSessions.userId, locals.user.id)
+				eq(meditationSessions.userId, userId)
 			),
 			orderBy: [desc(meditationSessions.completedAt)],
 			limit: 20

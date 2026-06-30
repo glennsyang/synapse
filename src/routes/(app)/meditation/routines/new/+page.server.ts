@@ -1,4 +1,5 @@
 import { createRoutineSchema, MOOD_TAGS, type MoodTag } from '$lib/schemas/meditation';
+import { requireAuth } from '$lib/server/actions/auth-guard';
 import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines } from '$lib/server/db/schema';
@@ -10,23 +11,14 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) {
-		logger.warn('Unauthorized access attempt to new meditation routine page');
-		throw redirect(302, '/sign-in');
-	}
-
+export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod4(createRoutineSchema));
 
 	return { form };
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'Unauthorized' });
-		}
-
+	default: requireAuth(async ({ request }, user) => {
 		const form = await superValidate(request, zod4(createRoutineSchema));
 
 		if (!form.valid) {
@@ -59,7 +51,7 @@ export const actions: Actions = {
 				.insert(meditationRoutines)
 				.values({
 					id: routineId,
-					userId: locals.user.id,
+					userId: user.id,
 					title: form.data.title,
 					description: form.data.description || null,
 					linkUrl: form.data.link_url,
@@ -69,7 +61,7 @@ export const actions: Actions = {
 					...withAuditFieldsForCreate()
 				});
 
-			logger.info('Meditation routine created', { routineId, userId: locals.user.id });
+			logger.info('Meditation routine created', { routineId, userId: user.id });
 		} catch (error) {
 			logger.error('Failed to create meditation routine', { error });
 			return message(
@@ -83,5 +75,5 @@ export const actions: Actions = {
 		}
 
 		throw redirect(303, '/meditation');
-	}
+	})
 };
