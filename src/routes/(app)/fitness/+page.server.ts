@@ -195,10 +195,7 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, {
-			type: 'success',
-			text: 'Weight logged successfully!'
-		});
+		return { success: true, create: true, form };
 	}),
 
 	setGoal: requireAuth(async ({ request }, user) => {
@@ -250,10 +247,7 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, {
-			type: 'success',
-			text: 'Goal weight set successfully!'
-		});
+		return { success: true, create: true, form };
 	}),
 
 	logWorkout: requireAuth(async ({ request }, user) => {
@@ -321,10 +315,7 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, {
-			type: 'success',
-			text: 'Workout logged successfully!'
-		});
+		return { success: true, create: true, form };
 	}),
 
 	logMeal: requireAuth(async ({ request }, user) => {
@@ -363,10 +354,7 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, {
-			type: 'success',
-			text: 'Meal logged successfully!'
-		});
+		return { success: true, create: true, form };
 	}),
 
 	setCalorieTarget: requireAuth(async ({ request }, user) => {
@@ -457,10 +445,7 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, {
-			type: 'success',
-			text: 'Reminder created successfully!'
-		});
+		return { success: true, create: true, form };
 	}),
 
 	updateReminder: requireAuth(async ({ request }, user) => {
@@ -588,7 +573,7 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, { type: 'success', text: 'Weight updated successfully!' });
+		return { success: true, update: true, form };
 	}),
 
 	deleteWeight: requireAuth(async ({ request }, user) => {
@@ -695,7 +680,7 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, { type: 'success', text: 'Workout updated successfully!' });
+		return { success: true, update: true, form };
 	}),
 
 	deleteWorkout: requireAuth(async ({ request }, user) => {
@@ -766,7 +751,7 @@ export const actions: Actions = {
 			);
 		}
 
-		return message(form, { type: 'success', text: 'Meal updated successfully!' });
+		return { success: true, update: true, form };
 	}),
 
 	deleteMeal: requireAuth(async ({ request }, user) => {
@@ -798,4 +783,4 @@ export const actions: Actions = {
 
 		return { success: true };
 	})
-};
+} satisfies Actions;

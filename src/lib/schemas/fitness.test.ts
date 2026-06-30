@@ -74,22 +74,51 @@ describe('setGoalWeightSchema', () => {
 
 describe('logWorkoutSchema', () => {
 	it('accepts a valid workout with required fields', () => {
-		expect(() => logWorkoutSchema.parse({ date: '2026-03-15', type: 'cardio' })).not.toThrow();
+		expect(() =>
+			logWorkoutSchema.parse({
+				date: '2026-03-15',
+				time: '08:00',
+				type: 'cardio',
+				durationMinutes: 30
+			})
+		).not.toThrow();
 	});
 
 	it('accepts all workout types', () => {
 		for (const type of ['strength', 'cardio', 'hiit', 'walk', 'stretch', 'other'] as const) {
-			expect(() => logWorkoutSchema.parse({ date: '2026-03-15', type })).not.toThrow();
+			expect(() =>
+				logWorkoutSchema.parse({ date: '2026-03-15', time: '08:00', type, durationMinutes: 30 })
+			).not.toThrow();
 		}
 	});
 
 	it('rejects an unknown workout type', () => {
-		expect(logWorkoutSchema.safeParse({ date: '2026-03-15', type: 'yoga' }).success).toBe(false);
+		expect(
+			logWorkoutSchema.safeParse({
+				date: '2026-03-15',
+				time: '08:00',
+				type: 'yoga',
+				durationMinutes: 30
+			}).success
+		).toBe(false);
+	});
+
+	it('rejects a missing time', () => {
+		expect(
+			logWorkoutSchema.safeParse({ date: '2026-03-15', type: 'walk', durationMinutes: 30 }).success
+		).toBe(false);
+	});
+
+	it('rejects a missing durationMinutes', () => {
+		expect(
+			logWorkoutSchema.safeParse({ date: '2026-03-15', time: '08:00', type: 'walk' }).success
+		).toBe(false);
 	});
 
 	it('coerces durationMinutes to an integer', () => {
 		const result = logWorkoutSchema.parse({
 			date: '2026-03-15',
+			time: '08:00',
 			type: 'walk',
 			durationMinutes: '45'
 		});
@@ -98,7 +127,12 @@ describe('logWorkoutSchema', () => {
 
 	it('rejects a non-positive durationMinutes', () => {
 		expect(
-			logWorkoutSchema.safeParse({ date: '2026-03-15', type: 'walk', durationMinutes: 0 }).success
+			logWorkoutSchema.safeParse({
+				date: '2026-03-15',
+				time: '08:00',
+				type: 'walk',
+				durationMinutes: 0
+			}).success
 		).toBe(false);
 	});
 });

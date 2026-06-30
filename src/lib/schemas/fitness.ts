@@ -53,13 +53,9 @@ export type WorkoutType = z.infer<typeof WorkoutTypeEnum>;
  */
 export const logWorkoutSchema = z.object({
 	date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (use YYYY-MM-DD)'),
-	time: z
-		.string()
-		.regex(/^\d{2}:\d{2}$/, 'Invalid time format (use HH:MM)')
-		.optional()
-		.nullable(),
+	time: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format (use HH:MM)'),
 	type: WorkoutTypeEnum,
-	durationMinutes: z.coerce.number().int().positive().optional().nullable(),
+	durationMinutes: z.coerce.number().int().positive(),
 	steps: z.coerce.number().int().positive().optional().nullable(), // For walk workouts
 	notes: z.string().optional().nullable(),
 	exercises: z.string().optional().nullable() // JSON string for strength workouts

@@ -38,6 +38,17 @@ export type Exercise = {
 	weightLbs: number | null;
 };
 
+export type Workout = {
+	id: string;
+	date: string;
+	time: string | null;
+	type: string;
+	durationMinutes: number | null;
+	steps: number | null;
+	notes: string | null;
+	exercises: Exercise[];
+};
+
 export type TaskPageTab = 'kanban' | 'agenda' | 'mood';
 
 type DailyAgendaSourceType = 'default' | 'custom';

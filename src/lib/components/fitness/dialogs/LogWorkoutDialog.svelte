@@ -27,9 +27,9 @@
 	interface EditWorkout {
 		id: string;
 		date: string;
-		time: string | null;
+		time: string;
 		type: string;
-		durationMinutes: number | null;
+		durationMinutes: number;
 		steps: number | null;
 		notes: string | null;
 		exercises: WorkoutExercise[];
@@ -65,28 +65,31 @@
 	// Generate a unique form ID based on the editing context and instance
 	const formId = $derived(editEntry ? `edit-workout-${editEntry.id}` : `log-workout-${instanceId}`);
 
-	type FormMessage = { type: 'success' | 'error'; text: string };
-
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance, message } = superForm(formData, {
+	const { form, errors, enhance, message, submitting } = superForm(formData, {
 		id: formId,
 		resetForm: !isEditing,
 		onUpdate: ({ form }) => {
-			if (!form.valid) return;
-			const msg = form.message as FormMessage | null | undefined;
-			if (msg?.type === 'error') return;
-
-			if (open !== undefined) {
+			if (form.valid) {
+				if (open !== undefined) {
+					onClose?.();
+				} else {
+					internalOpen = false;
+				}
+				workoutExercises = [];
+				toast.success(isEditing ? 'Workout updated successfully!' : 'Workout logged successfully!');
 				onClose?.();
-			} else {
-				internalOpen = false;
 			}
-			workoutExercises = [];
-			toast.success(isEditing ? 'Workout updated successfully!' : 'Workout logged successfully!');
-			onClose?.();
+			if ($message?.type === 'error') {
+				toast.error(
+					`Error ${isEditing ? 'updating' : 'logging'} workout. Reason: ${$message.text}`
+				);
+			}
 		},
 		onError: ({ result }) => {
-			toast.error(`Error: ${result.error.message}`);
+			toast.error(
+				`There was an error ${isEditing ? 'updating' : 'logging'} workout. Reason: ${result.error.message}`
+			);
 		}
 	});
 
@@ -160,14 +163,28 @@
 				<div class="grid grid-cols-2 gap-4">
 					<div class="grid gap-2">
 						<Label for="workout-date">Date</Label>
-						<Input id="workout-date" name="date" type="date" bind:value={$form.date} required />
+						<Input
+							id="workout-date"
+							name="date"
+							type="date"
+							bind:value={$form.date}
+							class={$errors.date ? 'border-destructive' : ''}
+							required
+						/>
 						{#if $errors.date}
 							<p class="text-destructive text-sm">{$errors.date}</p>
 						{/if}
 					</div>
 					<div class="grid gap-2">
-						<Label for="workout-time">Time (optional)</Label>
-						<Input id="workout-time" name="time" type="time" bind:value={$form.time} />
+						<Label for="workout-time">Time</Label>
+						<Input
+							id="workout-time"
+							name="time"
+							type="time"
+							bind:value={$form.time}
+							class={$errors.time ? 'border-destructive' : ''}
+							required
+						/>
 						{#if $errors.time}
 							<p class="text-destructive text-sm">{$errors.time}</p>
 						{/if}
@@ -200,6 +217,8 @@
 							type="number"
 							bind:value={$form.durationMinutes}
 							placeholder="60"
+							class={$errors.durationMinutes ? 'border-destructive' : ''}
+							required
 						/>
 						{#if $errors.durationMinutes}
 							<p class="text-destructive text-sm">{$errors.durationMinutes}</p>
@@ -216,6 +235,7 @@
 							type="number"
 							bind:value={$form.steps}
 							placeholder="10000"
+							class={$errors.steps ? 'border-destructive' : ''}
 						/>
 						{#if $errors.steps}
 							<p class="text-destructive text-sm">{$errors.steps}</p>
@@ -239,23 +259,21 @@
 						bind:value={$form.notes}
 						rows={3}
 						placeholder="How did the workout feel?"
+						class={$errors.notes ? 'border-destructive' : ''}
 					/>
 					{#if $errors.notes}
 						<p class="text-destructive text-sm">{$errors.notes}</p>
 					{/if}
 				</div>
 			</div>
-			{#if ($message as FormMessage | null)?.type === 'error'}
-				<p class="text-destructive py-2 text-sm">{($message as FormMessage).text}</p>
-			{/if}
 			<Dialog.Footer>
-				<Dialog.Close>
-					{#snippet child({ props })}
-						<Button {...props} type="button" variant="outline">Cancel</Button>
-					{/snippet}
-				</Dialog.Close>
-				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700">
-					{isEditing ? 'Update' : 'Save'}
+				<Dialog.Close><Button type="reset" variant="outline">Cancel</Button></Dialog.Close>
+				<Button
+					type="submit"
+					disabled={$submitting}
+					class="bg-green-600 text-white hover:bg-green-700"
+				>
+					{$submitting ? 'Saving...' : isEditing ? 'Update' : 'Save'}
 				</Button>
 			</Dialog.Footer>
 		</form>

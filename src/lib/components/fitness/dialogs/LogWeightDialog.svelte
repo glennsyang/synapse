@@ -48,7 +48,7 @@
 	const formId = $derived(editEntry ? `edit-weight-${editEntry.id}` : `log-weight-${instanceId}`);
 
 	// svelte-ignore state_referenced_locally
-	const { form, errors, enhance } = superForm(formData, {
+	const { form, errors, enhance, message, submitting } = superForm(formData, {
 		id: formId,
 		resetForm: !isEditing,
 		onUpdate: ({ form }) => {
@@ -61,9 +61,14 @@
 				toast.success(isEditing ? 'Weight updated successfully!' : 'Weight logged successfully!');
 				onClose?.();
 			}
+			if ($message?.type === 'error') {
+				toast.error(`Error ${isEditing ? 'updating' : 'logging'} weight. Reason: ${$message.text}`);
+			}
 		},
 		onError: ({ result }) => {
-			toast.error(`Error: ${result.error.message}`);
+			toast.error(
+				`There was an error ${isEditing ? 'updating' : 'logging'} weight. Reason: ${result.error.message}`
+			);
 		}
 	});
 
@@ -117,14 +122,27 @@
 			<div class="grid gap-4 py-4">
 				<div class="grid gap-2">
 					<Label for="weight-date">Date</Label>
-					<Input id="weight-date" name="date" type="date" bind:value={$form.date} required />
+					<Input
+						id="weight-date"
+						name="date"
+						type="date"
+						bind:value={$form.date}
+						class={$errors.date ? 'border-red-400' : ''}
+						required
+					/>
 					{#if $errors.date}
 						<p class="text-destructive text-sm">{$errors.date}</p>
 					{/if}
 				</div>
 				<div class="grid gap-2">
 					<Label for="weight-time">Time (optional)</Label>
-					<Input id="weight-time" name="time" type="time" bind:value={$form.time} />
+					<Input
+						id="weight-time"
+						name="time"
+						type="time"
+						bind:value={$form.time}
+						class={$errors.time ? 'border-red-400' : ''}
+					/>
 					{#if $errors.time}
 						<p class="text-destructive text-sm">{$errors.time}</p>
 					{/if}
@@ -135,9 +153,10 @@
 						id="weight-lbs"
 						name="weightLbs"
 						type="number"
+						placeholder="150.0"
 						step="0.1"
 						bind:value={$form.weightLbs}
-						placeholder="150.0"
+						class={$errors.weightLbs ? 'border-red-400' : ''}
 						required
 					/>
 					{#if $errors.weightLbs}
@@ -146,13 +165,13 @@
 				</div>
 			</div>
 			<Dialog.Footer>
-				<Dialog.Close>
-					{#snippet child({ props })}
-						<Button {...props} type="button" variant="outline">Cancel</Button>
-					{/snippet}
-				</Dialog.Close>
-				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700">
-					{isEditing ? 'Update' : 'Save'}
+				<Dialog.Close><Button type="reset" variant="outline">Cancel</Button></Dialog.Close>
+				<Button
+					type="submit"
+					disabled={$submitting}
+					class="bg-green-600 text-white hover:bg-green-700"
+				>
+					{$submitting ? 'Saving...' : isEditing ? 'Update' : 'Save'}
 				</Button>
 			</Dialog.Footer>
 		</form>

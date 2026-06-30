@@ -3,6 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import type { Workout } from '$lib/types';
 	import { formatDateShort, formatTime12Hour } from '$lib/utils/date';
 	import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
 	import {
@@ -13,24 +14,6 @@
 		Trash2,
 		UtensilsCrossed
 	} from '@lucide/svelte/icons';
-
-	interface Exercise {
-		exerciseName: string;
-		sets: number | null;
-		reps: number | null;
-		weightLbs: number | null;
-	}
-
-	interface Workout {
-		id: string;
-		date: string;
-		time: string | null;
-		type: string;
-		durationMinutes: number | null;
-		steps: number | null;
-		notes: string | null;
-		exercises: Exercise[];
-	}
 
 	interface WeightEntry {
 		id: string;

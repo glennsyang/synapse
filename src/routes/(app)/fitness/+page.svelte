@@ -60,9 +60,9 @@
 	let workoutToEdit = $state<{
 		id: string;
 		date: string;
-		time: string | null;
+		time: string;
 		type: string;
-		durationMinutes: number | null;
+		durationMinutes: number;
 		steps: number | null;
 		notes: string | null;
 		exercises: {
@@ -331,7 +331,12 @@
 						workouts={data.workouts}
 						weightEntries={data.weightEntries}
 						meals={data.meals}
-						onEditWorkout={(w) => (workoutToEdit = w)}
+						onEditWorkout={(w) =>
+							(workoutToEdit = {
+								...w,
+								time: w.time ?? '',
+								durationMinutes: w.durationMinutes ?? 0
+							})}
 						onDeleteWorkout={(id) => {
 							workoutToDelete = id;
 							showDeleteWorkoutDialog = true;
@@ -358,7 +363,8 @@
 			workouts={data.workouts}
 			weightEntries={data.weightEntries}
 			meals={data.meals}
-			onEditWorkout={(w) => (workoutToEdit = w)}
+			onEditWorkout={(w) =>
+				(workoutToEdit = { ...w, time: w.time ?? '', durationMinutes: w.durationMinutes ?? 0 })}
 			onDeleteWorkout={(id) => {
 				workoutToDelete = id;
 				showDeleteWorkoutDialog = true;
@@ -388,9 +394,9 @@
 		/>
 
 		<LogWeightDialog
+			bind:open={showEditWeightDialog}
 			formData={data.weightForm}
 			editEntry={weightToEdit}
-			bind:open={showEditWeightDialog}
 			instanceId="edit-main"
 			onClose={() => {
 				showEditWeightDialog = false;
