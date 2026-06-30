@@ -58,7 +58,7 @@ export async function sendVerificationEmail(to: string, name: string, verificati
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send verification email:', error);
-		return error;
+		throw error;
 	}
 }
 
@@ -109,7 +109,7 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send password reset email:', error);
-		return error;
+		throw error;
 	}
 }
 
@@ -125,7 +125,7 @@ export async function sendNewUserEmail(to: string, name: string, email: string) 
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send email', error);
-		return error;
+		throw error;
 	}
 }
 
@@ -182,7 +182,7 @@ export async function sendWorkoutReminderEmail(
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send workout reminder email:', { error });
-		return error;
+		throw error;
 	}
 }
 
@@ -237,7 +237,7 @@ export async function sendMeditationReminderEmail(
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send meditation reminder email:', { error });
-		return error;
+		throw error;
 	}
 }
 
@@ -305,7 +305,7 @@ export async function sendVisitWarningEmail(
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send visit warning email:', { error });
-		return error;
+		throw error;
 	}
 }
 
@@ -327,7 +327,7 @@ export async function sendTasksDueTodayEmail(
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send Tasks Due Today email:', { error });
-		return error;
+		throw error;
 	}
 }
 
@@ -387,7 +387,7 @@ export async function sendScheduledVisitReminderEmail(
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send scheduled visit reminder email:', { error });
-		return error;
+		throw error;
 	}
 }
 
@@ -444,6 +444,6 @@ export async function sendVisitTodayReminderEmail(
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send visit today reminder email:', { error });
-		return error;
+		throw error;
 	}
 }
