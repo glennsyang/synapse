@@ -2,6 +2,7 @@ import { getUser } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
+import { safeParse } from '$lib/utils';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import {
@@ -69,7 +70,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				lastVisit: latestVisit
 					? {
 							date: latestVisit.date,
-							companions: latestVisit.companions ? JSON.parse(latestVisit.companions) : null
+							companions: safeParse<string[] | null>(latestVisit.companions, null)
 						}
 					: null,
 				status: statusInfo.status,

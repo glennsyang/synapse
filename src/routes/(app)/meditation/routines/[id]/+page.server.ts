@@ -13,6 +13,7 @@ import {
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
+import { safeParse } from '$lib/utils';
 import { logger } from '$lib/utils/logger';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq, or } from 'drizzle-orm';
@@ -65,13 +66,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		// Parse JSON fields
 		const parsedRoutine = {
 			...routine,
-			moodTags: routine.moodTags ? JSON.parse(routine.moodTags) : []
+			moodTags: safeParse<string[]>(routine.moodTags, [])
 		};
 
 		const parsedSchedule = schedule
 			? {
 					...schedule,
-					daysOfWeek: schedule.daysOfWeek ? JSON.parse(schedule.daysOfWeek) : null
+					daysOfWeek: safeParse<number[] | null>(schedule.daysOfWeek, null)
 				}
 			: null;
 
@@ -141,7 +142,7 @@ export const actions: Actions = {
 			// Parse days_of_week if provided (stored as JSON array string e.g. "[0,1,6]")
 			const daysOfWeekJson = form.data.days_of_week
 				? JSON.stringify(
-						(JSON.parse(form.data.days_of_week) as number[])
+						safeParse<number[]>(form.data.days_of_week, [])
 							.filter((d) => !Number.isNaN(d) && d >= 0 && d <= 6)
 							.sort((a, b) => a - b)
 					)

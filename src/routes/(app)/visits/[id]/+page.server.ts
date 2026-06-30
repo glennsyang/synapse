@@ -9,6 +9,7 @@ import {
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
+import { safeParse } from '$lib/utils';
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
@@ -49,7 +50,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 		const parsedVisits = personVisits.map((visit) => ({
 			...visit,
-			companions: visit.companions ? JSON.parse(visit.companions) : null
+			companions: safeParse<string[] | null>(visit.companions, null)
 		}));
 		const visitStatusThresholds = await getVisitStatusThresholdsForUser(userId, db);
 

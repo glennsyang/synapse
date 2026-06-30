@@ -3,6 +3,7 @@ import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
+import { safeParse } from '$lib/utils';
 import { logger } from '$lib/utils/logger';
 import { fail } from '@sveltejs/kit';
 import { and, desc, eq, like, or } from 'drizzle-orm';
@@ -72,7 +73,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// Parse moodTags JSON for each routine
 		const parsedRoutines = routines.map((routine) => ({
 			...routine,
-			moodTags: routine.moodTags ? JSON.parse(routine.moodTags) : []
+			moodTags: safeParse<string[]>(routine.moodTags, [])
 		}));
 
 		// Fetch all schedules for user
@@ -86,7 +87,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// Parse daysOfWeek JSON for each schedule
 		const parsedSchedules = schedules.map((schedule) => ({
 			...schedule,
-			daysOfWeek: schedule.daysOfWeek ? JSON.parse(schedule.daysOfWeek) : null
+			daysOfWeek: safeParse<number[] | null>(schedule.daysOfWeek, null)
 		}));
 
 		// Fetch recent sessions for history
