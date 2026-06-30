@@ -11,9 +11,9 @@
  * Logs all sent emails in email_notifications table to prevent duplicates.
  */
 
+import { logger } from '$lib';
 import { getVisitStatusThresholdsByUserIds } from '$lib/server/visit-status-settings';
 import { getTodayString } from '$lib/utils/date';
-import { logger } from '$lib/utils/logger';
 import { getWorkoutNotificationTag } from '$lib/utils/workout';
 import { and, eq, sql } from 'drizzle-orm';
 

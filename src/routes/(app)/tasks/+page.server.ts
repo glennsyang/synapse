@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import {
 	createDailyAgendaEntrySchema,
 	createDailyAgendaTemplateSchema,
@@ -46,7 +47,6 @@ import {
 	getStartOfWeek,
 	getTodayString
 } from '$lib/utils/date';
-import { logger } from '$lib/utils/logger';
 import {
 	getMoodChartColor,
 	getMoodScore,

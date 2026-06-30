@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { _buildAgendaItemStats, _buildDateRanges } from './+page.server';
+import { buildAgendaItemStats, buildDateRanges } from './dashboard-utils';
 
 type AgendaEntry = {
 	id: string;
@@ -24,7 +24,7 @@ function createEntry(input: Partial<AgendaEntry> & Pick<AgendaEntry, 'id' | 'dat
 
 describe('buildAgendaItemStats', () => {
 	it('computes DOW percentages from real counts (guards against NaN/-1 regression)', () => {
-		const ranges = _buildDateRanges('2026-05-26');
+		const ranges = buildDateRanges('2026-05-26');
 		const entries: AgendaEntry[] = [
 			createEntry({ id: 'last4-mon-1', date: '2026-05-04', completed: true }),
 			createEntry({ id: 'last4-mon-2', date: '2026-05-11', completed: false }),
@@ -36,7 +36,7 @@ describe('buildAgendaItemStats', () => {
 			createEntry({ id: 'prev4-5', date: '2026-04-11', completed: false })
 		];
 
-		const stats = _buildAgendaItemStats(entries, ranges);
+		const stats = buildAgendaItemStats(entries, ranges);
 
 		expect(stats).toHaveLength(1);
 		expect(stats[0]?.completionPct).toBe(67);
@@ -45,7 +45,7 @@ describe('buildAgendaItemStats', () => {
 	});
 
 	it('uses only last 4 weeks for DOW dots (prev 4 should not affect dot colors/titles)', () => {
-		const ranges = _buildDateRanges('2026-05-26');
+		const ranges = buildDateRanges('2026-05-26');
 		const entries: AgendaEntry[] = [
 			createEntry({ id: 'last4-mon-1', date: '2026-05-12', completed: false }),
 			createEntry({ id: 'prev4-fri-1', date: '2026-04-10', completed: true }),
@@ -56,7 +56,7 @@ describe('buildAgendaItemStats', () => {
 			createEntry({ id: 'prev4-tue-1', date: '2026-04-07', completed: false })
 		];
 
-		const stats = _buildAgendaItemStats(entries, ranges);
+		const stats = buildAgendaItemStats(entries, ranges);
 
 		expect(stats).toHaveLength(1);
 		expect(stats[0]?.dowCompletionPct[4]).toBe(-1); // Friday exists only in prev4 window

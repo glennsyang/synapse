@@ -1,10 +1,10 @@
+import { logger } from '$lib';
 import { journalEntrySchema } from '$lib/schemas/journal';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { generateId, withAuditFieldsForCreate } from '$lib/server/db/utils';
 import { getTodayString } from '$lib/utils/date';
-import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';

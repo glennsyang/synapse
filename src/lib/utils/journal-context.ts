@@ -1,4 +1,4 @@
-import { logger } from '$lib/utils/logger';
+import { logger } from '$lib';
 
 const weatherMap: Record<number, { label: string; icon: string }> = {
 	0: { label: 'Clear sky', icon: '☀️' },

@@ -1,6 +1,7 @@
+import { logger } from '$lib';
 import { getDb } from '$lib/server/db';
-import { logger } from '$lib/utils/logger';
-import type { RequestHandler } from '@sveltejs/kit';
+
+import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
 	try {

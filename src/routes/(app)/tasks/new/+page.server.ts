@@ -1,9 +1,9 @@
+import { logger } from '$lib';
 import { createTaskSchema, type TaskState, TaskStateEnum } from '$lib/schemas/task';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { tasks } from '$lib/server/db/schema';
-import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq, sql } from 'drizzle-orm';
 import { message, setError, superValidate } from 'sveltekit-superforms';

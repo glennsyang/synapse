@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import { deleteEntrySchema, updateWeightSchema } from '$lib/schemas/fitness';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import {
@@ -7,7 +8,6 @@ import {
 import { getDb } from '$lib/server/db';
 import { weightEntries } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
-import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	update: requireAuth(async ({ request, params }, user) => {
-		const entryId = params.id as string;
+		const entryId = params.id;
 		const form = await superValidate(request, zod4(updateWeightSchema));
 
 		if (!form.valid) {
@@ -82,7 +82,7 @@ export const actions: Actions = {
 	}),
 
 	delete: requireAuth(async ({ request, params }, user) => {
-		const entryId = params.id as string;
+		const entryId = params.id;
 		const form = await superValidate(request, zod4(deleteEntrySchema));
 
 		if (!form.valid || form.data.id !== entryId) {

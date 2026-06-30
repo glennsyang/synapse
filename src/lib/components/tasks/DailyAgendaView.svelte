@@ -2,6 +2,7 @@
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import { cn } from '$lib';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import * as Alert from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
@@ -9,7 +10,6 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
 	import type { DailyAgendaData, DailyAgendaEntry, DailyAgendaTemplate } from '$lib/types';
-	import { cn } from '$lib/utils';
 	import { daysOfWeek, getStartOfWeek } from '$lib/utils/date';
 	import {
 		CalendarDays,

@@ -1,10 +1,10 @@
 import { RESEND_API_KEY, RESEND_FROM_ADDRESS } from '$app/env/private';
+import { logger } from '$lib';
 import {
 	buildTasksDueTodayDigestTitle,
 	buildTasksDueTodayEmailHtml,
 	type TasksDueTodayTaskSummary
 } from '$lib/server/email/tasks-due-today-digest';
-import { logger } from '$lib/utils/logger';
 import { getWorkoutEmoji } from '$lib/utils/workout';
 import { Resend } from 'resend';
 

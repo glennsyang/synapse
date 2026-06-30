@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { cn } from '$lib';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
-	import { cn } from '$lib/utils';
 	import { Check, ChevronsUpDown, X } from '@lucide/svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 

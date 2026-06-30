@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import {
 	deleteEntrySchema,
 	updateWorkoutSchema,
@@ -16,7 +17,6 @@ import {
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
-import { logger } from '$lib/utils/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
@@ -71,7 +71,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	update: requireAuth(async ({ request, params }, user) => {
-		const workoutId = params.id as string;
+		const workoutId = params.id;
 		const form = await superValidate(request, zod4(updateWorkoutSchema));
 
 		if (!form.valid) {
@@ -156,7 +156,7 @@ export const actions: Actions = {
 	}),
 
 	delete: requireAuth(async ({ request, params }, user) => {
-		const workoutId = params.id as string;
+		const workoutId = params.id;
 		const form = await superValidate(request, zod4(deleteEntrySchema));
 
 		if (!form.valid || form.data.id !== workoutId) {

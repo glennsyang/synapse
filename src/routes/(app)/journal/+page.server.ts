@@ -1,9 +1,9 @@
+import { logger } from '$lib';
 import { journalFilterSchema } from '$lib/schemas/journal';
 import { getUser } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { safeParse } from '$lib/utils';
-import { logger } from '$lib/utils/logger';
 import { and, desc, eq, like } from 'drizzle-orm';
 
 import type { PageServerLoad } from './$types';

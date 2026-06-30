@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cn } from '$lib';
 	import CreateReminderDialog from '$lib/components/fitness/dialogs/CreateReminderDialog.svelte';
 	import LogMealDialog from '$lib/components/fitness/dialogs/LogMealDialog.svelte';
 	import LogWeightDialog from '$lib/components/fitness/dialogs/LogWeightDialog.svelte';
@@ -15,7 +16,6 @@
 		setGoalWeightSchema,
 		workoutReminderSchema
 	} from '$lib/schemas/fitness';
-	import { cn } from '$lib/utils';
 	import {
 		BellPlus,
 		Dumbbell,

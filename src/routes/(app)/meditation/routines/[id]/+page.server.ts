@@ -1,3 +1,4 @@
+import { logger } from '$lib';
 import {
 	completeSessionSchema,
 	editSessionSchema,
@@ -18,7 +19,6 @@ import {
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
 import { safeParse } from '$lib/utils';
-import { logger } from '$lib/utils/logger';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq, or } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
@@ -244,7 +244,7 @@ export const actions: Actions = {
 	}),
 
 	completeSession: requireAuth(async ({ request, params }, user) => {
-		const routineId = params.id as string;
+		const routineId = params.id;
 		const form = await superValidate(request, zod4(completeSessionSchema));
 
 		if (!form.valid) {
@@ -290,7 +290,7 @@ export const actions: Actions = {
 	}),
 
 	updateRoutine: requireAuth(async ({ request, params }, user) => {
-		const routineId = params.id as string;
+		const routineId = params.id;
 		const form = await superValidate(request, zod4(updateRoutineSchema));
 
 		if (!form.valid) {
@@ -355,7 +355,7 @@ export const actions: Actions = {
 	deleteSession: requireAuth(async ({ request }, user) => handleDeleteSession(request, user.id)),
 
 	deleteRoutine: requireAuth(async ({ params }, user) => {
-		const routineId = params.id as string;
+		const routineId = params.id;
 
 		try {
 			const db = getDb();

@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { cn } from '$lib';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import { cn } from '$lib/utils.js';
 
 	type SectionColor = 'teal' | 'blue' | 'green' | 'orange' | 'purple' | 'pink';
 
