@@ -12,7 +12,7 @@ import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settin
 import { getTodayString } from '$lib/utils/date';
 import { logger } from '$lib/utils/logger';
 import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -27,57 +27,63 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const db = getDb();
 	const userId = getUser(locals).id;
 
-	// Load person
-	const person = await db.query.people.findFirst({
-		where: and(eq(people.id, params.id), eq(people.userId, userId))
-	});
+	try {
+		// Load person
+		const person = await db.query.people.findFirst({
+			where: and(eq(people.id, params.id), eq(people.userId, userId))
+		});
 
-	if (!person) {
-		throw error(404, 'Person not found');
+		if (!person) {
+			throw error(404, 'Person not found');
+		}
+
+		if (person.isArchived) {
+			throw redirect(303, '/visits');
+		}
+
+		// Load all visits for this person
+		const personVisits = await db.query.visits.findMany({
+			where: eq(visits.personId, params.id),
+			orderBy: [desc(visits.date)]
+		});
+
+		const parsedVisits = personVisits.map((visit) => ({
+			...visit,
+			companions: visit.companions ? JSON.parse(visit.companions) : null
+		}));
+		const visitStatusThresholds = await getVisitStatusThresholdsForUser(userId, db);
+
+		// Calculate status
+		const latestVisit = personVisits[0];
+		const statusInfo = calculatePersonVisitStatus(
+			latestVisit?.date ?? null,
+			person.isExempt,
+			latestVisit?.followUpDate ?? null,
+			getTodayString(),
+			visitStatusThresholds
+		);
+
+		// Initialize forms
+		const visitForm = await superValidate(zod4(visitSchema));
+		visitForm.data.date = getTodayString(); // Set default to today
+
+		const editForm = await superValidate(person, zod4(personSchema));
+
+		return {
+			person: {
+				...person,
+				status: statusInfo.status,
+				daysSinceLastVisit: statusInfo.daysSinceLastVisit
+			},
+			visits: parsedVisits,
+			visitForm,
+			editForm
+		};
+	} catch (err) {
+		if (isHttpError(err) || isRedirect(err)) throw err;
+		logger.error('Failed to load visit page data', { error: err, personId: params.id, userId });
+		throw error(500, 'Failed to load page data');
 	}
-
-	if (person.isArchived) {
-		throw redirect(303, '/visits');
-	}
-
-	// Load all visits for this person
-	const personVisits = await db.query.visits.findMany({
-		where: eq(visits.personId, params.id),
-		orderBy: [desc(visits.date)]
-	});
-
-	const parsedVisits = personVisits.map((visit) => ({
-		...visit,
-		companions: visit.companions ? JSON.parse(visit.companions) : null
-	}));
-	const visitStatusThresholds = await getVisitStatusThresholdsForUser(userId, db);
-
-	// Calculate status
-	const latestVisit = personVisits[0];
-	const statusInfo = calculatePersonVisitStatus(
-		latestVisit?.date ?? null,
-		person.isExempt,
-		latestVisit?.followUpDate ?? null,
-		getTodayString(),
-		visitStatusThresholds
-	);
-
-	// Initialize forms
-	const visitForm = await superValidate(zod4(visitSchema));
-	visitForm.data.date = getTodayString(); // Set default to today
-
-	const editForm = await superValidate(person, zod4(personSchema));
-
-	return {
-		person: {
-			...person,
-			status: statusInfo.status,
-			daysSinceLastVisit: statusInfo.daysSinceLastVisit
-		},
-		visits: parsedVisits,
-		visitForm,
-		editForm
-	};
 };
 
 export const actions: Actions = {
