@@ -26,9 +26,10 @@ export async function createAuthLoadForm<TSchema extends AuthSchema>(
 	const form = await superValidate(zod4(schema));
 
 	if (includeQueryMessage) {
+		const MAX_MSG_LEN = 200;
 		const queryMessage = url.searchParams.get(messageParam);
 		if (queryMessage) {
-			form.message = queryMessage;
+			form.message = queryMessage.slice(0, MAX_MSG_LEN).replace(/<[^>]*>/g, '');
 		}
 	}
 

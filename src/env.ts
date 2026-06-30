@@ -39,7 +39,7 @@ export const variables = defineEnvVars({
 	},
 	CRON_SECRET: {
 		description: 'Bearer token for authorizing cron job requests',
-		schema: z.string().optional()
+		schema: building ? z.string().catch('build_time_dummy_secret_min_16_chars') : z.string().min(16)
 	},
 	NODE_ENV: {
 		description: 'Application environment (development, production, test)',

@@ -1,3 +1,5 @@
+import { timingSafeEqual } from 'node:crypto';
+
 import { CRON_SECRET } from '$app/env/private';
 import { runEmailNotifications } from '$lib/server/email/email-notifications';
 import { logger } from '$lib/utils/logger';
@@ -13,7 +15,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({ error: 'Service unavailable' }, { status: 503 });
 	}
 
-	if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+	const expected = Buffer.from(`Bearer ${expectedToken}`);
+	const provided = Buffer.from(authHeader ?? '');
+	const isValid = provided.length === expected.length && timingSafeEqual(provided, expected);
+
+	if (!isValid) {
 		logger.warn('⚠️ Unauthorized cron job attempt');
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
