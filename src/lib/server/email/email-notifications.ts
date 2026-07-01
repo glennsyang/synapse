@@ -98,7 +98,7 @@ async function alreadySentToday(
 	entityId: string
 ): Promise<boolean> {
 	const db = getDb();
-	const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+	const today = getTodayString(); // YYYY-MM-DD in Pacific time
 
 	const existing = db
 		.select()
@@ -107,13 +107,16 @@ async function alreadySentToday(
 			and(
 				eq(emailNotifications.userId, userId),
 				eq(emailNotifications.notificationType, notificationType),
-				eq(emailNotifications.entityId, entityId),
-				sql`DATE(${emailNotifications.sentAt}) = ${today}`
+				eq(emailNotifications.entityId, entityId)
 			)
 		)
+		.orderBy(sql`${emailNotifications.sentAt} DESC`)
 		.get();
 
-	return !!existing;
+	// Compare in Pacific time rather than the UTC date SQLite's DATE() would
+	// extract from the stored ISO timestamp, since sentAt is stored in UTC
+	// but "today" is defined in Pacific time throughout this file.
+	return !!existing && getTodayString(new Date(existing.sentAt)) === today;
 }
 
 /**
