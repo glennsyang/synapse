@@ -67,7 +67,7 @@
 		"dotenv": "^17.4.2",
 		"embla-carousel-svelte": "^8.6.0",
 		"fallow": "^2.99.0",
-		"knip": "^6.12.2",
+		"knip": "^6.24.0",
 		"layerchart": "^2.0.0-next.51",
 		"lefthook": "^2.1.9",
 		"lint-staged": "^17.0.7",
