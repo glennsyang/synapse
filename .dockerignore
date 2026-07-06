@@ -67,6 +67,8 @@ specs/
 
 # Scripts
 scripts/
+# ...except the standalone migration runner, which the Dockerfile copies into the final image
+!scripts/migrate.js
 
 # Config files
 .prettierrc
