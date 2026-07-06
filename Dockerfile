@@ -4,11 +4,6 @@
 ARG NODE_VERSION=22.22.3
 FROM node:${NODE_VERSION}-slim AS base
 
-# 1. Install curl and CA certificates (required for HTTPS downloads)
-RUN apt-get update -qq && \
-    apt-get install -y curl ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-
 LABEL fly_launch_runtime="SvelteKit"
 
 # SvelteKit app lives here
@@ -16,6 +11,7 @@ WORKDIR /app
 
 # Set production environment
 ENV NODE_ENV="production"
+
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
@@ -26,7 +22,7 @@ RUN apt-get update -qq && \
 
 # Install node modules
 COPY .npmrc package-lock.json package.json ./
-RUN npm ci --include=dev
+RUN npm install -g npm@11 && npm ci --include=dev
 
 # Copy application code
 COPY . .
@@ -39,6 +35,7 @@ RUN find build -name "*.map" -delete
 
 # Remove development dependencies
 RUN npm prune --omit=dev
+
 
 # Final stage for app image
 FROM base
@@ -54,7 +51,7 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/package.json /app
 
 # Copy migrations and the standalone migration runner (uses drizzle-orm, not the
-# drizzle-kit CLI, so drizle-kit stays a dev dependency and is pruned above)
+# drizzle-kit CLI, so drizzle-kit stays a devDependency and is pruned above)
 COPY --from=build /app/src/lib/server/db/migrations /app/src/lib/server/db/migrations
 COPY --from=build /app/scripts/migrate.js /app/scripts/migrate.js
 
