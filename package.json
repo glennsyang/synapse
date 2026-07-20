@@ -68,7 +68,7 @@
 		"embla-carousel-svelte": "^8.6.0",
 		"fallow": "^3.2.0",
 		"knip": "^6.24.0",
-		"layerchart": "^2.0.0-next.51",
+		"layerchart": "^2.0.2",
 		"lefthook": "^2.1.9",
 		"lint-staged": "^17.0.7",
 		"oxfmt": "^0.59.0",
