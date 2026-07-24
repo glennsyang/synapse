@@ -24,11 +24,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod4(loginSchema));
 
 		if (!form.valid) {
-			return message(
-				form,
-				{ type: 'error', text: 'Please correct the errors in the form.' },
-				{ status: 400 }
-			);
+			return message(form, 'Please correct the errors in the form.', { status: 400 });
 		}
 
 		try {
@@ -48,7 +44,7 @@ export const actions: Actions = {
 			);
 			logger.error('Sign-in failed', error);
 
-			return message(form, { type: 'error', text: errorMessage }, { status: 400 });
+			return message(form, errorMessage, { status: 400 });
 		}
 	}
 };
