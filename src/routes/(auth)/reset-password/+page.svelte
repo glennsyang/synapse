@@ -4,6 +4,7 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Field, FieldGroup, FieldLabel } from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageData } from './$types';
@@ -111,6 +112,9 @@
 
 					<Field>
 						<Button type="submit" class="w-full" disabled={$submitting}>
+							{#if $submitting}
+								<Spinner class="mr-2 size-4" aria-label="Resetting password" />
+							{/if}
 							{$submitting ? 'Resetting password...' : 'Reset password'}
 						</Button>
 					</Field>
