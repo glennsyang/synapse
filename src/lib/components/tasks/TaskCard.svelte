@@ -11,7 +11,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type { TaskState } from '$lib/schemas/task';
-	import { formatDateMedium, getDateUrgencyStatus } from '$lib/utils/date';
+	import { formatDateHeuristic, getDateUrgencyStatus } from '$lib/utils/date';
 	import { Calendar, CircleCheck, EllipsisVertical, Pencil, Trash2 } from '@lucide/svelte/icons';
 
 	interface Props {
@@ -31,7 +31,7 @@
 	let editHref = $derived(`/tasks/${task.id}/edit`);
 	let isDoneTask = $derived(task.state === 'done');
 	let isBlockedTask = $derived(task.state === 'blocked');
-	let dueDateLabel = $derived(task.dueDate ? formatDateMedium(task.dueDate) : null);
+	let dueDateLabel = $derived(task.dueDate ? formatDateHeuristic(task.dueDate) : null);
 	let dueDateStatus = $derived(getDateUrgencyStatus(task.dueDate));
 	let hasFooterMeta = $derived(Boolean(dueDateLabel) || Boolean(task.tags?.length));
 	let dueDateClass = $derived(

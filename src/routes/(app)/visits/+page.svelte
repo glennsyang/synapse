@@ -8,7 +8,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
-	import { formatDateShort } from '$lib/utils/date';
+	import { formatDateHeuristic } from '$lib/utils/date';
 	import { getStatusLabel, type VisitStatus } from '$lib/utils/visit-status';
 	import { CalendarCheck, Plus } from '@lucide/svelte';
 
@@ -251,12 +251,16 @@
 															<CalendarCheck class="h-4 w-4" />
 															<Alert.Title>Follow-up scheduled:</Alert.Title>
 															<Alert.Description>
-																{formatDateShort(person.nextFollowUpDate)}
+																{formatDateHeuristic(person.nextFollowUpDate, {
+																	fallback: 'short'
+																})}
 															</Alert.Description>
 														</Alert.Root>
 													{/if}
 													<p>
-														Last visit: {formatDateShort(person.lastVisit.date)}
+														Last visit: {formatDateHeuristic(person.lastVisit.date, {
+															fallback: 'short'
+														})}
 														{#if person.daysSinceLastVisit !== null}
 															({formatTimeSince(person.daysSinceLastVisit)})
 														{/if}

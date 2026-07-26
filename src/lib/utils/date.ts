@@ -124,6 +124,64 @@ export function formatMonthDay(dateString: string): string {
 	});
 }
 
+type DateDisplayFormat = 'long' | 'medium' | 'short' | 'monthDay';
+
+function formatDateByStyle(dateString: string, format: DateDisplayFormat): string {
+	switch (format) {
+		case 'long':
+			return formatDateLong(dateString);
+		case 'medium':
+			return formatDateMedium(dateString);
+		case 'short':
+			return formatDateShort(dateString);
+		case 'monthDay':
+			return formatMonthDay(dateString);
+	}
+}
+
+export function getRelativeDateLabel(
+	dateString: string,
+	today: string = getTodayString()
+): 'Yesterday' | 'Today' | 'Tomorrow' | null {
+	switch (calendarDaysBetween(today, dateString)) {
+		case -1:
+			return 'Yesterday';
+		case 0:
+			return 'Today';
+		case 1:
+			return 'Tomorrow';
+		default:
+			return null;
+	}
+}
+
+interface HeuristicDateOptions {
+	today?: string;
+	fallback?: DateDisplayFormat;
+	includeAbsoluteDate?: boolean;
+}
+
+export function formatDateHeuristic(
+	dateString: string,
+	{
+		today = getTodayString(),
+		fallback = 'medium',
+		includeAbsoluteDate = false
+	}: HeuristicDateOptions = {}
+): string {
+	const relativeLabel = getRelativeDateLabel(dateString, today);
+
+	if (!relativeLabel) {
+		return formatDateByStyle(dateString, fallback);
+	}
+
+	if (includeAbsoluteDate) {
+		return `${relativeLabel} · ${formatDateByStyle(dateString, fallback)}`;
+	}
+
+	return relativeLabel;
+}
+
 /**
  * Format today's date as a long display label using the app timezone.
  *
@@ -271,6 +329,14 @@ export function formatTimestampShort(timestamp: string): string {
 		day: 'numeric',
 		year: 'numeric'
 	});
+}
+
+export function formatTimestampDateHeuristic(
+	timestamp: string,
+	options: HeuristicDateOptions = {}
+): string {
+	const dateString = formatDateParts(new Date(timestamp), appDateFormatter);
+	return formatDateHeuristic(dateString, options);
 }
 
 /**

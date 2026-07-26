@@ -16,7 +16,7 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { formatTimeFromTimestamp, formatTimestampShort } from '$lib/utils/date';
+	import { formatTimeFromTimestamp, formatTimestampDateHeuristic } from '$lib/utils/date';
 	import {
 		CirclePlay,
 		Clock,
@@ -342,7 +342,7 @@
 										<div class="flex-1">
 											<h3 class="font-medium">{session.routine.title}</h3>
 											<p class="text-muted-foreground text-sm">
-												{formatTimestampShort(session.completedAt)}
+												{formatTimestampDateHeuristic(session.completedAt, { fallback: 'short' })}
 												at
 												{formatTimeFromTimestamp(session.completedAt)}
 											</p>
