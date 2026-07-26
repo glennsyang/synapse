@@ -2,15 +2,18 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	addDaysToDateString,
+	formatDateHeuristic,
 	formatDateLong,
 	formatDateMedium,
 	formatDateShort,
 	formatTime12Hour,
+	formatTimestampDateHeuristic,
 	formatTimeFromTimestamp,
 	formatTimestampLong,
 	formatTimestampMedium,
 	formatTimestampShort,
 	getDateRange,
+	getRelativeDateLabel,
 	getDateUrgencyStatus,
 	getRollingDateRange,
 	getStartOfMonth,
@@ -148,6 +151,27 @@ describe('date display formatters', () => {
 		expect(formatted).toContain('2026');
 		expect(formatted).not.toContain('Mon');
 	});
+
+	it('returns heuristic labels for yesterday, today, and tomorrow', () => {
+		expect(getRelativeDateLabel('2026-03-08', '2026-03-09')).toBe('Yesterday');
+		expect(getRelativeDateLabel('2026-03-09', '2026-03-09')).toBe('Today');
+		expect(getRelativeDateLabel('2026-03-10', '2026-03-09')).toBe('Tomorrow');
+	});
+
+	it('uses heuristic labels by default and falls back to absolute formatting for other dates', () => {
+		expect(formatDateHeuristic('2026-03-08', { today: '2026-03-09' })).toBe('Yesterday');
+		expect(formatDateHeuristic('2026-03-12', { today: '2026-03-09' })).toBe('Thu, Mar 12');
+	});
+
+	it('can include the absolute date alongside a heuristic label', () => {
+		expect(
+			formatDateHeuristic('2026-03-10', {
+				today: '2026-03-09',
+				fallback: 'medium',
+				includeAbsoluteDate: true
+			})
+		).toBe('Tomorrow · Tue, Mar 10');
+	});
 });
 
 describe('timestamp formatters', () => {
@@ -172,6 +196,19 @@ describe('timestamp formatters', () => {
 	it('extracts just the time portion from a timestamp', () => {
 		const formatted = formatTimeFromTimestamp('2026-03-09T14:30:00.000Z');
 		expect(formatted).toContain('30');
+	});
+
+	it('formats timestamp dates with heuristic labels using Pacific time', () => {
+		expect(
+			formatTimestampDateHeuristic('2026-03-13T06:59:59.000Z', {
+				today: '2026-03-13'
+			})
+		).toBe('Yesterday');
+		expect(
+			formatTimestampDateHeuristic('2026-03-13T07:00:00.000Z', {
+				today: '2026-03-13'
+			})
+		).toBe('Today');
 	});
 
 	it('converts 24-hour time to 12-hour AM/PM format', () => {

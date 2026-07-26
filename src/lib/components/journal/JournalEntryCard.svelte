@@ -3,7 +3,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { JournalEntry } from '$lib/types';
-	import { formatDateLong } from '$lib/utils/date';
+	import { formatDateHeuristic } from '$lib/utils/date';
 	import { Calendar, Cloud, MapPin, Pencil, Trash2 } from '@lucide/svelte/icons';
 	import { marked } from 'marked';
 
@@ -41,7 +41,7 @@
 						class="inline-flex items-center gap-2 rounded-md transition-colors hover:text-[oklch(var(--color-blue))] focus-visible:text-[oklch(var(--color-blue))]"
 					>
 						<Calendar class="h-4 w-4 shrink-0 opacity-70" />
-						<span>{formatDateLong(entry.date)}</span>
+						<span>{formatDateHeuristic(entry.date, { fallback: 'long' })}</span>
 					</a>
 				</Card.Title>
 			</div>
