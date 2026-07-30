@@ -3,7 +3,7 @@
 	import type { Snippet } from "svelte";
 	import Command from "./command.svelte";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
-	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
+	import { cn, type WithoutChildrenOrChild } from "$lib/components/ui/utils.js";
 
 	let {
 		open = $bindable(false),
