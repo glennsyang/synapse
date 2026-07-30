@@ -16,6 +16,7 @@ import {
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import {
 	convertVisitThresholdToDays,
+	DEFAULT_VISIT_STATUS_THRESHOLDS,
 	normalizeVisitStatusThresholds
 } from '$lib/utils/visit-status';
 import { eq } from 'drizzle-orm';
@@ -28,41 +29,48 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const db = getDb();
 	const userId = getUser(locals).id;
 
-	// Get the full user data including updatedAt
-	const fullUserData = await db.query.user.findFirst({
-		where: eq(user.id, userId)
-	});
+	try {
+		const [fullUserData, accountData, visitThresholds] = await Promise.all([
+			db.query.user.findFirst({ where: eq(user.id, userId) }),
+			db.query.account.findFirst({ where: eq(account.userId, userId) }),
+			getVisitStatusThresholdsForUser(userId, db)
+		]);
 
-	// Get the account data to find when password was last updated
-	const accountData = await db.query.account.findFirst({
-		where: eq(account.userId, userId)
-	});
+		// Initialize profile form with current user data
+		const profileForm = await superValidate(
+			{ name: fullUserData?.name || '' },
+			zod4(updateProfileSchema)
+		);
+		const passwordForm = await superValidate(zod4(changePasswordSchema));
+		const visitSettingsForm = await superValidate(
+			{
+				thresholdUnit: 'days',
+				recentToOverdueValue: visitThresholds.recentToOverdueDays,
+				overdueToCriticalValue: visitThresholds.overdueToCriticalDays
+			},
+			zod4(updateVisitStatusSettingsSchema)
+		);
 
-	const visitThresholds = await getVisitStatusThresholdsForUser(userId, db);
+		return {
+			user: fullUserData || locals.user,
+			profileForm,
+			passwordForm,
+			visitSettingsForm,
+			visitThresholds,
+			passwordUpdatedAt: accountData?.updatedAt || null
+		};
+	} catch (err) {
+		logger.error('Failed to load profile data', err, { userId });
 
-	// Initialize profile form with current user data
-	const profileForm = await superValidate(
-		{ name: fullUserData?.name || '' },
-		zod4(updateProfileSchema)
-	);
-	const passwordForm = await superValidate(zod4(changePasswordSchema));
-	const visitSettingsForm = await superValidate(
-		{
-			thresholdUnit: 'days',
-			recentToOverdueValue: visitThresholds.recentToOverdueDays,
-			overdueToCriticalValue: visitThresholds.overdueToCriticalDays
-		},
-		zod4(updateVisitStatusSettingsSchema)
-	);
-
-	return {
-		user: fullUserData || locals.user,
-		profileForm,
-		passwordForm,
-		visitSettingsForm,
-		visitThresholds,
-		passwordUpdatedAt: accountData?.updatedAt || null
-	};
+		return {
+			user: locals.user,
+			profileForm: await superValidate(zod4(updateProfileSchema)),
+			passwordForm: await superValidate(zod4(changePasswordSchema)),
+			visitSettingsForm: await superValidate(zod4(updateVisitStatusSettingsSchema)),
+			visitThresholds: DEFAULT_VISIT_STATUS_THRESHOLDS,
+			passwordUpdatedAt: null
+		};
+	}
 };
 
 export const actions: Actions = {
