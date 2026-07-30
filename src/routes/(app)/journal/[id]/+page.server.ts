@@ -56,8 +56,8 @@ export const actions: Actions = {
 			await db
 				.update(journalEntries)
 				.set({
-					date: form.data.date as string,
-					content: form.data.content as string,
+					date: form.data.date,
+					content: form.data.content,
 					location,
 					weather,
 					...withAuditFieldsForUpdate()
