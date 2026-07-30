@@ -1,4 +1,5 @@
 import { logger } from '$lib';
+import { getUser } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import {
 	dailyAgendaEntries,
@@ -532,8 +533,7 @@ function emptyDashboardReturn() {
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const user = locals.user;
-	if (!user) return emptyDashboardReturn();
+	const user = getUser(locals);
 
 	const today = getTodayString();
 	const ranges = buildDateRanges(today);
