@@ -38,6 +38,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	}
 
 	const { moods, duration, search } = filters.data;
+	const userId = getUser(locals).id;
 
 	try {
 		const db = getDb();
@@ -80,7 +81,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 		// Fetch all schedules for user
 		const schedules = await db.query.meditationSchedules.findMany({
-			where: eq(meditationSchedules.userId, getUser(locals).id),
+			where: eq(meditationSchedules.userId, userId),
 			with: {
 				routine: true
 			}
@@ -94,7 +95,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 		// Fetch recent sessions for history
 		const sessions = await db.query.meditationSessions.findMany({
-			where: eq(meditationSessions.userId, getUser(locals).id),
+			where: eq(meditationSessions.userId, userId),
 			orderBy: [desc(meditationSessions.completedAt)],
 			limit: 50,
 			with: {
