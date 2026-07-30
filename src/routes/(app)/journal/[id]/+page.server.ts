@@ -37,7 +37,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	return { form, entry };
 };
 
-export const actions: Actions = {
+export const actions = {
 	update: requireAuth(async ({ request, params }, user) => {
 		const entryId = params.id;
 		const form = await superValidate(request, zod4(journalEntrySchema));
@@ -103,4 +103,4 @@ export const actions: Actions = {
 
 		throw redirect(303, '/journal');
 	})
-};
+} satisfies Actions;

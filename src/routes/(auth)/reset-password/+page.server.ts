@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return { token, form };
 };
 
-export const actions: Actions = {
+export const actions = {
 	default: async ({ request }) => {
 		const form = await superValidate(request, zod4(resetPasswordSchema));
 

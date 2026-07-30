@@ -102,7 +102,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	return { form };
 };
 
-export const actions: Actions = {
+export const actions = {
 	default: requireAuth(async ({ request }, user) => {
 		const form = await superValidate(request, zod4(createTaskSchema));
 
@@ -148,4 +148,4 @@ export const actions: Actions = {
 
 		throw redirect(303, '/tasks');
 	})
-};
+} satisfies Actions;

@@ -125,7 +125,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	}
 };
 
-export const actions: Actions = {
+export const actions = {
 	createSchedule: requireAuth(async ({ request, locals, params }, user) => {
 		const form = await superValidate(request, zod4(scheduleSchema));
 		const routineId = params.id;

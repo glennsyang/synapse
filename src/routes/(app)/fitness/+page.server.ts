@@ -160,7 +160,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	}
 };
 
-export const actions: Actions = {
+export const actions = {
 	logWeight: requireAuth(async ({ request }, user) => {
 		const form = await superValidate(request, zod4(logWeightSchema));
 

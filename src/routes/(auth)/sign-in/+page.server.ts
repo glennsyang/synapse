@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return { form };
 };
 
-export const actions: Actions = {
+export const actions = {
 	default: async ({ request }) => {
 		const form = await superValidate(request, zod4(loginSchema));
 
@@ -47,4 +47,4 @@ export const actions: Actions = {
 			return message(form, errorMessage, { status: 400 });
 		}
 	}
-};
+} satisfies Actions;

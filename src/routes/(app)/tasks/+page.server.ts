@@ -645,7 +645,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	}
 };
 
-export const actions: Actions = {
+export const actions = {
 	moveBoardTask: requireAuth(async ({ request }, user) => {
 		const form = await superValidate(request, zod4(moveTaskBoardSchema));
 		if (!form.valid) return fail(400, { form });
@@ -976,4 +976,4 @@ export const actions: Actions = {
 			);
 		}
 	})
-};
+} satisfies Actions;
