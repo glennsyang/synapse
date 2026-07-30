@@ -21,10 +21,6 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	if (!params.id) {
-		throw error(400, 'Person ID is required');
-	}
-
 	const db = getDb();
 	const userId = getUser(locals).id;
 
@@ -89,10 +85,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	logVisit: requireAuth(async ({ request, params }, user) => {
-		if (!params.id) {
-			return fail(400, { error: 'Person ID is required' });
-		}
-
 		const form = await superValidate(request, zod4(visitSchema));
 
 		if (!form.valid) {
@@ -152,10 +144,6 @@ export const actions: Actions = {
 	}),
 
 	updateVisit: requireAuth(async ({ request, params }, user) => {
-		if (!params.id) {
-			return fail(400, { error: 'Person ID is required' });
-		}
-
 		const formData = await request.formData();
 		const visitId = formData.get('visitId');
 		const form = await superValidate(formData, zod4(visitSchema));
@@ -224,10 +212,6 @@ export const actions: Actions = {
 	}),
 
 	updatePerson: requireAuth(async ({ request, params }, user) => {
-		if (!params.id) {
-			return fail(400, { error: 'Person ID is required' });
-		}
-
 		const form = await superValidate(request, zod4(personSchema));
 
 		if (!form.valid) {
@@ -276,10 +260,6 @@ export const actions: Actions = {
 	}),
 
 	archivePerson: requireAuth(async ({ params }, user) => {
-		if (!params.id) {
-			return fail(400, { error: 'Person ID is required' });
-		}
-
 		try {
 			const db = getDb();
 
@@ -310,10 +290,6 @@ export const actions: Actions = {
 	}),
 
 	deletePerson: requireAuth(async ({ params }, user) => {
-		if (!params.id) {
-			return fail(400, { error: 'Person ID is required' });
-		}
-
 		try {
 			const db = getDb();
 
