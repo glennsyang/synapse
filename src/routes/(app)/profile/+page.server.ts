@@ -73,7 +73,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	}
 };
 
-export const actions: Actions = {
+export const actions = {
 	update: requireAuth(async ({ request }, currentUser) => {
 		const form = await superValidate(request, zod4(updateProfileSchema));
 		if (!form.valid) {

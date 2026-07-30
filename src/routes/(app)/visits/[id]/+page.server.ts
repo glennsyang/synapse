@@ -83,7 +83,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	}
 };
 
-export const actions: Actions = {
+export const actions = {
 	logVisit: requireAuth(async ({ request, params }, user) => {
 		const form = await superValidate(request, zod4(visitSchema));
 
@@ -344,4 +344,4 @@ export const actions: Actions = {
 			return fail(500, { error: 'Failed to delete visit' });
 		}
 	})
-};
+} satisfies Actions;

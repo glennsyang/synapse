@@ -78,7 +78,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	};
 };
 
-export const actions: Actions = {
+export const actions = {
 	update: requireAuth(async ({ request, params }, user) => {
 		const taskId = params.id;
 
@@ -211,4 +211,4 @@ export const actions: Actions = {
 
 		throw redirect(303, '/tasks');
 	})
-};
+} satisfies Actions;
