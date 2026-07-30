@@ -18,6 +18,7 @@ import {
 	updateTaskStateSchema
 } from '$lib/schemas/task';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
+import { parseTaskTags } from '$lib/server/actions/string-parsers';
 import {
 	createDailyAgendaCustomEntry,
 	createDailyAgendaTemplate,
@@ -211,34 +212,12 @@ async function getAllTags(userId: string): Promise<string[]> {
 
 	const tagSet = new Set<string>();
 	for (const task of taskRows) {
-		if (task.tags) {
-			try {
-				const tagArray = JSON.parse(task.tags);
-				if (Array.isArray(tagArray)) {
-					for (const tag of tagArray) {
-						tagSet.add(tag);
-					}
-				}
-			} catch {
-				// Skip invalid JSON
-			}
+		for (const tag of parseTaskTags(task.tags) ?? []) {
+			tagSet.add(tag);
 		}
 	}
 
 	return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
-}
-
-function parseStoredTags(rawTags: string | null): string[] | null {
-	if (!rawTags) {
-		return null;
-	}
-
-	try {
-		const parsed = JSON.parse(rawTags);
-		return Array.isArray(parsed) ? parsed : null;
-	} catch {
-		return null;
-	}
 }
 
 type TaskBoardClient = Pick<ReturnType<typeof getDb>, 'select' | 'update'>;
@@ -428,7 +407,7 @@ async function loadTaskBoardData(
 		...task,
 		taskNumber: task.taskNumber,
 		state: task.state as TaskState,
-		tags: parseStoredTags(task.tags)
+		tags: parseTaskTags(task.tags)
 	}));
 }
 

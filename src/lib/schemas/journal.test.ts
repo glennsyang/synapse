@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { journalEntrySchema, journalFilterSchema } from './journal';
+import { buildWeatherJson, journalEntrySchema, journalFilterSchema } from './journal';
 
 describe('journalEntrySchema', () => {
 	const validEntry = {
@@ -59,5 +59,23 @@ describe('journalFilterSchema', () => {
 
 	it('rejects an invalid date format in the filter', () => {
 		expect(journalFilterSchema.safeParse({ date: 'not-a-date' }).success).toBe(false);
+	});
+});
+
+describe('buildWeatherJson', () => {
+	it('serializes temp and condition when both are present', () => {
+		expect(buildWeatherJson(72, 'Sunny')).toBe('{"temp":72,"condition":"Sunny"}');
+	});
+
+	it('serializes when only temp is present', () => {
+		expect(buildWeatherJson(72, undefined)).toBe('{"temp":72}');
+	});
+
+	it('serializes when only condition is present', () => {
+		expect(buildWeatherJson(undefined, 'Cloudy')).toBe('{"condition":"Cloudy"}');
+	});
+
+	it('returns null when neither temp nor condition are present', () => {
+		expect(buildWeatherJson(undefined, undefined)).toBeNull();
 	});
 });

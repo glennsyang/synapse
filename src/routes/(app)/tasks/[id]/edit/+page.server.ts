@@ -10,7 +10,7 @@ import {
 	getOwnedEntityOrNull,
 	getOwnedEntityOrThrow
 } from '$lib/server/actions/edit-route-helpers';
-import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
+import { parseTaskTags, toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { tasks } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
@@ -57,8 +57,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	);
 
 	// Parse JSON fields for form
-	const tagsArray = task.tags ? JSON.parse(task.tags) : [];
-	const tagsString = Array.isArray(tagsArray) ? tagsArray.join(', ') : '';
+	const tagsString = (parseTaskTags(task.tags) ?? []).join(', ');
 
 	// Prepare form data
 	const form = await superValidate(
