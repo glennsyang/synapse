@@ -135,7 +135,7 @@ export const actions: Actions = {
 				userId: user.id
 			});
 		} catch (error) {
-			logger.error('Failed to create task', { error, userId: user.id });
+			logger.error('Failed to create task', error, { userId: user.id });
 			return message(
 				form,
 				{

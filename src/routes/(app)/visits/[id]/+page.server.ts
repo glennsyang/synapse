@@ -78,7 +78,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		};
 	} catch (err) {
 		if (isHttpError(err) || isRedirect(err)) throw err;
-		logger.error('Failed to load visit page data', { error: err, personId: params.id, userId });
+		logger.error('Failed to load visit page data', err, { personId: params.id, userId });
 		throw error(500, 'Failed to load page data');
 	}
 };
@@ -131,7 +131,7 @@ export const actions: Actions = {
 				text: 'Visit logged successfully!'
 			});
 		} catch (err) {
-			logger.error('Failed to log visit', { error: err });
+			logger.error('Failed to log visit', err);
 			return message(
 				form,
 				{
@@ -199,7 +199,7 @@ export const actions: Actions = {
 				text: 'Visit updated successfully!'
 			});
 		} catch (err) {
-			logger.error('Failed to update visit', { error: err });
+			logger.error('Failed to update visit', err);
 			return message(
 				form,
 				{
@@ -247,7 +247,7 @@ export const actions: Actions = {
 				text: 'Person updated successfully!'
 			});
 		} catch (err) {
-			logger.error('Failed to update person', { error: err });
+			logger.error('Failed to update person', err);
 			return message(
 				form,
 				{
@@ -282,7 +282,7 @@ export const actions: Actions = {
 
 			logger.info('Person archived', { personId: params.id, userId: user.id });
 		} catch (err) {
-			logger.error('Failed to archive person', { error: err });
+			logger.error('Failed to archive person', err);
 			return fail(500, { error: 'Failed to archive person' });
 		}
 
@@ -307,7 +307,7 @@ export const actions: Actions = {
 
 			logger.info('Person deleted', { personId: params.id, userId: user.id });
 		} catch (err) {
-			logger.error('Failed to delete person', { error: err });
+			logger.error('Failed to delete person', err);
 			return fail(500, { error: 'Failed to delete person' });
 		}
 
@@ -340,7 +340,7 @@ export const actions: Actions = {
 
 			return { success: true };
 		} catch (err) {
-			logger.error('Failed to delete visit', { error: err });
+			logger.error('Failed to delete visit', err);
 			return fail(500, { error: 'Failed to delete visit' });
 		}
 	})

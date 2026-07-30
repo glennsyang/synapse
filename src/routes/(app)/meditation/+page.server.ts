@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	});
 
 	if (!filters.success) {
-		logger.error('Invalid filter parameters', { error: filters.error });
+		logger.error('Invalid filter parameters', filters.error);
 		return {
 			routines: [],
 			schedules: [],
@@ -112,7 +112,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			editSessionForm
 		};
 	} catch (error) {
-		logger.error('Failed to load meditation data', { error });
+		logger.error('Failed to load meditation data', error);
 		return {
 			routines: [],
 			schedules: [],

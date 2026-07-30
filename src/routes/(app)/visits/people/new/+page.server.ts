@@ -40,7 +40,7 @@ export const actions: Actions = {
 
 			logger.info('Person created', { personId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to create person', { error });
+			logger.error('Failed to create person', error);
 			return message(
 				form,
 				{

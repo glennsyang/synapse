@@ -173,7 +173,7 @@ export const actions: Actions = {
 
 			logger.info('Task updated', { taskId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to update task', { error, taskId });
+			logger.error('Failed to update task', error, { taskId });
 			return fail(500, { form, error: 'Failed to update task' });
 		}
 
@@ -205,7 +205,7 @@ export const actions: Actions = {
 
 			logger.info('Task deleted', { taskId, taskNumber: existing.taskNumber, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to delete task', { error, taskId });
+			logger.error('Failed to delete task', error, { taskId });
 			return fail(500, { error: 'Failed to delete task' });
 		}
 

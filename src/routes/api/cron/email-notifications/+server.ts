@@ -31,7 +31,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		logger.info('✅ Email notifications job completed successfully!');
 		return json({ success: true, timestamp: new Date().toISOString() });
 	} catch (error) {
-		logger.error('❌ Email notifications job failed:', { error });
+		logger.error('❌ Email notifications job failed:', error);
 		return json({ error: 'Job failed' }, { status: 500 });
 	}
 };

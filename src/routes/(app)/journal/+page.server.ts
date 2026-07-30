@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	});
 
 	if (!filters.success) {
-		logger.error('Invalid filter parameters', { error: filters.error });
+		logger.error('Invalid filter parameters', filters.error);
 		return {
 			entries: [],
 			filters: { content: '', date: '' }
@@ -55,7 +55,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			}
 		};
 	} catch (error) {
-		logger.error('Failed to load journal entries', { error });
+		logger.error('Failed to load journal entries', error);
 		return {
 			entries: [],
 			filters: {

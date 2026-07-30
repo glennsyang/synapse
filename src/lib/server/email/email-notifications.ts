@@ -237,7 +237,7 @@ async function processWorkoutReminders(
 			sentCount++;
 			logger.debug(`   ✅ Sent successfully`);
 		} catch (error) {
-			logger.error(`   ❌ Failed to send:`, { error });
+			logger.error(`   ❌ Failed to send:`, error);
 		}
 	}
 
@@ -326,7 +326,7 @@ async function processMeditationReminders(
 			sentCount++;
 			logger.debug(`   ✅ Sent successfully`);
 		} catch (error) {
-			logger.error(`   ❌ Failed to send:`, { error });
+			logger.error(`   ❌ Failed to send:`, error);
 		}
 	}
 
@@ -451,7 +451,7 @@ async function processVisitWarnings(): Promise<void> {
 			sentCount++;
 			logger.debug(`   ✅ Sent successfully`);
 		} catch (error) {
-			logger.error(`   ❌ Failed to send:`, { error });
+			logger.error(`   ❌ Failed to send:`, error);
 		}
 	}
 
@@ -583,10 +583,7 @@ async function processDailyAgendaDigests(
 			sentCount++;
 			logger.debug('   ✅ Sent successfully');
 		} catch (error) {
-			logger.error('   ❌ Failed to send daily agenda digest', {
-				error,
-				userId: userData.id
-			});
+			logger.error('   ❌ Failed to send daily agenda digest', error, { userId: userData.id });
 		}
 	}
 
@@ -650,10 +647,7 @@ async function processTasksDueTodayDigests(
 			sentCount++;
 			logger.debug('   ✅ Sent successfully');
 		} catch (error) {
-			logger.error('   ❌ Failed to send Tasks due-today digest', {
-				error,
-				userId: userData.id
-			});
+			logger.error('   ❌ Failed to send Tasks due-today digest', error, { userId: userData.id });
 		}
 	}
 
@@ -719,7 +713,7 @@ async function processVisitsTodayReminders(todayPacific: string): Promise<void> 
 			sentCount++;
 			logger.debug(`   ✅ Sent successfully`);
 		} catch (error) {
-			logger.error(`   ❌ Failed to send:`, { error });
+			logger.error(`   ❌ Failed to send:`, error);
 		}
 	}
 
@@ -799,7 +793,7 @@ async function processScheduledVisitReminders(): Promise<void> {
 			sentCount++;
 			logger.debug(`   ✅ Sent successfully`);
 		} catch (error) {
-			logger.error(`   ❌ Failed to send:`, { error });
+			logger.error(`   ❌ Failed to send:`, error);
 		}
 	}
 
@@ -862,7 +856,7 @@ export async function runEmailNotifications(): Promise<{ ok: true } | { ok: fals
 		logger.debug('\n✅ Email notifications cron job completed successfully!');
 		return { ok: true };
 	} catch (error) {
-		logger.error('\n❌ Email notifications cron job failed:', { error });
+		logger.error('\n❌ Email notifications cron job failed:', error);
 		return { ok: false, error: error instanceof Error ? error : new Error('Unknown error') };
 	}
 }
