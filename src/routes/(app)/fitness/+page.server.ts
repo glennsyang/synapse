@@ -135,7 +135,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			reminderForm
 		};
 	} catch (error) {
-		logger.error('Failed to load fitness data', { error });
+		logger.error('Failed to load fitness data', error);
 		return {
 			tab,
 			reminders: [],
@@ -184,7 +184,7 @@ export const actions: Actions = {
 
 			logger.info('Weight entry logged', { entryId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to log weight entry', { error });
+			logger.error('Failed to log weight entry', error);
 			return message(
 				form,
 				{
@@ -236,7 +236,7 @@ export const actions: Actions = {
 
 			logger.info('Goal weight set', { userId: user.id });
 		} catch (error) {
-			logger.error('Failed to set goal weight', { error });
+			logger.error('Failed to set goal weight', error);
 			return message(
 				form,
 				{
@@ -304,7 +304,7 @@ export const actions: Actions = {
 
 			logger.info('Workout logged', { workoutId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to log workout', { error });
+			logger.error('Failed to log workout', error);
 			return message(
 				form,
 				{
@@ -343,7 +343,7 @@ export const actions: Actions = {
 
 			logger.info('Meal logged', { mealId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to log meal', { error });
+			logger.error('Failed to log meal', error);
 			return message(
 				form,
 				{
@@ -395,7 +395,7 @@ export const actions: Actions = {
 
 			logger.info('Calorie target set', { userId: user.id });
 		} catch (error) {
-			logger.error('Failed to set calorie target', { error });
+			logger.error('Failed to set calorie target', error);
 			return message(
 				form,
 				{
@@ -434,7 +434,7 @@ export const actions: Actions = {
 
 			logger.info('Workout reminder created', { reminderId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to create workout reminder', { error });
+			logger.error('Failed to create workout reminder', error);
 			return message(
 				form,
 				{
@@ -487,7 +487,7 @@ export const actions: Actions = {
 				userId: user.id
 			});
 		} catch (error) {
-			logger.error('Failed to update workout reminder', { error });
+			logger.error('Failed to update workout reminder', error);
 			return message(
 				form,
 				{
@@ -522,7 +522,7 @@ export const actions: Actions = {
 
 			logger.info('Workout reminder deleted', { reminderId: form.data.id, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to delete workout reminder', { error, reminderId: form.data.id });
+			logger.error('Failed to delete workout reminder', error, { reminderId: form.data.id });
 			return message(
 				form,
 				{
@@ -565,7 +565,7 @@ export const actions: Actions = {
 
 			logger.info('Weight entry updated', { entryId: form.data.id, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to update weight entry', { error });
+			logger.error('Failed to update weight entry', error);
 			return message(
 				form,
 				{ type: 'error', text: 'Failed to update weight entry. Please try again.' },
@@ -599,7 +599,7 @@ export const actions: Actions = {
 
 			logger.info('Weight entry deleted', { entryId: form.data.id, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to delete weight entry', { error });
+			logger.error('Failed to delete weight entry', error);
 			return fail(500, { error: 'Failed to delete weight entry' });
 		}
 
@@ -672,7 +672,7 @@ export const actions: Actions = {
 
 			logger.info('Workout updated', { workoutId: form.data.id, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to update workout', { error });
+			logger.error('Failed to update workout', error);
 			return message(
 				form,
 				{ type: 'error', text: 'Failed to update workout. Please try again.' },
@@ -706,7 +706,7 @@ export const actions: Actions = {
 
 			logger.info('Workout deleted', { workoutId: form.data.id, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to delete workout', { error });
+			logger.error('Failed to delete workout', error);
 			return fail(500, { error: 'Failed to delete workout' });
 		}
 
@@ -743,7 +743,7 @@ export const actions: Actions = {
 
 			logger.info('Meal updated', { mealId: form.data.id, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to update meal', { error });
+			logger.error('Failed to update meal', error);
 			return message(
 				form,
 				{ type: 'error', text: 'Failed to update meal. Please try again.' },
@@ -777,7 +777,7 @@ export const actions: Actions = {
 
 			logger.info('Meal deleted', { mealId: form.data.id, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to delete meal', { error });
+			logger.error('Failed to delete meal', error);
 			return fail(500, { error: 'Failed to delete meal' });
 		}
 

@@ -66,7 +66,7 @@ export const actions: Actions = {
 
 			logger.info('Journal entry updated', { entryId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to update journal entry', { error });
+			logger.error('Failed to update journal entry', error);
 			return fail(500, { form, error: 'Failed to update journal entry' });
 		}
 
@@ -97,7 +97,7 @@ export const actions: Actions = {
 
 			logger.info('Journal entry deleted', { entryId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to delete journal entry', { error, entryId });
+			logger.error('Failed to delete journal entry', error, { entryId });
 			return fail(500, { error: 'Failed to delete journal entry' });
 		}
 

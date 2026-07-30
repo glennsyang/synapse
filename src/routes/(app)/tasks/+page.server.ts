@@ -471,7 +471,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	};
 
 	if (!filters.success) {
-		logger.error('Invalid task filter parameters', { error: filters.error, userId });
+		logger.error('Invalid task filter parameters', filters.error, { userId });
 
 		return {
 			activeTab,
@@ -633,7 +633,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			}
 		};
 	} catch (error) {
-		logger.error('Failed to load tasks', { error, userId });
+		logger.error('Failed to load tasks', error, { userId });
 		return {
 			activeTab,
 			agenda,
@@ -743,7 +743,7 @@ export const actions: Actions = {
 				userId: user.id
 			});
 		} catch (error) {
-			logger.error('Failed to delete task from board', { error, form });
+			logger.error('Failed to delete task from board', error, { form });
 			return fail(500, { form, error: 'Failed to delete task' });
 		}
 
@@ -968,7 +968,7 @@ export const actions: Actions = {
 			logger.info('Mood log created', { moodLogId, userId: user.id });
 			return message(form, { type: 'success', text: "Today's mood was logged." });
 		} catch (error) {
-			logger.error('Failed to upsert mood log', { error, userId: user.id });
+			logger.error('Failed to upsert mood log', error, { userId: user.id });
 			return message(
 				form,
 				{ type: 'error', text: 'Failed to save your mood. Please try again.' },

@@ -63,7 +63,7 @@ export const actions: Actions = {
 
 			logger.info('Meditation routine created', { routineId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to create meditation routine', { error });
+			logger.error('Failed to create meditation routine', error);
 			return message(
 				form,
 				{

@@ -600,7 +600,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			todayAgendaSummary: buildTodayAgendaSummary(data.agendaEntriesForTrend, today)
 		};
 	} catch (error) {
-		logger.error('Failed to load dashboard data', { error });
+		logger.error('Failed to load dashboard data', error);
 		return emptyDashboardReturn();
 	}
 };

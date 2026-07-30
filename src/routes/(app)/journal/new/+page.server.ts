@@ -50,7 +50,7 @@ export const actions: Actions = {
 
 			logger.info('Journal entry created', { entryId, userId: user.id });
 		} catch (error) {
-			logger.error('Failed to create journal entry', { error, userId: user.id });
+			logger.error('Failed to create journal entry', error, { userId: user.id });
 			return message(
 				form,
 				{

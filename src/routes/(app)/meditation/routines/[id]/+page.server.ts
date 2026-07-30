@@ -120,7 +120,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		if (isHttpError(err) || isRedirect(err)) {
 			throw err;
 		}
-		logger.error('Failed to load meditation routine', { error: err });
+		logger.error('Failed to load meditation routine', err);
 		throw error(500, 'Failed to load routine');
 	}
 };
@@ -203,7 +203,7 @@ export const actions: Actions = {
 				text: 'Schedule saved successfully!'
 			});
 		} catch (error) {
-			logger.error('Failed to create/update schedule', { error });
+			logger.error('Failed to create/update schedule', error);
 			return message(
 				form,
 				{
@@ -238,7 +238,7 @@ export const actions: Actions = {
 			});
 			return { success: true };
 		} catch (error) {
-			logger.error('Failed to delete schedule', { error });
+			logger.error('Failed to delete schedule', error);
 			return fail(500, { error: 'Failed to delete schedule' });
 		}
 	}),
@@ -277,7 +277,7 @@ export const actions: Actions = {
 				text: 'Session logged successfully!'
 			});
 		} catch (error) {
-			logger.error('Failed to complete session', { error });
+			logger.error('Failed to complete session', error);
 			return message(
 				form,
 				{
@@ -338,7 +338,7 @@ export const actions: Actions = {
 				text: 'Routine updated successfully!'
 			});
 		} catch (error) {
-			logger.error('Failed to update routine', { error });
+			logger.error('Failed to update routine', error);
 			return message(
 				form,
 				{
@@ -388,7 +388,7 @@ export const actions: Actions = {
 				userId: user.id
 			});
 		} catch (error) {
-			logger.error('Failed to delete routine', { error });
+			logger.error('Failed to delete routine', error);
 			return fail(500, { error: 'Failed to delete routine' });
 		}
 

@@ -41,7 +41,7 @@ export async function handleUpdateSession(request: Request, userId: string) {
 		logger.info('Meditation session updated', { sessionId: form.data.id, userId });
 		return message(form, { type: 'success', text: 'Session updated successfully!' });
 	} catch (err) {
-		logger.error('Failed to update session', { error: err });
+		logger.error('Failed to update session', err);
 		return message(
 			form,
 			{ type: 'error', text: 'An error occurred while updating the session.' },
@@ -68,7 +68,7 @@ export async function handleDeleteSession(request: Request, userId: string) {
 		logger.info('Meditation session deleted', { sessionId, userId });
 		return { success: true };
 	} catch (err) {
-		logger.error('Failed to delete session', { error: err });
+		logger.error('Failed to delete session', err);
 		return fail(500, { error: 'Failed to delete session' });
 	}
 }

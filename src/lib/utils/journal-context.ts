@@ -67,7 +67,7 @@ export async function getCurrentWeather(): Promise<JournalWeather> {
 			condition
 		};
 	} catch (error) {
-		logger.error('Failed to get weather', { error: JSON.stringify(error) });
+		logger.error('Failed to get weather', error);
 		throw new TypeError('Unable to retrieve your location for weather information.');
 	}
 }
