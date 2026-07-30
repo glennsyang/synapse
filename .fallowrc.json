@@ -7,6 +7,7 @@
 		"**/*.config.ts",
 		"src/env.ts",
 		"src/lib/index.ts",
+		"src/lib/utils.ts",
 		"scripts/migrate.js"
 	],
 	"ignoreDependencies": [
@@ -21,7 +22,7 @@
 		"vaul-svelte"
 	],
 	"ignoreExports": [
-		{ "file": "src/lib/utils.ts", "exports": ["WithoutChildrenOrChild", "WithElementRef"] }
+		{ "file": "src/lib/utils/ui.ts", "exports": ["WithoutChildrenOrChild", "WithElementRef"] }
 	],
 	"duplicates": {
 		"ignore": ["src/lib/components/ui/**/*.{ts,tsx}"]

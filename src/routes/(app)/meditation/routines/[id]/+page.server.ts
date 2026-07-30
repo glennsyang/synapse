@@ -18,7 +18,7 @@ import {
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
-import { safeParse } from '$lib/utils';
+import { safeParse } from '$lib/utils/json';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq, or } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
