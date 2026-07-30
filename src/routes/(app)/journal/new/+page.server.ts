@@ -1,5 +1,5 @@
 import { logger } from '$lib';
-import { journalEntrySchema } from '$lib/schemas/journal';
+import { buildWeatherJson, journalEntrySchema } from '$lib/schemas/journal';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
@@ -32,13 +32,7 @@ export const actions: Actions = {
 		try {
 			const location = form.data.location?.trim() || 'Home';
 
-			const weather =
-				form.data.weatherTemp || form.data.weatherCondition
-					? JSON.stringify({
-							temp: form.data.weatherTemp,
-							condition: form.data.weatherCondition
-						})
-					: null;
+			const weather = buildWeatherJson(form.data.weatherTemp, form.data.weatherCondition);
 
 			const entryId = generateId();
 

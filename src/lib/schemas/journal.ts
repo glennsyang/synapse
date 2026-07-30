@@ -14,6 +14,16 @@ export const journalEntrySchema = z.object({
 export type JournalEntryFormValues = z.infer<typeof journalEntrySchema>;
 
 /**
+ * Serializes weather form fields into the JSON string stored on a journal entry.
+ */
+export function buildWeatherJson(
+	temp: number | undefined,
+	condition: string | undefined
+): string | null {
+	return temp || condition ? JSON.stringify({ temp, condition }) : null;
+}
+
+/**
  * Schema for filtering journal entries
  */
 export const journalFilterSchema = z.object({

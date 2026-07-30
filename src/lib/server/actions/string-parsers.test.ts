@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { splitCommaSeparated, toCommaSeparatedJson } from './string-parsers';
+import { parseTaskTags, splitCommaSeparated, toCommaSeparatedJson } from './string-parsers';
 
 describe('splitCommaSeparated', () => {
 	it('splits a comma-separated string into trimmed items', () => {
@@ -48,5 +48,31 @@ describe('toCommaSeparatedJson', () => {
 
 	it('returns a single-element JSON array for a single value', () => {
 		expect(toCommaSeparatedJson('item')).toBe('["item"]');
+	});
+});
+
+describe('parseTaskTags', () => {
+	it('parses a JSON array string into an array of tags', () => {
+		expect(parseTaskTags('["alpha","beta"]')).toEqual(['alpha', 'beta']);
+	});
+
+	it('returns null for null, undefined, and empty string', () => {
+		expect(parseTaskTags(null)).toBeNull();
+		expect(parseTaskTags(undefined)).toBeNull();
+		expect(parseTaskTags('')).toBeNull();
+	});
+
+	it('returns null for malformed JSON', () => {
+		expect(parseTaskTags('not json')).toBeNull();
+	});
+
+	it('returns null when the parsed JSON is not an array of strings', () => {
+		expect(parseTaskTags('{"a":1}')).toBeNull();
+		expect(parseTaskTags('[1,2,3]')).toBeNull();
+		expect(parseTaskTags('"just a string"')).toBeNull();
+	});
+
+	it('returns an empty array when stored tags are an empty JSON array', () => {
+		expect(parseTaskTags('[]')).toEqual([]);
 	});
 });
