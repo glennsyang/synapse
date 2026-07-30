@@ -1,4 +1,4 @@
-import { getBetterAuthErrorMessage } from '$lib/utils';
+import { getBetterAuthErrorMessage } from '$lib/utils/auth';
 import { isRedirect, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';

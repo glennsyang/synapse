@@ -7,7 +7,7 @@ import {
 } from '$lib/server/actions/meditation-session-actions';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines, meditationSchedules, meditationSessions } from '$lib/server/db/schema';
-import { safeParse } from '$lib/utils';
+import { safeParse } from '$lib/utils/json';
 import { and, desc, eq, like, or } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';

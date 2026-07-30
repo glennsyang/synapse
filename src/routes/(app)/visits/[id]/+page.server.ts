@@ -10,8 +10,8 @@ import {
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
-import { safeParse } from '$lib/utils';
 import { getTodayString } from '$lib/utils/date';
+import { safeParse } from '$lib/utils/json';
 import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';
