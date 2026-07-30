@@ -24,8 +24,8 @@ import type { Actions, PageServerLoad } from './$types';
 function buildTaskUpdateData(
 	formData: UpdateTaskInput,
 	existingState: string
-): Record<string, unknown> {
-	const updateData: Record<string, unknown> = {
+): Partial<typeof tasks.$inferInsert> {
+	const updateData: Partial<typeof tasks.$inferInsert> = {
 		...withAuditFieldsForUpdate()
 	};
 
