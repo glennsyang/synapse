@@ -1,6 +1,10 @@
 import { logger } from '$lib';
 import { personSchema, visitSchema } from '$lib/schemas/visits';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
+import {
+	getOwnedEntityOrNull,
+	getOwnedEntityOrThrow
+} from '$lib/server/actions/edit-route-helpers';
 import { toCommaSeparatedJson } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
@@ -26,13 +30,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	try {
 		// Load person
-		const person = await db.query.people.findFirst({
-			where: and(eq(people.id, params.id), eq(people.userId, userId))
-		});
-
-		if (!person) {
-			throw error(404, 'Person not found');
-		}
+		const person = await getOwnedEntityOrThrow(
+			() =>
+				db.query.people.findFirst({
+					where: and(eq(people.id, params.id), eq(people.userId, userId))
+				}),
+			{ type: 'error', message: 'Person not found', status: 404 }
+		);
 
 		if (person.isArchived) {
 			throw redirect(303, '/visits');
@@ -96,9 +100,11 @@ export const actions = {
 			const db = getDb();
 
 			// Verify person belongs to user
-			const person = await db.query.people.findFirst({
-				where: and(eq(people.id, params.id), eq(people.userId, user.id))
-			});
+			const person = await getOwnedEntityOrNull(() =>
+				db.query.people.findFirst({
+					where: and(eq(people.id, params.id), eq(people.userId, user.id))
+				})
+			);
 
 			if (!person) {
 				return fail(404, { error: 'Person not found' });
@@ -160,13 +166,15 @@ export const actions = {
 		try {
 			const db = getDb();
 
-			const visit = await db.query.visits.findFirst({
-				where: and(
-					eq(visits.id, visitId),
-					eq(visits.userId, user.id),
-					eq(visits.personId, params.id)
-				)
-			});
+			const visit = await getOwnedEntityOrNull(() =>
+				db.query.visits.findFirst({
+					where: and(
+						eq(visits.id, visitId),
+						eq(visits.userId, user.id),
+						eq(visits.personId, params.id)
+					)
+				})
+			);
 
 			if (!visit) {
 				return fail(404, { error: 'Visit not found' });
@@ -223,9 +231,11 @@ export const actions = {
 			const db = getDb();
 
 			// Verify person belongs to user
-			const person = await db.query.people.findFirst({
-				where: and(eq(people.id, params.id), eq(people.userId, user.id))
-			});
+			const person = await getOwnedEntityOrNull(() =>
+				db.query.people.findFirst({
+					where: and(eq(people.id, params.id), eq(people.userId, user.id))
+				})
+			);
 
 			if (!person) {
 				return fail(404, { error: 'Person not found' });
@@ -264,9 +274,11 @@ export const actions = {
 			const db = getDb();
 
 			// Verify person belongs to user
-			const person = await db.query.people.findFirst({
-				where: and(eq(people.id, params.id), eq(people.userId, user.id))
-			});
+			const person = await getOwnedEntityOrNull(() =>
+				db.query.people.findFirst({
+					where: and(eq(people.id, params.id), eq(people.userId, user.id))
+				})
+			);
 
 			if (!person) {
 				return fail(404, { error: 'Person not found' });
@@ -294,9 +306,11 @@ export const actions = {
 			const db = getDb();
 
 			// Verify person belongs to user
-			const person = await db.query.people.findFirst({
-				where: and(eq(people.id, params.id), eq(people.userId, user.id))
-			});
+			const person = await getOwnedEntityOrNull(() =>
+				db.query.people.findFirst({
+					where: and(eq(people.id, params.id), eq(people.userId, user.id))
+				})
+			);
 
 			if (!person) {
 				return fail(404, { error: 'Person not found' });
@@ -326,9 +340,11 @@ export const actions = {
 			const db = getDb();
 
 			// Verify visit belongs to user
-			const visit = await db.query.visits.findFirst({
-				where: and(eq(visits.id, visitId), eq(visits.userId, user.id))
-			});
+			const visit = await getOwnedEntityOrNull(() =>
+				db.query.visits.findFirst({
+					where: and(eq(visits.id, visitId), eq(visits.userId, user.id))
+				})
+			);
 
 			if (!visit) {
 				return fail(404, { error: 'Visit not found' });
