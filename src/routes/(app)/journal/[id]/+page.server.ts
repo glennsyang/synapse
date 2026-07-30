@@ -4,6 +4,7 @@ import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
+import { safeParse } from '$lib/utils';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { superValidate } from 'sveltekit-superforms';
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, 'Entry not found');
 	}
 
-	const weather = entry.weather ? JSON.parse(entry.weather) : null;
+	const weather = safeParse<{ temp?: number; condition?: string } | null>(entry.weather, null);
 
 	const form = await superValidate(
 		{
