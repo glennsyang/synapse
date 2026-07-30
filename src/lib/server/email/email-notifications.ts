@@ -13,7 +13,7 @@
 
 import { logger } from '$lib';
 import { getVisitStatusThresholdsByUserIds } from '$lib/server/visit-status-settings';
-import { getTodayString } from '$lib/utils/date';
+import { APP_TIME_ZONE, getTodayString } from '$lib/utils/date';
 import { getWorkoutNotificationTag } from '$lib/utils/workout';
 import { and, eq, sql } from 'drizzle-orm';
 
@@ -818,7 +818,7 @@ export async function runEmailNotifications(): Promise<{ ok: true } | { ok: fals
 
 	// Convert UTC time to PST/PDT (automatically handles DST)
 	const pstFormatter = new Intl.DateTimeFormat('en-US', {
-		timeZone: 'America/Los_Angeles',
+		timeZone: APP_TIME_ZONE,
 		hour: '2-digit',
 		hour12: false,
 		minute: '2-digit'
@@ -830,7 +830,7 @@ export async function runEmailNotifications(): Promise<{ ok: true } | { ok: fals
 
 	// Get day of week in PST (important for weekly reminders)
 	const pstDayFormatter = new Intl.DateTimeFormat('en-US', {
-		timeZone: 'America/Los_Angeles',
+		timeZone: APP_TIME_ZONE,
 		weekday: 'short'
 	});
 	const pstDayStr = pstDayFormatter.format(now);

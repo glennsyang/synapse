@@ -8,7 +8,7 @@
  * These utilities ensure dates are parsed and displayed in the local timezone.
  */
 
-const APP_TIME_ZONE = 'America/Los_Angeles';
+export const APP_TIME_ZONE = 'America/Los_Angeles';
 
 const appDateFormatter = new Intl.DateTimeFormat('en-US', {
 	timeZone: APP_TIME_ZONE,
