@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { personSchema, visitSchema } from './visits';
+import { personSchema, scheduleVisitSchema, visitSchema } from './visits';
 
 describe('personSchema', () => {
 	it('accepts a valid person with a name', () => {
@@ -82,5 +82,19 @@ describe('visitSchema', () => {
 	it('treats an empty string followUpDate as undefined (no follow-up)', () => {
 		const result = visitSchema.parse({ date: '2026-03-15', followUpDate: '' });
 		expect(result.followUpDate).toBeUndefined();
+	});
+});
+
+describe('scheduleVisitSchema', () => {
+	it('accepts a valid scheduled date', () => {
+		expect(() => scheduleVisitSchema.parse({ scheduledVisitDate: '2026-09-01' })).not.toThrow();
+	});
+
+	it('rejects an invalid date format', () => {
+		expect(scheduleVisitSchema.safeParse({ scheduledVisitDate: '09-01-2026' }).success).toBe(false);
+	});
+
+	it('rejects a missing scheduled date', () => {
+		expect(scheduleVisitSchema.safeParse({}).success).toBe(false);
 	});
 });

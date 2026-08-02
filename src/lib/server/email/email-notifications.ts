@@ -48,8 +48,10 @@ import {
 } from './index';
 import {
 	buildScheduledVisitReminderEntityId,
+	buildScheduledVisitReminderEntityIdForPerson,
 	buildScheduledVisitReminderSubject,
 	buildVisitTodayReminderEntityId,
+	buildVisitTodayReminderEntityIdForPerson,
 	buildVisitTodayReminderSubject,
 	formatReminderDate,
 	getDateDaysAhead,
@@ -717,6 +719,58 @@ async function processVisitsTodayReminders(todayPacific: string): Promise<void> 
 		}
 	}
 
+	// Find all people (with no logged visits yet) scheduled for today
+	const todayScheduledOnly = db
+		.select({
+			person: people,
+			user: user
+		})
+		.from(people)
+		.innerJoin(user, eq(people.userId, user.id))
+		.where(and(eq(people.scheduledVisitDate, todayPacific), eq(people.isArchived, false)))
+		.all();
+
+	logger.debug(`   Found ${todayScheduledOnly.length} scheduled-only visits for today`);
+
+	for (const { person, user: userData } of todayScheduledOnly) {
+		if (person.isExempt) {
+			logger.debug(`   ⏭️  Skipping exempt person ${person.name}`);
+			continue;
+		}
+
+		const entityId = buildVisitTodayReminderEntityIdForPerson(person.id);
+
+		if (await alreadySentToday(userData.id, VISIT_TODAY_REMINDER_NOTIFICATION_TYPE, entityId)) {
+			logger.debug(`   ⏭️  Already sent today reminder for ${person.name} today`);
+			continue;
+		}
+
+		const formattedDate = formatReminderDate(todayPacific);
+		const subject = buildVisitTodayReminderSubject(person.name);
+
+		logger.debug(
+			`   📧 Sending visit-today reminder to ${userData.email} (${person.name} on ${todayPacific})`
+		);
+
+		try {
+			await sendVisitTodayReminderEmail(userData.email, userData.name, person.name, formattedDate);
+
+			await sendReminderNotification(
+				`You have a visit with ${person.name} today, ${formattedDate}.`,
+				'Synapse - Visit Today',
+				'busts_in_silhouette',
+				3
+			);
+
+			await logNotification(userData.id, VISIT_TODAY_REMINDER_NOTIFICATION_TYPE, entityId, subject);
+
+			sentCount++;
+			logger.debug(`   ✅ Sent successfully`);
+		} catch (error) {
+			logger.error(`   ❌ Failed to send:`, error);
+		}
+	}
+
 	logger.debug(`   📊 Sent ${sentCount} visit-today reminders`);
 }
 
@@ -756,6 +810,69 @@ async function processScheduledVisitReminders(): Promise<void> {
 		const entityId = buildScheduledVisitReminderEntityId(visit.id);
 
 		// Check if we already sent a reminder for this visit
+		if (await alreadySentToday(userData.id, SCHEDULED_VISIT_REMINDER_NOTIFICATION_TYPE, entityId)) {
+			logger.debug(`   ⏭️  Already sent reminder for ${person.name} today`);
+			continue;
+		}
+
+		const formattedFollowUpDate = formatReminderDate(oneWeekFromNow);
+		const subject = buildScheduledVisitReminderSubject(person.name);
+
+		logger.debug(
+			`   📧 Sending scheduled visit reminder to ${userData.email} (${person.name} on ${oneWeekFromNow})`
+		);
+
+		try {
+			await sendScheduledVisitReminderEmail(
+				userData.email,
+				userData.name,
+				person.name,
+				formattedFollowUpDate
+			);
+
+			await sendReminderNotification(
+				`Upcoming visit with ${person.name} is scheduled for ${formattedFollowUpDate}.`,
+				'Synapse - Upcoming Visit',
+				'calendar',
+				3
+			);
+
+			await logNotification(
+				userData.id,
+				SCHEDULED_VISIT_REMINDER_NOTIFICATION_TYPE,
+				entityId,
+				subject
+			);
+
+			sentCount++;
+			logger.debug(`   ✅ Sent successfully`);
+		} catch (error) {
+			logger.error(`   ❌ Failed to send:`, error);
+		}
+	}
+
+	// Find all people (with no logged visits yet) scheduled for exactly one week from today
+	const upcomingScheduledOnly = db
+		.select({
+			person: people,
+			user: user
+		})
+		.from(people)
+		.innerJoin(user, eq(people.userId, user.id))
+		.where(and(eq(people.scheduledVisitDate, oneWeekFromNow), eq(people.isArchived, false)))
+		.all();
+
+	logger.debug(`   Found ${upcomingScheduledOnly.length} scheduled-only visits in one week`);
+
+	for (const { person, user: userData } of upcomingScheduledOnly) {
+		if (person.isExempt) {
+			logger.debug(`   ⏭️  Skipping exempt person ${person.name}`);
+			continue;
+		}
+
+		const entityId = buildScheduledVisitReminderEntityIdForPerson(person.id);
+
+		// Check if we already sent a reminder for this person
 		if (await alreadySentToday(userData.id, SCHEDULED_VISIT_REMINDER_NOTIFICATION_TYPE, entityId)) {
 			logger.debug(`   ⏭️  Already sent reminder for ${person.name} today`);
 			continue;

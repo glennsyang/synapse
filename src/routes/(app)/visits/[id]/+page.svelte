@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
@@ -7,10 +8,10 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { personSchema, visitSchema } from '$lib/schemas/visits';
+	import { personSchema, scheduleVisitSchema, visitSchema } from '$lib/schemas/visits';
 	import { formatDateLong, formatDateShort } from '$lib/utils/date';
 	import { getStatusLabel } from '$lib/utils/visit-status';
-	import { Archive, ArrowLeft, Calendar, Pencil, Trash2 } from '@lucide/svelte';
+	import { Archive, ArrowLeft, Calendar, CalendarClock, Pencil, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4 } from 'sveltekit-superforms/adapters';
@@ -21,6 +22,7 @@
 
 	let showLogVisitDialog = $state(false);
 	let showEditPersonDialog = $state(false);
+	let showScheduleVisitDialog = $state(false);
 	let showArchivePersonDialog = $state(false);
 	let showDeletePersonDialog = $state(false);
 	let editingVisitId = $state<string | null>(null);
@@ -60,6 +62,22 @@
 		})
 	);
 
+	let scheduleFormState = $derived(
+		superForm(data.scheduleForm, {
+			validators: zod4(scheduleVisitSchema),
+			onUpdated({ form }) {
+				if (form.message) {
+					if (form.message.type === 'success') {
+						toast.success(form.message.text);
+						showScheduleVisitDialog = false;
+					} else if (form.message.type === 'error') {
+						toast.error(form.message.text);
+					}
+				}
+			}
+		})
+	);
+
 	const {
 		form: visitForm,
 		errors: visitErrors,
@@ -73,6 +91,13 @@
 		enhance: editEnhance,
 		submitting: editSubmitting
 	} = $derived(editFormState);
+
+	const {
+		form: scheduleForm,
+		errors: scheduleErrors,
+		enhance: scheduleEnhance,
+		submitting: scheduleSubmitting
+	} = $derived(scheduleFormState);
 
 	const isEditingVisit = $derived(editingVisitId !== null);
 
@@ -99,6 +124,11 @@
 	function closeLogVisitDialog() {
 		showLogVisitDialog = false;
 		editingVisitId = null;
+	}
+
+	function openScheduleVisitDialog() {
+		$scheduleForm.scheduledVisitDate = data.person.scheduledVisitDate ?? '';
+		showScheduleVisitDialog = true;
 	}
 
 	const statusBadge: Record<string, string> = {
@@ -154,6 +184,11 @@
 							Last visit: {formatTimeSince(data.person.daysSinceLastVisit)}
 						</span>
 					{/if}
+					{#if data.visits.length === 0 && data.person.scheduledVisitDate}
+						<span class="text-muted-foreground text-sm">
+							Scheduled: {formatDateShort(data.person.scheduledVisitDate)}
+						</span>
+					{/if}
 				</div>
 			</div>
 			<div class="flex gap-2">
@@ -172,6 +207,27 @@
 					</Tooltip.Trigger>
 					<Tooltip.Content>Log Visit</Tooltip.Content>
 				</Tooltip.Root>
+
+				{#if data.visits.length === 0}
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							{#snippet child({ props })}
+								<Button
+									{...props}
+									size="icon"
+									variant="outline"
+									aria-label="Schedule Visit"
+									onclick={openScheduleVisitDialog}
+								>
+									<CalendarClock class="h-4 w-4" />
+								</Button>
+							{/snippet}
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							{data.person.scheduledVisitDate ? 'Edit Scheduled Visit' : 'Schedule Visit'}
+						</Tooltip.Content>
+					</Tooltip.Root>
+				{/if}
 
 				<Tooltip.Root>
 					<Tooltip.Trigger>
@@ -235,7 +291,17 @@
 			<Card.Root>
 				<Card.Content class="py-12 text-center">
 					<p class="text-muted-foreground mb-4">No visits logged yet.</p>
-					<Button onclick={openLogVisitDialogForCreate}>Log First Visit</Button>
+					{#if data.person.scheduledVisitDate}
+						<p class="text-muted-foreground mb-4 text-sm">
+							Scheduled: {formatDateShort(data.person.scheduledVisitDate)}
+						</p>
+					{/if}
+					<div class="flex justify-center gap-2">
+						<Button onclick={openLogVisitDialogForCreate}>Log First Visit</Button>
+						<Button variant="outline" onclick={openScheduleVisitDialog}>
+							{data.person.scheduledVisitDate ? 'Edit Scheduled Visit' : 'Schedule Visit'}
+						</Button>
+					</div>
 				</Card.Content>
 			</Card.Root>
 		{:else}
@@ -470,6 +536,68 @@
 				</div>
 			</div>
 		</form>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Schedule Visit Dialog -->
+<Dialog.Root bind:open={showScheduleVisitDialog}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Schedule Visit</Dialog.Title>
+			<Dialog.Description>
+				Set a scheduled visit date for {data.person.name} without logging a visit
+			</Dialog.Description>
+		</Dialog.Header>
+
+		<div class="space-y-4">
+			<form method="POST" action="?/scheduleVisit" use:scheduleEnhance>
+				<div class="space-y-2">
+					<Label for="scheduledVisitDate">Scheduled Date*</Label>
+					<Input
+						id="scheduledVisitDate"
+						name="scheduledVisitDate"
+						type="date"
+						bind:value={$scheduleForm.scheduledVisitDate}
+						required
+						aria-invalid={$scheduleErrors.scheduledVisitDate ? 'true' : undefined}
+					/>
+					{#if $scheduleErrors.scheduledVisitDate}
+						<p class="text-destructive mt-1 text-sm">{$scheduleErrors.scheduledVisitDate}</p>
+					{/if}
+				</div>
+
+				<div class="mt-4 flex justify-end gap-2">
+					<Button type="button" variant="outline" onclick={() => (showScheduleVisitDialog = false)}>
+						Cancel
+					</Button>
+					<Button type="submit" disabled={$scheduleSubmitting}>
+						{$scheduleSubmitting ? 'Saving...' : 'Save'}
+					</Button>
+				</div>
+			</form>
+
+			{#if data.person.scheduledVisitDate}
+				<form
+					method="POST"
+					action="?/cancelScheduledVisit"
+					use:enhance={() => {
+						showScheduleVisitDialog = false;
+
+						return async ({ result, update }) => {
+							if (result.type === 'success') {
+								toast.success('Scheduled visit cleared');
+							} else {
+								toast.error('Failed to clear scheduled visit');
+							}
+
+							await update();
+						};
+					}}
+				>
+					<Button type="submit" variant="ghost" class="w-full">Clear Schedule</Button>
+				</form>
+			{/if}
+		</div>
 	</Dialog.Content>
 </Dialog.Root>
 

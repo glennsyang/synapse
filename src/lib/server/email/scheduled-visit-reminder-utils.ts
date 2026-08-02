@@ -25,6 +25,10 @@ export function buildScheduledVisitReminderEntityId(visitId: string): string {
 	return `scheduled_visit:${visitId}`;
 }
 
+export function buildScheduledVisitReminderEntityIdForPerson(personId: string): string {
+	return `scheduled_visit:person:${personId}`;
+}
+
 export function buildScheduledVisitReminderSubject(personName: string): string {
 	return `[Synapse] 📅 Upcoming visit with ${personName} in one week`;
 }
@@ -33,6 +37,10 @@ export const VISIT_TODAY_REMINDER_NOTIFICATION_TYPE = 'visit_today_reminder';
 
 export function buildVisitTodayReminderEntityId(visitId: string): string {
 	return `visit_today:${visitId}`;
+}
+
+export function buildVisitTodayReminderEntityIdForPerson(personId: string): string {
+	return `visit_today:person:${personId}`;
 }
 
 export function buildVisitTodayReminderSubject(personName: string): string {

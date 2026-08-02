@@ -23,7 +23,11 @@ import {
 	getTodayString
 } from '$lib/utils/date';
 import { createMarkdownExcerpt } from '$lib/utils/markdown';
-import { calculatePersonVisitStatus, type VisitStatusThresholds } from '$lib/utils/visit-status';
+import {
+	calculatePersonVisitStatus,
+	getEffectiveFollowUpDate,
+	type VisitStatusThresholds
+} from '$lib/utils/visit-status';
 import { getWorkoutLabel } from '$lib/utils/workout';
 import { and, desc, eq, gte, lte, ne, sql } from 'drizzle-orm';
 
@@ -62,10 +66,16 @@ function getDayLabel(date: string, today: string, tomorrow: string): string {
 
 type UpcomingVisitRow = { personId: string; personName: string; date: string };
 type UpcomingFollowUpRow = { personId: string; personName: string; followUpDate: string | null };
+type UpcomingScheduledOnlyRow = {
+	personId: string;
+	personName: string;
+	scheduledVisitDate: string;
+};
 
 function buildUpcomingVisits(
 	byDateRaw: UpcomingVisitRow[],
 	byFollowUpRaw: UpcomingFollowUpRow[],
+	byScheduledOnlyRaw: UpcomingScheduledOnlyRow[],
 	today: string
 ): { dayLabel: string; names: string[]; isToday: boolean }[] {
 	const tomorrow = addDaysToDateString(today, 1);
@@ -85,6 +95,12 @@ function buildUpcomingVisits(
 		map.set(v.followUpDate, inner);
 	}
 
+	for (const v of byScheduledOnlyRaw) {
+		const inner = map.get(v.scheduledVisitDate) ?? new Map<string, string>();
+		inner.set(v.personId, v.personName);
+		map.set(v.scheduledVisitDate, inner);
+	}
+
 	return Array.from(map.entries())
 		.sort(([a], [b]) => a.localeCompare(b))
 		.map(([date, inner]) => ({
@@ -95,7 +111,7 @@ function buildUpcomingVisits(
 }
 
 function buildVisitHealth(
-	peopleRaw: { id: string; name: string; isExempt: boolean }[],
+	peopleRaw: { id: string; name: string; isExempt: boolean; scheduledVisitDate: string | null }[],
 	visitsMap: Map<string, { date: string; followUpDate: string | null }>,
 	today: string,
 	visitStatusThresholds: VisitStatusThresholds
@@ -115,10 +131,15 @@ function buildVisitHealth(
 	};
 	for (const person of peopleRaw) {
 		const latestVisit = visitsMap.get(person.id);
+		const effectiveFollowUpDate = getEffectiveFollowUpDate(
+			latestVisit !== undefined,
+			latestVisit?.followUpDate,
+			person.scheduledVisitDate
+		);
 		const { status } = calculatePersonVisitStatus(
 			latestVisit?.date ?? null,
 			person.isExempt,
-			latestVisit?.followUpDate ?? null,
+			effectiveFollowUpDate,
 			today,
 			visitStatusThresholds
 		);
@@ -156,7 +177,8 @@ async function runDashboardQueries(
 		recentTaskRaw,
 		recentVisitRaw,
 		upcomingVisitsByDateRaw,
-		upcomingFollowUpsByDateRaw
+		upcomingFollowUpsByDateRaw,
+		upcomingScheduledOnlyRaw
 	] = await Promise.all([
 		db
 			.select({ date: journalEntries.date, count: sql<number>`count(*)` })
@@ -252,7 +274,12 @@ async function runDashboardQueries(
 			.where(and(eq(workoutLogs.userId, userId), gte(workoutLogs.date, r.workout4WeeksStart)))
 			.groupBy(workoutLogs.type),
 		db
-			.select({ id: people.id, name: people.name, isExempt: people.isExempt })
+			.select({
+				id: people.id,
+				name: people.name,
+				isExempt: people.isExempt,
+				scheduledVisitDate: people.scheduledVisitDate
+			})
 			.from(people)
 			.where(and(eq(people.userId, userId), eq(people.isArchived, false))),
 		(() => {
@@ -312,7 +339,23 @@ async function runDashboardQueries(
 					lte(visits.followUpDate, r.upcomingEndDate)
 				)
 			)
-			.orderBy(visits.followUpDate)
+			.orderBy(visits.followUpDate),
+		db
+			.select({
+				personId: people.id,
+				personName: people.name,
+				scheduledVisitDate: people.scheduledVisitDate
+			})
+			.from(people)
+			.where(
+				and(
+					eq(people.userId, userId),
+					eq(people.isArchived, false),
+					gte(people.scheduledVisitDate, r.today),
+					lte(people.scheduledVisitDate, r.upcomingEndDate)
+				)
+			)
+			.orderBy(people.scheduledVisitDate)
 	]);
 
 	return {
@@ -333,7 +376,8 @@ async function runDashboardQueries(
 		recentTaskRaw,
 		recentVisitRaw,
 		upcomingVisitsByDateRaw,
-		upcomingFollowUpsByDateRaw
+		upcomingFollowUpsByDateRaw,
+		upcomingScheduledOnlyRaw
 	};
 }
 
@@ -592,6 +636,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 			upcomingVisits: buildUpcomingVisits(
 				data.upcomingVisitsByDateRaw,
 				data.upcomingFollowUpsByDateRaw,
+				data.upcomingScheduledOnlyRaw.filter(
+					(v): v is UpcomingScheduledOnlyRow => v.scheduledVisitDate !== null
+				),
 				today
 			),
 			recentActivity: buildActivityFeed(data),
