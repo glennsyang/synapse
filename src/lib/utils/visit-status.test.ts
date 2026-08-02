@@ -7,6 +7,7 @@ import {
 	convertVisitThresholdFromDays,
 	convertVisitThresholdToDays,
 	DEFAULT_VISIT_STATUS_THRESHOLDS,
+	getEffectiveFollowUpDate,
 	getStatusLabel,
 	getStatusPriority,
 	normalizeVisitStatusThresholds
@@ -133,6 +134,24 @@ describe('visit status boundary thresholds', () => {
 		expect(calculateVisitStatus(dateDaysAgo(50), today, customThresholds).status).toBe('green');
 		expect(calculateVisitStatus(dateDaysAgo(100), today, customThresholds).status).toBe('yellow');
 		expect(calculateVisitStatus(dateDaysAgo(130), today, customThresholds).status).toBe('red');
+	});
+});
+
+describe('getEffectiveFollowUpDate', () => {
+	it('uses the person-level scheduled date when there are no logged visits', () => {
+		expect(getEffectiveFollowUpDate(false, null, '2026-08-15')).toBe('2026-08-15');
+	});
+
+	it('returns null when there are no visits and no scheduled date', () => {
+		expect(getEffectiveFollowUpDate(false, null, null)).toBeNull();
+	});
+
+	it('prefers the latest visit follow-up date once a visit exists', () => {
+		expect(getEffectiveFollowUpDate(true, '2026-09-01', '2026-08-15')).toBe('2026-09-01');
+	});
+
+	it('ignores the person-level scheduled date once a visit exists, even if follow-up is unset', () => {
+		expect(getEffectiveFollowUpDate(true, null, '2026-08-15')).toBeNull();
 	});
 });
 

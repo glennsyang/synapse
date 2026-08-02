@@ -166,6 +166,24 @@ export function calculatePersonVisitStatus(
 	};
 }
 
+/**
+ * The follow-up date that should drive a person's "scheduled" status.
+ * Once a person has at least one logged visit, that visit's own follow-up
+ * date is authoritative. Otherwise, fall back to the person-level scheduled
+ * visit date (set without ever logging a visit).
+ */
+export function getEffectiveFollowUpDate(
+	hasVisits: boolean,
+	latestVisitFollowUpDate: string | null | undefined,
+	personScheduledVisitDate: string | null | undefined
+): string | null {
+	if (hasVisits) {
+		return latestVisitFollowUpDate ?? null;
+	}
+
+	return personScheduledVisitDate ?? null;
+}
+
 export function getStatusPriority(status: VisitStatus): number {
 	return VISIT_STATUS_ORDER.indexOf(status) + 1;
 }

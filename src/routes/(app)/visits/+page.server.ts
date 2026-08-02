@@ -7,6 +7,7 @@ import { getTodayString } from '$lib/utils/date';
 import { safeParse } from '$lib/utils/json';
 import {
 	calculatePersonVisitStatus,
+	getEffectiveFollowUpDate,
 	getStatusPriority,
 	type PersonWithStatus
 } from '$lib/utils/visit-status';
@@ -50,14 +51,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 		const peopleWithStatus: PersonWithStatus[] = userPeople.map((person) => {
 			const latestVisit = latestVisitsByPersonId.get(person.id);
-			const latestFollowUpDate = latestVisit?.followUpDate ?? null;
+			const effectiveFollowUpDate = getEffectiveFollowUpDate(
+				latestVisit !== undefined,
+				latestVisit?.followUpDate,
+				person.scheduledVisitDate
+			);
 			const nextFollowUpDate =
-				latestFollowUpDate && latestFollowUpDate >= today ? latestFollowUpDate : null;
+				effectiveFollowUpDate && effectiveFollowUpDate >= today ? effectiveFollowUpDate : null;
 
 			const statusInfo = calculatePersonVisitStatus(
 				latestVisit?.date ?? null,
 				person.isExempt,
-				latestFollowUpDate,
+				effectiveFollowUpDate,
 				today,
 				visitStatusThresholds
 			);

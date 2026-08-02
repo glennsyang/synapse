@@ -1,0 +1,1 @@
+ALTER TABLE `people` ADD `scheduled_visit_date` text;

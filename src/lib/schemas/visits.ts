@@ -29,6 +29,15 @@ export const personSchema = z.object({
 });
 
 /**
+ * Schema for scheduling a future visit for a person with no logged visits yet
+ */
+export const scheduleVisitSchema = z.object({
+	scheduledVisitDate: z
+		.string()
+		.regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (use YYYY-MM-DD)')
+});
+
+/**
  * Schema for creating and updating visits
  */
 export const visitSchema = z.object({

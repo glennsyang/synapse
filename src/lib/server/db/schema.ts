@@ -618,6 +618,7 @@ export const people = sqliteTable('people', {
 	name: text('name').notNull(),
 	isExempt: integer('is_exempt', { mode: 'boolean' }).notNull().default(false),
 	isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
+	scheduledVisitDate: text('scheduled_visit_date'),
 	createdAt: text('created_at')
 		.notNull()
 		.$defaultFn(() => new Date().toISOString()),

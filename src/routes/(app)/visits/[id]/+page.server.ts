@@ -1,5 +1,5 @@
 import { logger } from '$lib';
-import { personSchema, visitSchema } from '$lib/schemas/visits';
+import { personSchema, scheduleVisitSchema, visitSchema } from '$lib/schemas/visits';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import {
 	getOwnedEntityOrNull,
@@ -16,7 +16,7 @@ import {
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { getTodayString } from '$lib/utils/date';
 import { safeParse } from '$lib/utils/json';
-import { calculatePersonVisitStatus } from '$lib/utils/visit-status';
+import { calculatePersonVisitStatus, getEffectiveFollowUpDate } from '$lib/utils/visit-status';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
@@ -56,10 +56,15 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 		// Calculate status
 		const latestVisit = personVisits[0];
+		const effectiveFollowUpDate = getEffectiveFollowUpDate(
+			personVisits.length > 0,
+			latestVisit?.followUpDate,
+			person.scheduledVisitDate
+		);
 		const statusInfo = calculatePersonVisitStatus(
 			latestVisit?.date ?? null,
 			person.isExempt,
-			latestVisit?.followUpDate ?? null,
+			effectiveFollowUpDate,
 			getTodayString(),
 			visitStatusThresholds
 		);
@@ -69,6 +74,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		visitForm.data.date = getTodayString(); // Set default to today
 
 		const editForm = await superValidate(person, zod4(personSchema));
+		const scheduleForm = await superValidate(
+			{ scheduledVisitDate: person.scheduledVisitDate ?? undefined },
+			zod4(scheduleVisitSchema)
+		);
 
 		return {
 			person: {
@@ -78,7 +87,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			},
 			visits: parsedVisits,
 			visitForm,
-			editForm
+			editForm,
+			scheduleForm
 		};
 	} catch (err) {
 		if (isHttpError(err) || isRedirect(err)) throw err;
@@ -125,6 +135,14 @@ export const actions = {
 				followUpDate: form.data.followUpDate || null,
 				...withAuditFieldsForCreate()
 			});
+
+			// A real visit's follow-up date now takes over as the source of truth
+			if (person.scheduledVisitDate) {
+				await db
+					.update(people)
+					.set({ scheduledVisitDate: null, ...withAuditFieldsForUpdate() })
+					.where(and(eq(people.id, params.id), eq(people.userId, user.id)));
+			}
 
 			logger.info('Visit logged', {
 				visitId,
@@ -266,6 +284,84 @@ export const actions = {
 				},
 				{ status: 500 }
 			);
+		}
+	}),
+
+	scheduleVisit: requireAuth(async ({ request, params }, user) => {
+		const form = await superValidate(request, zod4(scheduleVisitSchema));
+
+		if (!form.valid) {
+			logger.warn('Invalid schedule visit form data', { errors: form.errors });
+			return fail(400, { form });
+		}
+
+		try {
+			const db = getDb();
+
+			// Verify person belongs to user
+			const person = await getOwnedEntityOrNull(() =>
+				db.query.people.findFirst({
+					where: and(eq(people.id, params.id), eq(people.userId, user.id))
+				})
+			);
+
+			if (!person) {
+				return fail(404, { error: 'Person not found' });
+			}
+
+			await db
+				.update(people)
+				.set({
+					scheduledVisitDate: form.data.scheduledVisitDate,
+					...withAuditFieldsForUpdate()
+				})
+				.where(and(eq(people.id, params.id), eq(people.userId, user.id)));
+
+			logger.info('Visit scheduled', { personId: params.id, userId: user.id });
+
+			return message(form, {
+				type: 'success',
+				text: 'Visit scheduled successfully!'
+			});
+		} catch (err) {
+			logger.error('Failed to schedule visit', err);
+			return message(
+				form,
+				{
+					type: 'error',
+					text: 'An error occurred while scheduling the visit. Please try again.'
+				},
+				{ status: 500 }
+			);
+		}
+	}),
+
+	cancelScheduledVisit: requireAuth(async ({ params }, user) => {
+		try {
+			const db = getDb();
+
+			// Verify person belongs to user
+			const person = await getOwnedEntityOrNull(() =>
+				db.query.people.findFirst({
+					where: and(eq(people.id, params.id), eq(people.userId, user.id))
+				})
+			);
+
+			if (!person) {
+				return fail(404, { error: 'Person not found' });
+			}
+
+			await db
+				.update(people)
+				.set({ scheduledVisitDate: null, ...withAuditFieldsForUpdate() })
+				.where(and(eq(people.id, params.id), eq(people.userId, user.id)));
+
+			logger.info('Scheduled visit cancelled', { personId: params.id, userId: user.id });
+
+			return { success: true };
+		} catch (err) {
+			logger.error('Failed to cancel scheduled visit', err);
+			return fail(500, { error: 'Failed to cancel scheduled visit' });
 		}
 	}),
 
