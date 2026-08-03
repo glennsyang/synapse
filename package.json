@@ -46,7 +46,7 @@
 		"@flydotio/dockerfile": "^0.7.10",
 		"@internationalized/date": "^3.12.0",
 		"@lucide/svelte": "^1.27.0",
-		"@playwright/test": "^1.61.0",
+		"@playwright/test": "^1.62.1",
 		"@sveltejs/adapter-cloudflare": "^7.2.4",
 		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/kit": "^2.70.1",
