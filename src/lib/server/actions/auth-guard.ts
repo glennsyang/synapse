@@ -50,3 +50,34 @@ export function getUser(locals: App.Locals): User {
 	}
 	return locals.user;
 }
+
+/**
+ * Authorization wrapper for SvelteKit actions.
+ * Ensures the user is authenticated and has the 'admin' role before executing the action handler.
+ *
+ * @param handler - The action handler function that requires admin access
+ * @returns A wrapped action handler that performs auth + role check
+ *
+ * @example
+ * export const actions = {
+ *   unarchivePerson: requireAdmin(async (event, user) => {
+ *     // user is guaranteed to be an authenticated admin here
+ *   })
+ * };
+ */
+export function requireAdmin<
+	T,
+	Params extends Partial<Record<string, string>> = Partial<Record<string, string>>
+>(
+	handler: (event: RequestEvent<Params>, user: User) => Promise<T>
+): (event: RequestEvent<Params>) => Promise<T | ReturnType<typeof fail>> {
+	return async (event: RequestEvent<Params>) => {
+		if (!event.locals.user) {
+			return fail(401, { error: 'Unauthorized' });
+		}
+		if (event.locals.user.role !== 'admin') {
+			return fail(403, { error: 'Forbidden' });
+		}
+		return handler(event, event.locals.user);
+	};
+}

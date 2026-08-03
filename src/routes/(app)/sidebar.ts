@@ -1,5 +1,5 @@
 import type { SidebarNav } from '$lib/types';
-import { Book, Dumbbell, Heart, House, SquareCheck, Users } from '@lucide/svelte/icons';
+import { Book, Dumbbell, Heart, House, Shield, SquareCheck, Users } from '@lucide/svelte/icons';
 
 export const navItems: SidebarNav = {
 	navMain: [
@@ -44,6 +44,14 @@ export const navItems: SidebarNav = {
 			url: '/visits',
 			icon: Users,
 			color: 'text-pink-600 dark:text-pink-400'
+		},
+		{
+			title: 'Admin',
+			description: 'Manage users and archived contacts',
+			url: '/admin',
+			icon: Shield,
+			color: 'text-red-600 dark:text-red-400',
+			adminOnly: true
 		}
 	]
 };

@@ -14,6 +14,8 @@ export const user = sqliteTable('user', {
 	email: text('email').notNull().unique(),
 	emailVerified: integer('emailVerified', { mode: 'boolean' }).notNull().default(false),
 	image: text('image'),
+	role: text('role').notNull().default('user'),
+	banned: integer('banned', { mode: 'boolean' }).notNull().default(false),
 	createdAt: integer('createdAt', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date()),
@@ -618,6 +620,7 @@ export const people = sqliteTable('people', {
 	name: text('name').notNull(),
 	isExempt: integer('is_exempt', { mode: 'boolean' }).notNull().default(false),
 	isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
+	archivedAt: text('archived_at'),
 	scheduledVisitDate: text('scheduled_visit_date'),
 	createdAt: text('created_at')
 		.notNull()
