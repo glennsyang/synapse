@@ -32,7 +32,7 @@
 	},
 	"dependencies": {
 		"better-auth": "^1.6.20",
-		"better-sqlite3": "^12.6.2",
+		"better-sqlite3": "^13.0.2",
 		"canvas-confetti": "^1.9.4",
 		"d3-scale": "^4.0.2",
 		"d3-shape": "^3.2.0",
