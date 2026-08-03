@@ -143,6 +143,12 @@ export const auth = betterAuth({
 			generateId: () => crypto.randomUUID()
 		}
 	},
+	user: {
+		additionalFields: {
+			role: { type: 'string', required: false, defaultValue: 'user', input: false },
+			banned: { type: 'boolean', required: false, defaultValue: false, input: false }
+		}
+	},
 	session: {
 		expiresIn: 60 * 60 * 24 * 7, // 7 days
 		updateAge: 60 * 60 * 24, // Update every 24 hours

@@ -384,6 +384,7 @@ export const actions = {
 				.update(people)
 				.set({
 					isArchived: true,
+					archivedAt: new Date().toISOString(),
 					...withAuditFieldsForUpdate()
 				})
 				.where(and(eq(people.id, params.id), eq(people.userId, user.id)));

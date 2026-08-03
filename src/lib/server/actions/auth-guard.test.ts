@@ -2,7 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { isRedirect } from '@sveltejs/kit';
 import { describe, expect, it, vi } from 'vitest';
 
-import { getUser, requireAuth } from './auth-guard';
+import { getUser, requireAdmin, requireAuth } from './auth-guard';
 
 type MockLocals = App.Locals;
 
@@ -19,7 +19,8 @@ function makeEvent(overrides: Partial<MockLocals> = {}): RequestEvent {
 	return { locals: makeLocals(overrides) } as unknown as RequestEvent;
 }
 
-const mockUser = { id: 'user_123', name: 'Alice', email: 'alice@example.com' };
+const mockUser = { id: 'user_123', name: 'Alice', email: 'alice@example.com', role: 'user' };
+const mockAdminUser = { id: 'admin_123', name: 'Admin', email: 'admin@example.com', role: 'admin' };
 
 describe('requireAuth', () => {
 	it('returns fail(401) when the user is not authenticated', async () => {
@@ -55,6 +56,34 @@ describe('requireAuth', () => {
 		await wrapped(makeEvent({ user: mockUser as App.Locals['user'] }));
 
 		expect(capturedUser).toBe(mockUser);
+	});
+});
+
+describe('requireAdmin', () => {
+	it('returns fail(401) when the user is not authenticated', async () => {
+		const wrapped = requireAdmin(async () => ({ ok: true }));
+		const result = await wrapped(makeEvent());
+
+		expect(result).toMatchObject({ status: 401 });
+	});
+
+	it('returns fail(403) when the user is authenticated but not an admin', async () => {
+		const wrapped = requireAdmin(async () => ({ ok: true }));
+		const result = await wrapped(makeEvent({ user: mockUser as App.Locals['user'] }));
+
+		expect(result).toMatchObject({ status: 403 });
+	});
+
+	it('calls the handler and returns its result when the user is an admin', async () => {
+		const handler = vi
+			.fn<() => Promise<{ success: boolean }>>()
+			.mockResolvedValue({ success: true });
+		const wrapped = requireAdmin(handler);
+
+		const result = await wrapped(makeEvent({ user: mockAdminUser as App.Locals['user'] }));
+
+		expect(handler).toHaveBeenCalledOnce();
+		expect(result).toEqual({ success: true });
 	});
 });
 

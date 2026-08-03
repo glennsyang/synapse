@@ -11,6 +11,10 @@
 	import '../../app.css';
 
 	let { data, children } = $props();
+
+	const filteredNavItems = $derived({
+		navMain: navItems.navMain.filter((item) => !item.adminOnly || data.user?.role === 'admin')
+	});
 </script>
 
 <ModeWatcher />
@@ -18,7 +22,7 @@
 <Tooltip.Provider>
 	<Sidebar.Provider style="--header-height: calc(var(--spacing) * 12);">
 		{#if data.user}
-			<AppSidebar {navItems} user={data.user} />
+			<AppSidebar navItems={filteredNavItems} user={data.user} />
 			<Sidebar.Inset>
 				<SiteHeader />
 				<main class="flex min-w-0 flex-1 flex-col space-y-4 p-4 md:py-2">{@render children()}</main>

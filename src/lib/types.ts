@@ -14,6 +14,7 @@ export type SidebarNav = {
 		icon?: Component;
 		color?: string;
 		items?: { title: string; url: string }[];
+		adminOnly?: boolean;
 	}[];
 };
 
