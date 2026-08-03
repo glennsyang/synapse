@@ -1,9 +1,9 @@
-import { renderComponent, renderSnippet } from '$lib/components/ui/data-table';
+import { renderComponent } from '$lib/components/ui/data-table';
 import type { User } from '$lib/types';
 import type { ColumnDef } from '@tanstack/table-core';
-import { createRawSnippet } from 'svelte';
 
 import DataTableSortButton from './DataTableSortButton.svelte';
+import RoleBadge from './RoleBadge.svelte';
 import StatusBadge from './StatusBadge.svelte';
 
 export const columns: ColumnDef<User>[] = [
@@ -26,20 +26,7 @@ export const columns: ColumnDef<User>[] = [
 	{
 		accessorKey: 'role',
 		header: 'Role',
-		cell: ({ row }) => {
-			const roleSnippet = createRawSnippet<[string]>(() => {
-				const role = row.original.role ?? 'user';
-				const badgeClass =
-					role === 'admin'
-						? 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-						: 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-				return {
-					render: () => `<span class="${badgeClass}">${role}</span>`
-				};
-			});
-
-			return renderSnippet(roleSnippet);
-		}
+		cell: ({ row }) => renderComponent(RoleBadge, { role: row.original.role ?? 'user' })
 	},
 	{
 		accessorKey: 'status',
