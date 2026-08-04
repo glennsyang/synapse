@@ -84,6 +84,26 @@ export const updateVisitStatusSettingsSchema = z
 		}
 	);
 
+export const updateDashboardGoalSettingsSchema = z
+	.object({
+		meditationWeeklyGoal: z.coerce
+			.number()
+			.int('Must be a whole number')
+			.positive('Value must be greater than 0'),
+		workoutGreenThreshold: z.coerce
+			.number()
+			.int('Must be a whole number')
+			.positive('Value must be greater than 0'),
+		workoutAmberThreshold: z.coerce
+			.number()
+			.int('Must be a whole number')
+			.nonnegative('Value must be 0 or greater')
+	})
+	.refine((data) => data.workoutGreenThreshold > data.workoutAmberThreshold, {
+		path: ['workoutAmberThreshold'],
+		message: 'Amber threshold must be less than the green threshold'
+	});
+
 export const changePasswordSchema = z
 	.object({
 		currentPassword: z.string().min(1, 'Current password is required'),

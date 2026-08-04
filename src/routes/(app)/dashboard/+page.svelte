@@ -75,12 +75,12 @@
 			: 0
 	);
 
-	// Weekly meditation goal: 1 session/week, with reminder urgency escalating as the week
-	// progresses without a session (dowIndex: 0 = Monday ... 6 = Sunday).
-	const MEDITATION_WEEKLY_GOAL = 1;
+	// Weekly meditation goal, with reminder urgency escalating as the week
+	// progresses without hitting it (dowIndex: 0 = Monday ... 6 = Sunday).
+	const meditationWeeklyGoal = $derived(data.dashboardGoals.meditationWeeklyGoal);
 
 	const meditationGoal = $derived.by(() => {
-		if (data.stats.meditationThisWeek >= MEDITATION_WEEKLY_GOAL) {
+		if (data.stats.meditationThisWeek >= meditationWeeklyGoal) {
 			return {
 				label: 'Weekly goal met',
 				textClass: 'text-[oklch(var(--color-green))]',
@@ -90,7 +90,7 @@
 		}
 		if (data.todayDowIndex <= 2) {
 			return {
-				label: 'Goal: 1 session this week',
+				label: `Goal: ${meditationWeeklyGoal} session${meditationWeeklyGoal === 1 ? '' : 's'} this week`,
 				textClass: 'text-muted-foreground',
 				iconBgClass: 'bg-[oklch(var(--color-purple)/0.15)]',
 				iconClass: 'text-[oklch(var(--color-purple))]'
@@ -368,7 +368,11 @@
 						<p class="text-muted-foreground text-xs">By type, last 4 weeks</p>
 					</div>
 				</div>
-				<WorkoutTypeChart breakdown={data.workoutTypeBreakdown} />
+				<WorkoutTypeChart
+					breakdown={data.workoutTypeBreakdown}
+					greenThreshold={data.dashboardGoals.workoutGreenThreshold}
+					amberThreshold={data.dashboardGoals.workoutAmberThreshold}
+				/>
 			</div>
 
 			<!-- Task Stats -->

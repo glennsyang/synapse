@@ -8,7 +8,15 @@
 		count: number;
 	}
 
-	let { breakdown }: { breakdown: WorkoutTypeCount[] } = $props();
+	let {
+		breakdown,
+		greenThreshold,
+		amberThreshold
+	}: {
+		breakdown: WorkoutTypeCount[];
+		greenThreshold: number;
+		amberThreshold: number;
+	} = $props();
 
 	const chartConfig = {
 		count: { label: 'Sessions' }
@@ -23,20 +31,20 @@
 
 	const totalSessions = $derived(breakdown.reduce((sum, d) => sum + d.count, 0));
 
-	// Thresholds are per the dashboard goal of ~3 workouts/week over the trailing 4 weeks.
+	// Thresholds come from the user's dashboard goal settings.
 	const workoutPace = $derived.by(() => {
-		if (totalSessions >= 12) {
+		if (totalSessions >= greenThreshold) {
 			return {
 				textClass: 'text-[oklch(var(--color-green))]',
 				barColor: 'oklch(var(--color-green))',
-				message: "Great pace — you're hitting 3+ workouts a week."
+				message: `Great pace — you're hitting ${greenThreshold}+ workouts every 4 weeks.`
 			};
 		}
-		if (totalSessions >= 8) {
+		if (totalSessions >= amberThreshold) {
 			return {
 				textClass: 'text-amber-500',
 				barColor: '#f59e0b',
-				message: 'Below pace — aim for 3 workouts a week to catch up.'
+				message: `Below pace — aim for ${greenThreshold} workouts every 4 weeks to catch up.`
 			};
 		}
 		return {

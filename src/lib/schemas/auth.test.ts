@@ -6,6 +6,7 @@ import {
 	loginSchema,
 	registerSchema,
 	resetPasswordSchema,
+	updateDashboardGoalSettingsSchema,
 	updateProfileSchema
 } from './auth';
 
@@ -170,6 +171,59 @@ describe('changePasswordSchema', () => {
 			currentPassword: 'OldPass123456',
 			newPassword: 'NewPass12345!',
 			confirmPassword: 'Different123!'
+		});
+		expect(result.success).toBe(false);
+	});
+});
+
+describe('updateDashboardGoalSettingsSchema', () => {
+	const validPayload = {
+		meditationWeeklyGoal: 2,
+		workoutGreenThreshold: 12,
+		workoutAmberThreshold: 8
+	};
+
+	it('accepts a valid payload', () => {
+		expect(() => updateDashboardGoalSettingsSchema.parse(validPayload)).not.toThrow();
+	});
+
+	it('rejects a non-positive meditation weekly goal', () => {
+		const result = updateDashboardGoalSettingsSchema.safeParse({
+			...validPayload,
+			meditationWeeklyGoal: 0
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it('rejects a non-positive green threshold', () => {
+		const result = updateDashboardGoalSettingsSchema.safeParse({
+			...validPayload,
+			workoutGreenThreshold: 0
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it('accepts a zero amber threshold', () => {
+		const result = updateDashboardGoalSettingsSchema.safeParse({
+			...validPayload,
+			workoutAmberThreshold: 0
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it('rejects a negative amber threshold', () => {
+		const result = updateDashboardGoalSettingsSchema.safeParse({
+			...validPayload,
+			workoutAmberThreshold: -1
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it('rejects when amber threshold is not less than green threshold', () => {
+		const result = updateDashboardGoalSettingsSchema.safeParse({
+			...validPayload,
+			workoutGreenThreshold: 8,
+			workoutAmberThreshold: 8
 		});
 		expect(result.success).toBe(false);
 	});
