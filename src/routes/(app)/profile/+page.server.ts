@@ -1,19 +1,22 @@
 import { logger } from '$lib';
 import {
 	changePasswordSchema,
+	updateDashboardGoalSettingsSchema,
 	updateProfileSchema,
 	updateVisitStatusSettingsSchema
 } from '$lib/schemas/auth';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { auth } from '$lib/server/auth';
+import { getDashboardGoalsForUser } from '$lib/server/dashboard-goal-settings';
 import { getDb } from '$lib/server/db';
-import { account, user, visitStatusSettings } from '$lib/server/db/schema';
+import { account, dashboardGoalSettings, user, visitStatusSettings } from '$lib/server/db/schema';
 import {
 	generateId,
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
+import { DEFAULT_DASHBOARD_GOALS, normalizeDashboardGoals } from '$lib/utils/dashboard-goals';
 import {
 	convertVisitThresholdToDays,
 	DEFAULT_VISIT_STATUS_THRESHOLDS,
@@ -30,10 +33,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const userId = getUser(locals).id;
 
 	try {
-		const [fullUserData, accountData, visitThresholds] = await Promise.all([
+		const [fullUserData, accountData, visitThresholds, dashboardGoals] = await Promise.all([
 			db.query.user.findFirst({ where: eq(user.id, userId) }),
 			db.query.account.findFirst({ where: eq(account.userId, userId) }),
-			getVisitStatusThresholdsForUser(userId, db)
+			getVisitStatusThresholdsForUser(userId, db),
+			getDashboardGoalsForUser(userId, db)
 		]);
 
 		// Initialize profile form with current user data
@@ -50,6 +54,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 			},
 			zod4(updateVisitStatusSettingsSchema)
 		);
+		const dashboardGoalSettingsForm = await superValidate(
+			dashboardGoals,
+			zod4(updateDashboardGoalSettingsSchema)
+		);
 
 		return {
 			user: fullUserData || locals.user,
@@ -57,6 +65,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			passwordForm,
 			visitSettingsForm,
 			visitThresholds,
+			dashboardGoalSettingsForm,
+			dashboardGoals,
 			passwordUpdatedAt: accountData?.updatedAt || null
 		};
 	} catch (err) {
@@ -68,6 +78,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			passwordForm: await superValidate(zod4(changePasswordSchema)),
 			visitSettingsForm: await superValidate(zod4(updateVisitStatusSettingsSchema)),
 			visitThresholds: DEFAULT_VISIT_STATUS_THRESHOLDS,
+			dashboardGoalSettingsForm: await superValidate(zod4(updateDashboardGoalSettingsSchema)),
+			dashboardGoals: DEFAULT_DASHBOARD_GOALS,
 			passwordUpdatedAt: null
 		};
 	}
@@ -201,6 +213,61 @@ export const actions = {
 			return message(
 				form,
 				{ type: 'error', text: 'Failed to update visit settings. Please try again.' },
+				{ status: 500 }
+			);
+		}
+	}),
+
+	updateDashboardGoalSettings: requireAuth(async ({ request }, currentUser) => {
+		const form = await superValidate(request, zod4(updateDashboardGoalSettingsSchema));
+
+		if (!form.valid) {
+			return message(
+				form,
+				{ type: 'error', text: 'Please correct the errors in the form.' },
+				{ status: 400 }
+			);
+		}
+
+		try {
+			const db = getDb();
+			const normalizedGoals = normalizeDashboardGoals(form.data);
+
+			const existing = await db.query.dashboardGoalSettings.findFirst({
+				where: eq(dashboardGoalSettings.userId, currentUser.id)
+			});
+
+			if (existing) {
+				await db
+					.update(dashboardGoalSettings)
+					.set({
+						...normalizedGoals,
+						...withAuditFieldsForUpdate()
+					})
+					.where(eq(dashboardGoalSettings.userId, currentUser.id));
+			} else {
+				await db.insert(dashboardGoalSettings).values({
+					id: generateId(),
+					userId: currentUser.id,
+					...normalizedGoals,
+					...withAuditFieldsForCreate()
+				});
+			}
+
+			logger.info('Dashboard goal settings updated', {
+				userId: currentUser.id,
+				...normalizedGoals
+			});
+
+			return message(form, {
+				type: 'success',
+				text: 'Dashboard goals updated successfully.'
+			});
+		} catch (error) {
+			logger.error('Failed to update dashboard goal settings', error);
+			return message(
+				form,
+				{ type: 'error', text: 'Failed to update dashboard goals. Please try again.' },
 				{ status: 500 }
 			);
 		}

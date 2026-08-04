@@ -1,5 +1,6 @@
 import { logger } from '$lib';
 import { getUser } from '$lib/server/actions/auth-guard';
+import { getDashboardGoalsForUser } from '$lib/server/dashboard-goal-settings';
 import { getDb } from '$lib/server/db';
 import {
 	dailyAgendaEntries,
@@ -11,6 +12,7 @@ import {
 	workoutLogs
 } from '$lib/server/db/schema';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
+import { DEFAULT_DASHBOARD_GOALS } from '$lib/utils/dashboard-goals';
 import {
 	addDaysToDateString,
 	calendarDaysBetween,
@@ -625,7 +627,8 @@ function emptyDashboardReturn() {
 			completed: 0,
 			total: 0,
 			items: [] as { id: string; title: string; completed: boolean }[]
-		}
+		},
+		dashboardGoals: DEFAULT_DASHBOARD_GOALS
 	};
 }
 
@@ -637,9 +640,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const db = getDb();
 
 	try {
-		const [data, visitStatusThresholds] = await Promise.all([
+		const [data, visitStatusThresholds, dashboardGoals] = await Promise.all([
 			runDashboardQueries(db, user.id, ranges),
-			getVisitStatusThresholdsForUser(user.id, db)
+			getVisitStatusThresholdsForUser(user.id, db),
+			getDashboardGoalsForUser(user.id, db)
 		]);
 
 		const journalCountByDate = buildCountByDateMap(data.journalDateCounts);
@@ -706,7 +710,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			recentActivity: buildActivityFeed(data),
 			agendaItemStats: buildAgendaItemStats(data.agendaEntriesForTrend, ranges),
 			daysSinceLastWorkout: buildDaysSinceLastWorkout(data.recentWorkoutRaw, today),
-			todayAgendaSummary: buildTodayAgendaSummary(data.agendaEntriesForTrend, today)
+			todayAgendaSummary: buildTodayAgendaSummary(data.agendaEntriesForTrend, today),
+			dashboardGoals
 		};
 	} catch (error) {
 		logger.error('Failed to load dashboard data', error);

@@ -162,6 +162,13 @@
 			"when": 1785714523498,
 			"tag": "0022_rich_komodo",
 			"breakpoints": true
+		},
+		{
+			"idx": 23,
+			"version": "6",
+			"when": 1785819982487,
+			"tag": "0023_spooky_jack_flag",
+			"breakpoints": true
 		}
 	]
 }

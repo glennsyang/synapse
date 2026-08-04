@@ -10,6 +10,7 @@
 	import {
 		CircleAlert,
 		CircleCheck,
+		Gauge,
 		Lock,
 		Pencil,
 		Save,
@@ -104,10 +105,28 @@
 		submitting: visitSettingsSubmitting
 	} = visitSettingsFormStore;
 
+	// Dashboard goal settings form
+	// svelte-ignore state_referenced_locally
+	const dashboardGoalSettingsFormStore = superForm(data.dashboardGoalSettingsForm, {
+		onUpdate: ({ form }) => {
+			if (isSuccessMessage(form.message as FormMessage)) {
+				isEditingDashboardGoals = false;
+			}
+		}
+	});
+
+	const {
+		form: dashboardGoalSettingsForm,
+		errors: dashboardGoalSettingsErrors,
+		message: dashboardGoalSettingsMessage,
+		submitting: dashboardGoalSettingsSubmitting
+	} = dashboardGoalSettingsFormStore;
+
 	// Profile editing state
 	let isEditingProfile = $state(false);
 	let isEditingPassword = $state(false);
 	let isEditingVisitSettings = $state(false);
+	let isEditingDashboardGoals = $state(false);
 
 	// Derived values from data
 	const userEmail = $derived(data.user?.email || '');
@@ -162,6 +181,13 @@
 		$visitSettingsForm.recentToOverdueValue = data.visitThresholds.recentToOverdueDays;
 		$visitSettingsForm.overdueToCriticalValue = data.visitThresholds.overdueToCriticalDays;
 		isEditingVisitSettings = false;
+	}
+
+	function resetDashboardGoalSettingsForm() {
+		$dashboardGoalSettingsForm.meditationWeeklyGoal = data.dashboardGoals.meditationWeeklyGoal;
+		$dashboardGoalSettingsForm.workoutGreenThreshold = data.dashboardGoals.workoutGreenThreshold;
+		$dashboardGoalSettingsForm.workoutAmberThreshold = data.dashboardGoals.workoutAmberThreshold;
+		isEditingDashboardGoals = false;
 	}
 
 	const visitThresholdSummary = $derived.by(() => {
@@ -445,6 +471,176 @@
 											data.visitThresholds.overdueToCriticalDays,
 											'months'
 										)} months)
+									</strong>
+								</p>
+							</div>
+						{/if}
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<Separator.Root />
+
+		<!-- Dashboard Goal Settings Section -->
+		<div class="overflow-hidden rounded-lg border shadow">
+			<div class="p-6">
+				<div class="mb-4 flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<Gauge class="h-5 w-5" />
+						<h2 class="text-xl font-semibold">Dashboard Goals</h2>
+					</div>
+					{#if !isEditingDashboardGoals}
+						<Button size="sm" variant="outline" onclick={() => (isEditingDashboardGoals = true)}>
+							<Pencil class="mr-2 h-4 w-4" />
+							Edit
+						</Button>
+					{/if}
+				</div>
+
+				<form method="POST" action="?/updateDashboardGoalSettings">
+					<div class="space-y-4">
+						{#if $dashboardGoalSettingsMessage}
+							<div
+								class="flex items-center gap-2 rounded-md p-3 {isSuccessMessage(
+									$dashboardGoalSettingsMessage
+								)
+									? 'border border-green-200 bg-green-50 text-green-700'
+									: 'border border-red-200 bg-red-50 text-red-700'}"
+							>
+								{#if isSuccessMessage($dashboardGoalSettingsMessage)}
+									<CircleCheck class="h-4 w-4" />
+								{:else}
+									<CircleAlert class="h-4 w-4" />
+								{/if}
+								<span class="text-sm">{getMessageText($dashboardGoalSettingsMessage)}</span>
+							</div>
+						{/if}
+
+						{#if isEditingDashboardGoals}
+							<div class="space-y-4">
+								<p class="text-muted-foreground text-sm">
+									Customize the meditation weekly goal and the workout pace thresholds shown on your
+									dashboard.
+								</p>
+
+								<div>
+									<Label for="meditationWeeklyGoal" class="mb-2 block text-sm font-medium">
+										Meditation weekly goal (sessions/week)
+									</Label>
+									<Input
+										id="meditationWeeklyGoal"
+										name="meditationWeeklyGoal"
+										type="number"
+										step="1"
+										min="1"
+										bind:value={$dashboardGoalSettingsForm.meditationWeeklyGoal}
+										class={$dashboardGoalSettingsErrors.meditationWeeklyGoal
+											? 'border-red-400'
+											: ''}
+										required
+									/>
+									{#if $dashboardGoalSettingsErrors.meditationWeeklyGoal}
+										<p class="mt-1 text-sm text-red-600">
+											{$dashboardGoalSettingsErrors.meditationWeeklyGoal}
+										</p>
+									{/if}
+								</div>
+
+								<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+									<div>
+										<Label for="workoutGreenThreshold" class="mb-2 block text-sm font-medium">
+											On-pace threshold (sessions/4 weeks)
+										</Label>
+										<Input
+											id="workoutGreenThreshold"
+											name="workoutGreenThreshold"
+											type="number"
+											step="1"
+											min="1"
+											bind:value={$dashboardGoalSettingsForm.workoutGreenThreshold}
+											class={$dashboardGoalSettingsErrors.workoutGreenThreshold
+												? 'border-red-400'
+												: ''}
+											required
+										/>
+										{#if $dashboardGoalSettingsErrors.workoutGreenThreshold}
+											<p class="mt-1 text-sm text-red-600">
+												{$dashboardGoalSettingsErrors.workoutGreenThreshold}
+											</p>
+										{/if}
+									</div>
+
+									<div>
+										<Label for="workoutAmberThreshold" class="mb-2 block text-sm font-medium">
+											Below-pace threshold (sessions/4 weeks)
+										</Label>
+										<Input
+											id="workoutAmberThreshold"
+											name="workoutAmberThreshold"
+											type="number"
+											step="1"
+											min="0"
+											bind:value={$dashboardGoalSettingsForm.workoutAmberThreshold}
+											class={$dashboardGoalSettingsErrors.workoutAmberThreshold
+												? 'border-red-400'
+												: ''}
+											required
+										/>
+										{#if $dashboardGoalSettingsErrors.workoutAmberThreshold}
+											<p class="mt-1 text-sm text-red-600">
+												{$dashboardGoalSettingsErrors.workoutAmberThreshold}
+											</p>
+										{/if}
+									</div>
+								</div>
+
+								<p class="text-muted-foreground text-xs">
+									At or above the on-pace threshold shows green, below it shows amber, and at or
+									below the below-pace threshold shows red.
+								</p>
+
+								<div class="flex gap-2 pt-2">
+									<Button type="submit" size="sm" disabled={$dashboardGoalSettingsSubmitting}>
+										{#if $dashboardGoalSettingsSubmitting}
+											<div
+												class="border-primary mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
+											></div>
+										{:else}
+											<Save class="mr-2 h-4 w-4" />
+										{/if}
+										Save
+									</Button>
+									<Button
+										type="button"
+										size="sm"
+										variant="outline"
+										onclick={resetDashboardGoalSettingsForm}
+										disabled={$dashboardGoalSettingsSubmitting}
+									>
+										<X class="mr-2 h-4 w-4" />
+										Cancel
+									</Button>
+								</div>
+							</div>
+						{:else}
+							<div class="text-muted-foreground space-y-2 text-sm">
+								<p>
+									Meditation weekly goal:
+									<strong class="text-foreground ml-1">
+										{data.dashboardGoals.meditationWeeklyGoal} session{data.dashboardGoals
+											.meditationWeeklyGoal === 1
+											? ''
+											: 's'}/week
+									</strong>
+								</p>
+								<p>
+									Workout pace thresholds:
+									<strong class="text-foreground ml-1">
+										{data.dashboardGoals.workoutGreenThreshold}+ green ·
+										{data.dashboardGoals.workoutAmberThreshold}-{data.dashboardGoals
+											.workoutGreenThreshold - 1} amber · below {data.dashboardGoals
+											.workoutAmberThreshold} red
 									</strong>
 								</p>
 							</div>
