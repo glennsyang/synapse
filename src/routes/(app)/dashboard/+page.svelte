@@ -28,7 +28,6 @@
 		return Math.round(((current - previous) / previous) * 100);
 	}
 
-	const journalDelta = $derived(trendDelta(data.stats.journalThisWeek, data.stats.journalLastWeek));
 	const workoutDelta = $derived(
 		trendDelta(data.stats.workoutsThisWeek, data.stats.workoutsLastWeek)
 	);
@@ -178,12 +177,12 @@
 			{/if}
 		</div>
 
-		<!-- ── Primary Row: Workout Hero + Today's Agenda ───────────────────── -->
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-5">
+		<!-- ── Primary Row: Workout Hero + Meditation + Today's Agenda ──────── -->
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<!-- Workout Hero Card -->
 			<a
 				href="/fitness"
-				class="group bg-card relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md md:col-span-3"
+				class="group bg-card relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
 			>
 				<div class="flex items-start justify-between">
 					<div class="rounded-xl bg-[oklch(var(--color-green)/0.15)] p-2.5">
@@ -211,10 +210,46 @@
 				></div>
 			</a>
 
+			<!-- Meditation Hero Card -->
+			<a
+				href="/meditation"
+				class="group bg-card relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
+			>
+				<div class="flex items-start justify-between">
+					<div class="rounded-xl p-2.5 transition-colors {meditationGoal.iconBgClass}">
+						<Heart class="size-5 transition-colors {meditationGoal.iconClass}" />
+					</div>
+					{#if meditationDelta !== null}
+						<span
+							class="rounded-full px-2 py-0.5 text-xs font-semibold {meditationDelta >= 0
+								? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
+								: 'bg-destructive/10 text-destructive'}"
+						>
+							{meditationDelta >= 0 ? '+' : ''}{meditationDelta}%
+						</span>
+					{/if}
+				</div>
+				<div class="mt-4">
+					<div class="font-display text-5xl leading-none font-bold tabular-nums">
+						{data.stats.meditationThisWeek}
+					</div>
+					<p class="text-muted-foreground mt-1.5 text-sm">Meditation sessions this week</p>
+					<p class="mt-3 flex items-center gap-1.5 text-sm font-medium {meditationGoal.textClass}">
+						{#if data.stats.meditationThisWeek >= meditationWeeklyGoal}
+							<CircleCheck class="size-4 shrink-0" />
+						{/if}
+						{meditationGoal.label}
+					</p>
+				</div>
+				<div
+					class="absolute inset-x-0 bottom-0 h-0.5 bg-[oklch(var(--color-purple))] opacity-0 transition-opacity group-hover:opacity-100"
+				></div>
+			</a>
+
 			<!-- Today's Agenda Summary -->
 			<a
 				href="/tasks?tab=agenda"
-				class="group bg-card hover:bg-card/80 rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md md:col-span-2"
+				class="group bg-card hover:bg-card/80 rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
 			>
 				<div class="mb-3 flex items-center justify-between">
 					<div class="flex items-center gap-2">
@@ -296,63 +331,6 @@
 				</div>
 				<AgendaItemScorecard items={data.agendaItemStats} />
 			</div>
-		</div>
-
-		<!-- ── Secondary Strip: Journal + Meditation ─────────────────────────── -->
-		<div class="grid grid-cols-2 gap-4">
-			<a
-				href="/journal"
-				class="group bg-card/60 hover:bg-card flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-colors"
-			>
-				<div class="shrink-0 rounded-lg bg-[oklch(var(--color-blue)/0.15)] p-2">
-					<Book class="size-4 text-[oklch(var(--color-blue))]" />
-				</div>
-				<div class="min-w-0 flex-1">
-					<div class="flex items-center gap-2">
-						<span class="font-display text-xl font-bold tabular-nums">
-							{data.stats.journalThisWeek}
-						</span>
-						{#if journalDelta !== null}
-							<span
-								class="rounded-full px-1.5 py-0.5 text-xs font-semibold {journalDelta >= 0
-									? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
-									: 'bg-destructive/10 text-destructive'}"
-							>
-								{journalDelta >= 0 ? '+' : ''}{journalDelta}%
-							</span>
-						{/if}
-					</div>
-					<p class="text-muted-foreground truncate text-xs">Journal entries this week</p>
-				</div>
-			</a>
-
-			<a
-				href="/meditation"
-				class="group bg-card/60 hover:bg-card flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-colors"
-			>
-				<div class="shrink-0 rounded-lg p-2 transition-colors {meditationGoal.iconBgClass}">
-					<Heart class="size-4 transition-colors {meditationGoal.iconClass}" />
-				</div>
-				<div class="min-w-0 flex-1">
-					<div class="flex items-center gap-2">
-						<span class="font-display text-xl font-bold tabular-nums">
-							{data.stats.meditationThisWeek}
-						</span>
-						{#if meditationDelta !== null}
-							<span
-								class="rounded-full px-1.5 py-0.5 text-xs font-semibold {meditationDelta >= 0
-									? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
-									: 'bg-destructive/10 text-destructive'}"
-							>
-								{meditationDelta >= 0 ? '+' : ''}{meditationDelta}%
-							</span>
-						{/if}
-					</div>
-					<p class="mt-0.5 truncate text-xs font-medium {meditationGoal.textClass}">
-						{meditationGoal.label}
-					</p>
-				</div>
-			</a>
 		</div>
 
 		<!-- ── Fitness + Tasks ────────────────────────────────────────────────── -->
