@@ -129,7 +129,7 @@
 				<p class="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
 					Scheduled
 				</p>
-				<div class="space-y-1.5">
+				<div class="max-h-56 space-y-1.5 overflow-y-auto">
 					{#each upcomingVisits as day (day.dayLabel)}
 						<div class="flex items-start gap-2 text-xs">
 							<span

@@ -20,6 +20,7 @@ import {
 	formatTimestampMedium,
 	formatTimestampShort,
 	formatTodayLabel,
+	getISODayOfWeek,
 	getTodayString
 } from '$lib/utils/date';
 import { createMarkdownExcerpt } from '$lib/utils/markdown';
@@ -171,6 +172,9 @@ async function runDashboardQueries(
 		tasksCompletionRaw,
 		openHighPriorityResult,
 		openTotalResult,
+		dueSoonTasksRaw,
+		openHighPriorityTitlesRaw,
+		openTotalTitlesRaw,
 		workoutTypeBreakdownRaw,
 		allPeopleRaw,
 		allVisitsRaw,
@@ -250,7 +254,7 @@ async function runDashboardQueries(
 				)
 			),
 		db
-			.select({ completedAt: tasks.completedAt })
+			.select({ title: tasks.title, completedAt: tasks.completedAt })
 			.from(tasks)
 			.where(
 				and(
@@ -268,6 +272,31 @@ async function runDashboardQueries(
 			.select({ count: sql<number>`count(*)` })
 			.from(tasks)
 			.where(and(eq(tasks.userId, userId), ne(tasks.state, 'done'))),
+		db
+			.select({ id: tasks.id, title: tasks.title, dueDate: tasks.dueDate })
+			.from(tasks)
+			.where(
+				and(
+					eq(tasks.userId, userId),
+					ne(tasks.state, 'done'),
+					gte(tasks.dueDate, r.today),
+					lte(tasks.dueDate, r.dueSoonEndDate)
+				)
+			)
+			.orderBy(tasks.dueDate)
+			.limit(6),
+		db
+			.select({ title: tasks.title })
+			.from(tasks)
+			.where(and(eq(tasks.userId, userId), ne(tasks.state, 'done'), lte(tasks.priority, 2)))
+			.orderBy(tasks.priority, tasks.dueDate)
+			.limit(5),
+		db
+			.select({ title: tasks.title })
+			.from(tasks)
+			.where(and(eq(tasks.userId, userId), ne(tasks.state, 'done')))
+			.orderBy(tasks.dueDate, tasks.priority)
+			.limit(5),
 		db
 			.select({ type: workoutLogs.type, count: sql<number>`count(*)` })
 			.from(workoutLogs)
@@ -370,6 +399,9 @@ async function runDashboardQueries(
 		tasksCompletionRaw,
 		openHighPriorityResult,
 		openTotalResult,
+		dueSoonTasksRaw,
+		openHighPriorityTitlesRaw,
+		openTotalTitlesRaw,
 		workoutTypeBreakdownRaw,
 		allPeopleRaw,
 		allVisitsRaw,
@@ -424,9 +456,11 @@ function buildAgendaCompletionTrend(
 }
 
 function buildTaskStats(
-	completionRaw: { completedAt: string | null }[],
+	completionRaw: { title: string; completedAt: string | null }[],
 	openHighPriorityResult: { count: number }[],
 	openTotalResult: { count: number }[],
+	openHighPriorityTitlesRaw: { title: string }[],
+	openTotalTitlesRaw: { title: string }[],
 	thisWeekDates: string[],
 	lastWeekDates: string[]
 ) {
@@ -434,17 +468,25 @@ function buildTaskStats(
 	const lastWeekDateSet = new Set(lastWeekDates);
 	let completedThisWeek = 0;
 	let completedLastWeek = 0;
+	const completedThisWeekTitles: string[] = [];
 	for (const row of completionRaw) {
 		if (row.completedAt === null) continue;
 		const localDate = getTodayString(new Date(row.completedAt));
-		if (thisWeekDateSet.has(localDate)) completedThisWeek++;
-		else if (lastWeekDateSet.has(localDate)) completedLastWeek++;
+		if (thisWeekDateSet.has(localDate)) {
+			completedThisWeek++;
+			if (completedThisWeekTitles.length < 5) completedThisWeekTitles.push(row.title);
+		} else if (lastWeekDateSet.has(localDate)) {
+			completedLastWeek++;
+		}
 	}
 	return {
 		completedThisWeek,
 		completedLastWeek,
+		completedThisWeekTitles,
 		openHighPriority: Number(openHighPriorityResult[0]?.count || 0),
-		openTotal: Number(openTotalResult[0]?.count || 0)
+		openHighPriorityTitles: openHighPriorityTitlesRaw.map((r) => r.title),
+		openTotal: Number(openTotalResult[0]?.count || 0),
+		openTotalTitles: openTotalTitlesRaw.map((r) => r.title)
 	};
 }
 
@@ -539,6 +581,8 @@ function buildDaysSinceLastWorkout(workouts: { date: string }[], today: string):
 function emptyDashboardReturn() {
 	return {
 		todayLabel: formatTodayLabel(),
+		today: getTodayString(),
+		todayDowIndex: getISODayOfWeek(getTodayString()),
 		stats: {
 			journalThisWeek: 0,
 			journalLastWeek: 0,
@@ -548,7 +592,16 @@ function emptyDashboardReturn() {
 			workoutsLastWeek: 0,
 			workoutsCompletedMonth: 0
 		},
-		taskStats: { completedThisWeek: 0, completedLastWeek: 0, openHighPriority: 0, openTotal: 0 },
+		taskStats: {
+			completedThisWeek: 0,
+			completedLastWeek: 0,
+			completedThisWeekTitles: [] as string[],
+			openHighPriority: 0,
+			openHighPriorityTitles: [] as string[],
+			openTotal: 0,
+			openTotalTitles: [] as string[]
+		},
+		dueSoonTasks: [] as { id: string; title: string; dueDate: string }[],
 		agendaCompletionTrend: [] as { weekLabel: string; completionPct: number }[],
 		workoutTypeBreakdown: [] as { type: string; count: number }[],
 		visitHealthCounts: { critical: 0, overdue: 0, healthy: 0, noVisits: 0, total: 0 },
@@ -608,6 +661,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 		return {
 			todayLabel: formatTodayLabel(),
+			today,
+			todayDowIndex: getISODayOfWeek(today),
 			stats: {
 				journalThisWeek: sumCountsByDate(journalCountByDate, ranges.thisWeekDates),
 				journalLastWeek: sumCountsByDate(journalCountByDate, ranges.lastWeekDates),
@@ -621,9 +676,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 				data.tasksCompletionRaw,
 				data.openHighPriorityResult,
 				data.openTotalResult,
+				data.openHighPriorityTitlesRaw,
+				data.openTotalTitlesRaw,
 				ranges.thisWeekDates,
 				ranges.lastWeekDates
 			),
+			dueSoonTasks: data.dueSoonTasksRaw.map((t) => ({
+				id: t.id,
+				title: t.title,
+				dueDate: t.dueDate as string
+			})),
 			agendaCompletionTrend: buildAgendaCompletionTrend(
 				data.agendaEntriesForTrend,
 				ranges.startOfThisWeekDate

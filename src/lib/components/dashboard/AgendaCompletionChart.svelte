@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import { scalePoint } from 'd3-scale';
-	import { AreaChart } from 'layerchart';
+	import { Area, AreaChart, Labels } from 'layerchart';
 
 	interface TrendPoint {
 		weekLabel: string;
@@ -46,13 +46,14 @@
 			Complete more daily agenda items to see your trend.
 		</div>
 	{:else}
-		<Chart.Container config={chartConfig} class="h-32 w-full">
+		<Chart.Container config={chartConfig} class="h-40 w-full">
 			<AreaChart
 				data={trend}
 				x="weekLabel"
 				y="completionPct"
 				xScale={scalePoint()}
 				axis="x"
+				padding={{ top: 20 }}
 				series={[
 					{
 						key: 'completionPct',
@@ -67,6 +68,16 @@
 					xAxis: { format: (v: string) => v }
 				}}
 			>
+				{#snippet marks({ context }: { context: any })}
+					{#each context.series.visibleSeries as s (s.key)}
+						<Area seriesKey={s.key} fillOpacity={0.2} line={{ strokeWidth: 2 }} />
+					{/each}
+					<Labels
+						seriesKey="completionPct"
+						format={(v: number) => `${v}%`}
+						class="fill-[oklch(var(--color-orange))] text-[10px] font-medium"
+					/>
+				{/snippet}
 				{#snippet tooltip()}
 					<Chart.Tooltip labelFormatter={(v: string) => v} indicator="line" />
 				{/snippet}
