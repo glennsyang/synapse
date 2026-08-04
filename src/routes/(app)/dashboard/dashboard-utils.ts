@@ -21,6 +21,7 @@ export type DashboardDateRanges = {
 	upcomingEndDate: string;
 	tasksCompletionRangeStartIso: string;
 	tasksCompletionRangeEndIso: string;
+	dueSoonEndDate: string;
 };
 
 export function buildDateRanges(today: string): DashboardDateRanges {
@@ -40,9 +41,10 @@ export function buildDateRanges(today: string): DashboardDateRanges {
 		agenda8WeeksStart: addDaysToDateString(startOfThisWeekDate, -49),
 		last4WeeksStart: addDaysToDateString(startOfThisWeekDate, -21),
 		workout4WeeksStart: addDaysToDateString(today, -28),
-		upcomingEndDate: addDaysToDateString(today, 7),
+		upcomingEndDate: addDaysToDateString(today, 90),
 		tasksCompletionRangeStartIso: `${addDaysToDateString(startOfLastWeekDate, -1)}T00:00:00.000Z`,
-		tasksCompletionRangeEndIso: `${addDaysToDateString(endOfThisWeekDate, 1)}T00:00:00.000Z`
+		tasksCompletionRangeEndIso: `${addDaysToDateString(endOfThisWeekDate, 1)}T00:00:00.000Z`,
+		dueSoonEndDate: addDaysToDateString(today, 7)
 	};
 }
 

@@ -5,6 +5,8 @@
 	import VisitHealthPanel from '$lib/components/dashboard/VisitHealthPanel.svelte';
 	import WorkoutTypeChart from '$lib/components/dashboard/WorkoutTypeChart.svelte';
 	import DashboardSkeleton from '$lib/components/skeletons/DashboardSkeleton.svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { addDaysToDateString, formatMonthDay } from '$lib/utils/date';
 	import {
 		Book,
 		CalendarCheck,
@@ -59,11 +61,56 @@
 						: 'text-destructive'
 	);
 
+	const tomorrow = $derived(addDaysToDateString(data.today, 1));
+
+	function dueDateLabel(dueDate: string): string {
+		if (dueDate === data.today) return 'Today';
+		if (dueDate === tomorrow) return 'Tomorrow';
+		return formatMonthDay(dueDate);
+	}
+
 	const agendaProgressPct = $derived(
 		data.todayAgendaSummary.total > 0
 			? Math.round((data.todayAgendaSummary.completed / data.todayAgendaSummary.total) * 100)
 			: 0
 	);
+
+	// Weekly meditation goal: 1 session/week, with reminder urgency escalating as the week
+	// progresses without a session (dowIndex: 0 = Monday ... 6 = Sunday).
+	const MEDITATION_WEEKLY_GOAL = 1;
+
+	const meditationGoal = $derived.by(() => {
+		if (data.stats.meditationThisWeek >= MEDITATION_WEEKLY_GOAL) {
+			return {
+				label: 'Weekly goal met',
+				textClass: 'text-[oklch(var(--color-green))]',
+				iconBgClass: 'bg-[oklch(var(--color-green)/0.15)]',
+				iconClass: 'text-[oklch(var(--color-green))]'
+			};
+		}
+		if (data.todayDowIndex <= 2) {
+			return {
+				label: 'Goal: 1 session this week',
+				textClass: 'text-muted-foreground',
+				iconBgClass: 'bg-[oklch(var(--color-purple)/0.15)]',
+				iconClass: 'text-[oklch(var(--color-purple))]'
+			};
+		}
+		if (data.todayDowIndex <= 5) {
+			return {
+				label: "Don't forget your session this week",
+				textClass: 'text-amber-500',
+				iconBgClass: 'bg-amber-500/15',
+				iconClass: 'text-amber-500'
+			};
+		}
+		return {
+			label: 'Last day to hit your weekly goal!',
+			textClass: 'text-destructive',
+			iconBgClass: 'bg-destructive/15',
+			iconClass: 'text-destructive'
+		};
+	});
 
 	const activityConfig = {
 		journal: {
@@ -165,7 +212,10 @@
 			</a>
 
 			<!-- Today's Agenda Summary -->
-			<div class="bg-card rounded-2xl border p-5 shadow-xs md:col-span-2">
+			<a
+				href="/tasks?tab=agenda"
+				class="group bg-card hover:bg-card/80 rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md md:col-span-2"
+			>
 				<div class="mb-3 flex items-center justify-between">
 					<div class="flex items-center gap-2">
 						<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
@@ -214,7 +264,7 @@
 						{/each}
 					</div>
 				{/if}
-			</div>
+			</a>
 		</div>
 
 		<!-- ── Agenda Analytics ───────────────────────────────────────────────── -->
@@ -280,8 +330,8 @@
 				href="/meditation"
 				class="group bg-card/60 hover:bg-card flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-colors"
 			>
-				<div class="shrink-0 rounded-lg bg-[oklch(var(--color-purple)/0.15)] p-2">
-					<Heart class="size-4 text-[oklch(var(--color-purple))]" />
+				<div class="shrink-0 rounded-lg p-2 transition-colors {meditationGoal.iconBgClass}">
+					<Heart class="size-4 transition-colors {meditationGoal.iconClass}" />
 				</div>
 				<div class="min-w-0 flex-1">
 					<div class="flex items-center gap-2">
@@ -298,7 +348,9 @@
 							</span>
 						{/if}
 					</div>
-					<p class="text-muted-foreground truncate text-xs">Meditation sessions this week</p>
+					<p class="mt-0.5 truncate text-xs font-medium {meditationGoal.textClass}">
+						{meditationGoal.label}
+					</p>
 				</div>
 			</a>
 		</div>
@@ -331,55 +383,118 @@
 					</div>
 				</div>
 
-				<div class="space-y-4">
-					<div class="flex items-center justify-between">
-						<div class="text-muted-foreground flex items-center gap-2 text-sm">
-							<CircleCheck class="size-4 text-[oklch(var(--color-green))]" />
-							Completed this week
+				<Tooltip.Provider>
+					{#if data.dueSoonTasks.length > 0}
+						<div class="mb-4">
+							<p class="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+								Due soon
+							</p>
+							<div class="space-y-1.5">
+								{#each data.dueSoonTasks as task (task.id)}
+									<a
+										href="/tasks"
+										class="hover:bg-muted/60 flex items-center justify-between gap-2 rounded-lg px-1.5 py-1 text-sm transition-colors"
+									>
+										<span class="truncate">{task.title}</span>
+										<span
+											class="text-muted-foreground shrink-0 text-xs {task.dueDate === data.today
+												? 'font-semibold text-amber-500'
+												: ''}"
+										>
+											{dueDateLabel(task.dueDate)}
+										</span>
+									</a>
+								{/each}
+							</div>
 						</div>
-						<div class="flex items-center gap-2">
-							<span class="font-display text-2xl font-bold tabular-nums">
-								{data.taskStats.completedThisWeek}
-							</span>
-							{#if taskDelta !== null}
-								<span
-									class="rounded-full px-1.5 py-0.5 text-xs font-semibold {taskDelta >= 0
-										? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
-										: 'bg-destructive/10 text-destructive'}"
+						<div class="bg-border/60 mb-4 h-px"></div>
+					{/if}
+
+					<div class="space-y-4">
+						<Tooltip.Root>
+							<Tooltip.Trigger class="w-full">
+								{#snippet child({ props })}
+									<div {...props} class="flex items-center justify-between">
+										<div class="text-muted-foreground flex items-center gap-2 text-sm">
+											<CircleCheck class="size-4 text-[oklch(var(--color-green))]" />
+											Completed this week
+										</div>
+										<div class="flex items-center gap-2">
+											<span class="font-display text-2xl font-bold tabular-nums">
+												{data.taskStats.completedThisWeek}
+											</span>
+											{#if taskDelta !== null}
+												<span
+													class="rounded-full px-1.5 py-0.5 text-xs font-semibold {taskDelta >= 0
+														? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
+														: 'bg-destructive/10 text-destructive'}"
+												>
+													{taskDelta >= 0 ? '+' : ''}{taskDelta}%
+												</span>
+											{/if}
+										</div>
+									</div>
+								{/snippet}
+							</Tooltip.Trigger>
+							{#if data.taskStats.completedThisWeekTitles.length > 0}
+								<Tooltip.Content
+									>{data.taskStats.completedThisWeekTitles.join(', ')}</Tooltip.Content
 								>
-									{taskDelta >= 0 ? '+' : ''}{taskDelta}%
-								</span>
 							{/if}
+						</Tooltip.Root>
+						<div class="bg-border/60 h-px"></div>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground text-sm">Completed last week</span>
+							<span class="font-display text-muted-foreground text-2xl font-bold tabular-nums">
+								{data.taskStats.completedLastWeek}
+							</span>
 						</div>
+						<div class="bg-border/60 h-px"></div>
+						<Tooltip.Root>
+							<Tooltip.Trigger class="w-full">
+								{#snippet child({ props })}
+									<a
+										href="/tasks"
+										{...props}
+										class="flex items-center justify-between hover:underline"
+									>
+										<div class="text-muted-foreground flex items-center gap-2 text-sm">
+											<CircleAlert class="size-4 text-amber-500" />
+											Open high-priority
+										</div>
+										<span class="font-display text-2xl font-bold text-amber-500 tabular-nums">
+											{data.taskStats.openHighPriority}
+										</span>
+									</a>
+								{/snippet}
+							</Tooltip.Trigger>
+							{#if data.taskStats.openHighPriorityTitles.length > 0}
+								<Tooltip.Content>{data.taskStats.openHighPriorityTitles.join(', ')}</Tooltip.Content
+								>
+							{/if}
+						</Tooltip.Root>
+						<div class="bg-border/60 h-px"></div>
+						<Tooltip.Root>
+							<Tooltip.Trigger class="w-full">
+								{#snippet child({ props })}
+									<a
+										href="/tasks"
+										{...props}
+										class="flex items-center justify-between hover:underline"
+									>
+										<span class="text-muted-foreground text-sm">Open total</span>
+										<span class="font-display text-2xl font-bold tabular-nums">
+											{data.taskStats.openTotal}
+										</span>
+									</a>
+								{/snippet}
+							</Tooltip.Trigger>
+							{#if data.taskStats.openTotalTitles.length > 0}
+								<Tooltip.Content>{data.taskStats.openTotalTitles.join(', ')}</Tooltip.Content>
+							{/if}
+						</Tooltip.Root>
 					</div>
-					<div class="bg-border/60 h-px"></div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Completed last week</span>
-						<span class="font-display text-muted-foreground text-2xl font-bold tabular-nums">
-							{data.taskStats.completedLastWeek}
-						</span>
-					</div>
-					<div class="bg-border/60 h-px"></div>
-					<div class="flex items-center justify-between">
-						<div class="text-muted-foreground flex items-center gap-2 text-sm">
-							<CircleAlert class="size-4 text-amber-500" />
-							Open high-priority
-						</div>
-						<a
-							href="/tasks"
-							class="font-display text-2xl font-bold text-amber-500 tabular-nums hover:underline"
-						>
-							{data.taskStats.openHighPriority}
-						</a>
-					</div>
-					<div class="bg-border/60 h-px"></div>
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground text-sm">Open total</span>
-						<a href="/tasks" class="font-display text-2xl font-bold tabular-nums hover:underline">
-							{data.taskStats.openTotal}
-						</a>
-					</div>
-				</div>
+				</Tooltip.Provider>
 			</div>
 		</div>
 
