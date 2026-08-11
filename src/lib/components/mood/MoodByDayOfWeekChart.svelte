@@ -28,7 +28,7 @@
 	const hasData = $derived(weekdayAvg.some((p) => p.count > 0));
 
 	const chartConfig = {
-		avgScore: { label: 'Avg mood', color: 'var(--color-orange)' }
+		avgScore: { label: 'Avg mood', color: 'oklch(var(--color-orange))' }
 	} satisfies Chart.ChartConfig;
 </script>
 
