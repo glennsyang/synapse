@@ -45,7 +45,7 @@ export const moodOptions = [
 		value: 'content',
 		label: 'Content',
 		score: 7,
-		chartColor: 'var(--color-green)',
+		chartColor: 'oklch(var(--color-green))',
 		buttonClass: 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
 	},
 	{

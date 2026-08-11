@@ -55,7 +55,7 @@ describe('getMoodScore', () => {
 describe('getMoodChartColor', () => {
 	it('returns the correct chart color for known moods', () => {
 		expect(getMoodChartColor('sad')).toBe('var(--chart-5)');
-		expect(getMoodChartColor('content')).toBe('var(--color-green)');
+		expect(getMoodChartColor('content')).toBe('oklch(var(--color-green))');
 	});
 
 	it('returns the fallback chart color for unknown moods', () => {

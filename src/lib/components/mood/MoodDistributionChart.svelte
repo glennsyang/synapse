@@ -64,7 +64,7 @@
 							cRange={distribution.map((item) => item.fill)}
 							innerRadius={0.62}
 							cornerRadius={6}
-							padAngle={2}
+							padAngle={0.02}
 						>
 							{#snippet tooltip()}
 								<Chart.Tooltip indicator="dot" />

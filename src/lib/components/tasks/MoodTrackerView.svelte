@@ -137,7 +137,7 @@
 	<!-- Charts grid -->
 	<div class="grid gap-5 md:grid-cols-2 md:items-start">
 		<!-- Left column: trend + heatmap -->
-		<div class="space-y-5">
+		<div class="min-w-0 space-y-5">
 			<MoodTrendChart
 				points={mood.trendPoints}
 				rollingAvgPoints={mood.rollingAvgPoints}
@@ -148,7 +148,7 @@
 		</div>
 
 		<!-- Right column: weekday bar + distribution -->
-		<div class="space-y-5">
+		<div class="min-w-0 space-y-5">
 			<MoodByDayOfWeekChart weekdayAvg={mood.weekdayAvg} rangeLabel={mood.rangeLabel} />
 			<MoodDistributionChart
 				distribution={mood.distribution}
