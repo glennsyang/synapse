@@ -52,7 +52,7 @@
 		"@sveltejs/vite-plugin-svelte": "^7.3.0",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.3.1",
-		"@tanstack/table-core": "^8.21.3",
+		"@tanstack/table-core": "^9.1.2",
 		"@types/better-sqlite3": "^7.6.12",
 		"@types/canvas-confetti": "^1.9.0",
 		"@types/d3-scale": "^4.0.9",
