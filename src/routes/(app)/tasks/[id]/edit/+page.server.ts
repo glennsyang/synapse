@@ -124,19 +124,26 @@ export const actions = {
 			} else {
 				const timestamp = new Date().toISOString();
 
-				await getDb().transaction(async (tx) => {
-					const [targetSortOrderRow] = await tx
+				// The better-sqlite3 driver runs transaction callbacks synchronously, so every
+				// query inside must use its sync execution method (`.all()`/`.run()`/`.sync()`)
+				// instead of `await` — an `async` callback throws "Transaction function cannot
+				// return a promise" at runtime.
+				getDb().transaction((tx) => {
+					const [targetSortOrderRow] = tx
 						.select({
 							maxSortOrder: sql<number>`coalesce(max(${tasks.sortOrder}), -1)`
 						})
 						.from(tasks)
-						.where(and(eq(tasks.userId, user.id), eq(tasks.state, nextState)));
+						.where(and(eq(tasks.userId, user.id), eq(tasks.state, nextState)))
+						.all();
 
-					const sourceRows = await tx.query.tasks.findMany({
-						where: and(eq(tasks.userId, user.id), eq(tasks.state, existing.state as TaskState)),
-						columns: { id: true },
-						orderBy: [tasks.sortOrder, tasks.taskNumber]
-					});
+					const sourceRows = tx.query.tasks
+						.findMany({
+							where: and(eq(tasks.userId, user.id), eq(tasks.state, existing.state as TaskState)),
+							columns: { id: true },
+							orderBy: [tasks.sortOrder, tasks.taskNumber]
+						})
+						.sync();
 
 					const sourceTaskIds = sourceRows
 						.map((row) => row.id)
@@ -150,23 +157,23 @@ export const actions = {
 						existing.state
 					);
 
-					await tx
-						.update(tasks)
+					tx.update(tasks)
 						.set({
 							...updateData,
 							sortOrder: (targetSortOrderRow?.maxSortOrder ?? -1) + 1,
 							updatedAt: timestamp
 						})
-						.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)));
+						.where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)))
+						.run();
 
 					for (let index = 0; index < sourceTaskIds.length; index += 1) {
-						await tx
-							.update(tasks)
+						tx.update(tasks)
 							.set({
 								sortOrder: index,
 								updatedAt: timestamp
 							})
-							.where(and(eq(tasks.id, sourceTaskIds[index]), eq(tasks.userId, user.id)));
+							.where(and(eq(tasks.id, sourceTaskIds[index]), eq(tasks.userId, user.id)))
+							.run();
 					}
 				});
 			}

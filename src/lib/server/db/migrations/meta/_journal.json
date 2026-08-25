@@ -169,6 +169,13 @@
 			"when": 1785819982487,
 			"tag": "0023_spooky_jack_flag",
 			"breakpoints": true
+		},
+		{
+			"idx": 24,
+			"version": "6",
+			"when": 1787694381737,
+			"tag": "0024_warm_may_parker",
+			"breakpoints": true
 		}
 	]
 }

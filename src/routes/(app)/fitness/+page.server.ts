@@ -639,9 +639,12 @@ export const actions = {
 				}
 			}
 
-			await db.transaction(async (tx) => {
-				await tx
-					.update(workoutLogs)
+			// The better-sqlite3 driver runs transaction callbacks synchronously, so every
+			// query inside must use its sync execution method (`.run()`) instead of `await`
+			// — an `async` callback throws "Transaction function cannot return a promise"
+			// at runtime.
+			db.transaction((tx) => {
+				tx.update(workoutLogs)
 					.set({
 						date: form.data.date,
 						time: form.data.time || null,
@@ -651,22 +654,25 @@ export const actions = {
 						notes: form.data.notes || null,
 						...withAuditFieldsForUpdate()
 					})
-					.where(and(eq(workoutLogs.id, form.data.id), eq(workoutLogs.userId, user.id)));
+					.where(and(eq(workoutLogs.id, form.data.id), eq(workoutLogs.userId, user.id)))
+					.run();
 
-				await tx.delete(workoutExercises).where(eq(workoutExercises.workoutLogId, form.data.id));
+				tx.delete(workoutExercises).where(eq(workoutExercises.workoutLogId, form.data.id)).run();
 
 				if (form.data.type === 'strength' && parsedExercises.length > 0) {
-					await tx.insert(workoutExercises).values(
-						parsedExercises.map((exercise) => ({
-							id: generateId(),
-							workoutLogId: form.data.id,
-							exerciseName: exercise.exerciseName,
-							sets: exercise.sets || null,
-							reps: exercise.reps || null,
-							weightLbs: exercise.weightLbs || null,
-							...withAuditFieldsForCreate()
-						}))
-					);
+					tx.insert(workoutExercises)
+						.values(
+							parsedExercises.map((exercise) => ({
+								id: generateId(),
+								workoutLogId: form.data.id,
+								exerciseName: exercise.exerciseName,
+								sets: exercise.sets || null,
+								reps: exercise.reps || null,
+								weightLbs: exercise.weightLbs || null,
+								...withAuditFieldsForCreate()
+							}))
+						)
+						.run();
 				}
 			});
 
