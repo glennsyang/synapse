@@ -1,4 +1,4 @@
-import { renderComponent } from '$lib/components/ui/data-table';
+import { type Features, renderComponent } from '$lib/components/ui/data-table';
 import type { people } from '$lib/server/db/schema';
 import { formatDateMedium } from '$lib/utils/date';
 import type { ColumnDef } from '@tanstack/table-core';
@@ -11,7 +11,7 @@ export type ArchivedPerson = typeof people.$inferSelect & {
 	lastVisitDate: string | null;
 };
 
-export const columns: ColumnDef<ArchivedPerson>[] = [
+export const columns: ColumnDef<Features, ArchivedPerson>[] = [
 	{
 		accessorKey: 'ownerEmail',
 		header: 'Owner'
