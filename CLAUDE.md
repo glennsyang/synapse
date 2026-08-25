@@ -24,7 +24,7 @@ A personal life-management app: fitness (workouts/weight/meals), journal, medita
 
 ### TypeScript / Svelte
 
-- Strict TypeScript, no `any` — enforced by `npm run check:no-explicit-any` (a custom script, not just a lint rule).
+- Strict TypeScript, no `any` — enforced repo-wide by oxlint's `typescript/no-explicit-any` rule.
 - Svelte 5 runes only (`$state`, `$derived`, `$effect`, `$props`, `$bindable`).
 - Env vars: import from **`$app/env/private`** (SvelteKit's typed env, via `experimental.explicitEnvironmentVariables` in `svelte.config.js`) — not `$env/static/private`.
 
@@ -40,9 +40,9 @@ Unlike some of the other sibling repos, **DB column names here are camelCase**, 
 
 Never use `console.log`/`console.error`/etc. directly — import `logger` from `$lib/server/logger` (a server-only module; SvelteKit's import guard blocks it from client bundles, so client-side code can't reach it — see `src/lib/utils/journal-context.ts` for the one deliberate exception). In production (`NODE_ENV === 'production'`) it strips `userId`, `id`, `email`, `password`, `token`, `createdBy`, and `updatedBy` from log output and from what's sent to Sentry — `requestId` is the only supported cross-log correlation key in prod. The `LOG_LEVEL` env var sets the minimum level logged (`debug`/`info`/`warn`/`error`); defaults to `debug` in dev, `info` in prod.
 
-### Custom static checks (`npm run lint:static`)
+### Custom static checks
 
-Beyond oxlint, this repo runs its own scripts in `scripts/`: `check-redirect-throws.mjs`, `check-no-explicit-any.mjs`, plus `fallow dead-code`. Run `npm run lint` (not just oxlint) to get all of them.
+Beyond oxlint (which now also enforces `no-explicit-any`), this repo runs `scripts/check-redirect-throws.mjs` and `fallow dead-code`. `npm run lint` runs oxlint + `fallow dead-code`; `check-redirect-throws.mjs` runs full-repo via `npm run check:redirect-throws`, and separately at commit time scoped to just the staged SvelteKit server files via `lint-staged.config.ts`.
 
 ### Git hooks (lefthook)
 

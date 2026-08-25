@@ -34,7 +34,8 @@ export default defineConfig({
 				argsIgnorePattern: '^_',
 				varsIgnorePattern: '^_'
 			}
-		]
+		],
+		'typescript/no-explicit-any': 'error'
 	},
 	overrides: [
 		{
