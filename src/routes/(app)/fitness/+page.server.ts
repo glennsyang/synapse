@@ -1,4 +1,3 @@
-import { logger } from '$lib';
 import {
 	deleteEntrySchema,
 	logMealSchema,
@@ -29,6 +28,7 @@ import {
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { getTodayString } from '$lib/utils/date';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';

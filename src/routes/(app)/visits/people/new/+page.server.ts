@@ -1,9 +1,9 @@
-import { logger } from '$lib';
 import { personSchema } from '$lib/schemas/visits';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { people } from '$lib/server/db/schema';
 import { generateId, withAuditFieldsForCreate } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';

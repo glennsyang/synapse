@@ -1,9 +1,15 @@
 import { building, dev } from '$app/env';
-import { logger } from '$lib';
 import { auth } from '$lib/server/auth';
-import { generateId } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
+import * as Sentry from '@sentry/sveltekit';
 import type { Handle, HandleServerError, ResolveOptions } from '@sveltejs/kit';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
+
+Sentry.init({
+	dsn: 'https://0941b6e2d9801402928ec265ba858ff9@o4510809399492608.ingest.us.sentry.io/4511970268020736',
+	tracesSampleRate: 1.0,
+	enableLogs: true
+});
 
 // Fixed-window rate limiter for non-GET, non-auth mutations (60 req / 60 s per IP).
 // Prevents scripted abuse of task/journal/fitness/visit endpoints.
@@ -57,11 +63,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	// Generate unique request ID for logging
-	const requestId = generateId();
+	const requestId = crypto.randomUUID();
 	event.locals.requestId = requestId;
 
 	// Create logger with request context
-	const requestLogger = logger.child({
+	let requestLogger = logger.child({
 		requestId,
 		method: event.request.method,
 		url: event.url.pathname
@@ -87,7 +93,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.user = session.user as NonNullable<typeof event.locals.user>;
 
 		// Add user context to logger
-		requestLogger.setContext({ userId: session.user.id });
+		requestLogger = requestLogger.child({ userId: session.user.id });
 	}
 
 	const response = await svelteKitHandler({ event, resolve: resolveWithNonce, auth, building });

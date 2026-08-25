@@ -1,4 +1,3 @@
-import { logger } from '$lib';
 import {
 	deleteTaskSchema,
 	type TaskState,
@@ -14,6 +13,7 @@ import { parseTaskTags, toCommaSeparatedJson } from '$lib/server/actions/string-
 import { getDb } from '$lib/server/db';
 import { tasks } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, eq, ne, sql } from 'drizzle-orm';
 import { setError, superValidate } from 'sveltekit-superforms';

@@ -36,6 +36,10 @@ Unlike some of the other sibling repos, **DB column names here are camelCase**, 
 
 `npm run check:redirect-throws` statically enforces that `+page.server.ts` / `+layout.server.ts` / `+server.ts` files always `throw redirect(...)` (not call it bare). Always `if (isRedirect(err)) throw err` when catching around auth calls.
 
+### Logging
+
+Never use `console.log`/`console.error`/etc. directly — import `logger` from `$lib/server/logger` (a server-only module; SvelteKit's import guard blocks it from client bundles, so client-side code can't reach it — see `src/lib/utils/journal-context.ts` for the one deliberate exception). In production (`NODE_ENV === 'production'`) it strips `userId`, `id`, `email`, `password`, `token`, `createdBy`, and `updatedBy` from log output and from what's sent to Sentry — `requestId` is the only supported cross-log correlation key in prod. The `LOG_LEVEL` env var sets the minimum level logged (`debug`/`info`/`warn`/`error`); defaults to `debug` in dev, `info` in prod.
+
 ### Custom static checks (`npm run lint:static`)
 
 Beyond oxlint, this repo runs its own scripts in `scripts/`: `check-dead-exports.mjs`, `check-redirect-throws.mjs`, `check-no-explicit-any.mjs`, plus `fallow dead-code`. Run `npm run lint` (not just oxlint) to get all of them.
@@ -127,6 +131,8 @@ RESEND_FROM_ADDRESS=...
 RESEND_NEW_USER_ADDRESS=...
 SENTRY_AUTH_TOKEN=...
 ```
+
+Sentry (`@sentry/sveltekit`) is now actually wired up — `vite.config.ts` (`sentrySvelteKit({ org: 'sheppakai', project: 'synapse' })`), `src/hooks.client.ts`, and `src/hooks.server.ts` all reference it, and `$lib/server/logger`'s `warn()`/`error()` forward to it in production. The `dsn` in `hooks.client.ts`/`hooks.server.ts` is currently the placeholder `'REPLACE_WITH_SYNAPSE_SENTRY_DSN'` — a real Sentry project (`sheppakai` org, `synapse` slug) still needs to be created in the dashboard and the DSN swapped in before Sentry reporting will actually work.
 
 ---
 

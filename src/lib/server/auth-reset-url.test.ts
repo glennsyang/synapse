@@ -7,7 +7,7 @@ vi.mock('$app/env/private', () => ({
 	NODE_ENV: 'production'
 }));
 
-vi.mock('../utils/logger', () => ({
+vi.mock('./logger', () => ({
 	logger: {
 		warn: mockLoggerWarn,
 		info: vi.fn<() => void>(),

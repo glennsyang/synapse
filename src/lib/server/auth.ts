@@ -5,7 +5,7 @@ import {
 	RESEND_NEW_USER_ADDRESS
 } from '$app/env/private';
 import { getRequestEvent } from '$app/server';
-import { logger } from '$lib';
+import { logger } from '$lib/server/logger';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createAuthMiddleware } from 'better-auth/api';

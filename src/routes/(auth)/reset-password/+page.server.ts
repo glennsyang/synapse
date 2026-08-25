@@ -1,4 +1,3 @@
-import { logger } from '$lib';
 import { resetPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import {
@@ -6,6 +5,7 @@ import {
 	mapAuthActionError,
 	redirectIfAuthenticated
 } from '$lib/server/auth/form-helpers';
+import { logger } from '$lib/server/logger';
 import { redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';

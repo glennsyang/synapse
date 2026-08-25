@@ -1,4 +1,3 @@
-import { logger } from '$lib';
 import {
 	createDailyAgendaEntrySchema,
 	createDailyAgendaTemplateSchema,
@@ -37,6 +36,7 @@ import {
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import {
 	addDaysToDateString,
 	formatDateShort,

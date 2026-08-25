@@ -1,4 +1,3 @@
-import { logger } from '$lib';
 import {
 	changePasswordSchema,
 	updateDashboardGoalSettingsSchema,
@@ -15,6 +14,7 @@ import {
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { DEFAULT_DASHBOARD_GOALS, normalizeDashboardGoals } from '$lib/utils/dashboard-goals';
 import {

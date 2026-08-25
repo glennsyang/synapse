@@ -1,7 +1,7 @@
-import { logger } from '$lib';
 import { getUser } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { people, visits } from '$lib/server/db/schema';
+import { logger } from '$lib/server/logger';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { getTodayString } from '$lib/utils/date';
 import { safeParse } from '$lib/utils/json';

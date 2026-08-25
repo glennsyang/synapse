@@ -1,4 +1,3 @@
-import { logger } from '$lib';
 import { personSchema, scheduleVisitSchema, visitSchema } from '$lib/schemas/visits';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import {
@@ -13,6 +12,7 @@ import {
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { getTodayString } from '$lib/utils/date';
 import { safeParse } from '$lib/utils/json';

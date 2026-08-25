@@ -1,5 +1,5 @@
 import { BETTER_AUTH_BASE_URL, NODE_ENV } from '$app/env/private';
-import { logger } from '$lib';
+import { logger } from '$lib/server/logger';
 
 /**
  * Allowlisted origins for password-reset callback URLs.

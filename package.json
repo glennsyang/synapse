@@ -31,6 +31,7 @@
 		"db:migrate": "drizzle-kit migrate"
 	},
 	"dependencies": {
+		"@sentry/sveltekit": "^10.71.0",
 		"better-auth": "^1.7.1",
 		"better-sqlite3": "^12.6.2",
 		"canvas-confetti": "^1.9.4",

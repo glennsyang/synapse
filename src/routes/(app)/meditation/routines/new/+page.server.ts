@@ -1,10 +1,10 @@
-import { logger } from '$lib';
 import { createRoutineSchema, MOOD_TAGS, type MoodTag } from '$lib/schemas/meditation';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { splitCommaSeparated } from '$lib/server/actions/string-parsers';
 import { getDb } from '$lib/server/db';
 import { meditationRoutines } from '$lib/server/db/schema';
 import { generateId, withAuditFieldsForCreate } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';

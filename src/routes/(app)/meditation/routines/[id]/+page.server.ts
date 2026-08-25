@@ -1,4 +1,3 @@
-import { logger } from '$lib';
 import {
 	completeSessionSchema,
 	editSessionSchema,
@@ -18,6 +17,7 @@ import {
 	withAuditFieldsForCreate,
 	withAuditFieldsForUpdate
 } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { safeParse } from '$lib/utils/json';
 import { error, fail, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import { and, desc, eq, or } from 'drizzle-orm';
