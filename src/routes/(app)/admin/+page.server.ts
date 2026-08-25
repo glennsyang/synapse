@@ -1,9 +1,10 @@
 import { scopesToPermissions, type ApiScope } from '$lib/api-scopes';
+import type { AdminApiLogEntry } from '$lib/components/admin/api-logs-columns';
 import { createApiKeySchema, revokeApiKeySchema } from '$lib/schemas/api-key';
 import { requireAdmin } from '$lib/server/actions/auth-guard';
 import { auth } from '$lib/server/auth';
 import { getDb } from '$lib/server/db';
-import { people, user, visits } from '$lib/server/db/schema';
+import { apiAuditLog, apiKey, people, user, visits } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
 import { logger } from '$lib/server/logger';
 import { fail } from '@sveltejs/kit';
@@ -19,14 +20,36 @@ export const load: PageServerLoad = async ({ request }) => {
 	try {
 		const db = getDb();
 
-		const [users, archivedPeople, { apiKeys }] = await Promise.all([
+		const [users, archivedPeople, { apiKeys }, auditEntries] = await Promise.all([
 			db.query.user.findMany({ orderBy: [desc(user.createdAt)] }),
 			db.query.people.findMany({
 				where: eq(people.isArchived, true),
 				orderBy: [desc(people.updatedAt)]
 			}),
-			auth.api.listApiKeys({ headers: request.headers })
+			auth.api.listApiKeys({ headers: request.headers }),
+			db.query.apiAuditLog.findMany({
+				with: { user: true },
+				orderBy: [desc(apiAuditLog.createdAt)]
+			})
 		]);
+
+		// apiKeyId has no FK to apiKey.id (by design, so the trail survives key revocation),
+		// so resolve names via a separate lookup rather than a join, tolerating ids with no match.
+		const apiKeyIds = [...new Set(auditEntries.map((entry) => entry.apiKeyId))];
+		const apiKeyRows =
+			apiKeyIds.length > 0
+				? await db
+						.select({ id: apiKey.id, name: apiKey.name })
+						.from(apiKey)
+						.where(inArray(apiKey.id, apiKeyIds))
+				: [];
+		const apiKeyNamesById = new Map(apiKeyRows.map((row) => [row.id, row.name]));
+
+		const apiLogs: AdminApiLogEntry[] = auditEntries.map((entry) => ({
+			...entry,
+			apiKeyName: apiKeyNamesById.get(entry.apiKeyId) ?? null,
+			apiKeyExists: apiKeyNamesById.has(entry.apiKeyId)
+		}));
 
 		const ownerIds = [...new Set(archivedPeople.map((person) => person.userId))];
 		const owners =
@@ -61,11 +84,12 @@ export const load: PageServerLoad = async ({ request }) => {
 				lastVisitDate: latestVisitsByPersonId.get(person.id)?.date ?? null
 			})),
 			apiKeys,
+			apiLogs,
 			createApiKeyForm
 		};
 	} catch (err) {
 		logger.error('Failed to load admin dashboard data', err);
-		return { users: [], archivedPeople: [], apiKeys: [], createApiKeyForm };
+		return { users: [], archivedPeople: [], apiKeys: [], apiLogs: [], createApiKeyForm };
 	}
 };
 

@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { API_SCOPES, type ApiScope } from '$lib/api-scopes';
 	import AdminApiKeysTable from '$lib/components/admin/AdminApiKeysTable.svelte';
+	import AdminApiLogsTable from '$lib/components/admin/AdminApiLogsTable.svelte';
 	import AdminArchivedPersonsTable from '$lib/components/admin/AdminArchivedPersonsTable.svelte';
 	import AdminUsersTable from '$lib/components/admin/AdminUsersTable.svelte';
 	import PageShell from '$lib/components/app/PageShell.svelte';
@@ -22,7 +23,7 @@
 
 	const activeTab = $derived.by(() => {
 		const tab = page.url.searchParams.get('tab');
-		return tab === 'archived-persons' || tab === 'api-keys' ? tab : 'users';
+		return tab === 'archived-persons' || tab === 'api-keys' || tab === 'api-logs' ? tab : 'users';
 	});
 
 	async function switchTab(tab: string) {
@@ -83,7 +84,7 @@
 
 	<Tabs.Root value={activeTab} class="w-full gap-3">
 		<Tabs.List
-			class="bg-muted/75 text-muted-foreground grid h-11 w-full grid-cols-3 rounded-xl p-1"
+			class="bg-muted/75 text-muted-foreground grid h-11 w-full grid-cols-4 rounded-xl p-1"
 		>
 			<Tabs.Trigger
 				value="users"
@@ -111,6 +112,15 @@
 				}}
 			>
 				API Keys
+			</Tabs.Trigger>
+			<Tabs.Trigger
+				value="api-logs"
+				class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
+				onclick={() => {
+					if (activeTab !== 'api-logs') void switchTab('api-logs');
+				}}
+			>
+				API Logs
 			</Tabs.Trigger>
 		</Tabs.List>
 
@@ -223,6 +233,13 @@
 			</Card>
 
 			<AdminApiKeysTable apiKeys={data.apiKeys} />
+		</Tabs.Content>
+
+		<Tabs.Content value="api-logs" class="mt-0 w-full space-y-4">
+			<p class="text-muted-foreground text-sm">
+				Audit trail of write actions taken via the external API.
+			</p>
+			<AdminApiLogsTable entries={data.apiLogs} />
 		</Tabs.Content>
 	</Tabs.Root>
 </PageShell>

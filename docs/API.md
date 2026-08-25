@@ -20,6 +20,8 @@ Authorization: Bearer <key>
   stored, so if you lose it you'll need to revoke it and create a new one.
 - Each key is scoped to a specific set of permissions (see below) and can optionally expire.
 - Each key has its own rate limit; repeated requests beyond it return `429`.
+- **Admin → API Logs** (`/admin`) shows the same audit trail described below — who made each
+  write, with which key, and what happened — for reviewing external activity in the UI.
 
 ## Scopes
 
