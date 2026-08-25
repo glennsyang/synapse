@@ -42,7 +42,7 @@ Never use `console.log`/`console.error`/etc. directly — import `logger` from `
 
 ### Custom static checks (`npm run lint:static`)
 
-Beyond oxlint, this repo runs its own scripts in `scripts/`: `check-dead-exports.mjs`, `check-redirect-throws.mjs`, `check-no-explicit-any.mjs`, plus `fallow dead-code`. Run `npm run lint` (not just oxlint) to get all of them.
+Beyond oxlint, this repo runs its own scripts in `scripts/`: `check-redirect-throws.mjs`, `check-no-explicit-any.mjs`, plus `fallow dead-code`. Run `npm run lint` (not just oxlint) to get all of them.
 
 ### Git hooks (lefthook)
 
