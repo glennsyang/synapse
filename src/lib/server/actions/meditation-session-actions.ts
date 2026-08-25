@@ -1,8 +1,8 @@
-import { logger } from '$lib';
 import { editSessionSchema } from '$lib/schemas/meditation';
 import { getDb } from '$lib/server/db';
 import { meditationSessions } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';

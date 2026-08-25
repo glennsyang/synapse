@@ -11,7 +11,7 @@
  * Logs all sent emails in email_notifications table to prevent duplicates.
  */
 
-import { logger } from '$lib';
+import { logger } from '$lib/server/logger';
 import { getVisitStatusThresholdsByUserIds } from '$lib/server/visit-status-settings';
 import { APP_TIME_ZONE, getTodayString } from '$lib/utils/date';
 import { getWorkoutNotificationTag } from '$lib/utils/workout';

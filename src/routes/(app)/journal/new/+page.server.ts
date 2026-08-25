@@ -1,9 +1,9 @@
-import { logger } from '$lib';
 import { buildWeatherJson, journalEntrySchema } from '$lib/schemas/journal';
 import { requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { generateId, withAuditFieldsForCreate } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { getTodayString } from '$lib/utils/date';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms';

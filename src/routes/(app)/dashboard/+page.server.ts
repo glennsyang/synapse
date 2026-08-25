@@ -1,4 +1,3 @@
-import { logger } from '$lib';
 import { getUser } from '$lib/server/actions/auth-guard';
 import { getDashboardGoalsForUser } from '$lib/server/dashboard-goal-settings';
 import { getDb } from '$lib/server/db';
@@ -11,6 +10,7 @@ import {
 	visits,
 	workoutLogs
 } from '$lib/server/db/schema';
+import { logger } from '$lib/server/logger';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
 import { DEFAULT_DASHBOARD_GOALS } from '$lib/utils/dashboard-goals';
 import {

@@ -1,9 +1,9 @@
-import { logger } from '$lib';
 import { buildWeatherJson, journalEntrySchema } from '$lib/schemas/journal';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { journalEntries } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { safeParse } from '$lib/utils/json';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';

@@ -1,5 +1,5 @@
 import { AUTH_ALERTS_URL, REMINDER_ALERTS_URL } from '$app/env/private';
-import { logger } from '$lib';
+import { logger } from '$lib/server/logger';
 
 /**
  * Sends a notification to your phone

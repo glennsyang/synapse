@@ -1,8 +1,8 @@
-import { logger } from '$lib';
 import { requireAdmin } from '$lib/server/actions/auth-guard';
 import { getDb } from '$lib/server/db';
 import { people, user, visits } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
+import { logger } from '$lib/server/logger';
 import { fail } from '@sveltejs/kit';
 import { asc, desc, eq, inArray } from 'drizzle-orm';
 
