@@ -381,7 +381,7 @@ export const load = async ({ locals }) => {
 **Pattern 3: Client-Only State**
 ```ts
 // stores.svelte.ts
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 function createClientStore() {
   if (!browser) return { value: null };

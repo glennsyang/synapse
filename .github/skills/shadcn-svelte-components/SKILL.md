@@ -17,11 +17,11 @@ Use shadcn-svelte components (bits-ui) for UI. Import with namespace pattern.
 
 ```svelte
 <script lang="ts">
-	import * as Dialog from '$comp/ui/dialog';
-	import * as DropdownMenu from '$comp/ui/dropdown-menu';
-	import * as Tooltip from '$comp/ui/tooltip';
-	import { Button } from '$comp/ui/button';
-	import { Input } from '$comp/ui/input';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
 </script>
 ```
 
@@ -99,8 +99,8 @@ When using trigger components with custom elements like Button, **always use the
 
 ```svelte
 <script lang="ts">
-	import * as Dialog from '$comp/ui/dialog';
-	import { Button } from '$comp/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
 
 	let openCreateDialog = $state(false);
 </script>
@@ -143,7 +143,7 @@ When using trigger components with custom elements like Button, **always use the
 
 ```svelte
 <script lang="ts">
-	import * as DropdownMenu from '$comp/ui/dropdown-menu';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { statusOptions } from './options';
 </script>
 
@@ -167,7 +167,7 @@ When using trigger components with custom elements like Button, **always use the
 
 ```typescript
 // options.ts
-import type { DropdownItem } from '$shared/types';
+import type { DropdownItem } from '$lib/types';
 
 export enum Status {
     Active = 'active',

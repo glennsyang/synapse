@@ -110,7 +110,7 @@ Do **not** use this agent for visual/UI-only feedback unless security-relevant.
 5. **Fix Guidance**
    - Provide concrete code-level remediation and safer alternatives.
 6. **Report Creation**
-   - Save a review report at: `docs/code-review/[YYYY-MM-DD]-review.md`.
+   - Save a review report at: `docs/security-review/[YYYY-MM-DD]-review.md`.
 
 ## Severity Model
 

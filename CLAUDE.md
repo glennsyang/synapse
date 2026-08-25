@@ -75,7 +75,7 @@ src/
 
 ## Log-entry dialog pattern (`src/lib/components/fitness/dialogs/`)
 
-`LogWorkoutDialog`, `LogMealDialog`, `LogWeightDialog`, `CreateReminderDialog`, `SetCalorieTargetDialog`, `SetGoalWeightDialog` all follow one identical skeleton — **match it exactly** when adding a new one (a shared scaffold command for this doesn't exist yet):
+`LogWorkoutDialog`, `LogMealDialog`, `LogWeightDialog`, `CreateReminderDialog`, `SetCalorieTargetDialog`, `SetGoalWeightDialog` all follow one identical skeleton — **match it exactly** when adding a new one. The shared toolkit's `/scaffold-form` command's "dialog-based entry form" flavor targets this exact shape — point it at one of these dialogs as the exemplar rather than hand-rolling a new one from scratch:
 
 ```ts
 let {
@@ -147,6 +147,6 @@ npm run db:migrate      # drizzle-kit migrate
 
 ## Shared toolkit
 
-This repo uses the shared `sveltekit-toolkit` plugin (see `.claude/settings.json`) for skills (svelte5-best-practices, better-auth-best-practices, shadcn-svelte-components, tailwind-patterns, frontend-design, web-design-reviewer, svelte-code-writer) and two review agents.
+This repo uses the shared `sveltekit-toolkit` plugin (see `.claude/settings.json`) for skills (svelte5-best-practices, better-auth-best-practices, shadcn-svelte-components, tailwind-patterns, frontend-design, web-design-reviewer, svelte-code-writer), two review agents, a `/propagate` command for replicating a shared-dependency fix across the sibling repos (`meal-planner`, `sheppakai-budget`), and a `/scaffold-form` command for scaffolding a new form/CRUD/dialog feature — see the "Log-entry dialog pattern" above for this repo's dialog flavor.
 
 The `code-structure-reviewer` and `security-reviewer` agents (from the shared plugin) are available on demand — invoke them when you want a structural or security pass, not automatically on every PR. They aren't wired into any automated hook.
