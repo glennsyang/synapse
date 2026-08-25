@@ -13,13 +13,25 @@
 	"ignoreDependencies": [
 		"@flydotio/dockerfile",
 		"@internationalized/date",
+		"@lucide/svelte",
+		"@sveltejs/kit",
+		"@tailwindcss/typography",
 		"@tailwindcss/vite",
 		"@tanstack/table-core",
 		"bits-ui",
+		"clsx",
 		"dotenv",
 		"embla-carousel-svelte",
+		"layerchart",
+		"svelte",
+		"svelte-dnd-action",
+		"svelte-sonner",
+		"sveltekit-superforms",
+		"tailwind-merge",
 		"tailwind-variants",
-		"vaul-svelte"
+		"tailwindcss",
+		"vaul-svelte",
+		"zod"
 	],
 	"ignoreExports": [
 		{ "file": "src/lib/utils/ui.ts", "exports": ["WithoutChildrenOrChild", "WithElementRef"] }
