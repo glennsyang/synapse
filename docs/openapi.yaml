@@ -1,0 +1,1198 @@
+openapi: 3.1.0
+info:
+  title: Synapse External API
+  version: '1.0.0'
+  description: |
+    A small JSON API for driving Synapse from outside the web UI — a personal AI assistant,
+    a script, or a future mobile client. Authenticated with API keys, not session cookies,
+    so an external tool never needs the user's personal login.
+
+    ## Authentication
+    Every request must include `Authorization: Bearer <key>`. The key is only ever read from
+    that header — never a query parameter — and a browser session cookie is never accepted
+    as a fallback.
+
+    Keys are created and revoked from **Admin → API Keys** in the web UI. The plaintext key
+    is shown exactly once, at creation time.
+
+    ## Scopes
+    Each key is granted one or more of the following scopes. An endpoint rejects a key that
+    lacks the scope it requires with `401 invalid_api_key` — deliberately indistinguishable
+    from an unknown key, so a caller can't probe which reason applies.
+
+    | Scope | Grants |
+    | --- | --- |
+    | `tasks:read` | `GET /tasks`, `GET /tasks/{id}` |
+    | `tasks:write` | `POST /tasks`, `PATCH /tasks/{id}` |
+    | `mood:read` | `GET /mood` |
+    | `mood:write` | `POST /mood` |
+    | `workouts:read` | `GET /workouts`, `GET /workouts/{id}` |
+    | `workouts:write` | `POST /workouts`, `PATCH /workouts/{id}` |
+    | `meals:read` | `GET /meals`, `GET /meals/{id}` |
+    | `meals:write` | `POST /meals`, `PATCH /meals/{id}` |
+    | `visits:read` | `GET /visits`, `GET /visits/{id}` |
+    | `visits:write` | `POST /visits`, `PATCH /visits/{id}` |
+    | `people:read` | `GET /people` |
+
+    `people:read` exists mainly so a caller can resolve a `personId` for the visits
+    endpoints — a visit is tied to an existing person record, not a free-text name.
+
+    ## Response shape
+    Every response is one of exactly two shapes: `{ "data": <payload> }` on success, or
+    `{ "error": { "code": "...", "message": "..." } }` on failure. There is no third shape.
+
+    ## Notable quirks for API consumers
+    - `tasks.tags` and `visits.companions` are stored as JSON-encoded strings in the
+      database. **Requests** accept them as a native JSON array of strings, but
+      **responses** return them as a JSON-encoded string (e.g. `"[\"errands\",\"urgent\"]"`,
+      or `null` if empty) — parse that string with `JSON.parse` to get the array back.
+    - `GET /workouts` (list) returns workout objects **without** an `exercises` field.
+      `GET /workouts/{id}`, and the `POST`/`PATCH` responses, include the full `exercises`
+      array. Fetch a single workout by id to see its exercises.
+    - `mood` has no separate update endpoint: there is at most one mood log per calendar
+      day, so `POST /mood` always creates-or-updates the entry for the given `date`.
+    - There are no delete endpoints on this API — delete records from the web UI.
+    - No `Access-Control-Allow-Origin` header is ever returned; this API is for
+      server-to-server or script use, not for calling from browser JavaScript on another site.
+servers:
+  - url: https://synapse.example.com/api/v1
+    description: Production (replace host with the actual deployment)
+  - url: http://localhost:5173/api/v1
+    description: Local development
+
+security:
+  - apiKeyAuth: []
+
+tags:
+  - name: Tasks
+    description: Kanban-style task items.
+  - name: Mood
+    description: Daily mood logging (at most one entry per calendar day).
+  - name: Workouts
+    description: Workout logs, including strength-workout exercises.
+  - name: Meals
+    description: Meal logs with optional calorie estimates.
+  - name: Visits
+    description: Visit records tied to an existing person.
+  - name: People
+    description: Read-only lookup of people, for resolving a visit's personId.
+
+paths:
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [Tasks]
+      summary: List tasks
+      description: Requires the `tasks:read` scope.
+      parameters:
+        - $ref: '#/components/parameters/TaskState'
+        - $ref: '#/components/parameters/TaskPriority'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: A list of tasks, most recently created first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: createTask
+      tags: [Tasks]
+      summary: Create a task
+      description: Requires the `tasks:write` scope.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+            examples:
+              default:
+                value:
+                  title: Renew passport
+                  description: Expires next spring
+                  tags: [errands, urgent]
+                  dueDate: '2026-09-01'
+                  priority: 2
+                  state: new
+      responses:
+        '201':
+          description: The created task.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /tasks/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PathId'
+    get:
+      operationId: getTask
+      tags: [Tasks]
+      summary: Get a task
+      description: Requires the `tasks:read` scope.
+      responses:
+        '200':
+          description: The task.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      operationId: updateTask
+      tags: [Tasks]
+      summary: Update a task
+      description: |
+        Requires the `tasks:write` scope. Body is a partial update — only the fields
+        present are changed. Setting a nullable field to `null` clears it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+            examples:
+              default:
+                value:
+                  state: in_progress
+                  priority: 1
+      responses:
+        '200':
+          description: The updated task.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /mood:
+    get:
+      operationId: listMoodLogs
+      tags: [Mood]
+      summary: List mood logs
+      description: Requires the `mood:read` scope.
+      parameters:
+        - $ref: '#/components/parameters/StartDate'
+        - $ref: '#/components/parameters/EndDate'
+      responses:
+        '200':
+          description: Mood logs in ascending date order.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MoodLog'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: upsertMoodLog
+      tags: [Mood]
+      summary: Log or update today's (or any day's) mood
+      description: |
+        Requires the `mood:write` scope. There is at most one mood log per calendar day —
+        this always creates-or-updates the entry for `date`. Returns `200` in both cases.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertMoodRequest'
+            examples:
+              default:
+                value:
+                  date: '2026-08-25'
+                  mood: happy
+                  notes: Slept well
+      responses:
+        '200':
+          description: The created-or-updated mood log.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/MoodLog'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /workouts:
+    get:
+      operationId: listWorkouts
+      tags: [Workouts]
+      summary: List workouts
+      description: |
+        Requires the `workouts:read` scope. List items do **not** include the `exercises`
+        array — fetch a single workout by id for that.
+      parameters:
+        - $ref: '#/components/parameters/StartDate'
+        - $ref: '#/components/parameters/EndDate'
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/WorkoutType'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Workouts in descending date order.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Workout'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: createWorkout
+      tags: [Workouts]
+      summary: Log a workout
+      description: |
+        Requires the `workouts:write` scope. `exercises` is only meaningful when
+        `type` is `strength`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkoutRequest'
+            examples:
+              strength:
+                summary: Strength workout with exercises
+                value:
+                  date: '2026-08-25'
+                  time: '07:30'
+                  type: strength
+                  durationMinutes: 45
+                  exercises:
+                    - exerciseName: Squat
+                      sets: 3
+                      reps: 5
+                      weightLbs: 185
+              cardio:
+                summary: Cardio workout, no exercises
+                value:
+                  date: '2026-08-25'
+                  type: cardio
+                  durationMinutes: 30
+      responses:
+        '201':
+          description: The created workout, including its exercises (if any).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WorkoutWithExercises'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /workouts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PathId'
+    get:
+      operationId: getWorkout
+      tags: [Workouts]
+      summary: Get a workout
+      description: Requires the `workouts:read` scope. Includes the `exercises` array.
+      responses:
+        '200':
+          description: The workout, including its exercises.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WorkoutWithExercises'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      operationId: updateWorkout
+      tags: [Workouts]
+      summary: Update a workout
+      description: |
+        Requires the `workouts:write` scope. Body is a partial update. Passing
+        `exercises` (including an empty array) **replaces** the workout's full
+        exercise list; omitting it leaves existing exercises untouched.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkoutRequest'
+            examples:
+              default:
+                value:
+                  exercises:
+                    - exerciseName: Deadlift
+                      sets: 1
+                      reps: 5
+                      weightLbs: 225
+      responses:
+        '200':
+          description: The updated workout, including its exercises.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WorkoutWithExercises'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /meals:
+    get:
+      operationId: listMeals
+      tags: [Meals]
+      summary: List meals
+      description: Requires the `meals:read` scope.
+      parameters:
+        - $ref: '#/components/parameters/StartDate'
+        - $ref: '#/components/parameters/EndDate'
+        - name: timeOfDay
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/MealType'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Meals in descending date order.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Meal'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: createMeal
+      tags: [Meals]
+      summary: Log a meal
+      description: Requires the `meals:write` scope.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMealRequest'
+            examples:
+              default:
+                value:
+                  date: '2026-08-25'
+                  timeOfDay: lunch
+                  description: Chicken salad
+                  caloriesEstimate: 450
+      responses:
+        '201':
+          description: The created meal.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Meal'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /meals/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PathId'
+    get:
+      operationId: getMeal
+      tags: [Meals]
+      summary: Get a meal
+      description: Requires the `meals:read` scope.
+      responses:
+        '200':
+          description: The meal.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Meal'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      operationId: updateMeal
+      tags: [Meals]
+      summary: Update a meal
+      description: Requires the `meals:write` scope. Body is a partial update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMealRequest'
+            examples:
+              default:
+                value:
+                  caloriesEstimate: 500
+      responses:
+        '200':
+          description: The updated meal.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Meal'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /visits:
+    get:
+      operationId: listVisits
+      tags: [Visits]
+      summary: List visits
+      description: Requires the `visits:read` scope.
+      parameters:
+        - name: personId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter to visits with this person.
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Visits in descending date order.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Visit'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: createVisit
+      tags: [Visits]
+      summary: Log a visit
+      description: |
+        Requires the `visits:write` scope. `personId` must reference an existing person
+        owned by this key's user — use `GET /people` to look one up. Returns `404` if the
+        person doesn't exist (or isn't owned by this account).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVisitRequest'
+            examples:
+              default:
+                value:
+                  personId: abc123
+                  date: '2026-08-25'
+                  companions: [Alex]
+                  notes: Coffee catch-up
+                  followUpDate: '2026-09-25'
+      responses:
+        '201':
+          description: The created visit.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Visit'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: The given `personId` doesn't exist, or isn't owned by this account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /visits/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PathId'
+    get:
+      operationId: getVisit
+      tags: [Visits]
+      summary: Get a visit
+      description: Requires the `visits:read` scope.
+      responses:
+        '200':
+          description: The visit.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Visit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      operationId: updateVisit
+      tags: [Visits]
+      summary: Update a visit
+      description: Requires the `visits:write` scope. Body is a partial update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVisitRequest'
+            examples:
+              default:
+                value:
+                  notes: Coffee and cake
+      responses:
+        '200':
+          description: The updated visit.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Visit'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /people:
+    get:
+      operationId: listPeople
+      tags: [People]
+      summary: List people
+      description: |
+        Requires the `people:read` scope. Use the returned `id` as `personId` when
+        creating a visit.
+      parameters:
+        - name: includeArchived
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Include archived people. Defaults to `false`.
+      responses:
+        '200':
+          description: People, alphabetical by name.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Person'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: http
+      scheme: bearer
+      description: |
+        An API key created from Admin → API Keys, sent as `Authorization: Bearer <key>`.
+        Scopes are enforced per-endpoint (see the scopes table above) — this scheme
+        cannot express that natively, so check each operation's description.
+
+  parameters:
+    PathId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The record's id.
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+      description: Max results to return.
+    StartDate:
+      name: startDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+      description: Inclusive range start (`YYYY-MM-DD`). Must be given together with `endDate`.
+    EndDate:
+      name: endDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date
+      description: Inclusive range end (`YYYY-MM-DD`). Must be given together with `startDate`.
+    TaskState:
+      name: state
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/TaskState'
+    TaskPriority:
+      name: priority
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 4
+
+  responses:
+    ValidationFailed:
+      description: Request body or query parameters failed validation, or the body wasn't valid JSON.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_failed:
+              value: { error: { code: validation_failed, message: 'Title is required' } }
+            invalid_json:
+              value: { error: { code: invalid_json, message: 'Request body must be valid JSON.' } }
+    Unauthorized:
+      description: >
+        Missing/malformed `Authorization` header, or the key is unknown, disabled, expired,
+        or lacks the required scope.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missing_header:
+              value:
+                error:
+                  code: missing_header
+                  message: 'Missing or malformed Authorization header. Use "Authorization: Bearer <key>".'
+            invalid_api_key:
+              value: { error: { code: invalid_api_key, message: 'Invalid API key.' } }
+    NotFound:
+      description: The record doesn't exist, or doesn't belong to this key's user.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            default:
+              value: { error: { code: not_found, message: 'Task not found.' } }
+    RateLimited:
+      description: This key's rate limit or request quota was exceeded.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            default:
+              value:
+                {
+                  error:
+                    {
+                      code: rate_limited,
+                      message: 'Rate limit exceeded for this API key. Try again later.'
+                    }
+                }
+    InternalError:
+      description: Something went wrong server-side.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - missing_header
+                - invalid_scheme
+                - malformed_header
+                - invalid_api_key
+                - rate_limited
+                - validation_failed
+                - invalid_json
+                - not_found
+                - internal_error
+            message:
+              type: string
+
+    TaskState:
+      type: string
+      enum: [new, in_progress, on_hold, blocked, done]
+
+    Task:
+      type: object
+      description: >
+        `tags` is a JSON-encoded array of strings (or `null`) — parse it with `JSON.parse`
+        to get a `string[]`.
+      required:
+        - id
+        - userId
+        - taskNumber
+        - title
+        - description
+        - dueDate
+        - state
+        - sortOrder
+        - priority
+        - tags
+        - createdAt
+        - updatedAt
+        - completedAt
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        taskNumber: { type: integer, description: 'Auto-assigned, sequential across all users.' }
+        title: { type: string }
+        description: { type: [string, 'null'] }
+        dueDate: { type: [string, 'null'], format: date }
+        state: { $ref: '#/components/schemas/TaskState' }
+        sortOrder: { type: integer, description: 'Position within its kanban column.' }
+        priority: { type: integer, minimum: 1, maximum: 4 }
+        tags:
+          {
+            type: [string, 'null'],
+            description: 'JSON-encoded string[], e.g. ''["errands","urgent"]''.'
+          }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        completedAt:
+          { type: [string, 'null'], format: date-time, description: 'Set when state becomes done.' }
+
+    CreateTaskRequest:
+      type: object
+      required: [title, priority]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, maxLength: 5000 }
+        tags: { type: array, items: { type: string, minLength: 1 } }
+        dueDate: { type: string, format: date }
+        priority: { type: integer, minimum: 1, maximum: 4 }
+        state: { $ref: '#/components/schemas/TaskState' }
+          # defaults to "new" if omitted
+
+    UpdateTaskRequest:
+      type: object
+      description: All fields optional; nullable fields may be set to `null` to clear them.
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: [string, 'null'], maxLength: 5000 }
+        tags: { type: [array, 'null'], items: { type: string, minLength: 1 } }
+        dueDate: { type: [string, 'null'], format: date }
+        priority: { type: integer, minimum: 1, maximum: 4 }
+        state: { $ref: '#/components/schemas/TaskState' }
+
+    MoodLog:
+      type: object
+      required: [id, userId, date, mood, customMood, notes, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        date: { type: string, format: date }
+        mood:
+          type: string
+          enum: [sad, anxious, overwhelmed, tired, calm, focused, content, happy, custom]
+        customMood:
+          {
+            type: [string, 'null'],
+            maxLength: 40,
+            description: "Required (non-empty) when mood is 'custom'."
+          }
+        notes: { type: [string, 'null'], maxLength: 280 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    UpsertMoodRequest:
+      type: object
+      required: [date, mood]
+      properties:
+        date: { type: string, format: date }
+        mood:
+          type: string
+          enum: [sad, anxious, overwhelmed, tired, calm, focused, content, happy, custom]
+        customMood: { type: string, maxLength: 40 }
+        notes: { type: string, maxLength: 280 }
+
+    WorkoutType:
+      type: string
+      enum: [strength, cardio, hiit, walk, stretch, other]
+
+    WorkoutExercise:
+      type: object
+      required: [id, workoutLogId, exerciseName, sets, reps, weightLbs, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        workoutLogId: { type: string }
+        exerciseName: { type: string }
+        sets: { type: [integer, 'null'] }
+        reps: { type: [integer, 'null'] }
+        weightLbs: { type: [integer, 'null'] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    CreateWorkoutExercise:
+      type: object
+      required: [exerciseName]
+      properties:
+        exerciseName: { type: string, minLength: 1 }
+        sets: { type: [integer, 'null'], minimum: 1 }
+        reps: { type: [integer, 'null'], minimum: 1 }
+        weightLbs: { type: [integer, 'null'], minimum: 1 }
+
+    Workout:
+      type: object
+      description: Shape returned by `GET /workouts` (list) — no `exercises` field.
+      required:
+        - id
+        - userId
+        - date
+        - time
+        - type
+        - durationMinutes
+        - steps
+        - notes
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        date: { type: string, format: date }
+        time: { type: [string, 'null'], pattern: "^\\d{2}:\\d{2}$" }
+        type: { $ref: '#/components/schemas/WorkoutType' }
+        durationMinutes: { type: [integer, 'null'] }
+        steps: { type: [integer, 'null'], description: 'Used for walk workouts.' }
+        notes: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    WorkoutWithExercises:
+      description: Shape returned by create/update and `GET /workouts/{id}`.
+      allOf:
+        - $ref: '#/components/schemas/Workout'
+        - type: object
+          required: [exercises]
+          properties:
+            exercises:
+              type: array
+              items:
+                $ref: '#/components/schemas/WorkoutExercise'
+
+    CreateWorkoutRequest:
+      type: object
+      required: [date, type]
+      properties:
+        date: { type: string, format: date }
+        time: { type: string, pattern: "^\\d{2}:\\d{2}$" }
+        type: { $ref: '#/components/schemas/WorkoutType' }
+        durationMinutes: { type: integer, minimum: 1 }
+        steps: { type: integer, minimum: 1 }
+        notes: { type: string }
+        exercises:
+          type: array
+          description: Only meaningful when type is 'strength'.
+          items:
+            $ref: '#/components/schemas/CreateWorkoutExercise'
+
+    UpdateWorkoutRequest:
+      type: object
+      description: >
+        All fields optional. Passing `exercises` (even `[]`) replaces the full exercise
+        list; omitting it leaves existing exercises untouched.
+      properties:
+        date: { type: string, format: date }
+        time: { type: [string, 'null'], pattern: "^\\d{2}:\\d{2}$" }
+        type: { $ref: '#/components/schemas/WorkoutType' }
+        durationMinutes: { type: [integer, 'null'], minimum: 1 }
+        steps: { type: [integer, 'null'], minimum: 1 }
+        notes: { type: [string, 'null'] }
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateWorkoutExercise'
+
+    MealType:
+      type: string
+      enum: [breakfast, lunch, dinner, snack]
+
+    Meal:
+      type: object
+      required: [id, userId, date, timeOfDay, description, caloriesEstimate, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        date: { type: string, format: date }
+        timeOfDay: { $ref: '#/components/schemas/MealType' }
+        description: { type: string }
+        caloriesEstimate: { type: [integer, 'null'] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    CreateMealRequest:
+      type: object
+      required: [date, timeOfDay, description]
+      properties:
+        date: { type: string, format: date }
+        timeOfDay: { $ref: '#/components/schemas/MealType' }
+        description: { type: string, minLength: 1 }
+        caloriesEstimate: { type: integer, minimum: 1 }
+
+    UpdateMealRequest:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        timeOfDay: { $ref: '#/components/schemas/MealType' }
+        description: { type: string, minLength: 1 }
+        caloriesEstimate: { type: [integer, 'null'], minimum: 1 }
+
+    Visit:
+      type: object
+      description: >
+        `companions` is a JSON-encoded array of strings (or `null`) — parse it with
+        `JSON.parse` to get a `string[]`.
+      required:
+        - id
+        - personId
+        - userId
+        - date
+        - time
+        - companions
+        - notes
+        - followUpDate
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string }
+        personId: { type: string }
+        userId: { type: string }
+        date: { type: string, format: date }
+        time: { type: [string, 'null'], pattern: "^\\d{2}:\\d{2}$" }
+        companions: { type: [string, 'null'], description: 'JSON-encoded string[].' }
+        notes: { type: [string, 'null'] }
+        followUpDate: { type: [string, 'null'], format: date }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    CreateVisitRequest:
+      type: object
+      required: [personId, date]
+      properties:
+        personId: { type: string, minLength: 1 }
+        date: { type: string, format: date }
+        time: { type: string, pattern: "^\\d{2}:\\d{2}$" }
+        companions: { type: array, items: { type: string, minLength: 1 } }
+        notes: { type: string }
+        followUpDate: { type: string, format: date }
+
+    UpdateVisitRequest:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        time: { type: [string, 'null'], pattern: "^\\d{2}:\\d{2}$" }
+        companions: { type: [array, 'null'], items: { type: string, minLength: 1 } }
+        notes: { type: [string, 'null'] }
+        followUpDate: { type: [string, 'null'], format: date }
+
+    Person:
+      type: object
+      required: [id, name, isArchived, scheduledVisitDate]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        isArchived: { type: boolean }
+        scheduledVisitDate: { type: [string, 'null'], format: date }
