@@ -1,6 +1,6 @@
-<script lang="ts" generics="TData, TValue">
+<script lang="ts" generics="TData extends RowData, TValue">
 	import { Button } from '$lib/components/ui/button';
-	import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table';
+	import { features, FlexRender, type Features } from '$lib/components/ui/data-table';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
@@ -11,18 +11,14 @@
 		ChevronsLeftIcon,
 		ChevronsRightIcon
 	} from '@lucide/svelte';
-	import type {
-		ColumnDef,
-		PaginationState,
-		SortingState,
-		VisibilityState
-	} from '@tanstack/table-core';
 	import {
-		getCoreRowModel,
-		getFilteredRowModel,
-		getPaginationRowModel,
-		getSortedRowModel
-	} from '@tanstack/table-core';
+		createTable,
+		type ColumnDef,
+		type ColumnVisibilityState,
+		type PaginationState,
+		type RowData,
+		type SortingState
+	} from '@tanstack/svelte-table';
 
 	let {
 		columns,
@@ -32,7 +28,7 @@
 		defaultSorting = [],
 		emptyMessage = 'No results found.'
 	}: {
-		columns: ColumnDef<TData, TValue>[];
+		columns: ColumnDef<Features, TData, TValue>[];
 		data: TData[];
 		searchPlaceholder?: string;
 		defaultPageSize?: number;
@@ -45,19 +41,16 @@
 	// svelte-ignore state_referenced_locally
 	let sorting = $state<SortingState>(defaultSorting);
 	let globalFilter = $state<string>('');
-	let columnVisibility = $state<VisibilityState>({});
+	let columnVisibility = $state<ColumnVisibilityState>({});
 
-	const table = createSvelteTable({
+	const table = createTable({
+		features,
 		get data() {
 			return data;
 		},
 		get columns() {
-			return columns;
+			return columns as ColumnDef<Features, TData>[];
 		},
-		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
 		onPaginationChange: (updater) => {
 			pagination = typeof updater === 'function' ? updater(pagination) : updater;
 		},
@@ -96,7 +89,7 @@
 	{#if searchPlaceholder}
 		<Input
 			placeholder={searchPlaceholder}
-			value={table.getState().globalFilter ?? ''}
+			value={globalFilter}
 			onchange={(e) => table.setGlobalFilter(e.currentTarget.value)}
 			oninput={(e) => table.setGlobalFilter(e.currentTarget.value)}
 			class="max-w-sm"
@@ -111,10 +104,7 @@
 						{#each headerGroup.headers as header (header.id)}
 							<Table.Head colspan={header.colSpan}>
 								{#if !header.isPlaceholder}
-									<FlexRender
-										content={header.column.columnDef.header}
-										context={header.getContext()}
-									/>
+									<FlexRender {header} />
 								{/if}
 							</Table.Head>
 						{/each}
@@ -126,7 +116,7 @@
 					<Table.Row>
 						{#each row.getVisibleCells() as cell (cell.id)}
 							<Table.Cell>
-								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+								<FlexRender {cell} />
 							</Table.Cell>
 						{/each}
 					</Table.Row>
@@ -146,12 +136,10 @@
 			<Label for="rows-per-page" class="text-sm font-medium">Rows per page</Label>
 			<Select.Root
 				type="single"
-				bind:value={
-					() => `${table.getState().pagination.pageSize}`, (v) => table.setPageSize(Number(v))
-				}
+				bind:value={() => `${pagination.pageSize}`, (v) => table.setPageSize(Number(v))}
 			>
 				<Select.Trigger size="sm" class="w-20" id="rows-per-page">
-					{table.getState().pagination.pageSize}
+					{pagination.pageSize}
 				</Select.Trigger>
 				<Select.Content side="top">
 					{#each [10, 20, 30, 40, 50] as pageSize (pageSize)}
@@ -163,7 +151,7 @@
 			</Select.Root>
 		</div>
 		<div class="flex w-fit items-center justify-center text-sm font-medium">
-			Page {table.getState().pagination.pageIndex + 1} of
+			Page {pagination.pageIndex + 1} of
 			{table.getPageCount()}
 		</div>
 		<div class="ms-auto flex items-center gap-2 lg:ms-0">

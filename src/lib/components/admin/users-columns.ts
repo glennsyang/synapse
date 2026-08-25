@@ -1,4 +1,4 @@
-import { renderComponent } from '$lib/components/ui/data-table';
+import { type Features, renderComponent } from '$lib/components/ui/data-table';
 import type { User } from '$lib/types';
 import type { ColumnDef } from '@tanstack/table-core';
 
@@ -6,7 +6,7 @@ import DataTableSortButton from './DataTableSortButton.svelte';
 import RoleBadge from './RoleBadge.svelte';
 import StatusBadge from './StatusBadge.svelte';
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<Features, User>[] = [
 	{
 		accessorKey: 'email',
 		header: ({ column }) =>

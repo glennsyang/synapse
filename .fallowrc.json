@@ -17,6 +17,7 @@
 		"@sveltejs/kit",
 		"@tailwindcss/typography",
 		"@tailwindcss/vite",
+		"@tanstack/svelte-table",
 		"@tanstack/table-core",
 		"bits-ui",
 		"clsx",
