@@ -6,6 +6,7 @@ import {
 } from '$app/env/private';
 import { getRequestEvent } from '$app/server';
 import { logger } from '$lib/server/logger';
+import { apiKey } from '@better-auth/api-key';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createAuthMiddleware } from 'better-auth/api';
@@ -27,7 +28,8 @@ export const auth = betterAuth({
 			user: schema.user,
 			session: schema.session,
 			account: schema.account,
-			verification: schema.verification
+			verification: schema.verification,
+			apikey: schema.apiKey
 		}
 	}),
 	emailAndPassword: {
@@ -167,5 +169,24 @@ export const auth = betterAuth({
 		max: 5, // max 5 requests per window per IP
 		storage: NODE_ENV === 'production' ? 'database' : 'memory'
 	},
-	plugins: [sveltekitCookies(getRequestEvent)] // make sure this is the last plugin in the array
+	plugins: [
+		apiKey({
+			references: 'user',
+			storage: 'database',
+			requireName: true,
+			// Only ever verified explicitly via auth.api.verifyApiKey (see src/lib/server/api/require-api-key.ts).
+			// Never let a valid API key stand in for a session on the app's own cookie-based routes.
+			enableSessionForAPIKeys: false,
+			keyExpiration: {
+				minExpiresIn: 1,
+				maxExpiresIn: 365
+			},
+			rateLimit: {
+				enabled: true,
+				timeWindow: 60 * 1000, // 1 minute
+				maxRequests: 100
+			}
+		}),
+		sveltekitCookies(getRequestEvent) // make sure this is the last plugin in the array
+	]
 });
