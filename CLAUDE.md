@@ -132,7 +132,7 @@ RESEND_NEW_USER_ADDRESS=...
 SENTRY_AUTH_TOKEN=...
 ```
 
-Sentry (`@sentry/sveltekit`) is now actually wired up — `vite.config.ts` (`sentrySvelteKit({ org: 'sheppakai', project: 'synapse' })`), `src/hooks.client.ts`, and `src/hooks.server.ts` all reference it, and `$lib/server/logger`'s `warn()`/`error()` forward to it in production. The `dsn` in `hooks.client.ts`/`hooks.server.ts` is currently the placeholder `'REPLACE_WITH_SYNAPSE_SENTRY_DSN'` — a real Sentry project (`sheppakai` org, `synapse` slug) still needs to be created in the dashboard and the DSN swapped in before Sentry reporting will actually work.
+Sentry (`@sentry/sveltekit`) is now actually wired up — `vite.config.ts` (`sentrySvelteKit({ org: 'sheppakai', project: 'synapse' })`), `src/hooks.client.ts`, and `src/hooks.server.ts` all reference it, and `$lib/server/logger`'s `warn()`/`error()` forward to it in production. The `dsn` in both files points at the real `synapse` project under the `sheppakai` org.
 
 ---
 
@@ -153,6 +153,6 @@ npm run db:migrate      # drizzle-kit migrate
 
 ## Shared toolkit
 
-This repo uses the shared `sveltekit-toolkit` plugin (see `.claude/settings.json`) for skills (svelte5-best-practices, better-auth-best-practices, shadcn-svelte-components, tailwind-patterns, frontend-design, web-design-reviewer, svelte-code-writer), two review agents, a `/propagate` command for replicating a shared-dependency fix across the sibling repos (`meal-planner`, `sheppakai-budget`), and a `/scaffold-form` command for scaffolding a new form/CRUD/dialog feature — see the "Log-entry dialog pattern" above for this repo's dialog flavor.
+This repo uses the shared `sveltekit-toolkit` plugin (see `.claude/settings.json`) for skills (svelte5-best-practices, better-auth-best-practices, shadcn-svelte-components, tailwind-patterns, frontend-design, web-design-reviewer, svelte-code-writer), two review agents, a `/propagate` command for replicating a shared-dependency fix across the sibling repos (`meal-planner`, `sheppakai-budget`), a `/propagate-shared` command for syncing a change to a byte-identical shared source file (currently just `src/lib/server/logger.ts`) out to those same siblings, and a `/scaffold-form` command for scaffolding a new form/CRUD/dialog feature — see the "Log-entry dialog pattern" above for this repo's dialog flavor.
 
 The `code-structure-reviewer` and `security-reviewer` agents (from the shared plugin) are available on demand — invoke them when you want a structural or security pass, not automatically on every PR. They aren't wired into any automated hook.
