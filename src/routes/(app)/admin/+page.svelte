@@ -83,46 +83,48 @@
 	</div>
 
 	<Tabs.Root value={activeTab} class="w-full gap-3">
-		<Tabs.List
-			class="bg-muted/75 text-muted-foreground grid h-11 w-full grid-cols-4 rounded-xl p-1"
-		>
-			<Tabs.Trigger
-				value="users"
-				class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
-				onclick={() => {
-					if (activeTab !== 'users') void switchTab('users');
-				}}
+		<div class="w-full overflow-x-auto pb-1">
+			<Tabs.List
+				class="bg-muted/75 text-muted-foreground inline-flex h-11 min-w-max items-center justify-start rounded-xl p-1"
 			>
-				Users
-			</Tabs.Trigger>
-			<Tabs.Trigger
-				value="archived-persons"
-				class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
-				onclick={() => {
-					if (activeTab !== 'archived-persons') void switchTab('archived-persons');
-				}}
-			>
-				Archived Persons
-			</Tabs.Trigger>
-			<Tabs.Trigger
-				value="api-keys"
-				class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
-				onclick={() => {
-					if (activeTab !== 'api-keys') void switchTab('api-keys');
-				}}
-			>
-				API Keys
-			</Tabs.Trigger>
-			<Tabs.Trigger
-				value="api-logs"
-				class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
-				onclick={() => {
-					if (activeTab !== 'api-logs') void switchTab('api-logs');
-				}}
-			>
-				API Logs
-			</Tabs.Trigger>
-		</Tabs.List>
+				<Tabs.Trigger
+					value="users"
+					class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
+					onclick={() => {
+						if (activeTab !== 'users') void switchTab('users');
+					}}
+				>
+					Users
+				</Tabs.Trigger>
+				<Tabs.Trigger
+					value="archived-persons"
+					class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
+					onclick={() => {
+						if (activeTab !== 'archived-persons') void switchTab('archived-persons');
+					}}
+				>
+					Archived Persons
+				</Tabs.Trigger>
+				<Tabs.Trigger
+					value="api-keys"
+					class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
+					onclick={() => {
+						if (activeTab !== 'api-keys') void switchTab('api-keys');
+					}}
+				>
+					API Keys
+				</Tabs.Trigger>
+				<Tabs.Trigger
+					value="api-logs"
+					class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
+					onclick={() => {
+						if (activeTab !== 'api-logs') void switchTab('api-logs');
+					}}
+				>
+					API Logs
+				</Tabs.Trigger>
+			</Tabs.List>
+		</div>
 
 		<Tabs.Content value="users" class="mt-0 w-full space-y-4">
 			<AdminUsersTable users={data.users} />
