@@ -70,7 +70,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 		// Fetch routines
 		const routines = await db.query.meditationRoutines.findMany({
-			where: and(...routineConditions)
+			where: and(
+				or(eq(meditationRoutines.userId, userId), eq(meditationRoutines.isPredefined, true)),
+				...routineConditions
+			)
 		});
 
 		// Parse moodTags JSON for each routine
