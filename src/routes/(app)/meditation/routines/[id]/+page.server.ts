@@ -143,6 +143,18 @@ export const actions = {
 		try {
 			const db = getDb();
 
+			// Verify the routine exists and is accessible before writing a schedule for it
+			const routine = await db.query.meditationRoutines.findFirst({
+				where: and(
+					eq(meditationRoutines.id, routineId),
+					or(eq(meditationRoutines.userId, user.id), eq(meditationRoutines.isPredefined, true))
+				)
+			});
+
+			if (!routine) {
+				return fail(404, { error: 'Routine not found' });
+			}
+
 			// Parse days_of_week if provided (stored as JSON array string e.g. "[0,1,6]")
 			const daysOfWeekJson = form.data.days_of_week
 				? JSON.stringify(
@@ -253,20 +265,32 @@ export const actions = {
 		}
 
 		try {
+			const db = getDb();
+
+			// Verify the routine exists and is accessible before logging a session against it
+			const routine = await db.query.meditationRoutines.findFirst({
+				where: and(
+					eq(meditationRoutines.id, routineId),
+					or(eq(meditationRoutines.userId, user.id), eq(meditationRoutines.isPredefined, true))
+				)
+			});
+
+			if (!routine) {
+				return fail(404, { error: 'Routine not found' });
+			}
+
 			const sessionId = generateId();
 
-			await getDb()
-				.insert(meditationSessions)
-				.values({
-					id: sessionId,
-					userId: user.id,
-					routineId: routineId,
-					completedAt: new Date(form.data.completed_at).toISOString(),
-					preMoodRating: form.data.pre_mood_rating || null,
-					moodRating: form.data.mood_rating || null,
-					notes: form.data.notes || null,
-					...withAuditFieldsForCreate()
-				});
+			await db.insert(meditationSessions).values({
+				id: sessionId,
+				userId: user.id,
+				routineId: routineId,
+				completedAt: new Date(form.data.completed_at).toISOString(),
+				preMoodRating: form.data.pre_mood_rating || null,
+				moodRating: form.data.mood_rating || null,
+				notes: form.data.notes || null,
+				...withAuditFieldsForCreate()
+			});
 
 			logger.info('Meditation session completed', {
 				sessionId,

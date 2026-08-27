@@ -4,6 +4,7 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { renderMarkdownToSafeHtml } from '$lib/utils/markdown';
 	import {
 		Bold,
 		Heading,
@@ -15,7 +16,6 @@
 		Quote,
 		Underline
 	} from '@lucide/svelte/icons';
-	import { marked } from 'marked';
 
 	interface Props {
 		markdown?: string;
@@ -27,12 +27,7 @@
 
 	let activeTab = $state<'write' | 'preview'>('write');
 	let textareaRef = $state<HTMLTextAreaElement | null>(null);
-	const markdownOptions = {
-		gfm: true,
-		breaks: true,
-		headerIds: true
-	} as const;
-	let previewHtml = $derived(marked.parse(markdown, markdownOptions));
+	let previewHtml = $derived(renderMarkdownToSafeHtml(markdown));
 
 	function getLineStart(content: string, index: number): number {
 		const previousNewline = content.lastIndexOf('\n', Math.max(0, index - 1));

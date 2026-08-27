@@ -11,6 +11,15 @@ import { Resend } from 'resend';
 // Initialize Resend email client
 const resend = new Resend(RESEND_API_KEY);
 
+function escapeHtml(value: string): string {
+	return value
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&#39;');
+}
+
 export async function sendVerificationEmail(to: string, name: string, verificationUrl: string) {
 	logger.debug('📧 Sending Verification Email to:', { to });
 
@@ -32,7 +41,7 @@ export async function sendVerificationEmail(to: string, name: string, verificati
 						<h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Synapse</h1>
 					</div>
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
 							Thanks for signing up! Please verify your email address to get started with your second brain.
 						</p>
@@ -83,7 +92,7 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
 						<h1 style="color: white; margin: 0; font-size: 28px;">Password Reset</h1>
 					</div>
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
 							We received a request to reset your password. Click the button below to create a new password.
 						</p>
@@ -121,7 +130,7 @@ export async function sendNewUserEmail(to: string, name: string, email: string) 
 			from: RESEND_FROM_ADDRESS,
 			to,
 			subject: '[Synapse] New User was registered!',
-			html: `Hi ${name || email}!<br><br>Welcome to Synapse! We're excited to have you on board.<br><br>Thank you,<br>Synapse Team`
+			html: `Hi ${escapeHtml(name || email)}!<br><br>Welcome to Synapse! We're excited to have you on board.<br><br>Thank you,<br>Synapse Team`
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send email', error);
@@ -157,9 +166,9 @@ export async function sendWorkoutReminderEmail(
 						<h1 style="color: white; margin: 0; font-size: 28px;">${emoji} Workout Reminder</h1>
 					</div>
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
-							This is your friendly reminder that you scheduled a <strong>${workoutType}</strong> workout for <strong>${time}</strong> today.
+							This is your friendly reminder that you scheduled a <strong>${escapeHtml(workoutType)}</strong> workout for <strong>${escapeHtml(time)}</strong> today.
 						</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
 							Remember: consistency is key! Even a short workout is better than none.
@@ -212,9 +221,9 @@ export async function sendMeditationReminderEmail(
 						<h1 style="color: #333; margin: 0; font-size: 28px;">🧘 Meditation Reminder</h1>
 					</div>
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
-							It's time to take a mindful moment for yourself. You scheduled <strong>${routineTitle}</strong> for <strong>${time}</strong> today.
+							It's time to take a mindful moment for yourself. You scheduled <strong>${escapeHtml(routineTitle)}</strong> for <strong>${escapeHtml(time)}</strong> today.
 						</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
 							Take a few minutes to breathe, relax, and center yourself.
@@ -275,9 +284,9 @@ export async function sendVisitWarningEmail(
 						<h1 style="color: white; margin: 0; font-size: 28px;">👥 Visit Reminder</h1>
 					</div>
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
-							It's been a while since you last saw <strong>${personName}</strong> (last visit: ${lastVisitDate}).
+							It's been a while since you last saw <strong>${escapeHtml(personName)}</strong> (last visit: ${escapeHtml(lastVisitDate)}).
 						</p>
 						<div style="background: ${statusColor}; color: white; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center;">
 							<p style="margin: 0; font-size: 16px; font-weight: 600;">
@@ -357,13 +366,13 @@ export async function sendScheduledVisitReminderEmail(
 						<h1 style="color: white; margin: 0; font-size: 28px;">📅 Upcoming Visit</h1>
 					</div>
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
-							Just a reminder that you have a scheduled visit with <strong>${personName}</strong> coming up on <strong>${followUpDate}</strong> — that's one week from today!
+							Just a reminder that you have a scheduled visit with <strong>${escapeHtml(personName)}</strong> coming up on <strong>${escapeHtml(followUpDate)}</strong> — that's one week from today!
 						</p>
 						<div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 20px 0;">
 							<p style="margin: 0; font-size: 16px; font-weight: 600; color: #1e40af;">
-								📅 Visit scheduled for ${followUpDate}
+								📅 Visit scheduled for ${escapeHtml(followUpDate)}
 							</p>
 						</div>
 						<p style="font-size: 16px; margin-bottom: 20px;">
@@ -417,13 +426,13 @@ export async function sendVisitTodayReminderEmail(
 						<h1 style="color: white; margin: 0; font-size: 28px;">🗓️ Visit Today</h1>
 					</div>
 					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${name},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
 						<p style="font-size: 16px; margin-bottom: 20px;">
-							This is a reminder that you have a scheduled visit with <strong>${personName}</strong> today, <strong>${formattedDate}</strong>.
+							This is a reminder that you have a scheduled visit with <strong>${escapeHtml(personName)}</strong> today, <strong>${escapeHtml(formattedDate)}</strong>.
 						</p>
 						<div style="background: #dcfce7; border-left: 4px solid #22c55e; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 20px 0;">
 							<p style="margin: 0; font-size: 16px; font-weight: 600; color: #15803d;">
-								🗓️ Visit with ${personName} — Today, ${formattedDate}
+								🗓️ Visit with ${escapeHtml(personName)} — Today, ${escapeHtml(formattedDate)}
 							</p>
 						</div>
 						<p style="font-size: 16px; margin-bottom: 20px;">
