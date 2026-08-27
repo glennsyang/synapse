@@ -4,8 +4,8 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { JournalEntry } from '$lib/types';
 	import { formatDateHeuristic } from '$lib/utils/date';
+	import { renderMarkdownToSafeHtml } from '$lib/utils/markdown';
 	import { Calendar, Cloud, MapPin, Pencil, Trash2 } from '@lucide/svelte/icons';
-	import { marked } from 'marked';
 
 	import ConfirmDialog from '../shared/ConfirmDialog.svelte';
 
@@ -13,7 +13,7 @@
 
 	let openDeleteModal = $state<boolean>(false);
 
-	let previewHtml = $derived(marked.parse(entry.content));
+	let previewHtml = $derived(renderMarkdownToSafeHtml(entry.content));
 	let isLargeTile = $derived(entry.content.trim().length > 360);
 	let hasMetadata = $derived(
 		Boolean(entry.location) || Boolean(entry.weather?.temp) || Boolean(entry.weather?.condition)
