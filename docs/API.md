@@ -38,6 +38,8 @@ Authorization: Bearer <key>
 | `visits:read`    | `GET /api/v1/visits`, `GET /api/v1/visits/{id}`        |
 | `visits:write`   | `POST /api/v1/visits`, `PATCH /api/v1/visits/{id}`     |
 | `people:read`    | `GET /api/v1/people`                                   |
+| `journal:read`   | `GET /api/v1/journal`, `GET /api/v1/journal/{id}`      |
+| `journal:write`  | `POST /api/v1/journal`, `PATCH /api/v1/journal/{id}`   |
 
 A key only needs the scopes for the endpoints it's meant to call — pick the narrowest set
 that covers the intended use. `people:read` exists mainly to resolve a `personId` for the
@@ -189,6 +191,31 @@ curl -X POST -H "Authorization: Bearer sk_live_xxx" -H "Content-Type: applicatio
 ```
 
 `PATCH /api/v1/visits/{id}` — requires `visits:write`.
+
+### Journal
+
+`GET /api/v1/journal` — requires `journal:read`. Query params: `startDate`/`endDate`
+(`YYYY-MM-DD`, must be given together), `content` (substring match), `limit` (1-200,
+default 50).
+
+`GET /api/v1/journal/{id}` — requires `journal:read`.
+
+`POST /api/v1/journal` — requires `journal:write`. Multiple entries per day are allowed
+(unlike `/mood`, this always creates a new entry rather than upserting). Body:
+
+```bash
+curl -X POST -H "Authorization: Bearer sk_live_xxx" -H "Content-Type: application/json" \
+  -d '{
+    "date": "2026-08-25",
+    "content": "Went for a long walk along the river.",
+    "location": "Riverside Park",
+    "weatherTemp": 72,
+    "weatherCondition": "sunny"
+  }' \
+  "https://synapse.example.com/api/v1/journal"
+```
+
+`PATCH /api/v1/journal/{id}` — requires `journal:write`.
 
 ## Out of scope
 
