@@ -48,27 +48,35 @@ export const sessionRelations = relations(session, ({ one }) => ({
 	})
 }));
 
-export const account = sqliteTable('account', {
-	id: text('id').primaryKey().$defaultFn(generateId),
-	userId: text('userId')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	accountId: text('accountId').notNull(),
-	providerId: text('providerId').notNull(),
-	accessToken: text('accessToken'),
-	refreshToken: text('refreshToken'),
-	accessTokenExpiresAt: integer('accessTokenExpiresAt', { mode: 'timestamp' }),
-	refreshTokenUpdatedAt: integer('refreshTokenUpdatedAt', { mode: 'timestamp' }),
-	scope: text('scope'),
-	idToken: text('idToken'),
-	password: text('password'),
-	createdAt: integer('createdAt', { mode: 'timestamp' })
-		.notNull()
-		.$defaultFn(() => new Date()),
-	updatedAt: integer('updatedAt', { mode: 'timestamp' })
-		.notNull()
-		.$defaultFn(() => new Date())
-});
+export const account = sqliteTable(
+	'account',
+	{
+		id: text('id').primaryKey().$defaultFn(generateId),
+		userId: text('userId')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		accountId: text('accountId').notNull(),
+		providerId: text('providerId').notNull(),
+		// Scopes account identity by issuer (e.g. "local:credential"), required by
+		// better-auth 1.7+. All accounts here are credential accounts, so the
+		// default backfills existing rows correctly with no data migration needed.
+		issuer: text('issuer').notNull().default('local:credential'),
+		accessToken: text('accessToken'),
+		refreshToken: text('refreshToken'),
+		accessTokenExpiresAt: integer('accessTokenExpiresAt', { mode: 'timestamp' }),
+		refreshTokenUpdatedAt: integer('refreshTokenUpdatedAt', { mode: 'timestamp' }),
+		scope: text('scope'),
+		idToken: text('idToken'),
+		password: text('password'),
+		createdAt: integer('createdAt', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date()),
+		updatedAt: integer('updatedAt', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date())
+	},
+	(table) => [uniqueIndex('account_issuer_accountId_idx').on(table.issuer, table.accountId)]
+);
 
 export const accountRelations = relations(account, ({ one }) => ({
 	user: one(user, {
