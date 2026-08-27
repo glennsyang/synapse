@@ -88,8 +88,6 @@
 		"zod": "^4.4.3"
 	},
 	"overrides": {
-		"@hono/node-server": "1.19.11",
-		"hono": "4.12.5",
 		"sveltekit-superforms": {
 			"typebox": "1.2.19"
 		}
