@@ -138,8 +138,10 @@ export const auth = betterAuth({
 		ipAddress: {
 			// Enable IP address and user agent tracking
 			disableIpTracking: false,
-			// Optionally specify custom headers for IP detection (useful behind proxies)
-			ipAddressHeaders: ['x-forwarded-for', 'x-real-ip', 'x-client-ip']
+			// Fly.io's edge sets this on every request and strips any client-supplied
+			// value for it, unlike X-Forwarded-For/X-Real-IP/X-Client-IP, which are
+			// trusted outright by better-auth's resolver without a trustedProxies config.
+			ipAddressHeaders: ['fly-client-ip']
 		},
 		database: {
 			generateId: () => crypto.randomUUID()

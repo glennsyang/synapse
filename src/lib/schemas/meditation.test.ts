@@ -37,6 +37,12 @@ describe('createRoutineSchema', () => {
 		);
 	});
 
+	it('rejects a javascript: URL', () => {
+		expect(
+			createRoutineSchema.safeParse({ ...validRoutine, link_url: 'javascript:alert(1)' }).success
+		).toBe(false);
+	});
+
 	it('rejects a non-positive duration', () => {
 		expect(createRoutineSchema.safeParse({ ...validRoutine, duration_minutes: 0 }).success).toBe(
 			false
@@ -64,6 +70,12 @@ describe('updateRoutineSchema', () => {
 	it('rejects an invalid URL in update', () => {
 		expect(
 			updateRoutineSchema.safeParse({ ...validRoutine, link_url: 'not-a-valid-url' }).success
+		).toBe(false);
+	});
+
+	it('rejects a javascript: URL in update', () => {
+		expect(
+			updateRoutineSchema.safeParse({ ...validRoutine, link_url: 'javascript:alert(1)' }).success
 		).toBe(false);
 	});
 });

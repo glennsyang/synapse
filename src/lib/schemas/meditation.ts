@@ -13,7 +13,7 @@ export type MoodTag = (typeof MOOD_TAGS)[number];
 export const createRoutineSchema = z.object({
 	title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
 	description: z.string().optional(),
-	link_url: z.url('Invalid URL format'),
+	link_url: z.url({ protocol: /^https?$/, error: 'Invalid URL format' }),
 	duration_minutes: z.coerce.number().int().positive('Duration must be positive'),
 	mood_tags: z.string().min(1, 'At least one mood tag is required')
 });
@@ -24,7 +24,7 @@ export const createRoutineSchema = z.object({
 export const updateRoutineSchema = z.object({
 	title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
 	description: z.string().optional(),
-	link_url: z.url('Invalid URL format'),
+	link_url: z.url({ protocol: /^https?$/, error: 'Invalid URL format' }),
 	duration_minutes: z.coerce.number().int().positive('Duration must be positive'),
 	mood_tags: z.string().min(1, 'At least one mood tag is required')
 });
