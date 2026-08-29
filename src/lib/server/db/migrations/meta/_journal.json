@@ -183,6 +183,13 @@
 			"when": 1787801064834,
 			"tag": "0025_daffy_titanium_man",
 			"breakpoints": true
+		},
+		{
+			"idx": 26,
+			"version": "6",
+			"when": 1787981491077,
+			"tag": "0026_backfill-existing-users-email-verified",
+			"breakpoints": true
 		}
 	]
 }
