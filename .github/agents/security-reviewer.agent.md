@@ -18,6 +18,10 @@ The agent must prioritize server-side security in files such as:
 - `+server.js` / `+server.ts`
 - `hooks.server.js` / `hooks.server.ts`
 
+It must also treat CI/CD and infrastructure config as first-class review scope, not just
+application code — see "CI/CD & Infrastructure Security" below. A vulnerability doesn't
+stop being in scope because it lives in a `.yml` file instead of a `.ts` file.
+
 ## When to Use
 
 Use this agent for:
@@ -96,10 +100,38 @@ Do **not** use this agent for visual/UI-only feedback unless security-relevant.
    - Treat server entry points as primary risk surface.
    - Ensure no server-only values/functions leak into client context.
 
+9. **CI/CD & Infrastructure Security**
+   - Review `.github/workflows/**` for:
+     - Secrets or sensitive data (DB dumps, credentials, tokens) written to build outputs,
+       logs, or uploaded via `actions/upload-artifact` without encryption — especially on
+       public repositories, where any GitHub account (not just collaborators) can download
+       workflow artifacts, not just people with write access.
+     - Artifact retention (`retention-days`) appropriate to sensitivity — long default
+       windows on anything containing user data should be encrypted, not just retained
+       for a shorter time.
+     - `permissions:` blocks scoped to least privilege, not defaulting to broad read/write.
+     - Untrusted input (PR title/body, issue comments, branch names) flowing into `run:`
+       steps without sanitization — a script-injection risk.
+     - Third-party actions pinned to a commit SHA or exact version, not a floating tag/branch.
+     - `pull_request_target` combined with checkout of the PR's untrusted head ref.
+   - Review `Dockerfile`, `start.sh` (or equivalent deploy/boot scripts), and platform config
+     (e.g. `fly.toml`) for:
+     - Secrets baked into image layers or committed config rather than injected at runtime.
+     - Backup/restore scripts or scheduled jobs that touch production data — confirm
+       encryption at rest and in transit for anything that leaves the production
+       environment, and that failure modes fail closed (refuse to proceed) rather than
+       silently degrading to an insecure fallback.
+   - If a finding's real-world exploitability depends on live state the agent cannot check
+     from static files alone (e.g. "is there currently a live, downloadable artifact
+     containing this data?", "is this repo actually public?") — say so explicitly rather
+     than silently reporting only the theoretical/static risk. State what a human or a
+     tool with API access should verify next.
+
 ## Review Workflow (Mandatory)
 
 1. **Scope & Inventory**
-   - Identify changed or requested files and all reachable server entry points.
+   - Identify changed or requested files and all reachable server entry points, plus any
+     touched `.github/workflows/**`, `Dockerfile`, deploy scripts, or platform config.
 2. **Threat-Oriented Static Review**
    - Perform data-flow and trust-boundary analysis.
    - Search for vulnerability patterns (SSRF, injection, token exposure, broken auth checks).
