@@ -35,6 +35,7 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 		autoSignIn: false,
+		requireEmailVerification: true,
 		minPasswordLength: 12,
 		maxPasswordLength: 128,
 		revokeSessionsOnPasswordReset: true,
@@ -86,6 +87,7 @@ export const auth = betterAuth({
 	},
 	emailVerification: {
 		sendOnSignUp: true,
+		sendOnSignIn: true,
 		autoSignInAfterVerification: true,
 		sendVerificationEmail: async ({ user, url, token }) => {
 			logger.debug('✉️ Sending verification email');
