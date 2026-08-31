@@ -38,7 +38,7 @@
 		"drizzle-orm": "^0.45.1",
 		"markdown-it": "^15.0.0",
 		"mode-watcher": "^1.1.0",
-		"resend": "^6.22.1"
+		"resend": "^6.24.0"
 	},
 	"devDependencies": {
 		"@flydotio/dockerfile": "^0.7.10",
