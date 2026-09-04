@@ -67,7 +67,7 @@
 		"fallow": "^3.20.0",
 		"layerchart": "^2.3.0",
 		"lefthook": "^2.1.12",
-		"lint-staged": "^17.3.0",
+		"lint-staged": "^17.4.1",
 		"oxfmt": "^0.65.0",
 		"oxlint": "^1.80.0",
 		"oxlint-tsgolint": "^7.0.2001",
