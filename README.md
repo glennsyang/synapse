@@ -33,7 +33,7 @@ Synapse brings together daily planning and personal tracking in one place. The a
 - Better Auth
 - Drizzle ORM
 - SQLite (better-sqlite3)
-- Resend
+- Brevo
 
 ### Tooling
 

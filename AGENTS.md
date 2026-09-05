@@ -40,7 +40,7 @@ Synapse is a modern second-brain application providing journaling, todo manageme
 
 ## Environment & Config
 
-- Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`, `RESEND_NEW_USER_ADDRESS`
+- Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `BREVO_API_KEY`, `BREVO_FROM_ADDRESS`, `BREVO_NEW_USER_ADDRESS`
 - Runtime/ops env var: `CRON_SECRET` (required for `/api/cron/email-notifications`)
 - Validated in `src/env.ts` using Zod schema
 - Node.js version: **22.22.3** (required for better-sqlite3 compatibility)
