@@ -10,7 +10,7 @@ A personal life-management app: fitness (workouts/weight/meals), journal, medita
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | Framework   | SvelteKit + TypeScript (strict)                                                                           |
 | Database    | SQLite via Drizzle ORM (better-sqlite3)                                                                   |
-| Auth        | better-auth v1 (email + password), Resend for auth emails                                                 |
+| Auth        | better-auth v1 (email + password), Brevo for auth emails                                                  |
 | UI          | bits-ui (shadcn-svelte style) + Tailwind CSS v4                                                           |
 | Charts      | layerchart + d3-scale/d3-shape                                                                            |
 | Forms       | sveltekit-superforms v2 + Zod v4                                                                          |
@@ -63,7 +63,7 @@ src/
 │   ├── schemas/              # Zod schemas per domain (fitness.ts, etc.)
 │   └── server/
 │       ├── db/schema.ts      # Drizzle tables — camelCase columns
-│       ├── auth.ts           # betterAuth instance (drizzleAdapter, Resend emails)
+│       ├── auth.ts           # betterAuth instance (drizzleAdapter, Brevo emails)
 │       ├── auth/             # form-helpers, auth-guard
 │       ├── email/            # digests: daily-agenda, tasks-due-today, visit-warning
 │       └── notifications/    # admin alert pings (new user, verification sent, etc.)
@@ -117,7 +117,7 @@ Server actions are named `?/log<Thing>` and `?/update<Thing>` on the same route.
 
 - better-auth v1, email+password, `minPasswordLength: 12`, `revokeSessionsOnPasswordReset: true`.
 - Drizzle adapter (`drizzleAdapter`) reusing the app's own SQLite DB.
-- Auth emails (verification, password reset, new-user notice) sent via **Resend** (`src/lib/server/email/`), not built-in better-auth email.
+- Auth emails (verification, password reset, new-user notice) sent via **Brevo** (`src/lib/server/email/`), not built-in better-auth email.
 - Internal ops alerts (`src/lib/server/notifications/`) ping on auth events like verification-sent — separate from the user-facing emails.
 
 ### Env vars required
@@ -126,9 +126,9 @@ Server actions are named `?/log<Thing>` and `?/update<Thing>` on the same route.
 DATABASE_URL=data/synapse.db
 BETTER_AUTH_SECRET=...
 BETTER_AUTH_BASE_URL=http://localhost   # or the fly.io URL in prod
-RESEND_API_KEY=...
-RESEND_FROM_ADDRESS=...
-RESEND_NEW_USER_ADDRESS=...
+BREVO_API_KEY=...
+BREVO_FROM_ADDRESS=...
+BREVO_NEW_USER_ADDRESS=...
 SENTRY_AUTH_TOKEN=...
 ```
 
