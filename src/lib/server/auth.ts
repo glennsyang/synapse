@@ -2,7 +2,7 @@ import {
 	BETTER_AUTH_BASE_URL,
 	BETTER_AUTH_SECRET,
 	NODE_ENV,
-	RESEND_NEW_USER_ADDRESS
+	BREVO_NEW_USER_ADDRESS
 } from '$app/env/private';
 import { getRequestEvent } from '$app/server';
 import { logger } from '$lib/server/logger';
@@ -40,24 +40,6 @@ export const auth = betterAuth({
 		maxPasswordLength: 128,
 		revokeSessionsOnPasswordReset: true,
 		resetPasswordTokenExpiresIn: 60 * 10, // 10 minutes
-		sendVerificationEmail: async ({
-			user,
-			url,
-			token
-		}: {
-			user: { email: string; name: string };
-			url: string;
-			token: string;
-		}) => {
-			logger.debug('✉️ Email verification sent');
-			const verifyUrl = `${url}?token=${token}`;
-			void sendVerificationEmail(user.email, user.name, verifyUrl);
-			void sendAuthAlerts(
-				`Verification email sent to ${user.email}`,
-				'Synapse - Verification Alert',
-				3
-			);
-		},
 		sendResetPassword: async ({ user, url, token }) => {
 			const urlObj = new URL(url);
 			const callbackURL = urlObj.searchParams.get('callbackUrl');
@@ -89,10 +71,9 @@ export const auth = betterAuth({
 		sendOnSignUp: true,
 		sendOnSignIn: true,
 		autoSignInAfterVerification: true,
-		sendVerificationEmail: async ({ user, url, token }) => {
+		sendVerificationEmail: async ({ user, url }) => {
 			logger.debug('✉️ Sending verification email');
-			const verifyUrl = `${url}&token=${token}`;
-			void sendVerificationEmail(user.email, user.name, verifyUrl);
+			await sendVerificationEmail(user.email, user.name || user.email, url);
 			void sendAuthAlerts(
 				`Verification email sent to ${user.email}`,
 				'Synapse - Verification Alert',
@@ -106,7 +87,7 @@ export const auth = betterAuth({
 				const newSession = ctx.context.newSession;
 				if (newSession) {
 					void sendNewUserEmail(
-						RESEND_NEW_USER_ADDRESS,
+						BREVO_NEW_USER_ADDRESS,
 						newSession.user.name,
 						newSession.user.email
 					);
@@ -143,7 +124,7 @@ export const auth = betterAuth({
 			// Fly.io's edge sets this on every request and strips any client-supplied
 			// value for it, unlike X-Forwarded-For/X-Real-IP/X-Client-IP, which are
 			// trusted outright by better-auth's resolver without a trustedProxies config.
-			ipAddressHeaders: ['fly-client-ip']
+			ipAddressHeaders: ['fly-client-ip', 'x-forwarded-for', 'x-real-ip', 'x-client-ip']
 		},
 		database: {
 			generateId: () => crypto.randomUUID()

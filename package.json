@@ -29,6 +29,7 @@
 	},
 	"dependencies": {
 		"@better-auth/api-key": "^1.7.2",
+		"@getbrevo/brevo": "^6.0.3",
 		"@sentry/sveltekit": "^10.73.0",
 		"better-auth": "^1.7.2",
 		"better-sqlite3": "^12.6.2",
@@ -37,8 +38,7 @@
 		"d3-shape": "^3.2.0",
 		"drizzle-orm": "^0.45.1",
 		"markdown-it": "^15.0.1",
-		"mode-watcher": "^1.1.0",
-		"resend": "^6.26.0"
+		"mode-watcher": "^1.1.0"
 	},
 	"devDependencies": {
 		"@flydotio/dockerfile": "^0.7.10",

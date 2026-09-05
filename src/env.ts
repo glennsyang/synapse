@@ -25,16 +25,18 @@ export const variables = defineEnvVars({
 		description: 'ntfy.sh topic URL for reminder push notifications',
 		schema: building ? z.string().catch('https://ntfy.sh/placeholder') : z.url()
 	},
-	RESEND_API_KEY: {
-		description: 'Resend API key for sending transactional emails',
+	BREVO_API_KEY: {
+		description: 'Brevo API key for sending transactional emails',
 		schema: building ? z.string().catch('build_time_dummy_key') : z.string().min(1)
 	},
-	RESEND_FROM_ADDRESS: {
-		description: 'Sender email address for outgoing emails',
+	BREVO_FROM_ADDRESS: {
+		description:
+			'From address for outgoing transactional emails (must be a confirmed Brevo sender)',
 		schema: building ? z.string().catch('noreply@example.com') : z.email()
 	},
-	RESEND_NEW_USER_ADDRESS: {
-		description: 'Email address to notify on new user registration',
+	BREVO_NEW_USER_ADDRESS: {
+		description:
+			'Email address to receive notifications when a new user signs up (must be a confirmed Brevo sender)',
 		schema: building ? z.string().catch('admin@example.com') : z.email()
 	},
 	CRON_SECRET: {

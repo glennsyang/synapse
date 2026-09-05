@@ -1,4 +1,4 @@
-import { RESEND_API_KEY, RESEND_FROM_ADDRESS } from '$app/env/private';
+import { BREVO_API_KEY, BREVO_FROM_ADDRESS } from '$app/env/private';
 import {
 	buildTasksDueTodayDigestTitle,
 	buildTasksDueTodayEmailHtml,
@@ -6,10 +6,9 @@ import {
 } from '$lib/server/email/tasks-due-today-digest';
 import { logger } from '$lib/server/logger';
 import { getWorkoutEmoji } from '$lib/utils/workout';
-import { Resend } from 'resend';
+import { BrevoClient } from '@getbrevo/brevo';
 
-// Initialize Resend email client
-const resend = new Resend(RESEND_API_KEY);
+const brevo = new BrevoClient({ apiKey: BREVO_API_KEY });
 
 function escapeHtml(value: string): string {
 	return value
@@ -21,14 +20,17 @@ function escapeHtml(value: string): string {
 }
 
 export async function sendVerificationEmail(to: string, name: string, verificationUrl: string) {
-	logger.debug('📧 Sending Verification Email to:', { to });
+	// This is intentionally info-level: production suppresses debug logs, and
+	// this event distinguishes an untriggered auth flow from a provider failure.
+	logger.info('📧 Sending Verification Email to:', { to });
 
+	let result;
 	try {
-		await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: '[Synapse] Verify your email address',
-			html: `
+			htmlContent: `
 				<!DOCTYPE html>
 				<html>
 				<head>
@@ -66,20 +68,22 @@ export async function sendVerificationEmail(to: string, name: string, verificati
 			`
 		});
 	} catch (error) {
-		logger.error('❌ Failed to send verification email:', error);
+		logger.error('❌ Failed to send verification email:', error, { to });
 		throw error;
 	}
+	logger.info('Verification email sent', { to, brevoMessageId: result.messageId });
 }
 
 export async function sendPasswordResetEmail(to: string, name: string, resetUrl: string) {
 	logger.debug('📧 Sending Password Reset Email to:', { to });
 
+	let result;
 	try {
-		await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: '[Synapse] Reset your password',
-			html: `
+			htmlContent: `
 				<!DOCTYPE html>
 				<html>
 				<head>
@@ -117,25 +121,28 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
 			`
 		});
 	} catch (error) {
-		logger.error('❌ Failed to send password reset email:', error);
+		logger.error('❌ Failed to send password reset email:', error, { to });
 		throw error;
 	}
+	logger.info('Password reset email sent', { to, brevoMessageId: result.messageId });
 }
 
 export async function sendNewUserEmail(to: string, name: string, email: string) {
 	logger.debug('📧 Sending new user email to:', { to });
 
+	let result;
 	try {
-		await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: '[Synapse] New User was registered!',
-			html: `Hi ${escapeHtml(name || email)}!<br><br>Welcome to Synapse! We're excited to have you on board.<br><br>Thank you,<br>Synapse Team`
+			htmlContent: `Hi ${escapeHtml(name || email)}!<br><br>Welcome to Synapse! We're excited to have you on board.<br><br>Thank you,<br>Synapse Team`
 		});
 	} catch (error) {
-		logger.error('❌ Failed to send email', error);
+		logger.error('❌ Failed to send email', error, { to });
 		throw error;
 	}
+	logger.info('New user email sent', { to, brevoMessageId: result.messageId });
 }
 
 export async function sendWorkoutReminderEmail(
@@ -148,12 +155,13 @@ export async function sendWorkoutReminderEmail(
 
 	const emoji = getWorkoutEmoji(workoutType);
 
+	let result;
 	try {
-		await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: `[Synapse] ${emoji} Time for your ${workoutType} workout!`,
-			html: `
+			htmlContent: `
 				<!DOCTYPE html>
 				<html>
 				<head>
@@ -190,9 +198,10 @@ export async function sendWorkoutReminderEmail(
 			`
 		});
 	} catch (error) {
-		logger.error('❌ Failed to send workout reminder email:', error);
+		logger.error('❌ Failed to send workout reminder email:', error, { to });
 		throw error;
 	}
+	logger.info('Workout reminder email sent', { to, brevoMessageId: result.messageId });
 }
 
 export async function sendMeditationReminderEmail(
@@ -203,12 +212,13 @@ export async function sendMeditationReminderEmail(
 ) {
 	logger.debug('📧 Sending Meditation Reminder Email to:', { to });
 
+	let result;
 	try {
-		await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: '[Synapse] 🧘 Time for your meditation practice',
-			html: `
+			htmlContent: `
 				<!DOCTYPE html>
 				<html>
 				<head>
@@ -248,6 +258,7 @@ export async function sendMeditationReminderEmail(
 		logger.error('❌ Failed to send meditation reminder email:', error);
 		throw error;
 	}
+	logger.info('Meditation reminder email sent', { to, brevoMessageId: result.messageId });
 }
 
 export async function sendVisitWarningEmail(
@@ -266,12 +277,13 @@ export async function sendVisitWarningEmail(
 			? "It's been over a year! Consider scheduling a visit soon."
 			: 'Consider scheduling a visit to encourage and commend.';
 
+	let result;
 	try {
-		await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: `[Synapse] 👥 It's been a while since you saw ${personName}`,
-			html: `
+			htmlContent: `
 				<!DOCTYPE html>
 				<html>
 				<head>
@@ -316,6 +328,7 @@ export async function sendVisitWarningEmail(
 		logger.error('❌ Failed to send visit warning email:', error);
 		throw error;
 	}
+	logger.info('Visit warning email sent', { to, brevoMessageId: result.messageId });
 }
 
 export async function sendTasksDueTodayEmail(
@@ -327,17 +340,19 @@ export async function sendTasksDueTodayEmail(
 	logger.debug('📧 Sending Tasks Due Today Email to:', { to, taskCount: tasks.length });
 	const title = buildTasksDueTodayDigestTitle(dateString);
 
+	let result;
 	try {
-		await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: title,
-			html: buildTasksDueTodayEmailHtml(name, tasks, dateString)
+			htmlContent: buildTasksDueTodayEmailHtml(name, tasks, dateString)
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send Tasks Due Today email:', error);
 		throw error;
 	}
+	logger.info('Tasks Due Today email sent', { to, brevoMessageId: result.messageId });
 }
 
 export async function sendScheduledVisitReminderEmail(
@@ -348,12 +363,13 @@ export async function sendScheduledVisitReminderEmail(
 ) {
 	logger.debug('📧 Sending Scheduled Visit Reminder Email to:', { to });
 
+	let result;
 	try {
-		await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: `[Synapse] 📅 Upcoming visit with ${personName} in one week`,
-			html: `
+			htmlContent: `
 				<!DOCTYPE html>
 				<html>
 				<head>
@@ -398,6 +414,7 @@ export async function sendScheduledVisitReminderEmail(
 		logger.error('❌ Failed to send scheduled visit reminder email:', error);
 		throw error;
 	}
+	logger.info('Scheduled visit reminder email sent', { to, brevoMessageId: result.messageId });
 }
 
 export async function sendVisitTodayReminderEmail(
@@ -408,12 +425,13 @@ export async function sendVisitTodayReminderEmail(
 ) {
 	logger.debug('📧 Sending Visit Today Reminder Email to:', { to });
 
+	let result;
 	try {
-		await resend.emails.send({
-			from: RESEND_FROM_ADDRESS,
-			to,
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
 			subject: `[Synapse] 🗓️ You have a visit with ${personName} today`,
-			html: `
+			htmlContent: `
 				<!DOCTYPE html>
 				<html>
 				<head>
@@ -455,4 +473,5 @@ export async function sendVisitTodayReminderEmail(
 		logger.error('❌ Failed to send visit today reminder email:', error);
 		throw error;
 	}
+	logger.info('Visit today reminder email sent', { to, brevoMessageId: result.messageId });
 }
