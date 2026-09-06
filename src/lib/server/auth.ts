@@ -29,7 +29,11 @@ export const auth = betterAuth({
 			session: schema.session,
 			account: schema.account,
 			verification: schema.verification,
-			apikey: schema.apiKey
+			apikey: schema.apiKey,
+			// Required because rateLimit.storage is 'database' in production (see the
+			// rateLimit config below). Without this mapping better-auth has nowhere to
+			// persist per-IP counters and DB-backed rate limiting silently no-ops.
+			rateLimit: schema.rateLimit
 		}
 	}),
 	emailAndPassword: {
