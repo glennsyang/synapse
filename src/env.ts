@@ -46,5 +46,15 @@ export const variables = defineEnvVars({
 	NODE_ENV: {
 		description: 'Application environment (development, production, test)',
 		schema: z.enum(['development', 'production', 'test']).default('development')
+	},
+	LOG_LEVEL: {
+		description:
+			'Minimum log level to emit (debug, info, warn, error); defaults to debug in dev, info in prod',
+		schema: z.enum(['debug', 'info', 'warn', 'error']).optional()
+	},
+	SENTRY_DSN: {
+		description: 'Sentry DSN for client + server error/log reporting (not secret; safe to commit)',
+		public: true,
+		schema: building ? z.string().catch('https://placeholder@o0.ingest.sentry.io/0') : z.url()
 	}
 });
