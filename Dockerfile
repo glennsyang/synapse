@@ -27,8 +27,11 @@ RUN npm install -g npm@11 && npm ci --include=dev
 # Copy application code
 COPY . .
 
-# Build application
-RUN npm run build
+# Build application. SENTRY_AUTH_TOKEN is an optional BuildKit secret (passed via
+# `fly deploy --build-secret`) that lets the Sentry vite plugin upload source maps for
+# readable production stack traces; the build succeeds without it, just skipping the upload.
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+	SENTRY_AUTH_TOKEN="$(cat /run/secrets/SENTRY_AUTH_TOKEN 2>/dev/null || true)" npm run build
 
 # Strip source maps from server bundle (adapter-node hardcodes sourcemap: true)
 RUN find build -name "*.map" -delete
@@ -66,4 +69,6 @@ RUN chmod +x /app/start.sh
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 ENV DATABASE_URL="/data/synapse.db"
+# Not a secret (already public in Sentry's client SDK bundle); safe to bake in.
+ENV SENTRY_DSN="https://0941b6e2d9801402928ec265ba858ff9@o4510809399492608.ingest.us.sentry.io/4511970268020736"
 CMD [ "/app/start.sh" ]

@@ -1,11 +1,11 @@
+import { LOG_LEVEL, NODE_ENV } from '$app/env/private';
 import * as Sentry from '@sentry/sveltekit';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const LEVEL_RANK: Record<LogLevel, number> = { debug: 0, info: 1, warn: 2, error: 3 };
-const IS_DEV = process.env.NODE_ENV !== 'production';
-const MIN_LEVEL: LogLevel =
-	(process.env.LOG_LEVEL as LogLevel | undefined) ?? (IS_DEV ? 'debug' : 'info');
+const IS_DEV = NODE_ENV !== 'production';
+const MIN_LEVEL: LogLevel = LOG_LEVEL ?? (IS_DEV ? 'debug' : 'info');
 
 interface LogContext {
 	requestId?: string;

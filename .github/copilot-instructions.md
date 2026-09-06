@@ -132,9 +132,11 @@ src/
 
 ## Environment & Config
 
-- Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `BREVO_API_KEY`, `BREVO_FROM_ADDRESS`, `BREVO_NEW_USER_ADDRESS`
+- Required env vars: `DATABASE_URL`, `NODE_ENV`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `BREVO_API_KEY`, `BREVO_FROM_ADDRESS`, `BREVO_NEW_USER_ADDRESS`, `AUTH_ALERTS_URL`, `REMINDER_ALERTS_URL`, `SENTRY_DSN`
 - Runtime/ops env var: `CRON_SECRET` (for `/api/cron/email-notifications`)
+- Optional env var: `LOG_LEVEL` (defaults to debug in dev, info in prod)
 - Validated in `src/env.ts` (production fail-fast + build/dev fallbacks)
+- Full canonical reference, including CI/infra-only vars (`APP_URL`, `FLY_API_TOKEN`, `BACKUP_ENCRYPTION_PASSPHRASE`, `SENTRY_AUTH_TOKEN`): `docs/ENVIRONMENT.md`
 - Node.js version: **22.22.3** (required for better-sqlite3 compatibility)
 - Application timezone is fixed to Pacific time: `America/Los_Angeles`
 - All app-level date boundaries, `getTodayString()`-style helpers, week calculations, reminder cutoffs, and editability rules must use Pacific time instead of server local time or UTC
