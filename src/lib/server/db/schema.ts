@@ -787,6 +787,21 @@ export const apiKeyRelations = relations(apiKey, ({ one }) => ({
 }));
 
 /**
+ * Rate limit
+ * Only used when rateLimit.storage is 'database' (production — see auth.ts).
+ * Shape mirrors better-auth's built-in rateLimit model exactly: id + key/count/
+ * lastRequest and nothing else. Better-auth populates only these fields on
+ * insert, so this table must not add extra NOT NULL columns (no createdAt/
+ * updatedAt, no generated id).
+ */
+export const rateLimit = sqliteTable('rate_limit', {
+	id: text('id').primaryKey(),
+	key: text('key').notNull().unique(),
+	count: integer('count').notNull(),
+	lastRequest: integer('last_request').notNull() // ms epoch; better-auth treats it as a plain number
+});
+
+/**
  * API Audit Log
  * Records which API key performed a write and what happened, for traceability of
  * external/programmatic activity against the app's data.

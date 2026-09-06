@@ -26,6 +26,10 @@ export const loginSchema = z.object({
 	password: z.string().min(12, 'Password must be at least 12 characters')
 });
 
+export const resendVerificationSchema = z.object({
+	email: z.email('Please enter a valid email address')
+});
+
 export const forgotPasswordSchema = z.object({
 	email: z.email('Please enter a valid email address')
 });
