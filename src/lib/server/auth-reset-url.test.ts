@@ -57,15 +57,36 @@ describe('buildResetUrl', () => {
 		});
 	});
 
-	describe('malformed URL', () => {
-		it('throws for a non-URL string', () => {
-			expect(() => buildResetUrl('not-a-url', TOKEN)).toThrow(
-				'Invalid callbackURL: not a valid URL'
-			);
+	describe('root-relative callbackURL', () => {
+		it('resolves a relative path against the base URL and appends the token', () => {
+			const result = buildResetUrl('/reset-password', TOKEN);
+			const url = new URL(result);
+			expect(url.origin).toBe(ALLOWED_ORIGIN);
+			expect(url.pathname).toBe('/reset-password');
+			expect(url.searchParams.get('token')).toBe(TOKEN);
 		});
 
-		it('throws for an empty string', () => {
-			expect(() => buildResetUrl('', TOKEN)).toThrow('Invalid callbackURL: not a valid URL');
+		it('does not call logger.warn for a relative path', () => {
+			buildResetUrl('/reset-password', TOKEN);
+			expect(mockLoggerWarn).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('non-URL / empty callbackURL', () => {
+		// With base resolution these no longer throw; they land on a path of the
+		// trusted origin, which is safe — the origin allowlist is the real guard.
+		it('resolves a bare string to a path on the allowed origin', () => {
+			const result = buildResetUrl('not-a-url', TOKEN);
+			const url = new URL(result);
+			expect(url.origin).toBe(ALLOWED_ORIGIN);
+			expect(url.searchParams.get('token')).toBe(TOKEN);
+		});
+
+		it('resolves an empty string to the base origin', () => {
+			const result = buildResetUrl('', TOKEN);
+			const url = new URL(result);
+			expect(url.origin).toBe(ALLOWED_ORIGIN);
+			expect(url.searchParams.get('token')).toBe(TOKEN);
 		});
 	});
 
@@ -73,6 +94,16 @@ describe('buildResetUrl', () => {
 		it('throws for an attacker-controlled origin', () => {
 			expect(() => buildResetUrl('https://evil.example.com/steal', TOKEN)).toThrow(
 				'Untrusted callbackURL origin: https://evil.example.com'
+			);
+		});
+
+		it('throws for a protocol-relative URL pointing at a foreign host', () => {
+			expect(() => buildResetUrl('//evil.example.com/steal', TOKEN)).toThrow(
+				'Untrusted callbackURL origin: https://evil.example.com'
+			);
+			expect(mockLoggerWarn).toHaveBeenCalledWith(
+				'Password reset blocked: untrusted callbackURL origin',
+				{ origin: 'https://evil.example.com' }
 			);
 		});
 

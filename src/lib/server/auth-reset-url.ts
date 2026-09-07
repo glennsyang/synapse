@@ -20,7 +20,12 @@ const ALLOWED_RESET_ORIGINS = new Set([
 export function buildResetUrl(callbackURL: string, token: string): string {
 	let parsed: URL;
 	try {
-		parsed = new URL(callbackURL);
+		// Resolve against the app's own base URL: the forgot-password action sends a
+		// root-relative `redirectTo` (so Better Auth's origin check passes when routed
+		// through auth.handler), which arrives here as a path like "/reset-password".
+		// An absolute callbackURL keeps its own origin and is still checked against the
+		// allowlist below.
+		parsed = new URL(callbackURL, BETTER_AUTH_BASE_URL);
 	} catch {
 		throw new Error('Invalid callbackURL: not a valid URL');
 	}
