@@ -1,4 +1,3 @@
-import { BETTER_AUTH_BASE_URL } from '$app/env/private';
 import { forgotPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import {
@@ -32,14 +31,26 @@ export const actions = {
 		}
 
 		try {
-			const redirectTo = `${BETTER_AUTH_BASE_URL}/reset-password`;
+			// Route through Better Auth's HTTP handler rather than calling
+			// auth.api.requestPasswordReset directly, so the configured per-IP rate
+			// limit protects this public, email-sending action too (a direct api call
+			// bypasses the rate-limit middleware). Mirrors the verify-email resend
+			// action. `redirectTo` is a relative path, which passes Better Auth's
+			// origin check; buildResetUrl resolves it against BETTER_AUTH_BASE_URL.
+			const headers = new Headers(request.headers);
+			headers.set('content-type', 'application/json');
+			headers.delete('content-length');
 
-			await auth.api.requestPasswordReset({
-				body: {
-					email: form.data.email,
-					redirectTo
-				}
-			});
+			const response = await auth.handler(
+				new Request(new URL('/api/auth/request-password-reset', request.url), {
+					method: 'POST',
+					headers,
+					body: JSON.stringify({ email: form.data.email, redirectTo: '/reset-password' })
+				})
+			);
+			if (!response.ok) {
+				throw new Error(`Password reset request failed with status ${response.status}`);
+			}
 
 			// Don't reveal if the email exists or not for security reasons
 			return message(

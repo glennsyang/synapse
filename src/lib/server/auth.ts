@@ -46,9 +46,12 @@ export const auth = betterAuth({
 		resetPasswordTokenExpiresIn: 60 * 10, // 10 minutes
 		sendResetPassword: async ({ user, url, token }) => {
 			const urlObj = new URL(url);
-			const callbackURL = urlObj.searchParams.get('callbackUrl');
+			// Better Auth spells the param `callbackURL` (see api/routes/password.mjs);
+			// the old lowercase lookup always returned null and threw before the email
+			// could be sent.
+			const callbackURL = urlObj.searchParams.get('callbackURL');
 			if (!callbackURL) {
-				throw new Error('Missing callbackUrl in reset password URL');
+				throw new Error('Missing callbackURL in reset password URL');
 			}
 			const resetUrl = buildResetUrl(callbackURL, token);
 			void sendPasswordResetEmail(user.email, user.name, resetUrl);
