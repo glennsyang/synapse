@@ -39,6 +39,11 @@ export const variables = defineEnvVars({
 			'Email address to receive notifications when a new user signs up (must be a confirmed Brevo sender)',
 		schema: building ? z.string().catch('admin@example.com') : z.email()
 	},
+	ADMIN_USER_IDS: {
+		description:
+			'Comma-separated list of user IDs bootstrapped as admins by the better-auth admin plugin',
+		schema: z.string().default('dummy_admin_id')
+	},
 	CRON_SECRET: {
 		description: 'Bearer token for authorizing cron job requests',
 		schema: building ? z.string().catch('build_time_dummy_secret_min_16_chars') : z.string().min(16)

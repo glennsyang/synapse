@@ -14,8 +14,14 @@ export const user = sqliteTable('user', {
 	email: text('email').notNull().unique(),
 	emailVerified: integer('emailVerified', { mode: 'boolean' }).notNull().default(false),
 	image: text('image'),
+	// Fields for the better-auth `admin` plugin (wired up in src/lib/server/auth.ts).
+	// `role` / `banned` carry NOT NULL defaults so existing rows backfill cleanly;
+	// `banReason` / `banExpires` are written by `auth.api.banUser` and NULL otherwise.
+	// Keep names/types in sync with node_modules/better-auth/dist/plugins/admin/schema.mjs.
 	role: text('role').notNull().default('user'),
 	banned: integer('banned', { mode: 'boolean' }).notNull().default(false),
+	banReason: text('banReason'),
+	banExpires: integer('banExpires', { mode: 'timestamp' }),
 	createdAt: integer('createdAt', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date()),
