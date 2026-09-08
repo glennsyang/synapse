@@ -1,4 +1,5 @@
 import {
+	ADMIN_USER_IDS,
 	BETTER_AUTH_BASE_URL,
 	BETTER_AUTH_SECRET,
 	NODE_ENV,
@@ -10,6 +11,7 @@ import { apiKey } from '@better-auth/api-key';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createAuthMiddleware } from 'better-auth/api';
+import { admin } from 'better-auth/plugins';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
 import { buildResetUrl } from './auth-reset-url';
@@ -137,12 +139,6 @@ export const auth = betterAuth({
 			generateId: () => crypto.randomUUID()
 		}
 	},
-	user: {
-		additionalFields: {
-			role: { type: 'string', required: false, defaultValue: 'user', input: false },
-			banned: { type: 'boolean', required: false, defaultValue: false, input: false }
-		}
-	},
 	session: {
 		expiresIn: 60 * 60 * 24 * 7, // 7 days
 		updateAge: 60 * 60 * 24, // Update every 24 hours
@@ -162,6 +158,17 @@ export const auth = betterAuth({
 		storage: NODE_ENV === 'production' ? 'database' : 'memory'
 	},
 	plugins: [
+		// User administration: registers `role` / `banned` / `banReason` / `banExpires` on the
+		// `user` model and the `auth.api.listUsers` / `setRole` / `banUser` / `unbanUser` /
+		// `removeUser` endpoints, and prevents `role` from being set through sign-up input.
+		// `adminUserIds` bootstraps admins by id from the `ADMIN_USER_IDS` env var (no DB write
+		// needed); `defaultRole` / `adminRoles` are the plugin defaults, spelled out for parity
+		// with the sibling repos (sheppakai-budget#437).
+		admin({
+			adminUserIds: ADMIN_USER_IDS.split(','),
+			defaultRole: 'user',
+			adminRoles: ['admin']
+		}),
 		apiKey({
 			references: 'user',
 			storage: 'database',
