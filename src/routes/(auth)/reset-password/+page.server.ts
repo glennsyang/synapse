@@ -1,3 +1,4 @@
+import { FORGOT_PASSWORD_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
 import { resetPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import {
@@ -17,7 +18,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const token = url.searchParams.get('token');
 
 	if (!token) {
-		throw redirect(302, '/forgot-password');
+		throw redirect(302, FORGOT_PASSWORD_ROUTE);
 	}
 
 	const form = await createAuthLoadForm(resetPasswordSchema, url, {
@@ -47,7 +48,7 @@ export const actions = {
 				}
 			});
 
-			throw redirect(302, '/sign-in?message=Password reset successful! Please sign in.');
+			throw redirect(302, `${SIGN_IN_ROUTE}?message=Password reset successful! Please sign in.`);
 		} catch (error) {
 			const errorMessage = mapAuthActionError(error, 'Failed to reset password. Please try again.');
 			logger.error('Password reset failed', error);

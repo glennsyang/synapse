@@ -1,3 +1,4 @@
+import { POST_LOGIN_ROUTE } from '$lib/auth-routes';
 import { getBetterAuthErrorMessage } from '$lib/utils/auth';
 import { isRedirect, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
@@ -13,7 +14,7 @@ type AuthSchema = ZodType<Record<string, unknown>>;
 
 export function redirectIfAuthenticated(user: App.Locals['user']): void {
 	if (user) {
-		throw redirect(302, '/dashboard');
+		throw redirect(302, POST_LOGIN_ROUTE);
 	}
 }
 

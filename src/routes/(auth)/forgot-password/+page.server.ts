@@ -1,3 +1,4 @@
+import { RESET_PASSWORD_ROUTE } from '$lib/auth-routes';
 import { forgotPasswordSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import {
@@ -45,7 +46,7 @@ export const actions = {
 				new Request(new URL('/api/auth/request-password-reset', request.url), {
 					method: 'POST',
 					headers,
-					body: JSON.stringify({ email: form.data.email, redirectTo: '/reset-password' })
+					body: JSON.stringify({ email: form.data.email, redirectTo: RESET_PASSWORD_ROUTE })
 				})
 			);
 			if (!response.ok) {

@@ -1,3 +1,4 @@
+import { POST_LOGIN_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
 import { resendVerificationSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import { logger } from '$lib/server/logger';
@@ -10,7 +11,7 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals, url }) => {
 	// If already signed in, redirect to dashboard
 	if (locals.user) {
-		throw redirect(302, '/dashboard');
+		throw redirect(302, POST_LOGIN_ROUTE);
 	}
 
 	// Get email from query params
@@ -18,7 +19,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	// If no email provided, redirect to sign-in
 	if (!email) {
-		throw redirect(302, '/sign-in?message=Invalid verification link');
+		throw redirect(302, `${SIGN_IN_ROUTE}?message=Invalid verification link`);
 	}
 
 	const verificationForm = await superValidate({ email }, zod4(resendVerificationSchema), {

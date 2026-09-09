@@ -1,3 +1,4 @@
+import { SIGN_IN_ROUTE } from '$lib/auth-routes';
 import type { User } from '$lib/types';
 import type { RequestEvent } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
@@ -33,7 +34,7 @@ export function requireAuth<
 }
 
 /**
- * Returns the authenticated user from locals, or throws a redirect to /sign-in.
+ * Returns the authenticated user from locals, or throws a redirect to SIGN_IN_ROUTE.
  * Use in load functions inside the (app) route group where the layout already
  * guarantees authentication — this provides a clean type-narrowed User without
  * needing non-null assertions.
@@ -46,7 +47,7 @@ export function requireAuth<
  */
 export function getUser(locals: App.Locals): User {
 	if (!locals.user) {
-		redirect(302, '/sign-in');
+		redirect(302, SIGN_IN_ROUTE);
 	}
 	return locals.user;
 }

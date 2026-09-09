@@ -1,3 +1,4 @@
+import { VERIFY_EMAIL_ROUTE } from '$lib/auth-routes';
 import { registerSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import {
@@ -42,7 +43,7 @@ export const actions = {
 			});
 
 			// Redirect to verify-email page with user's email
-			throw redirect(302, `/verify-email?email=${encodeURIComponent(form.data.email)}`);
+			throw redirect(302, `${VERIFY_EMAIL_ROUTE}?email=${encodeURIComponent(form.data.email)}`);
 		} catch (error) {
 			const errorMessage = mapAuthActionError(error, 'Registration failed. Please try again.');
 			logger.error('Registration failed', error);

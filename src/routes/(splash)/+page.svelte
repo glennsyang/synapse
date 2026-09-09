@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { REGISTER_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import { Button } from '$lib/components/ui/button';
 	import { Moon, Sun } from '@lucide/svelte/icons';
 	import { toggleMode } from 'mode-watcher';
 
-	const handleSignIn = () => goto('/sign-in');
-	const handleRegister = () => goto('/register');
+	const handleSignIn = () => goto(SIGN_IN_ROUTE);
+	const handleRegister = () => goto(REGISTER_ROUTE);
 </script>
 
 <div class="flex min-h-screen flex-col">
