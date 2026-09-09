@@ -1,3 +1,4 @@
+import { POST_LOGIN_ROUTE, VERIFY_EMAIL_ROUTE } from '$lib/auth-routes';
 import { loginSchema } from '$lib/schemas/auth';
 import { auth } from '$lib/server/auth';
 import {
@@ -36,14 +37,14 @@ export const actions = {
 				headers: request.headers
 			});
 
-			throw redirect(302, '/dashboard');
+			throw redirect(302, POST_LOGIN_ROUTE);
 		} catch (error) {
 			// An unverified account can't sign in, but better-auth
 			// (emailVerification.sendOnSignIn) has just re-sent a fresh verification
 			// link. Send the user to the page that explains that, instead of
 			// surfacing a dead-end "email not verified" form error.
 			if ((error as { body?: { code?: string } })?.body?.code === 'EMAIL_NOT_VERIFIED') {
-				throw redirect(302, `/verify-email?email=${encodeURIComponent(form.data.email)}`);
+				throw redirect(302, `${VERIFY_EMAIL_ROUTE}?email=${encodeURIComponent(form.data.email)}`);
 			}
 
 			const errorMessage = mapAuthActionError(

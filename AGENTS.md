@@ -110,7 +110,7 @@ $effect(() => {
 
 - Sessions are managed by Better Auth (`auth.api.getSession`) and requests are handled through `svelteKitHandler(...)` in `hooks.server.ts`
 - `hooks.server.ts` populates `event.locals.session` and `event.locals.user` on every request
-- Route protection in `(app)/+layout.server.ts` redirects unauthenticated users to `/sign-in`
+- Route protection in `(app)/+layout.server.ts` redirects unauthenticated users to `/sign-in` (`SIGN_IN_ROUTE` in `$lib/auth-routes` — auth route paths are centralised there, no inline literals)
 - API auth passthrough is handled in `/src/routes/api/auth/[...all]/+server.ts`
 
 ### Database Patterns

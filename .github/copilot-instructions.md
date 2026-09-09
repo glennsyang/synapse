@@ -84,7 +84,7 @@ src/
 
 - Sessions are resolved via `auth.api.getSession(...)` and request handling is routed through `svelteKitHandler(...)` in `hooks.server.ts`.
 - `hooks.server.ts` populates `event.locals.session`, `event.locals.user`, and `event.locals.requestId`.
-- `(app)/+layout.server.ts` redirects unauthenticated users to `/sign-in`.
+- `(app)/+layout.server.ts` redirects unauthenticated users to `/sign-in` (`SIGN_IN_ROUTE` in `$lib/auth-routes`; auth route paths are centralised there).
 - Auth API passthrough is in `src/routes/api/auth/[...all]/+server.ts`.
 
 ### Database Patterns

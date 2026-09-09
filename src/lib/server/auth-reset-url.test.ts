@@ -24,19 +24,19 @@ const TOKEN = 'abc123resettoken';
 describe('buildResetUrl', () => {
 	describe('valid allowed origin', () => {
 		it('returns a URL string for an allowed origin', () => {
-			const result = buildResetUrl(`${ALLOWED_ORIGIN}/auth/reset-password`, TOKEN);
+			const result = buildResetUrl(`${ALLOWED_ORIGIN}/reset-password`, TOKEN);
 			expect(result).toBeTypeOf('string');
 		});
 
 		it('appends the token via searchParams (no double question mark)', () => {
-			const result = buildResetUrl(`${ALLOWED_ORIGIN}/auth/reset-password`, TOKEN);
+			const result = buildResetUrl(`${ALLOWED_ORIGIN}/reset-password`, TOKEN);
 			const url = new URL(result);
 			expect(url.searchParams.get('token')).toBe(TOKEN);
 			expect(result.split('?').length).toBe(2);
 		});
 
 		it('overwrites an existing token param rather than duplicating it', () => {
-			const callbackURL = `${ALLOWED_ORIGIN}/auth/reset-password?token=oldtoken`;
+			const callbackURL = `${ALLOWED_ORIGIN}/reset-password?token=oldtoken`;
 			const result = buildResetUrl(callbackURL, TOKEN);
 			const url = new URL(result);
 			expect(url.searchParams.get('token')).toBe(TOKEN);
@@ -44,7 +44,7 @@ describe('buildResetUrl', () => {
 		});
 
 		it('preserves existing non-token query params', () => {
-			const callbackURL = `${ALLOWED_ORIGIN}/auth/reset-password?redirect=%2Fdashboard`;
+			const callbackURL = `${ALLOWED_ORIGIN}/reset-password?redirect=%2Fdashboard`;
 			const result = buildResetUrl(callbackURL, TOKEN);
 			const url = new URL(result);
 			expect(url.searchParams.get('redirect')).toBe('/dashboard');
@@ -52,7 +52,7 @@ describe('buildResetUrl', () => {
 		});
 
 		it('does not call logger.warn for a trusted origin', () => {
-			buildResetUrl(`${ALLOWED_ORIGIN}/auth/reset-password`, TOKEN);
+			buildResetUrl(`${ALLOWED_ORIGIN}/reset-password`, TOKEN);
 			expect(mockLoggerWarn).not.toHaveBeenCalled();
 		});
 	});
@@ -114,7 +114,7 @@ describe('buildResetUrl', () => {
 		});
 
 		it('throws for http variant of the production origin', () => {
-			expect(() => buildResetUrl('http://synapse.fly.dev/auth/reset-password', TOKEN)).toThrow(
+			expect(() => buildResetUrl('http://synapse.fly.dev/reset-password', TOKEN)).toThrow(
 				'Untrusted callbackURL origin: http://synapse.fly.dev'
 			);
 		});
