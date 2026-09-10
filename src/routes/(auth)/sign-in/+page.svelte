@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import {
@@ -59,13 +60,7 @@
 					Password reset successfully! You can now sign in with your new password.
 				</div>
 			{/if}
-			{#if $message}
-				<div
-					class="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
-				>
-					{$message}
-				</div>
-			{/if}
+			<AuthFormMessage message={$message} />
 			<FieldGroup>
 				<Field>
 					<FieldLabel for="email">Email</FieldLabel>

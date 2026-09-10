@@ -1,10 +1,13 @@
-import { isRedirect, redirect } from '@sveltejs/kit';
+import { isRedirect } from '@sveltejs/kit';
 import type { Redirect } from '@sveltejs/kit';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
-import { mapAuthActionError, redirectIfAuthenticated } from './form-helpers';
+import { createAuthLoadForm, redirectIfAuthenticated } from './form-helpers';
 
 const mockUser = { id: 'user_123', name: 'Alice', email: 'alice@example.com' };
+const schema = z.object({ email: z.string() });
+const at = (path: string) => new URL(`https://example.com${path}`);
 
 describe('redirectIfAuthenticated', () => {
 	it('throws a redirect to /dashboard when the user is authenticated', () => {
@@ -21,44 +24,36 @@ describe('redirectIfAuthenticated', () => {
 		expect((caughtError as Redirect).location).toBe('/dashboard');
 	});
 
-	it('does not throw when the user is null', () => {
-		expect(() => redirectIfAuthenticated(undefined)).not.toThrow();
-	});
-
 	it('does not throw when the user is undefined', () => {
 		expect(() => redirectIfAuthenticated(undefined)).not.toThrow();
 	});
 });
 
-describe('mapAuthActionError', () => {
-	it('re-throws a redirect error unchanged', () => {
-		// Create a redirect via the SvelteKit helper, which throws
-		let redirectError: unknown;
-		let caughtError: unknown;
-		try {
-			redirect(302, '/sign-in');
-		} catch (e) {
-			redirectError = e;
-		}
-
-		expect.assertions(1);
-		try {
-			mapAuthActionError(redirectError, 'fallback message');
-		} catch (e) {
-			caughtError = e;
-		}
-
-		expect(isRedirect(caughtError)).toBe(true);
+describe('createAuthLoadForm', () => {
+	it('returns a superforms object with no banner by default', async () => {
+		const form = await createAuthLoadForm(schema, at('/sign-in'));
+		expect(form.message).toBeUndefined();
 	});
 
-	it('returns the fallback message for non-redirect errors', () => {
-		const result = mapAuthActionError(new Error('some error'), 'Sign-in failed');
-		expect(typeof result).toBe('string');
-		expect(result.length).toBeGreaterThan(0);
+	it('surfaces a redirect-carried ?message as an error banner', async () => {
+		const form = await createAuthLoadForm(schema, at('/sign-in?message=Please%20sign%20in'));
+		expect(form.message).toEqual({ type: 'error', text: 'Please sign in' });
 	});
 
-	it('returns the fallback message for unknown errors', () => {
-		const result = mapAuthActionError('unexpected', 'Default error message');
-		expect(typeof result).toBe('string');
+	it('strips HTML tags from the query message', async () => {
+		const form = await createAuthLoadForm(schema, at('/sign-in?message=%3Cb%3Ehi%3C%2Fb%3Ethere'));
+		expect(form.message).toEqual({ type: 'error', text: 'hithere' });
+	});
+
+	it('truncates the query message to 200 characters', async () => {
+		const form = await createAuthLoadForm(schema, at(`/sign-in?message=${'x'.repeat(300)}`));
+		expect((form.message as App.Superforms.Message).text).toHaveLength(200);
+	});
+
+	it('ignores the query message when includeQueryMessage is false', async () => {
+		const form = await createAuthLoadForm(schema, at('/reset-password?message=nope'), {
+			includeQueryMessage: false
+		});
+		expect(form.message).toBeUndefined();
 	});
 });

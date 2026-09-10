@@ -46,7 +46,7 @@ describe('forgot-password default action', () => {
 			email: 'user@example.com',
 			redirectTo: '/reset-password'
 		});
-		expect(result).toMatchObject({ form: { message: GENERIC } });
+		expect(result).toMatchObject({ form: { message: { type: 'success', text: GENERIC } } });
 	});
 
 	it('does not call Better Auth for an invalid email', async () => {
@@ -56,7 +56,7 @@ describe('forgot-password default action', () => {
 		expect(result).toMatchObject({ status: 400 });
 	});
 
-	it('returns the same generic message (not an error) when Better Auth responds non-ok', async () => {
+	it('returns the same generic message (styled as success, not error) when Better Auth responds non-ok', async () => {
 		handlerMock.mockResolvedValueOnce(new Response(null, { status: 429 }));
 
 		const result = await actions.default({ request: forgotRequest('user@example.com') } as never);
@@ -67,6 +67,9 @@ describe('forgot-password default action', () => {
 				message: 'Password reset request failed with status 429'
 			})
 		);
-		expect(result).toMatchObject({ form: { message: GENERIC } });
+		expect(result).toMatchObject({
+			status: 400,
+			data: { form: { message: { type: 'success', text: GENERIC } } }
+		});
 	});
 });

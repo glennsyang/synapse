@@ -1,14 +1,10 @@
 import { VERIFY_EMAIL_ROUTE } from '$lib/auth-routes';
 import { registerSchema } from '$lib/schemas/auth';
+import { handleAuthFormAction, invalidAuthForm } from '$lib/server/actions/auth-form-handler';
 import { auth } from '$lib/server/auth';
-import {
-	createAuthLoadForm,
-	mapAuthActionError,
-	redirectIfAuthenticated
-} from '$lib/server/auth/form-helpers';
-import { logger } from '$lib/server/logger';
+import { createAuthLoadForm, redirectIfAuthenticated } from '$lib/server/auth/form-helpers';
 import { redirect } from '@sveltejs/kit';
-import { message, superValidate } from 'sveltekit-superforms';
+import { superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
@@ -25,30 +21,28 @@ export const actions = {
 		const form = await superValidate(request, zod4(registerSchema));
 
 		if (!form.valid) {
-			return message(
-				form,
-				{ type: 'error', text: 'Please correct the errors in the form.' },
-				{ status: 400 }
-			);
+			return invalidAuthForm(form);
 		}
 
-		try {
-			await auth.api.signUpEmail({
-				body: {
-					email: form.data.email,
-					password: form.data.password,
-					name: form.data.name
-				},
-				headers: request.headers
-			});
+		return handleAuthFormAction(
+			form,
+			async () => {
+				await auth.api.signUpEmail({
+					body: {
+						email: form.data.email,
+						password: form.data.password,
+						name: form.data.name
+					},
+					headers: request.headers
+				});
 
-			// Redirect to verify-email page with user's email
-			throw redirect(302, `${VERIFY_EMAIL_ROUTE}?email=${encodeURIComponent(form.data.email)}`);
-		} catch (error) {
-			const errorMessage = mapAuthActionError(error, 'Registration failed. Please try again.');
-			logger.error('Registration failed', error);
-
-			return message(form, { type: 'error', text: errorMessage }, { status: 400 });
-		}
+				// Redirect to verify-email page with user's email
+				throw redirect(302, `${VERIFY_EMAIL_ROUTE}?email=${encodeURIComponent(form.data.email)}`);
+			},
+			{
+				loggerContext: 'Registration failed',
+				fallbackMessage: 'Registration failed. Please try again.'
+			}
+		);
 	}
 } satisfies Actions;
