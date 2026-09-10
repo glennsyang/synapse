@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import MailIcon from '@lucide/svelte/icons/mail';
 	import { superForm } from 'sveltekit-superforms';
@@ -26,14 +27,7 @@
 			<p class="text-foreground mt-1 text-sm font-medium">{data.email}</p>
 		</div>
 
-		{#if $message}
-			<div
-				class="rounded-lg bg-blue-50 p-4 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
-				role="status"
-			>
-				{$message}
-			</div>
-		{/if}
+		<AuthFormMessage message={$message} />
 
 		<div class="bg-card text-card-foreground rounded-lg border p-6 shadow-sm">
 			<div class="space-y-4">

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import {
@@ -32,13 +33,7 @@
 	</Card.Header>
 	<Card.Content>
 		<form method="POST" use:enhance class="space-y-6">
-			{#if $message}
-				<div
-					class="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
-				>
-					{$message}
-				</div>
-			{/if}
+			<AuthFormMessage message={$message} />
 
 			<FieldGroup>
 				<Field>

@@ -1,14 +1,15 @@
 import { SIGN_IN_ROUTE } from '$lib/auth-routes';
-import type { User } from '$lib/types';
 import type { RequestEvent } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
 
 /**
+ * An authenticated user as populated on `event.locals` by `hooks.server.ts`.
+ */
+type AuthenticatedUser = NonNullable<App.Locals['user']>;
+
+/**
  * Authorization wrapper for SvelteKit actions.
  * Ensures the user is authenticated before executing the action handler.
- *
- * @param handler - The action handler function that requires authentication
- * @returns A wrapped action handler that performs auth check
  *
  * @example
  * export const actions = {
@@ -23,7 +24,7 @@ export function requireAuth<
 	T,
 	Params extends Partial<Record<string, string>> = Partial<Record<string, string>>
 >(
-	handler: (event: RequestEvent<Params>, user: User) => Promise<T>
+	handler: (event: RequestEvent<Params>, user: AuthenticatedUser) => Promise<T>
 ): (event: RequestEvent<Params>) => Promise<T | ReturnType<typeof fail>> {
 	return async (event: RequestEvent<Params>) => {
 		if (!event.locals.user) {
@@ -36,8 +37,8 @@ export function requireAuth<
 /**
  * Returns the authenticated user from locals, or throws a redirect to SIGN_IN_ROUTE.
  * Use in load functions inside the (app) route group where the layout already
- * guarantees authentication — this provides a clean type-narrowed User without
- * needing non-null assertions.
+ * guarantees authentication — this gives a type-narrowed user without non-null
+ * assertions.
  *
  * @example
  * export const load: PageServerLoad = async ({ locals }) => {
@@ -45,23 +46,26 @@ export function requireAuth<
  *   // user.id is typed as string, no ! required
  * };
  */
-export function getUser(locals: App.Locals): User {
+export function getUser(locals: App.Locals): AuthenticatedUser {
 	if (!locals.user) {
-		redirect(302, SIGN_IN_ROUTE);
+		throw redirect(302, SIGN_IN_ROUTE);
 	}
 	return locals.user;
 }
 
 /**
  * Authorization wrapper for SvelteKit actions.
- * Ensures the user is authenticated and has the 'admin' role before executing the action handler.
+ * Ensures the user is authenticated and has the 'admin' role before executing
+ * the action handler. Returns `fail(401)` when unauthenticated, `fail(403)` when
+ * authenticated but not an admin.
  *
- * @param handler - The action handler function that requires admin access
- * @returns A wrapped action handler that performs auth + role check
+ * This is the canonical cross-repo admin guard — identical shape in synapse,
+ * sheppakai-budget and sheppakai-mealplanner (sheppakai-budget#437). It checks
+ * the DB `role` only.
  *
  * @example
  * export const actions = {
- *   unarchivePerson: requireAdmin(async (event, user) => {
+ *   restore: requireAdmin(async (event, user) => {
  *     // user is guaranteed to be an authenticated admin here
  *   })
  * };
@@ -70,7 +74,7 @@ export function requireAdmin<
 	T,
 	Params extends Partial<Record<string, string>> = Partial<Record<string, string>>
 >(
-	handler: (event: RequestEvent<Params>, user: User) => Promise<T>
+	handler: (event: RequestEvent<Params>, user: AuthenticatedUser) => Promise<T>
 ): (event: RequestEvent<Params>) => Promise<T | ReturnType<typeof fail>> {
 	return async (event: RequestEvent<Params>) => {
 		if (!event.locals.user) {
