@@ -45,6 +45,13 @@ describe('createAuthLoadForm', () => {
 		expect(form.message).toEqual({ type: 'error', text: 'hithere' });
 	});
 
+	it('strips an unterminated tag (no dangling <script)', async () => {
+		const form = await createAuthLoadForm(schema, at('/sign-in?message=hi%20%3Cscript'));
+		const text = (form.message as App.Superforms.Message).text;
+		expect(text).not.toContain('<');
+		expect(text).toBe('hi ');
+	});
+
 	it('truncates the query message to 200 characters', async () => {
 		const form = await createAuthLoadForm(schema, at(`/sign-in?message=${'x'.repeat(300)}`));
 		expect((form.message as App.Superforms.Message).text).toHaveLength(200);
