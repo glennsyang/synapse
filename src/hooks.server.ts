@@ -4,12 +4,19 @@ import { auth } from '$lib/server/auth';
 import { logger } from '$lib/server/logger';
 import * as Sentry from '@sentry/sveltekit';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 
 Sentry.init({
 	dsn: SENTRY_DSN,
 	tracesSampleRate: 1.0,
 	enableLogs: true
+	// sendDefaultPii intentionally left at its default (false) here, unlike hooks.client.ts.
+	// Enabling it server-side would let Sentry capture full request headers and cookies —
+	// including the auth session cookie — which client-side sendDefaultPii can't reach since
+	// browser JS has no access to HttpOnly cookies or server-internal headers. Server-side
+	// error context is already captured explicitly below (requestId, userId, url, method,
+	// status) via the structured logger, so Sentry's own PII capture isn't needed here.
 });
 
 // Fixed-window rate limiter for non-GET, non-auth mutations (60 req / 60 s per IP).
@@ -35,7 +42,7 @@ function isMutationRateLimited(ip: string): boolean {
 	return entry.count > MUTATION_LIMIT;
 }
 
-export const handle: Handle = async ({ event, resolve }) => {
+export const handle: Handle = sequence(Sentry.sentryHandle(), async ({ event, resolve }) => {
 	if (dev && event.url.pathname === '/.well-known/appspecific/com.chrome.devtools.json') {
 		return new Response(undefined, { status: 404 });
 	}
@@ -115,10 +122,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// sheppakai-budget for the cross-repo strategy and per-app allowances.
 
 	return response;
-};
+});
 
 /**
  * Global error handler with structured logging and stack trace capture
+ *
+ * Note: logger.error() already forwards to Sentry (captureException) internally in
+ * production, so this is intentionally NOT wrapped in Sentry.handleErrorWithSentry() —
+ * doing so would double-report every unhandled error.
  */
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
 	const requestId = event.locals.requestId || 'unknown';

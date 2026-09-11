@@ -132,7 +132,7 @@ BREVO_NEW_USER_ADDRESS=...
 SENTRY_AUTH_TOKEN=...
 ```
 
-Sentry (`@sentry/sveltekit`) is now actually wired up — `vite.config.ts` (`sentrySvelteKit({ org: 'sheppakai', project: 'synapse' })`), `src/hooks.client.ts`, and `src/hooks.server.ts` all reference it, and `$lib/server/logger`'s `warn()`/`error()` forward to it in production. The `dsn` in both files points at the real `synapse` project under the `sheppakai` org.
+Sentry (`@sentry/sveltekit`) is now actually wired up — `vite.config.ts` (`sentrySvelteKit({ org: 'sheppakai', project: 'synapse' })`), `src/hooks.client.ts`, and `src/hooks.server.ts` all reference it, and `$lib/server/logger`'s `warn()`/`error()` forward to it in production. The `dsn` in both files points at the real `synapse` project under the `sheppakai` org. `hooks.server.ts` wires `Sentry.sentryHandle()` into the `handle` sequence and intentionally leaves `handleError` unwrapped — see `sheppakai-budget`'s `docs/SENTRY.md` for the cross-repo strategy.
 
 ---
 
