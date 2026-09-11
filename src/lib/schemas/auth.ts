@@ -1,6 +1,19 @@
 import { convertVisitThresholdToDays } from '$lib/utils/visit-status';
 import { z } from 'zod';
 
+// Canonical password rule for register/reset (sheppakai-budget#444), shared across the
+// sibling apps: min 12 chars + upper/lower/number/special-character complexity.
+const passwordSchema = z
+	.string()
+	.min(12, 'Password must be at least 12 characters')
+	.regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+	.regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+	.regex(/\d/, 'Password must contain at least one number')
+	.regex(
+		/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/,
+		'Password must contain at least one special character'
+	);
+
 export const registerSchema = z
 	.object({
 		name: z
@@ -8,12 +21,7 @@ export const registerSchema = z
 			.min(2, 'Name must be at least 2 characters')
 			.max(100, 'Name must be at most 100 characters'),
 		email: z.email('Please enter a valid email address'),
-		password: z
-			.string()
-			.min(12, 'Password must be at least 12 characters')
-			.regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-			.regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-			.regex(/\d/, 'Password must contain at least one number'),
+		password: passwordSchema,
 		confirmPassword: z.string()
 	})
 	.refine((data) => data.password === data.confirmPassword, {
@@ -23,7 +31,7 @@ export const registerSchema = z
 
 export const loginSchema = z.object({
 	email: z.email('Please enter a valid email address'),
-	password: z.string().min(12, 'Password must be at least 12 characters')
+	password: z.string().min(1, 'Password is required')
 });
 
 export const resendVerificationSchema = z.object({
@@ -36,12 +44,7 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z
 	.object({
-		password: z
-			.string()
-			.min(12, 'Password must be at least 12 characters')
-			.regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-			.regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-			.regex(/\d/, 'Password must contain at least one number'),
+		password: passwordSchema,
 		confirmPassword: z.string(),
 		// Hidden token field to verify the reset request
 		token: z.string().optional()
