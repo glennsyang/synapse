@@ -73,6 +73,15 @@ describe('registerSchema', () => {
 		expect(result.success).toBe(false);
 	});
 
+	it('rejects a password without a special character', () => {
+		const result = registerSchema.safeParse({
+			...validPayload,
+			password: 'NoSpecialChar1',
+			confirmPassword: 'NoSpecialChar1'
+		});
+		expect(result.success).toBe(false);
+	});
+
 	it('rejects when passwords do not match', () => {
 		const result = registerSchema.safeParse({
 			...validPayload,
@@ -100,8 +109,13 @@ describe('loginSchema', () => {
 		expect(result.success).toBe(false);
 	});
 
-	it('rejects a password shorter than 12 characters', () => {
+	it('accepts a short legacy password (login only requires non-empty, #444)', () => {
 		const result = loginSchema.safeParse({ email: 'user@example.com', password: 'short' });
+		expect(result.success).toBe(true);
+	});
+
+	it('rejects an empty password', () => {
+		const result = loginSchema.safeParse({ email: 'user@example.com', password: '' });
 		expect(result.success).toBe(false);
 	});
 });
