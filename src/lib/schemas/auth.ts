@@ -1,8 +1,8 @@
 import { convertVisitThresholdToDays } from '$lib/utils/visit-status';
 import { z } from 'zod';
 
-// Canonical password rule for register/reset (sheppakai-budget#444), shared across the
-// sibling apps: min 12 chars + upper/lower/number/special-character complexity.
+// Canonical password rule for register/reset, shared across the sibling apps: min 12
+// chars + upper/lower/number/special-character complexity.
 const passwordSchema = z
 	.string()
 	.min(12, 'Password must be at least 12 characters')

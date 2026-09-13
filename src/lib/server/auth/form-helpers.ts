@@ -1,6 +1,5 @@
 // Shared auth-page `load` helpers. Canonical cross-repo module surface
-// (auth-audit.md §2N, glennsyang/sheppakai-budget#438) — kept byte-identical with
-// sheppakai-budget and sheppakai-mealplanner.
+// (auth-audit.md §2N) — kept byte-identical with sheppakai-budget and sheppakai-mealplanner.
 
 import { POST_LOGIN_ROUTE } from '$lib/auth-routes';
 import { redirect } from '@sveltejs/kit';

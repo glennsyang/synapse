@@ -36,7 +36,7 @@ const { load } = await import('./+page.server');
 const userId = 'user-a';
 const locals = { user: { id: userId } } as App.Locals;
 
-describe('meditation list load — routine scoping (issue #352)', () => {
+describe('meditation list load — routine scoping', () => {
 	beforeEach(() => {
 		mockRoutinesFindMany.mockClear();
 		mockSchedulesFindMany.mockClear();
