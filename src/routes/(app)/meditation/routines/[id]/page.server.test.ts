@@ -51,7 +51,7 @@ const userId = 'user-b';
 const locals = { user: { id: userId } } as App.Locals;
 const routineId = 'routine-a';
 
-describe('meditation routine [id] actions — ownership scoping (issue #354)', () => {
+describe('meditation routine [id] actions — ownership scoping', () => {
 	beforeEach(() => {
 		mockRoutineFindFirst.mockReset().mockResolvedValue(undefined);
 		mockInsertValues.mockReset();

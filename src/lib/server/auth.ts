@@ -95,7 +95,7 @@ export const auth = betterAuth({
 			// Server-side defense-in-depth: the register Zod schema (src/lib/schemas/auth.ts)
 			// already enforces this complexity rule, but that only covers requests that went
 			// through the app's form action. Enforcing it here too covers any direct caller of
-			// auth.api.signUpEmail (sheppakai-budget#445). Better Auth's internal endpoint for
+			// auth.api.signUpEmail. Better Auth's internal endpoint for
 			// this is `/sign-up/email` — the app's own `/register` route is just the SvelteKit
 			// page that calls it, never the value ctx.path takes here.
 			if (!ctx.path.includes('/sign-up/email') || !ctx.body?.password) {
@@ -184,7 +184,7 @@ export const auth = betterAuth({
 		// `removeUser` endpoints, and prevents `role` from being set through sign-up input.
 		// `adminUserIds` bootstraps admins by id from the `ADMIN_USER_IDS` env var (no DB write
 		// needed); `defaultRole` / `adminRoles` are the plugin defaults, spelled out for parity
-		// with the sibling repos (sheppakai-budget#437).
+		// with the sibling repos.
 		admin({
 			adminUserIds: ADMIN_USER_IDS.split(','),
 			defaultRole: 'user',

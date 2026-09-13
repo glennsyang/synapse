@@ -109,7 +109,7 @@ describe('loginSchema', () => {
 		expect(result.success).toBe(false);
 	});
 
-	it('accepts a short legacy password (login only requires non-empty, #444)', () => {
+	it('accepts a short legacy password (login only requires non-empty)', () => {
 		const result = loginSchema.safeParse({ email: 'user@example.com', password: 'short' });
 		expect(result.success).toBe(true);
 	});

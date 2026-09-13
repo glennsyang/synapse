@@ -14,7 +14,7 @@ async function importLoggerWithEnv(nodeEnv: 'development' | 'production') {
 	return (await import('./logger')).logger;
 }
 
-describe('logger PII redaction (issue #357)', () => {
+describe('logger PII redaction', () => {
 	afterEach(() => {
 		vi.resetModules();
 		vi.doUnmock('$app/env/private');
