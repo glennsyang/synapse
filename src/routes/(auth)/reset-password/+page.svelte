@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { FORGOT_PASSWORD_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Field, FieldGroup, FieldLabel } from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import { CircleXIcon } from '@lucide/svelte/icons';
 	import { superForm } from 'sveltekit-superforms';
 
 	import type { PageData } from './$types';
@@ -20,44 +21,37 @@
 			}
 		}
 	});
-
-	const token = $derived(() => page.url.searchParams.get('token'));
-	const hasToken = $derived(() => !!token);
 </script>
 
 <svelte:head><title>Reset Password - Synapse</title></svelte:head>
 
-{#if !hasToken}
-	<div class="space-y-4 text-center">
-		<div
-			class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20"
-		>
-			<svg
-				class="h-8 w-8 text-red-600 dark:text-red-400"
-				fill="none"
-				stroke="currentColor"
-				viewBox="0 0 24 24"
+{#if data.invalid}
+	<Card.Root class="mx-auto w-full max-w-sm">
+		<Card.Header class="text-center">
+			<div
+				class="bg-destructive/10 mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full"
 			>
-				<title>Invalid reset link</title>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M6 18L18 6M6 6l12 12"
-				/>
-			</svg>
-		</div>
-		<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Invalid reset link</h2>
-		<p class="text-sm text-slate-600 dark:text-slate-400">
-			This password reset link is invalid or has expired.
-		</p>
-		<a
-			href="/forgot-password"
-			class="mt-4 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
-		>
-			Request a new reset link
-		</a>
-	</div>
+				<CircleXIcon class="text-destructive h-8 w-8" />
+			</div>
+			<Card.Title class="text-2xl">Invalid or expired link</Card.Title>
+			<Card.Description>
+				This password reset link is no longer valid. Request a new one and we'll email it right
+				over.
+			</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			<FieldGroup>
+				<Field>
+					<Button href={FORGOT_PASSWORD_ROUTE} class="w-full">Request a new link</Button>
+				</Field>
+				<Field>
+					<a href={SIGN_IN_ROUTE} class="text-center text-sm font-medium underline">
+						Back to sign in
+					</a>
+				</Field>
+			</FieldGroup>
+		</Card.Content>
+	</Card.Root>
 {:else}
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header class="text-center">

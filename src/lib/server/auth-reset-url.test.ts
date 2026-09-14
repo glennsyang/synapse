@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockLoggerWarn = vi.hoisted(() => vi.fn<() => void>());
+const mockFindFirst = vi.hoisted(() => vi.fn<() => Promise<unknown>>());
 
 vi.mock('$app/env/private', () => ({
 	BETTER_AUTH_BASE_URL: 'https://synapse.fly.dev',
@@ -16,7 +17,19 @@ vi.mock('./logger', () => ({
 	}
 }));
 
-import { buildResetUrl } from './auth-reset-url';
+vi.mock('drizzle-orm', () => ({
+	eq: (field: unknown, value: unknown) => ({ type: 'eq', field, value })
+}));
+
+vi.mock('$lib/server/db', () => ({
+	getDb: () => ({ query: { verification: { findFirst: mockFindFirst } } })
+}));
+
+vi.mock('$lib/server/db/schema', () => ({
+	verification: { identifier: 'verification.identifier' }
+}));
+
+import { buildResetUrl, isResetTokenValid } from './auth-reset-url';
 
 const ALLOWED_ORIGIN = 'https://synapse.fly.dev';
 const TOKEN = 'abc123resettoken';
@@ -130,5 +143,42 @@ describe('buildResetUrl', () => {
 				{ origin: 'https://evil.example.com' }
 			);
 		});
+	});
+});
+
+describe('isResetTokenValid', () => {
+	beforeEach(() => {
+		mockFindFirst.mockReset();
+	});
+
+	it('returns true when a matching, unexpired verification row exists', async () => {
+		mockFindFirst.mockResolvedValue({
+			identifier: 'reset-password:abc123resettoken',
+			expiresAt: new Date(Date.now() + 60_000)
+		});
+
+		await expect(isResetTokenValid('abc123resettoken')).resolves.toBe(true);
+		expect(mockFindFirst).toHaveBeenCalledWith({
+			where: {
+				type: 'eq',
+				field: 'verification.identifier',
+				value: 'reset-password:abc123resettoken'
+			}
+		});
+	});
+
+	it('returns false when no verification row exists', async () => {
+		mockFindFirst.mockResolvedValue(undefined);
+
+		await expect(isResetTokenValid('missing-token')).resolves.toBe(false);
+	});
+
+	it('returns false when the verification row has expired', async () => {
+		mockFindFirst.mockResolvedValue({
+			identifier: 'reset-password:expired-token',
+			expiresAt: new Date(Date.now() - 60_000)
+		});
+
+		await expect(isResetTokenValid('expired-token')).resolves.toBe(false);
 	});
 });

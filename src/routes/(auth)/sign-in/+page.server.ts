@@ -12,8 +12,11 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals, url }) => {
 	redirectIfAuthenticated(locals.user);
 	const form = await createAuthLoadForm(loginSchema, url);
+	// Whitelisted flag only — the reset-password action redirects here with
+	// ?reset=success so we can confirm the change. No query text is reflected.
+	const resetComplete = url.searchParams.get('reset') === 'success';
 
-	return { form };
+	return { form, resetComplete };
 };
 
 export const actions = {
