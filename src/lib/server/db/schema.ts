@@ -39,6 +39,8 @@ export const session = sqliteTable('session', {
 	expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
 	ipAddress: text('ipAddress'),
 	userAgent: text('userAgent'),
+	// Set by better-auth's admin plugin while an admin is impersonating this session.
+	impersonatedBy: text('impersonatedBy'),
 	createdAt: integer('createdAt', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date()),
@@ -70,6 +72,7 @@ export const account = sqliteTable(
 		accessToken: text('accessToken'),
 		refreshToken: text('refreshToken'),
 		accessTokenExpiresAt: integer('accessTokenExpiresAt', { mode: 'timestamp' }),
+		refreshTokenExpiresAt: integer('refreshTokenExpiresAt', { mode: 'timestamp' }),
 		refreshTokenUpdatedAt: integer('refreshTokenUpdatedAt', { mode: 'timestamp' }),
 		scope: text('scope'),
 		idToken: text('idToken'),

@@ -204,6 +204,13 @@
 			"when": 1788840170509,
 			"tag": "0028_ordinary_vampiro",
 			"breakpoints": true
+		},
+		{
+			"idx": 29,
+			"version": "6",
+			"when": 1789400318154,
+			"tag": "0029_perfect_wind_dancer",
+			"breakpoints": true
 		}
 	]
 }
