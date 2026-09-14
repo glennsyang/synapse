@@ -26,7 +26,6 @@
 
 	const registered = $derived(page.url.searchParams.get('registered') === 'true');
 	const verified = $derived(page.url.searchParams.get('verified') === 'true');
-	const reset = $derived(page.url.searchParams.get('reset') === 'true');
 </script>
 
 <svelte:head><title>Sign In - Synapse</title></svelte:head>
@@ -53,9 +52,10 @@
 					Email verified successfully! You can now sign in.
 				</div>
 			{/if}
-			{#if reset}
+			{#if data.resetComplete}
 				<div
 					class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
+					role="status"
 				>
 					Password reset successfully! You can now sign in with your new password.
 				</div>

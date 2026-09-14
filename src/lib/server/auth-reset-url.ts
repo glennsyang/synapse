@@ -1,5 +1,8 @@
 import { BETTER_AUTH_BASE_URL, NODE_ENV } from '$app/env/private';
+import { getDb } from '$lib/server/db';
+import { verification } from '$lib/server/db/schema';
 import { logger } from '$lib/server/logger';
+import { eq } from 'drizzle-orm';
 
 /**
  * Allowlisted origins for password-reset callback URLs.
@@ -39,4 +42,19 @@ export function buildResetUrl(callbackURL: string, token: string): string {
 
 	parsed.searchParams.set('token', token);
 	return parsed.toString();
+}
+
+/**
+ * Checks whether a password-reset token still has an unconsumed, unexpired
+ * `verification` row — the same check Better Auth's own reset-password flow
+ * performs, without consuming the row. Lets the reset-password page show an
+ * "invalid or expired link" state before the user fills out the form, even
+ * though `buildResetUrl` bypasses Better Auth's built-in GET verifier (which
+ * would otherwise report this via `?error=INVALID_TOKEN`).
+ */
+export async function isResetTokenValid(token: string): Promise<boolean> {
+	const row = await getDb().query.verification.findFirst({
+		where: eq(verification.identifier, `reset-password:${token}`)
+	});
+	return !!row && row.expiresAt > new Date();
 }

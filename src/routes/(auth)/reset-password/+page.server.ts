@@ -1,7 +1,8 @@
-import { FORGOT_PASSWORD_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
+import { SIGN_IN_ROUTE } from '$lib/auth-routes';
 import { resetPasswordSchema } from '$lib/schemas/auth';
 import { handleAuthFormAction, invalidAuthForm } from '$lib/server/actions/auth-form-handler';
 import { auth } from '$lib/server/auth';
+import { isResetTokenValid } from '$lib/server/auth-reset-url';
 import { createAuthLoadForm, redirectIfAuthenticated } from '$lib/server/auth/form-helpers';
 import { redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
@@ -12,16 +13,13 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals, url }) => {
 	redirectIfAuthenticated(locals.user);
 	const token = url.searchParams.get('token');
-
-	if (!token) {
-		throw redirect(302, FORGOT_PASSWORD_ROUTE);
-	}
+	const invalid = !token || !(await isResetTokenValid(token));
 
 	const form = await createAuthLoadForm(resetPasswordSchema, url, {
 		includeQueryMessage: false
 	});
 
-	return { token, form };
+	return { token, invalid, form };
 };
 
 export const actions = {
@@ -42,7 +40,9 @@ export const actions = {
 					}
 				});
 
-				throw redirect(302, `${SIGN_IN_ROUTE}?message=Password reset successful! Please sign in.`);
+				// Whitelisted flag only — the sign-in page renders a fixed confirmation
+				// banner for ?reset=success; no message text is reflected through the URL.
+				throw redirect(302, `${SIGN_IN_ROUTE}?reset=success`);
 			},
 			{
 				loggerContext: 'Password reset failed',
