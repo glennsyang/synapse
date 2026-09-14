@@ -46,40 +46,13 @@ describe('registerSchema', () => {
 		expect(result.success).toBe(false);
 	});
 
-	it('rejects a password without an uppercase letter', () => {
+	it('accepts a password with no complexity, only length', () => {
 		const result = registerSchema.safeParse({
 			...validPayload,
-			password: 'alllowercase1!',
-			confirmPassword: 'alllowercase1!'
+			password: 'alllowercase12345',
+			confirmPassword: 'alllowercase12345'
 		});
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects a password without a lowercase letter', () => {
-		const result = registerSchema.safeParse({
-			...validPayload,
-			password: 'ALLUPPERCASE1!',
-			confirmPassword: 'ALLUPPERCASE1!'
-		});
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects a password without a digit', () => {
-		const result = registerSchema.safeParse({
-			...validPayload,
-			password: 'NoDigitsHere!!',
-			confirmPassword: 'NoDigitsHere!!'
-		});
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects a password without a special character', () => {
-		const result = registerSchema.safeParse({
-			...validPayload,
-			password: 'NoSpecialChar1',
-			confirmPassword: 'NoSpecialChar1'
-		});
-		expect(result.success).toBe(false);
+		expect(result.success).toBe(true);
 	});
 
 	it('rejects when passwords do not match', () => {
