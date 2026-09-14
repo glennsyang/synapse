@@ -2,8 +2,7 @@ import {
 	ADMIN_USER_IDS,
 	BETTER_AUTH_BASE_URL,
 	BETTER_AUTH_SECRET,
-	NODE_ENV,
-	BREVO_NEW_USER_ADDRESS
+	NODE_ENV
 } from '$app/env/private';
 import { getRequestEvent } from '$app/server';
 import { logger } from '$lib/server/logger';
@@ -14,10 +13,11 @@ import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { admin } from 'better-auth/plugins';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
+import { createAuthAfterHooks, logPasswordResetAudit } from './auth-audit-hooks';
 import { buildResetUrl } from './auth-reset-url';
 import { getDb } from './db';
 import * as schema from './db/schema';
-import { sendNewUserEmail, sendPasswordResetEmail, sendVerificationEmail } from './email';
+import { sendPasswordResetEmail, sendVerificationEmail } from './email';
 import { sendAuthAlerts } from './notifications';
 
 export const auth = betterAuth({
@@ -64,16 +64,7 @@ export const auth = betterAuth({
 			);
 		},
 		onPasswordReset: async ({ user }) => {
-			logger.info('🔐 Security event: password reset completed and sessions revoked', {
-				userId: user.id,
-				email: user.email,
-				timestamp: new Date().toISOString()
-			});
-			void sendAuthAlerts(
-				`Password reset completed for ${user.email}`,
-				'Synapse - Password Reset Completed',
-				2
-			);
+			logPasswordResetAudit(user, 'Synapse');
 		}
 	},
 	emailVerification: {
@@ -112,38 +103,7 @@ export const auth = betterAuth({
 				});
 			}
 		}),
-		after: createAuthMiddleware(async (ctx) => {
-			if (ctx.path.includes('/register')) {
-				const newSession = ctx.context.newSession;
-				if (newSession) {
-					void sendNewUserEmail(
-						BREVO_NEW_USER_ADDRESS,
-						newSession.user.name,
-						newSession.user.email
-					);
-					void sendAuthAlerts(
-						`New user registered: ${newSession.user.email}`,
-						'Synapse - New User Alert',
-						4
-					);
-				}
-			}
-			// Audit logging
-			if (ctx.path.includes('/sign-in')) {
-				logger.debug('✅ Sign-in successful', {
-					userId: ctx.context.session?.user.id,
-					path: ctx.path
-				});
-			}
-			if (ctx.path.includes('/reset-password')) {
-				logger.info('🔑 Password reset requested');
-				void sendAuthAlerts(
-					`Password reset requested for ${ctx.context.session?.user.email}`,
-					'Synapse - Password Reset Alert',
-					4
-				);
-			}
-		})
+		after: createAuthAfterHooks('Synapse')
 	},
 	advanced: {
 		cookiePrefix: 'synapse_auth_',

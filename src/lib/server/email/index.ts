@@ -127,7 +127,7 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
 	logger.info('Password reset email sent', { to, brevoMessageId: result.messageId });
 }
 
-export async function sendNewUserEmail(to: string, name: string, email: string) {
+export async function sendNewUserEmail(to: string, name: string) {
 	logger.debug('📧 Sending new user email to:', { to });
 
 	let result;
@@ -136,7 +136,7 @@ export async function sendNewUserEmail(to: string, name: string, email: string) 
 			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
 			to: [{ email: to, name }],
 			subject: '[Synapse] New User was registered!',
-			htmlContent: `Hi ${escapeHtml(name || email)}!<br><br>Welcome to Synapse! We're excited to have you on board.<br><br>Thank you,<br>Synapse Team`
+			htmlContent: `Hi ${escapeHtml(name || to)}!<br><br>Welcome to Synapse! We're excited to have you on board.<br><br>Thank you,<br>Synapse Team`
 		});
 	} catch (error) {
 		logger.error('❌ Failed to send email', error, { to });
