@@ -2,16 +2,12 @@ import { RESET_PASSWORD_ROUTE } from '$lib/auth-routes';
 import { forgotPasswordSchema } from '$lib/schemas/auth';
 import { handleAuthFormAction, invalidAuthForm } from '$lib/server/actions/auth-form-handler';
 import { auth } from '$lib/server/auth';
+import { FORGOT_PASSWORD_RESPONSE } from '$lib/server/auth/forgot-password-response';
 import { createAuthLoadForm, redirectIfAuthenticated } from '$lib/server/auth/form-helpers';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
-
-// Deliberately ambiguous: identical text *and* styling on success and failure so
-// the banner can't be used to probe whether an account exists.
-const GENERIC_RESULT =
-	'If an account exists with that email, you will receive a password reset link.';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	redirectIfAuthenticated(locals.user);
@@ -52,12 +48,12 @@ export const actions = {
 					throw new Error(`Password reset request failed with status ${response.status}`);
 				}
 
-				return message(form, { type: 'success', text: GENERIC_RESULT });
+				return message(form, FORGOT_PASSWORD_RESPONSE);
 			},
 			{
 				loggerContext: 'Password reset request failed',
-				fallbackMessage: GENERIC_RESULT,
-				errorType: 'success'
+				fallbackMessage: FORGOT_PASSWORD_RESPONSE.text,
+				errorType: FORGOT_PASSWORD_RESPONSE.type
 			}
 		);
 	}
