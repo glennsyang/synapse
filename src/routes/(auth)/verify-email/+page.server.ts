@@ -18,9 +18,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// Get email from query params
 	const email = url.searchParams.get('email');
 
-	// If no email provided, redirect to sign-in
+	// If no email provided, redirect to sign-in. Whitelisted flag only — the
+	// sign-in page renders a fixed banner for ?verify=invalid; no message text
+	// is reflected through the URL.
 	if (!email) {
-		throw redirect(302, `${SIGN_IN_ROUTE}?message=Invalid verification link`);
+		throw redirect(302, `${SIGN_IN_ROUTE}?verify=invalid`);
 	}
 
 	const verificationForm = await superValidate({ email }, zod4(resendVerificationSchema), {

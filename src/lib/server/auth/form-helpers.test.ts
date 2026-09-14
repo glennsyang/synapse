@@ -40,9 +40,24 @@ describe('createAuthLoadForm', () => {
 		expect(form.message).toEqual({ type: 'error', text: 'Please sign in' });
 	});
 
+	it('never trusts ?messageType — a redirect banner is always an error', async () => {
+		const form = await createAuthLoadForm(
+			schema,
+			at('/sign-in?message=Nice%20try&messageType=success')
+		);
+		expect((form.message as App.Superforms.Message).type).toBe('error');
+	});
+
 	it('strips HTML tags from the query message', async () => {
 		const form = await createAuthLoadForm(schema, at('/sign-in?message=%3Cb%3Ehi%3C%2Fb%3Ethere'));
 		expect(form.message).toEqual({ type: 'error', text: 'hithere' });
+	});
+
+	it('strips an unterminated tag (no dangling <script)', async () => {
+		const form = await createAuthLoadForm(schema, at('/sign-in?message=hi%20%3Cscript'));
+		const text = (form.message as App.Superforms.Message).text;
+		expect(text).not.toContain('<');
+		expect(text).toBe('hi ');
 	});
 
 	it('truncates the query message to 200 characters', async () => {
