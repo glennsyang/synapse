@@ -64,7 +64,7 @@
 		"dotenv": "^17.4.2",
 		"drizzle-kit": "^0.31.10",
 		"embla-carousel-svelte": "^8.6.0",
-		"fallow": "^3.22.0",
+		"fallow": "^3.25.0",
 		"layerchart": "^2.4.0",
 		"lefthook": "^2.1.12",
 		"lint-staged": "^17.4.1",
