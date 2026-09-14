@@ -15,8 +15,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// Whitelisted flag only — the reset-password action redirects here with
 	// ?reset=success so we can confirm the change. No query text is reflected.
 	const resetComplete = url.searchParams.get('reset') === 'success';
+	// Whitelisted flag only — verify-email redirects here with ?verify=invalid
+	// when it's missing the ?email it needs. No message text is reflected.
+	const invalidVerificationLink = url.searchParams.get('verify') === 'invalid';
 
-	return { form, resetComplete };
+	return { form, resetComplete, invalidVerificationLink };
 };
 
 export const actions = {

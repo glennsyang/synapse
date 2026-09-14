@@ -60,6 +60,14 @@
 					Password reset successfully! You can now sign in with your new password.
 				</div>
 			{/if}
+			{#if data.invalidVerificationLink}
+				<div
+					class="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
+					role="alert"
+				>
+					That verification link is invalid or has expired. Please sign in or request a new one.
+				</div>
+			{/if}
 			<AuthFormMessage message={$message} />
 			<FieldGroup>
 				<Field>
