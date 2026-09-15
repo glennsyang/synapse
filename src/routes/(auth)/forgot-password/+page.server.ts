@@ -27,27 +27,10 @@ export const actions = {
 		return handleAuthFormAction(
 			form,
 			async () => {
-				// Route through Better Auth's HTTP handler rather than calling
-				// auth.api.requestPasswordReset directly, so the configured per-IP rate
-				// limit protects this public, email-sending action too (a direct api call
-				// bypasses the rate-limit middleware). Mirrors the verify-email resend
-				// action. `redirectTo` is a relative path, which passes Better Auth's
-				// origin check and becomes the `callbackURL` its built-in GET verifier
-				// redirects to after checking the token.
-				const headers = new Headers(request.headers);
-				headers.set('content-type', 'application/json');
-				headers.delete('content-length');
-
-				const response = await auth.handler(
-					new Request(new URL('/api/auth/request-password-reset', request.url), {
-						method: 'POST',
-						headers,
-						body: JSON.stringify({ email: form.data.email, redirectTo: RESET_PASSWORD_ROUTE })
-					})
-				);
-				if (!response.ok) {
-					throw new Error(`Password reset request failed with status ${response.status}`);
-				}
+				await auth.api.requestPasswordReset({
+					body: { email: form.data.email, redirectTo: RESET_PASSWORD_ROUTE },
+					headers: request.headers
+				});
 
 				return message(form, FORGOT_PASSWORD_RESPONSE);
 			},
