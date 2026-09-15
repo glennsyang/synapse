@@ -16,6 +16,7 @@ import {
 } from '$lib/server/db/utils';
 import { logger } from '$lib/server/logger';
 import { getVisitStatusThresholdsForUser } from '$lib/server/visit-status-settings';
+import { getBetterAuthErrorMessage } from '$lib/utils/auth';
 import { DEFAULT_DASHBOARD_GOALS, normalizeDashboardGoals } from '$lib/utils/dashboard-goals';
 import {
 	convertVisitThresholdToDays,
@@ -142,7 +143,13 @@ export const actions = {
 			logger.error('Failed to change password', error);
 			return message(
 				form,
-				{ type: 'error', text: 'Current password is incorrect or password change failed.' },
+				{
+					type: 'error',
+					text: getBetterAuthErrorMessage(
+						error,
+						'Current password is incorrect or password change failed.'
+					)
+				},
 				{ status: 400 }
 			);
 		}
