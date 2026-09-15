@@ -13,7 +13,6 @@ import { admin, haveIBeenPwned } from 'better-auth/plugins';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
 import { createAuthAfterHooks, logPasswordResetAudit } from './auth-audit-hooks';
-import { buildResetUrl } from './auth-reset-url';
 import { getDb } from './db';
 import * as schema from './db/schema';
 import { sendPasswordResetEmail, sendVerificationEmail } from './email';
@@ -45,17 +44,13 @@ export const auth = betterAuth({
 		maxPasswordLength: 128,
 		revokeSessionsOnPasswordReset: true,
 		resetPasswordTokenExpiresIn: 60 * 10, // 10 minutes
-		sendResetPassword: async ({ user, url, token }) => {
-			const urlObj = new URL(url);
-			// Better Auth spells the param `callbackURL` (see api/routes/password.mjs);
-			// the old lowercase lookup always returned null and threw before the email
-			// could be sent.
-			const callbackURL = urlObj.searchParams.get('callbackURL');
-			if (!callbackURL) {
-				throw new Error('Missing callbackURL in reset password URL');
-			}
-			const resetUrl = buildResetUrl(callbackURL, token);
-			void sendPasswordResetEmail(user.email, user.name, resetUrl);
+		sendResetPassword: async ({ user, url }) => {
+			// `url` is Better Auth's own GET-verifier link
+			// (/api/auth/reset-password/<token>?callbackURL=...). Pass it straight
+			// through — its own originCheck middleware already validated
+			// callbackURL against trustedOrigins, and the verifier itself checks
+			// the token before redirecting to /reset-password.
+			void sendPasswordResetEmail(user.email, user.name, url);
 			void sendAuthAlerts(
 				`Password reset requested for ${user.email}`,
 				'Synapse - Password Reset Alert',
