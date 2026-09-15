@@ -1,18 +1,9 @@
 import { convertVisitThresholdToDays } from '$lib/utils/visit-status';
 import { z } from 'zod';
 
-// Canonical password rule for register/reset, shared across the sibling apps: min 12
-// chars + upper/lower/number/special-character complexity.
-const passwordSchema = z
-	.string()
-	.min(12, 'Password must be at least 12 characters')
-	.regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-	.regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-	.regex(/\d/, 'Password must contain at least one number')
-	.regex(
-		/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/,
-		'Password must contain at least one special character'
-	);
+// Canonical password rule for register/reset: length-only, per NIST SP 800-63B §5.1.1.2
+// (composition rules deliberately omitted). Matches minPasswordLength in src/lib/server/auth.ts.
+const passwordSchema = z.string().min(12, 'Password must be at least 12 characters');
 
 export const registerSchema = z
 	.object({
