@@ -67,7 +67,8 @@
 		form: profileForm,
 		errors: profileErrors,
 		message: profileMessage,
-		submitting: profileSubmitting
+		submitting: profileSubmitting,
+		enhance: profileEnhance
 	} = profileFormStore;
 
 	// Password form
@@ -85,7 +86,8 @@
 		form: passwordForm,
 		errors: passwordErrors,
 		message: passwordMessage,
-		submitting: passwordSubmitting
+		submitting: passwordSubmitting,
+		enhance: passwordEnhance
 	} = passwordFormStore;
 
 	// Visit settings form
@@ -102,7 +104,8 @@
 		form: visitSettingsForm,
 		errors: visitSettingsErrors,
 		message: visitSettingsMessage,
-		submitting: visitSettingsSubmitting
+		submitting: visitSettingsSubmitting,
+		enhance: visitSettingsEnhance
 	} = visitSettingsFormStore;
 
 	// Dashboard goal settings form
@@ -119,7 +122,8 @@
 		form: dashboardGoalSettingsForm,
 		errors: dashboardGoalSettingsErrors,
 		message: dashboardGoalSettingsMessage,
-		submitting: dashboardGoalSettingsSubmitting
+		submitting: dashboardGoalSettingsSubmitting,
+		enhance: dashboardGoalSettingsEnhance
 	} = dashboardGoalSettingsFormStore;
 
 	// Profile editing state
@@ -236,7 +240,7 @@
 					{/if}
 				</div>
 
-				<form method="POST" action="?/update">
+				<form method="POST" action="?/update" use:profileEnhance>
 					<div class="space-y-4">
 						{#if $profileMessage}
 							<div
@@ -330,7 +334,7 @@
 					{/if}
 				</div>
 
-				<form method="POST" action="?/updateVisitSettings">
+				<form method="POST" action="?/updateVisitSettings" use:visitSettingsEnhance>
 					<div class="space-y-4">
 						{#if $visitSettingsMessage}
 							<div
@@ -498,7 +502,7 @@
 					{/if}
 				</div>
 
-				<form method="POST" action="?/updateDashboardGoalSettings">
+				<form method="POST" action="?/updateDashboardGoalSettings" use:dashboardGoalSettingsEnhance>
 					<div class="space-y-4">
 						{#if $dashboardGoalSettingsMessage}
 							<div
@@ -669,7 +673,7 @@
 				</div>
 
 				{#if isEditingPassword}
-					<form method="POST" action="?/changePassword">
+					<form method="POST" action="?/changePassword" use:passwordEnhance>
 						<div class="space-y-4">
 							{#if $passwordMessage}
 								<div
