@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { requestPasswordResetMock, loggerMock } = vi.hoisted(() => ({
+const { requestPasswordResetMock, loggerMock, rateLimitCheckMock } = vi.hoisted(() => ({
 	requestPasswordResetMock: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 	loggerMock: {
 		error: vi.fn<(...args: unknown[]) => void>(),
 		warn: vi.fn<(...args: unknown[]) => void>(),
 		info: vi.fn<(...args: unknown[]) => void>(),
 		debug: vi.fn<(...args: unknown[]) => void>()
-	}
+	},
+	rateLimitCheckMock: vi.fn<() => Promise<{ limited: boolean; retryAfter: number }>>()
 }));
 
 vi.mock('$lib/server/auth', () => ({
@@ -15,6 +16,14 @@ vi.mock('$lib/server/auth', () => ({
 }));
 
 vi.mock('$lib/server/logger', () => ({ logger: loggerMock }));
+
+vi.mock('$lib/server/rate-limiter', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('$lib/server/rate-limiter')>();
+	return {
+		...actual,
+		createAuthRateLimiter: () => ({ check: rateLimitCheckMock })
+	};
+});
 
 import { FORGOT_PASSWORD_RESPONSE } from '$lib/server/auth/forgot-password-response';
 
@@ -32,6 +41,7 @@ function forgotRequest(email: string) {
 describe('forgot-password default action', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		rateLimitCheckMock.mockResolvedValue({ limited: false, retryAfter: 0 });
 	});
 
 	it('asks Better Auth to send a reset link via auth.api.requestPasswordReset for a valid email', async () => {
@@ -69,6 +79,22 @@ describe('forgot-password default action', () => {
 		expect(result).toMatchObject({
 			status: 400,
 			data: { form: { message: { type: 'success', text: GENERIC } } }
+		});
+	});
+
+	it('returns a 429 with a retry-after message and skips Better Auth when rate limited', async () => {
+		rateLimitCheckMock.mockResolvedValueOnce({ limited: true, retryAfter: 42 });
+
+		const result = await actions.default({ request: forgotRequest('user@example.com') } as never);
+
+		expect(requestPasswordResetMock).not.toHaveBeenCalled();
+		expect(result).toMatchObject({
+			status: 429,
+			data: {
+				form: {
+					message: { type: 'error', text: 'Too many attempts. Please try again in 42 seconds.' }
+				}
+			}
 		});
 	});
 });
