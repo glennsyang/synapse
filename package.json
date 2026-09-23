@@ -30,7 +30,7 @@
 	"dependencies": {
 		"@better-auth/api-key": "^1.7.5",
 		"@getbrevo/brevo": "^6.0.3",
-		"@sentry/sveltekit": "^10.74.0",
+		"@sentry/sveltekit": "^10.75.0",
 		"better-auth": "^1.7.4",
 		"better-sqlite3": "^12.6.2",
 		"canvas-confetti": "^1.9.4",
