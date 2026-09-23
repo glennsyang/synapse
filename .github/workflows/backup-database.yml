@@ -73,7 +73,7 @@ jobs:
           echo "backup_size=$BACKUP_SIZE" >> $GITHUB_OUTPUT
 
       - name: Upload backup artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: db-backup-${{ steps.timestamp.outputs.date }}
           path: backup-${{ steps.timestamp.outputs.date }}.sql.gz.gpg
