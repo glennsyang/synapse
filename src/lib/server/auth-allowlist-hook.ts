@@ -42,3 +42,23 @@ export function createAllowlistBeforeHook(appName: string, allowedEmails: Set<st
 		throw APIError.from('UNAUTHORIZED', BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD);
 	});
 }
+
+/**
+ * `databaseHooks.session.create.before` gate: refuses to create a session for any
+ * user whose email isn't allowlisted. The before-hook above only covers
+ * `/sign-in/email`; this also closes every other session-creating flow — notably
+ * verify-email's `autoSignInAfterVerification`, which an unverified,
+ * non-allowlisted account could otherwise use to get signed in.
+ */
+export function createAllowlistSessionGuard(
+	allowedEmails: Set<string>,
+	findUserEmail: (userId: string) => Promise<string | undefined>
+) {
+	return async (session: { userId: string }) => {
+		const email = (await findUserEmail(session.userId))?.trim().toLowerCase();
+		if (email && allowedEmails.has(email)) {
+			return;
+		}
+		throw APIError.from('UNAUTHORIZED', BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD);
+	};
+}

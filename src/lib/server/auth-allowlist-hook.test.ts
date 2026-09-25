@@ -12,7 +12,11 @@ vi.mock('better-auth/api', async (importOriginal) => ({
 
 vi.mock('./notifications', () => ({ sendAuthAlerts: mockState.sendAuthAlerts }));
 
-import { createAllowlistBeforeHook, parseAllowedEmails } from './auth-allowlist-hook';
+import {
+	createAllowlistBeforeHook,
+	createAllowlistSessionGuard,
+	parseAllowedEmails
+} from './auth-allowlist-hook';
 
 type FakeCtx = { path: string; body?: { email?: unknown } };
 
@@ -75,5 +79,28 @@ describe('createAllowlistBeforeHook', () => {
 		await expect(
 			hook({ path: '/get-session', body: { email: 'stranger@example.com' } })
 		).resolves.toBeUndefined();
+	});
+});
+
+describe('createAllowlistSessionGuard', () => {
+	const emails: Record<string, string> = { owner: 'Owner@Example.com', stranger: 'x@example.com' };
+	const guard = createAllowlistSessionGuard(
+		parseAllowedEmails('owner@example.com'),
+		async (userId) => emails[userId]
+	);
+
+	it('allows a session for an allowlisted user, case-insensitively', async () => {
+		await expect(guard({ userId: 'owner' })).resolves.toBeUndefined();
+	});
+
+	it('blocks a session for a non-allowlisted user (e.g. verify-email auto sign-in)', async () => {
+		await expect(guard({ userId: 'stranger' })).rejects.toMatchObject({
+			statusCode: 401,
+			body: { code: 'INVALID_EMAIL_OR_PASSWORD' }
+		});
+	});
+
+	it('blocks a session when the user cannot be found', async () => {
+		await expect(guard({ userId: 'missing' })).rejects.toThrow('Invalid email or password');
 	});
 });
