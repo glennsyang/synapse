@@ -4,71 +4,10 @@ import {
 	changePasswordSchema,
 	forgotPasswordSchema,
 	loginSchema,
-	registerSchema,
 	resetPasswordSchema,
 	updateDashboardGoalSettingsSchema,
 	updateProfileSchema
 } from './auth';
-
-describe('registerSchema', () => {
-	const validPayload = {
-		name: 'Alice Smith',
-		email: 'alice@example.com',
-		password: 'SecurePass1!',
-		confirmPassword: 'SecurePass1!'
-	};
-
-	it('accepts a valid registration payload', () => {
-		expect(() => registerSchema.parse(validPayload)).not.toThrow();
-	});
-
-	it('rejects a name shorter than 2 characters', () => {
-		const result = registerSchema.safeParse({ ...validPayload, name: 'A' });
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects a name longer than 100 characters', () => {
-		const result = registerSchema.safeParse({ ...validPayload, name: 'A'.repeat(101) });
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects an invalid email address', () => {
-		const result = registerSchema.safeParse({ ...validPayload, email: 'not-an-email' });
-		expect(result.success).toBe(false);
-	});
-
-	it('rejects a password shorter than 12 characters', () => {
-		const result = registerSchema.safeParse({
-			...validPayload,
-			password: 'Short1',
-			confirmPassword: 'Short1'
-		});
-		expect(result.success).toBe(false);
-	});
-
-	it('accepts a password with no complexity, only length', () => {
-		const result = registerSchema.safeParse({
-			...validPayload,
-			password: 'alllowercase12345',
-			confirmPassword: 'alllowercase12345'
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it('rejects when passwords do not match', () => {
-		const result = registerSchema.safeParse({
-			...validPayload,
-			confirmPassword: 'DifferentPass1!'
-		});
-		expect(result.success).toBe(false);
-		expect(result).toMatchObject({
-			success: false,
-			error: {
-				issues: expect.arrayContaining([expect.objectContaining({ path: ['confirmPassword'] })])
-			}
-		});
-	});
-});
 
 describe('loginSchema', () => {
 	it('accepts valid credentials', () => {
@@ -120,6 +59,24 @@ describe('resetPasswordSchema', () => {
 			confirmPassword: 'Mismatch123!'
 		});
 		expect(result.success).toBe(false);
+	});
+
+	it('rejects a password shorter than 12 characters', () => {
+		const result = resetPasswordSchema.safeParse({
+			...validReset,
+			password: 'Short1',
+			confirmPassword: 'Short1'
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it('accepts a password with no complexity, only length', () => {
+		const result = resetPasswordSchema.safeParse({
+			...validReset,
+			password: 'alllowercase12345',
+			confirmPassword: 'alllowercase12345'
+		});
+		expect(result.success).toBe(true);
 	});
 
 	it('token is optional', () => {

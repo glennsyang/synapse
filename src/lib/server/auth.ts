@@ -1,5 +1,6 @@
 import {
 	ADMIN_USER_IDS,
+	ALLOWED_EMAILS,
 	BETTER_AUTH_BASE_URL,
 	BETTER_AUTH_SECRET,
 	NODE_ENV
@@ -12,6 +13,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { admin, haveIBeenPwned } from 'better-auth/plugins';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 
+import { createAllowlistBeforeHook, parseAllowedEmails } from './auth-allowlist-hook';
 import { createAuthAfterHooks, logPasswordResetAudit } from './auth-audit-hooks';
 import { getDb } from './db';
 import * as schema from './db/schema';
@@ -38,6 +40,8 @@ export const auth = betterAuth({
 	}),
 	emailAndPassword: {
 		enabled: true,
+		// Accounts are created by an admin only (POST /api/auth/admin/create-user).
+		disableSignUp: true,
 		autoSignIn: false,
 		requireEmailVerification: true,
 		minPasswordLength: 12,
@@ -76,6 +80,9 @@ export const auth = betterAuth({
 		}
 	},
 	hooks: {
+		// Public sign-up is off (disableSignUp above); this also restricts sign-in to
+		// the exact ALLOWED_EMAILS list.
+		before: createAllowlistBeforeHook('Synapse', parseAllowedEmails(ALLOWED_EMAILS)),
 		after: createAuthAfterHooks('Synapse')
 	},
 	advanced: {
@@ -125,7 +132,7 @@ export const auth = betterAuth({
 		}),
 		// NIST SP 800-63B §5.1.1.2: reject passwords found in a known-breach corpus.
 		// Checked via the HIBP k-anonymity range API on the plugin's default paths
-		// (/sign-up/email, /change-password, /reset-password, /admin/set-user-password)
+		// (/sign-up/email — disabled above, /change-password, /reset-password, /admin/set-user-password)
 		// — only the first 5 hex chars of the password's SHA-1 hash ever leave the
 		// server. Fails closed: an HIBP outage blocks the password change rather than
 		// silently skipping the check.
