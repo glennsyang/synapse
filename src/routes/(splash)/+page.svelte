@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { REGISTER_ROUTE, SIGN_IN_ROUTE } from '$lib/auth-routes';
+	import { SIGN_IN_ROUTE } from '$lib/auth-routes';
 	import { Button } from '$lib/components/ui/button';
 	import { Moon, Sun } from '@lucide/svelte/icons';
 	import { toggleMode } from 'mode-watcher';
 
 	const handleSignIn = () => goto(SIGN_IN_ROUTE);
-	const handleRegister = () => goto(REGISTER_ROUTE);
 </script>
 
 <div class="flex min-h-screen flex-col">
@@ -16,7 +15,6 @@
 			<div class="text-xl font-bold"><a href="/">Synapse</a></div>
 			<div class="space-x-2">
 				<Button variant="outline" onclick={handleSignIn}>Sign In</Button>
-				<Button onclick={handleRegister}>Register</Button>
 				<Button onclick={toggleMode} variant="outline" size="icon">
 					<Sun
 						class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
@@ -38,8 +36,7 @@
 			<h1 class="mb-6 text-4xl font-bold md:text-5xl">Welcome to Synapse</h1>
 			<p class="mb-8 text-lg">Take control of your life with our powerful second brain tools.</p>
 			<div class="flex flex-col justify-center gap-4 sm:flex-row">
-				<Button size="lg" onclick={handleRegister}>Get Started</Button>
-				<Button size="lg" variant="outline" onclick={handleSignIn}>Sign In</Button>
+				<Button size="lg" onclick={handleSignIn}>Sign In</Button>
 			</div>
 		</div>
 	</main>

@@ -39,6 +39,11 @@ export const variables = defineEnvVars({
 			'Comma-separated list of user IDs bootstrapped as admins by the better-auth admin plugin',
 		schema: z.string().default('dummy_admin_id')
 	},
+	ALLOWED_EMAILS: {
+		description:
+			'Comma-separated list of the only emails allowed to sign in (exact, case-insensitive match)',
+		schema: building ? z.string().catch('') : z.string().min(1)
+	},
 	CRON_SECRET: {
 		description: 'Bearer token for authorizing cron job requests',
 		schema: building ? z.string().catch('build_time_dummy_secret_min_16_chars') : z.string().min(16)

@@ -3,12 +3,7 @@
 	import AuthFormMessage from '$lib/components/AuthFormMessage.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import {
-		Field,
-		FieldDescription,
-		FieldGroup,
-		FieldLabel
-	} from '$lib/components/ui/field/index.js';
+	import { Field, FieldGroup, FieldLabel } from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { superForm } from 'sveltekit-superforms';
@@ -24,7 +19,6 @@
 		}
 	});
 
-	const registered = $derived(page.url.searchParams.get('registered') === 'true');
 	const verified = $derived(page.url.searchParams.get('verified') === 'true');
 </script>
 
@@ -37,14 +31,6 @@
 	</Card.Header>
 	<Card.Content>
 		<form method="POST" use:enhance class="space-y-6">
-			{#if registered}
-				<div
-					class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
-				>
-					Account created successfully! Please check your email to verify your account before
-					signing in.
-				</div>
-			{/if}
 			{#if verified}
 				<div
 					class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
@@ -113,9 +99,6 @@
 						{/if}
 						{$submitting ? 'Signing in...' : 'Sign in'}
 					</Button>
-					<FieldDescription class="text-center">
-						Don't have an account? <a href="/register">Sign up</a>
-					</FieldDescription>
 				</Field>
 			</FieldGroup>
 		</form>

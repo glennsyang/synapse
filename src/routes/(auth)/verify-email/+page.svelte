@@ -75,13 +75,6 @@
 		</form>
 
 		<div class="text-center">
-			<p class="text-muted-foreground text-sm">
-				Wrong email address?
-				<a href="/register" class="text-primary font-medium hover:underline"> Register again </a>
-			</p>
-		</div>
-
-		<div class="text-center">
 			<a href="/sign-in"> <Button variant="outline" class="w-full">Back to Sign In</Button> </a>
 		</div>
 	</div>
