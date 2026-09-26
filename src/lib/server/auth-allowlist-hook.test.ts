@@ -107,6 +107,7 @@ describe('formatAlertEmail', () => {
 		expect(formatAlertEmail('a@b.com\nPassword reset completed')).toBe('(invalid email)');
 		expect(formatAlertEmail('a\u0000b@example.com')).toBe('(invalid email)');
 		expect(formatAlertEmail('not-an-email')).toBe('(invalid email)');
+		expect(formatAlertEmail('a\u202eb@example.com')).toBe('(invalid email)');
 	});
 
 	it('marks a missing email', () => {

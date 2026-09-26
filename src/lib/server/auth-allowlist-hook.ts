@@ -37,7 +37,7 @@ export function isUserAccessAllowed(
 	return user.banExpires != null && new Date(user.banExpires).getTime() < Date.now();
 }
 
-const ALERT_EMAIL_PATTERN = /^[^\s@\p{Cc}]{1,64}@[^\s@\p{Cc}]{1,190}$/u;
+const ALERT_EMAIL_PATTERN = /^[^\s@\p{Cc}\p{Cf}]{1,64}@[^\s@\p{Cc}\p{Cf}]{1,190}$/u;
 const DEFAULT_ALERT_WINDOW_MS = 5 * 60 * 1000;
 
 /**
