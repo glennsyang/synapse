@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     concurrency: deploy-group # optional: ensure only one action runs at a time
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Install dependencies
       - uses: actions/setup-node@v6
