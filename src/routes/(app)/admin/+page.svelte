@@ -214,7 +214,7 @@
 						</div>
 
 						<div>
-							<Label for="key-expires" class="mb-2 block">Expires in (days, optional)</Label>
+							<Label for="key-expires" class="mb-2 block">Expires in (days)</Label>
 							<Input
 								id="key-expires"
 								name="expiresInDays"
@@ -222,7 +222,6 @@
 								min="1"
 								max="365"
 								bind:value={$form.expiresInDays}
-								placeholder="Never expires"
 								class="max-w-40"
 							/>
 						</div>

@@ -2,7 +2,7 @@ import { permissionsForScope, type ApiScope } from '$lib/api-scopes';
 import { parseBearerToken } from '$lib/server/http/bearer-token';
 import { logger } from '$lib/server/logger';
 
-import { auth } from '../auth';
+import { auth, isUserIdAccessAllowed } from '../auth';
 import type { ApiErrorCode } from './response';
 
 type ApiKeyAuthSuccess = { ok: true; apiKeyId: string; userId: string };
@@ -54,6 +54,19 @@ export async function requireApiKey(request: Request, scope: ApiScope): Promise<
 			};
 		}
 
+		return {
+			ok: false,
+			status: 401,
+			code: 'invalid_api_key',
+			message: 'Invalid API key.'
+		};
+	}
+
+	// The plugin checks only the key itself, never its owner, so a key would otherwise
+	// outlive its owner's removal from ALLOWED_EMAILS or a ban. Same generic 401 as any
+	// other invalid key, so the response doesn't reveal the owner's status.
+	if (!(await isUserIdAccessAllowed(result.key.referenceId))) {
+		logger.warn('API key auth failed', { path, reason: 'owner_not_allowed' });
 		return {
 			ok: false,
 			status: 401,

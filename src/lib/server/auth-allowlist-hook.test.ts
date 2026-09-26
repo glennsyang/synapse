@@ -15,6 +15,7 @@ vi.mock('./notifications', () => ({ sendAuthAlerts: mockState.sendAuthAlerts }))
 import {
 	createAllowlistBeforeHook,
 	createAllowlistSessionGuard,
+	isUserAccessAllowed,
 	parseAllowedEmails
 } from './auth-allowlist-hook';
 
@@ -102,5 +103,41 @@ describe('createAllowlistSessionGuard', () => {
 
 	it('blocks a session when the user cannot be found', async () => {
 		await expect(guard({ userId: 'missing' })).rejects.toThrow('Invalid email or password');
+	});
+});
+
+describe('isUserAccessAllowed', () => {
+	const allowed = parseAllowedEmails('owner@example.com');
+
+	it('allows an allowlisted, unbanned user regardless of case/whitespace', () => {
+		expect(isUserAccessAllowed({ email: ' Owner@Example.COM ', banned: false }, allowed)).toBe(
+			true
+		);
+	});
+
+	it('rejects a user no longer on the allowlist', () => {
+		expect(isUserAccessAllowed({ email: 'removed@example.com', banned: false }, allowed)).toBe(
+			false
+		);
+	});
+
+	it('rejects a banned user with no expiry', () => {
+		expect(
+			isUserAccessAllowed({ email: 'owner@example.com', banned: true, banExpires: null }, allowed)
+		).toBe(false);
+	});
+
+	it('rejects a banned user whose ban has not expired yet', () => {
+		const banExpires = new Date(Date.now() + 60_000);
+		expect(
+			isUserAccessAllowed({ email: 'owner@example.com', banned: true, banExpires }, allowed)
+		).toBe(false);
+	});
+
+	it('allows a user whose ban has expired', () => {
+		const banExpires = new Date(Date.now() - 60_000);
+		expect(
+			isUserAccessAllowed({ email: 'owner@example.com', banned: true, banExpires }, allowed)
+		).toBe(true);
 	});
 });

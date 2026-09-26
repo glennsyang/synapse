@@ -19,6 +19,25 @@ export function parseAllowedEmails(raw: string): Set<string> {
 }
 
 /**
+ * Use-time access check for an already-authenticated user (session or API key owner).
+ * The sign-in / session-create gates below only run when a session is created, so this
+ * is what revokes access for someone later removed from `ALLOWED_EMAILS` or banned.
+ * A ban with a `banExpires` in the past no longer counts, matching the admin plugin.
+ */
+export function isUserAccessAllowed(
+	user: { email: string; banned?: boolean | null; banExpires?: Date | string | null },
+	allowedEmails: Set<string>
+): boolean {
+	if (!allowedEmails.has(user.email.trim().toLowerCase())) {
+		return false;
+	}
+	if (!user.banned) {
+		return true;
+	}
+	return user.banExpires != null && new Date(user.banExpires).getTime() < Date.now();
+}
+
+/**
  * `hooks.before` gate for Better Auth: only emails in `allowedEmails` may reach
  * `/sign-in/email` (or `/sign-up/email`, which is also disabled outright via
  * `emailAndPassword.disableSignUp`). Anything else is rejected with the exact
