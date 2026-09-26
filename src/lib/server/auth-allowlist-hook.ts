@@ -37,14 +37,41 @@ export function isUserAccessAllowed(
 	return user.banExpires != null && new Date(user.banExpires).getTime() < Date.now();
 }
 
+const ALERT_EMAIL_PATTERN = /^[^\s@\p{Cc}]{1,64}@[^\s@\p{Cc}]{1,190}$/u;
+const DEFAULT_ALERT_WINDOW_MS = 5 * 60 * 1000;
+
+/**
+ * The submitted email is attacker-controlled, so only a single-line, length-bounded
+ * address is echoed into an operator alert; anything else is replaced with a placeholder.
+ */
+export function formatAlertEmail(email: string): string {
+	if (!email) {
+		return '(none)';
+	}
+	return ALERT_EMAIL_PATTERN.test(email) ? email : '(invalid email)';
+}
+
 /**
  * `hooks.before` gate for Better Auth: only emails in `allowedEmails` may reach
  * `/sign-in/email` (or `/sign-up/email`, which is also disabled outright via
  * `emailAndPassword.disableSignUp`). Anything else is rejected with the exact
  * error Better Auth throws for a wrong password, so a blocked email can't be told
  * apart from a bad credential, and raises an auth alert.
+ *
+ * Alerts are debounced to one per `alertWindowMs`; attempts inside the window are
+ * counted and reported with the next alert, so a flood can't spam the operator.
  */
-export function createAllowlistBeforeHook(appName: string, allowedEmails: Set<string>) {
+export function createAllowlistBeforeHook(
+	appName: string,
+	allowedEmails: Set<string>,
+	{
+		alertWindowMs = DEFAULT_ALERT_WINDOW_MS,
+		now = Date.now
+	}: { alertWindowMs?: number; now?: () => number } = {}
+) {
+	let lastAlertAt = -Infinity;
+	let suppressed = 0;
+
 	return createAuthMiddleware(async (ctx) => {
 		if (!GUARDED_PATHS.has(ctx.path)) {
 			return;
@@ -53,11 +80,19 @@ export function createAllowlistBeforeHook(appName: string, allowedEmails: Set<st
 		if (email && allowedEmails.has(email)) {
 			return;
 		}
-		void sendAuthAlerts(
-			`⚠️ Blocked ${ctx.path} attempt for non-allowlisted email: ${email || '(none)'} at ${new Date().toISOString()}.`,
-			`${appName} - Security Alert`,
-			4
-		);
+		const timestamp = now();
+		if (timestamp - lastAlertAt >= alertWindowMs) {
+			const suppressedNote = suppressed ? ` (+${suppressed} more suppressed since last alert)` : '';
+			lastAlertAt = timestamp;
+			suppressed = 0;
+			void sendAuthAlerts(
+				`⚠️ Blocked ${ctx.path} attempt for non-allowlisted email: ${formatAlertEmail(email)}${suppressedNote} at ${new Date(timestamp).toISOString()}.`,
+				`${appName} - Security Alert`,
+				3
+			);
+		} else {
+			suppressed++;
+		}
 		throw APIError.from('UNAUTHORIZED', BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD);
 	});
 }

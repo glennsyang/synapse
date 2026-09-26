@@ -10,21 +10,28 @@ vi.mock('better-auth/api', async (importOriginal) => ({
 	createAuthMiddleware: (fn: unknown) => fn
 }));
 
-vi.mock('./notifications', () => ({ sendAuthAlerts: mockState.sendAuthAlerts }));
+vi.mock('./notifications', () => ({
+	sendAuthAlerts: mockState.sendAuthAlerts
+}));
 
 import {
 	createAllowlistBeforeHook,
 	createAllowlistSessionGuard,
+	formatAlertEmail,
 	isUserAccessAllowed,
 	parseAllowedEmails
 } from './auth-allowlist-hook';
 
 type FakeCtx = { path: string; body?: { email?: unknown } };
 
+type FakeHook = (ctx: FakeCtx) => Promise<void>;
+
+// A zero-length window disables debouncing so each test sees its own alert.
 const hook = createAllowlistBeforeHook(
 	'Test App',
-	parseAllowedEmails(' Owner@Example.com , partner@example.com,, ')
-) as unknown as (ctx: FakeCtx) => Promise<void>;
+	parseAllowedEmails(' Owner@Example.com , partner@example.com,, '),
+	{ alertWindowMs: 0 }
+) as unknown as FakeHook;
 
 beforeEach(() => mockState.sendAuthAlerts.mockClear());
 
@@ -50,7 +57,7 @@ describe('createAllowlistBeforeHook', () => {
 		expect(mockState.sendAuthAlerts).toHaveBeenCalledWith(
 			expect.stringContaining('x+owner@example.com'),
 			'Test App - Security Alert',
-			4
+			3
 		);
 	});
 
@@ -59,7 +66,10 @@ describe('createAllowlistBeforeHook', () => {
 			hook({ path: '/sign-in/email', body: { email: 'stranger@example.com' } })
 		).rejects.toMatchObject({
 			statusCode: 401,
-			body: { code: 'INVALID_EMAIL_OR_PASSWORD', message: 'Invalid email or password' }
+			body: {
+				code: 'INVALID_EMAIL_OR_PASSWORD',
+				message: 'Invalid email or password'
+			}
 		});
 	});
 
@@ -83,8 +93,99 @@ describe('createAllowlistBeforeHook', () => {
 	});
 });
 
+describe('formatAlertEmail', () => {
+	it('passes through a well-formed email', () => {
+		expect(formatAlertEmail('stranger@example.com')).toBe('stranger@example.com');
+	});
+
+	it('replaces an oversized multi-line value', () => {
+		const huge = `Password reset completed for admin@example.com\n${'a'.repeat(10_000)}`;
+		expect(formatAlertEmail(huge)).toBe('(invalid email)');
+	});
+
+	it('replaces values containing newlines or control characters', () => {
+		expect(formatAlertEmail('a@b.com\nPassword reset completed')).toBe('(invalid email)');
+		expect(formatAlertEmail('a\u0000b@example.com')).toBe('(invalid email)');
+		expect(formatAlertEmail('not-an-email')).toBe('(invalid email)');
+	});
+
+	it('marks a missing email', () => {
+		expect(formatAlertEmail('')).toBe('(none)');
+	});
+});
+
+describe('createAllowlistBeforeHook alert debounce', () => {
+	const WINDOW_MS = 60_000;
+
+	function createDebouncedHook() {
+		let clock = 1_000_000;
+		const debounced = createAllowlistBeforeHook(
+			'Test App',
+			parseAllowedEmails('owner@example.com'),
+			{
+				alertWindowMs: WINDOW_MS,
+				now: () => clock
+			}
+		) as unknown as FakeHook;
+		return {
+			hook: debounced,
+			advance: (ms: number) => {
+				clock += ms;
+			}
+		};
+	}
+
+	const block = (h: FakeHook, email = 'stranger@example.com') =>
+		expect(h({ path: '/sign-in/email', body: { email } })).rejects.toThrow(
+			'Invalid email or password'
+		);
+
+	it('sends at most one alert per window', async () => {
+		const { hook: debounced } = createDebouncedHook();
+		for (let i = 0; i < 50; i++) {
+			await block(debounced);
+		}
+		expect(mockState.sendAuthAlerts).toHaveBeenCalledTimes(1);
+	});
+
+	it('reports suppressed attempts with the next alert after the window', async () => {
+		const { hook: debounced, advance } = createDebouncedHook();
+		for (let i = 0; i < 50; i++) {
+			await block(debounced);
+		}
+		advance(WINDOW_MS);
+		await block(debounced);
+		expect(mockState.sendAuthAlerts).toHaveBeenCalledTimes(2);
+		expect(mockState.sendAuthAlerts.mock.lastCall?.[0]).toContain(
+			'(+49 more suppressed since last alert)'
+		);
+	});
+
+	it('does not count allowlisted sign-ins as suppressed attempts', async () => {
+		const { hook: debounced, advance } = createDebouncedHook();
+		await block(debounced);
+		await debounced({
+			path: '/sign-in/email',
+			body: { email: 'owner@example.com' }
+		});
+		advance(WINDOW_MS);
+		await block(debounced);
+		expect(mockState.sendAuthAlerts.mock.lastCall?.[0]).not.toContain('suppressed');
+	});
+
+	it('shows a placeholder instead of an injected value', async () => {
+		const { hook: debounced } = createDebouncedHook();
+		await block(debounced, 'x@y.com\nPassword reset completed for admin@example.com');
+		expect(mockState.sendAuthAlerts.mock.lastCall?.[0]).toContain('(invalid email)');
+		expect(mockState.sendAuthAlerts.mock.lastCall?.[0]).not.toContain('Password reset');
+	});
+});
+
 describe('createAllowlistSessionGuard', () => {
-	const emails: Record<string, string> = { owner: 'Owner@Example.com', stranger: 'x@example.com' };
+	const emails: Record<string, string> = {
+		owner: 'Owner@Example.com',
+		stranger: 'x@example.com'
+	};
 	const guard = createAllowlistSessionGuard(
 		parseAllowedEmails('owner@example.com'),
 		async (userId) => emails[userId]
