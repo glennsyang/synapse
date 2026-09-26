@@ -10,6 +10,10 @@ type MessageOptions = NonNullable<Parameters<typeof message>[2]>;
  * already used by better-auth's own `rateLimit` config in `./auth.ts` for a single
  * browser identity; `IP` is a looser net that also catches distributed attempts
  * from behind a shared/NAT IP without tripping on a single legitimate user.
+ *
+ * Both keys use `event.getClientAddress()`, which only returns the real client IP in
+ * prod because the Dockerfile sets `ADDRESS_HEADER=fly-client-ip`; without it every
+ * request shares the Fly proxy's IP and one bucket.
  */
 export function createAuthRateLimiter(): RetryAfterRateLimiter {
 	return new RetryAfterRateLimiter({
