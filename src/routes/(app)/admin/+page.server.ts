@@ -1,13 +1,13 @@
 import { scopesToPermissions, type ApiScope } from '$lib/api-scopes';
 import type { AdminApiLogEntry } from '$lib/components/admin/api-logs-columns';
 import { createApiKeySchema, revokeApiKeySchema } from '$lib/schemas/api-key';
-import { requireAdmin } from '$lib/server/actions/auth-guard';
+import { getUser, requireAdmin } from '$lib/server/actions/auth-guard';
 import { auth } from '$lib/server/auth';
 import { getDb } from '$lib/server/db';
 import { apiAuditLog, apiKey, people, user, visits } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
 import { logger } from '$lib/server/logger';
-import { fail } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import { asc, desc, eq, inArray } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -25,7 +25,10 @@ function parsePermissions(raw: string | null): Record<string, string[]> | null {
 	}
 }
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	// Server loads run in parallel with the layout's guard, so check here too.
+	if (getUser(locals).role !== 'admin') error(403, 'Forbidden');
+
 	const createApiKeyForm = await superValidate(zod4(createApiKeySchema), { id: 'createApiKey' });
 
 	try {
