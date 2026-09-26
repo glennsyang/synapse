@@ -60,11 +60,19 @@ describe('logger PII redaction', () => {
 		const logger = await importLoggerWithEnv('production');
 		const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
 
-		logger.info('User signed in', { userId: 'user-123', email: 'a@b.com', requestId: 'req-1' });
+		logger.info('User signed in', {
+			userId: 'user-123',
+			email: 'a@b.com',
+			ip: '203.0.113.7',
+			ipAddress: '198.51.100.9',
+			requestId: 'req-1'
+		});
 
 		const loggedLine = consoleInfoSpy.mock.calls[0]?.[0] as string;
 		expect(loggedLine).not.toContain('user-123');
 		expect(loggedLine).not.toContain('a@b.com');
+		expect(loggedLine).not.toContain('203.0.113.7');
+		expect(loggedLine).not.toContain('198.51.100.9');
 		expect(loggedLine).toContain('req-1');
 	});
 

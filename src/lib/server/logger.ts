@@ -13,7 +13,7 @@ interface LogContext {
 }
 
 // Stripped from log output and Sentry payloads once IS_DEV is false.
-const PII_FIELDS = new Set(['userId', 'id', 'email', 'password', 'token', 'createdBy', 'updatedBy']);
+const PII_FIELDS = new Set(['userId', 'id', 'email', 'password', 'token', 'createdBy', 'updatedBy', 'ip', 'ipAddress']);
 
 // Best-effort defense-in-depth for PII embedded in free-text strings (e.g. error
 // messages), which the key-based PII_FIELDS check above can't catch.

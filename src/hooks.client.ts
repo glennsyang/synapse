@@ -5,14 +5,13 @@ import * as Sentry from '@sentry/sveltekit';
 Sentry.init({
 	dsn: SENTRY_DSN,
 
-	tracesSampleRate: 1.0,
+	tracesSampleRate: 0.2,
 
 	// Enable logs to be sent to Sentry
 	enableLogs: true,
 
-	// Enable sending user PII (Personally Identifiable Information)
-	// https://docs.sentry.io/platforms/javascript/guides/sveltekit/configuration/options/#sendDefaultPii
-	sendDefaultPii: true
+	// Keep user IPs, headers and user context out of Sentry; requestId is the only prod correlation key.
+	sendDefaultPii: false
 });
 
 // Suppress SvelteKit router warnings from third-party libraries (e.g., LayerChart)
