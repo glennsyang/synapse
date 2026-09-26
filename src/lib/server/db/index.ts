@@ -1,11 +1,12 @@
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
-import { DATABASE_URL } from '$app/env/private';
+import { DATABASE_URL, NODE_ENV } from '$app/env/private';
 import { logger } from '$lib/server/logger';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 
+import { createQueryLogger } from './query-logger';
 import * as schema from './schema';
 
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
@@ -22,7 +23,7 @@ export function getDb() {
 		mkdirSync(dir, { recursive: true });
 
 		const connection = new Database(dbPath);
-		_db = drizzle(connection, { schema, logger: true });
+		_db = drizzle(connection, { schema, logger: createQueryLogger(NODE_ENV !== 'production') });
 	}
 
 	return _db;
