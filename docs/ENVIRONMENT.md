@@ -17,6 +17,7 @@ Canonical reference for every environment variable this app or its CI/CD pipelin
 | `ALLOWED_EMAILS`       | Auth (sign-in gate)     | Fly secret                     | Yes      | Comma-separated; the only emails that can sign in (exact, case-insensitive). See below |
 | `CRON_SECRET`          | Cron auth               | Fly secret                     | Yes      | Bearer token for `/api/cron/*`                                                         |
 | `NODE_ENV`             | Runtime                 | Dockerfile `ENV`               | Yes      | `development` \| `production` \| `test`; defaults to `development`                     |
+| `ADDRESS_HEADER`       | Rate limiting           | Dockerfile `ENV`               | Yes      | `fly-client-ip`; real client IP for the auth-form rate limiters (else Fly proxy IP)    |
 | `SENTRY_DSN`           | Observability (Sentry)  | Dockerfile `ENV`               | Yes      | Not secret — Sentry DSNs are safe to expose publicly                                   |
 | `LOG_LEVEL`            | Logging                 | Not set in prod (uses default) | No       | `debug` \| `info` \| `warn` \| `error`; defaults to `debug` in dev, `info` in prod     |
 
@@ -46,5 +47,5 @@ To enable it: create a Sentry **Organization Auth Token** (Settings → Auth Tok
 
 ## Verification
 
-- `fly secrets list -a synapse-dev` should list exactly the Fly-secret rows in the table above (`BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `CRON_SECRET`, `AUTH_ALERTS_URL`, `REMINDER_ALERTS_URL`, `BREVO_API_KEY`, `BREVO_FROM_ADDRESS`, `ADMIN_USER_IDS`, `ALLOWED_EMAILS`) — no more, no less. `NODE_ENV`, `DATABASE_URL`, and `SENTRY_DSN` intentionally don't appear there since they're baked into the Dockerfile.
+- `fly secrets list -a synapse-dev` should list exactly the Fly-secret rows in the table above (`BETTER_AUTH_SECRET`, `BETTER_AUTH_BASE_URL`, `CRON_SECRET`, `AUTH_ALERTS_URL`, `REMINDER_ALERTS_URL`, `BREVO_API_KEY`, `BREVO_FROM_ADDRESS`, `ADMIN_USER_IDS`, `ALLOWED_EMAILS`) — no more, no less. `NODE_ENV`, `DATABASE_URL`, `SENTRY_DSN`, and `ADDRESS_HEADER` intentionally don't appear there since they're baked into the Dockerfile.
 - `cp .env.example .env`, fill in real values, `npm run dev` should boot with no missing-var errors.

@@ -71,6 +71,10 @@ RUN chmod +x /app/start.sh
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 ENV DATABASE_URL="/data/synapse.db"
+# Fly's proxy is the TCP peer for every request, so without this adapter-node's
+# getClientAddress() returns the proxy IP and the auth-form rate limiters share one
+# global bucket. adapter-node throws if the header is missing (fails closed).
+ENV ADDRESS_HEADER="fly-client-ip"
 # Not a secret (already public in Sentry's client SDK bundle); safe to bake in.
 ENV SENTRY_DSN="https://0941b6e2d9801402928ec265ba858ff9@o4510809399492608.ingest.us.sentry.io/4511970268020736"
 CMD [ "/app/start.sh" ]
