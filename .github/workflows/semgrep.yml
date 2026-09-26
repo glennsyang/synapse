@@ -26,10 +26,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.x'
 
@@ -48,7 +50,18 @@ jobs:
         continue-on-error: true
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
         if: always()
         with:
           sarif_file: semgrep.sarif
+
+      # Scan above is non-blocking so the SARIF always uploads; gate on ERROR severity here.
+      - name: Fail on ERROR-severity findings
+        run: |
+          count=$(jq '[.runs[].results[] | select(.level == "error")] | length' semgrep.sarif)
+          if [ "$count" -gt 0 ]; then
+            echo "Semgrep found $count ERROR-severity finding(s):" >&2
+            jq -r '.runs[].results[] | select(.level == "error") | "\(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine) \(.ruleId)"' semgrep.sarif >&2
+            exit 1
+          fi
+          echo "No ERROR-severity Semgrep findings"

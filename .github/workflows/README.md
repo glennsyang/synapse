@@ -53,6 +53,13 @@ Runs on pull requests, pushes to `main`, and manual trigger.
 
 1. Runs Semgrep SAST rulesets
 2. Uploads SARIF results to GitHub Security
+3. Fails the job if any finding has ERROR severity
+
+## Security Conventions
+
+- Every workflow declares a top-level `permissions:` block with the minimum scopes it needs.
+- Every `uses:` is pinned to a full commit SHA with a `# vX.Y.Z` comment. Dependabot (`github-actions` ecosystem) keeps the pins current.
+- Secrets are passed to `run:` steps through `env:` and referenced as shell variables, never interpolated into the script with `${{ secrets.* }}`.
 
 ## Required Secrets
 

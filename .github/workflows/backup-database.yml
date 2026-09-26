@@ -18,19 +18,22 @@ jobs:
 
       - name: Get timestamp
         id: timestamp
-        run: echo "date=$(date -u +'%Y-%m-%d-%H%M%S')" >> $GITHUB_OUTPUT
+        run: |
+          BACKUP_DATE=$(date -u +'%Y-%m-%d-%H%M%S')
+          echo "date=$BACKUP_DATE" >> "$GITHUB_OUTPUT"
+          echo "BACKUP_DATE=$BACKUP_DATE" >> "$GITHUB_ENV"
 
       - name: Dump database from Fly.io
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           echo "Creating database backup..."
-          flyctl ssh console -a synapse-dev -C "sqlite3 /data/synapse.db .dump" > backup-${{ steps.timestamp.outputs.date }}.sql
+          flyctl ssh console -a synapse-dev -C "sqlite3 /data/synapse.db .dump" > "backup-$BACKUP_DATE.sql"
 
       - name: Compress backup
         run: |
           echo "Compressing backup..."
-          gzip -9 backup-${{ steps.timestamp.outputs.date }}.sql
+          gzip -9 "backup-$BACKUP_DATE.sql"
 
       - name: Encrypt backup
         env:
@@ -47,7 +50,7 @@ jobs:
           fi
 
           echo "Encrypting backup..."
-          BACKUP_FILE="backup-${{ steps.timestamp.outputs.date }}.sql.gz"
+          BACKUP_FILE="backup-$BACKUP_DATE.sql.gz"
           gpg --batch --yes --pinentry-mode loopback \
             --passphrase "$BACKUP_ENCRYPTION_PASSPHRASE" \
             --symmetric --cipher-algo AES256 \
@@ -60,7 +63,7 @@ jobs:
 
       - name: Validate backup
         run: |
-          BACKUP_FILE="backup-${{ steps.timestamp.outputs.date }}.sql.gz.gpg"
+          BACKUP_FILE="backup-$BACKUP_DATE.sql.gz.gpg"
 
           if [ ! -s "$BACKUP_FILE" ]; then
             echo "Error: Backup file is empty or does not exist"
@@ -70,10 +73,10 @@ jobs:
           BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
           echo "✓ Backup validation passed"
           echo "Backup size: $BACKUP_SIZE"
-          echo "backup_size=$BACKUP_SIZE" >> $GITHUB_OUTPUT
+          echo "backup_size=$BACKUP_SIZE" >> "$GITHUB_OUTPUT"
 
       - name: Upload backup artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: db-backup-${{ steps.timestamp.outputs.date }}
           path: backup-${{ steps.timestamp.outputs.date }}.sql.gz.gpg
@@ -82,7 +85,7 @@ jobs:
 
       - name: Create issue on failure
         if: failure()
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const title = '[Automated] Database Backup Failure';
@@ -130,7 +133,7 @@ jobs:
 
       - name: Close backup failure issues on success
         if: success()
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             // Find all open issues with backup-failure label

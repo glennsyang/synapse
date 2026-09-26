@@ -5,12 +5,18 @@ on:
     - cron: '*/10 * * * *' # Every 10 minutes
   workflow_dispatch: # Allow manual trigger
 
+permissions:
+  contents: read
+
 jobs:
   trigger-emails:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger scheduled notifications
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          curl -X POST ${{ secrets.APP_URL }}/api/cron/email-notifications \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          curl -fsS -X POST "$APP_URL/api/cron/email-notifications" \
+            -H "Authorization: Bearer $CRON_SECRET" \
             -H "Content-Type: application/json"
