@@ -8,6 +8,7 @@ import ApiKeyStatusBadge from './ApiKeyStatusBadge.svelte';
 export type AdminApiKey = {
 	id: string;
 	name: string | null;
+	ownerEmail: string | null;
 	start: string | null;
 	enabled: boolean;
 	permissions: Record<string, string[]> | null;
@@ -21,6 +22,11 @@ export const columns: ColumnDef<Features, AdminApiKey>[] = [
 		accessorKey: 'name',
 		header: 'Name',
 		cell: ({ row }) => row.original.name || '(unnamed)'
+	},
+	{
+		accessorKey: 'ownerEmail',
+		header: 'Owner',
+		cell: ({ row }) => row.original.ownerEmail ?? 'Unknown'
 	},
 	{
 		accessorKey: 'start',

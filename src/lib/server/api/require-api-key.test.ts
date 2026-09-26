@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockVerifyApiKey = vi.hoisted(() => vi.fn<(...args: unknown[]) => Promise<unknown>>());
+const mockIsUserIdAccessAllowed = vi.hoisted(() => vi.fn<(userId: string) => Promise<boolean>>());
 const mockLoggerWarn = vi.hoisted(() => vi.fn<(...args: unknown[]) => void>());
 
 vi.mock('../auth', () => ({
-	auth: { api: { verifyApiKey: mockVerifyApiKey } }
+	auth: { api: { verifyApiKey: mockVerifyApiKey } },
+	isUserIdAccessAllowed: mockIsUserIdAccessAllowed
 }));
 
 vi.mock('$lib/server/logger', () => ({
@@ -26,6 +28,8 @@ describe('requireApiKey', () => {
 	beforeEach(() => {
 		mockVerifyApiKey.mockReset();
 		mockLoggerWarn.mockReset();
+		mockIsUserIdAccessAllowed.mockReset();
+		mockIsUserIdAccessAllowed.mockResolvedValue(true);
 	});
 
 	it('rejects a missing Authorization header', async () => {
@@ -77,6 +81,44 @@ describe('requireApiKey', () => {
 		);
 
 		expect(result).toEqual({ ok: true, apiKeyId: 'key1', userId: 'user1' });
+	});
+
+	it('rejects a valid key whose owner is no longer allowed (removed or banned)', async () => {
+		mockVerifyApiKey.mockResolvedValue({
+			valid: true,
+			error: null,
+			key: { id: 'key1', referenceId: 'user1' }
+		});
+		mockIsUserIdAccessAllowed.mockResolvedValue(false);
+
+		const result = await requireApiKey(
+			request({ authorization: 'Bearer sk_test_123' }),
+			'tasks:read'
+		);
+
+		expect(mockIsUserIdAccessAllowed).toHaveBeenCalledWith('user1');
+		expect(result).toEqual({
+			ok: false,
+			status: 401,
+			code: 'invalid_api_key',
+			message: 'Invalid API key.'
+		});
+		expect(mockLoggerWarn).toHaveBeenCalledWith('API key auth failed', {
+			path: '/api/v1/tasks',
+			reason: 'owner_not_allowed'
+		});
+	});
+
+	it('does not look up the owner when the key itself is invalid', async () => {
+		mockVerifyApiKey.mockResolvedValue({
+			valid: false,
+			error: { message: 'not found', code: 'KEY_NOT_FOUND' },
+			key: null
+		});
+
+		await requireApiKey(request({ authorization: 'Bearer sk_test_123' }), 'tasks:read');
+
+		expect(mockIsUserIdAccessAllowed).not.toHaveBeenCalled();
 	});
 
 	it('maps an invalid key (or insufficient scope) to a generic 401', async () => {

@@ -22,6 +22,11 @@ describe('createApiKeySchema', () => {
 		).toBe(false);
 	});
 
+	it('defaults expiresInDays to 90 so no key is created without an expiry', () => {
+		const result = createApiKeySchema.parse({ name: 'Assistant', scopes: ['tasks:read'] });
+		expect(result.expiresInDays).toBe(90);
+	});
+
 	it('rejects expiresInDays outside 1-365', () => {
 		expect(
 			createApiKeySchema.safeParse({

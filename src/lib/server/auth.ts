@@ -17,6 +17,7 @@ import { eq } from 'drizzle-orm';
 import {
 	createAllowlistBeforeHook,
 	createAllowlistSessionGuard,
+	isUserAccessAllowed,
 	parseAllowedEmails
 } from './auth-allowlist-hook';
 import { createAuthAfterHooks, logPasswordResetAudit } from './auth-audit-hooks';
@@ -25,7 +26,24 @@ import * as schema from './db/schema';
 import { sendPasswordResetEmail, sendVerificationEmail } from './email';
 import { sendAuthAlerts } from './notifications';
 
-const allowedEmails = parseAllowedEmails(ALLOWED_EMAILS);
+export const allowedEmails = parseAllowedEmails(ALLOWED_EMAILS);
+
+/**
+ * Looks up a user by id and applies `isUserAccessAllowed`. Used to re-check an API key's
+ * owner on every request, since the api-key plugin never checks the owner's status itself.
+ */
+export async function isUserIdAccessAllowed(userId: string): Promise<boolean> {
+	const [row] = await getDb()
+		.select({
+			email: schema.user.email,
+			banned: schema.user.banned,
+			banExpires: schema.user.banExpires
+		})
+		.from(schema.user)
+		.where(eq(schema.user.id, userId))
+		.limit(1);
+	return row !== undefined && isUserAccessAllowed(row, allowedEmails);
+}
 
 export const auth = betterAuth({
 	appName: 'Synapse',

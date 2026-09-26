@@ -14,19 +14,47 @@ import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ request }) => {
+// The api-key plugin stores permissions as a JSON string; tolerate a malformed value
+// rather than failing the whole dashboard load.
+function parsePermissions(raw: string | null): Record<string, string[]> | null {
+	if (!raw) return null;
+	try {
+		return JSON.parse(raw) as Record<string, string[]>;
+	} catch {
+		return null;
+	}
+}
+
+export const load: PageServerLoad = async () => {
 	const createApiKeyForm = await superValidate(zod4(createApiKeySchema), { id: 'createApiKey' });
 
 	try {
 		const db = getDb();
 
-		const [users, archivedPeople, { apiKeys }, auditEntries] = await Promise.all([
+		const [users, archivedPeople, apiKeyRecords, auditEntries] = await Promise.all([
 			db.query.user.findMany({ orderBy: [desc(user.createdAt)] }),
 			db.query.people.findMany({
 				where: eq(people.isArchived, true),
 				orderBy: [desc(people.updatedAt)]
 			}),
-			auth.api.listApiKeys({ headers: request.headers }),
+			// Every user's keys, not just the signed-in admin's (auth.api.listApiKeys is
+			// session-scoped), so an admin can see and revoke keys belonging to anyone.
+			// The hashed `key` column is never selected.
+			db
+				.select({
+					id: apiKey.id,
+					name: apiKey.name,
+					start: apiKey.start,
+					enabled: apiKey.enabled,
+					permissions: apiKey.permissions,
+					expiresAt: apiKey.expiresAt,
+					createdAt: apiKey.createdAt,
+					lastRequest: apiKey.lastRequest,
+					ownerEmail: user.email
+				})
+				.from(apiKey)
+				.leftJoin(user, eq(apiKey.referenceId, user.id))
+				.orderBy(desc(apiKey.createdAt)),
 			db.query.apiAuditLog.findMany({
 				with: { user: true },
 				orderBy: [desc(apiAuditLog.createdAt)]
@@ -44,6 +72,11 @@ export const load: PageServerLoad = async ({ request }) => {
 						.where(inArray(apiKey.id, apiKeyIds))
 				: [];
 		const apiKeyNamesById = new Map(apiKeyRows.map((row) => [row.id, row.name]));
+
+		const apiKeys = apiKeyRecords.map((record) => ({
+			...record,
+			permissions: parsePermissions(record.permissions)
+		}));
 
 		const apiLogs: AdminApiLogEntry[] = auditEntries.map((entry) => ({
 			...entry,
@@ -134,7 +167,7 @@ export const actions = {
 					name: form.data.name,
 					userId: user.id,
 					permissions: scopesToPermissions(form.data.scopes as ApiScope[]),
-					expiresIn: form.data.expiresInDays ? form.data.expiresInDays * 86400 : undefined
+					expiresIn: form.data.expiresInDays * 86400
 				}
 			});
 
@@ -166,7 +199,17 @@ export const actions = {
 		}
 
 		try {
-			await auth.api.deleteApiKey({ body: { keyId: parsed.data.id }, headers: request.headers });
+			// Direct delete rather than auth.api.deleteApiKey, which only lets a user delete
+			// their own keys; requireAdmin above is the authorization for revoking anyone's.
+			const deleted = await getDb()
+				.delete(apiKey)
+				.where(eq(apiKey.id, parsed.data.id))
+				.returning({ id: apiKey.id });
+
+			if (deleted.length === 0) {
+				return fail(404, { error: 'API key not found' });
+			}
+
 			logger.info('API key revoked', { keyId: parsed.data.id });
 		} catch (err) {
 			logger.error('Failed to revoke API key', err);
