@@ -45,6 +45,11 @@ export const auth = betterAuth({
 			rateLimit: schema.rateLimit
 		}
 	}),
+	verification: {
+		// Store reset/verification tokens hashed so a DB dump or leaked query log can't
+		// be replayed to take over an account.
+		storeIdentifier: 'hashed'
+	},
 	emailAndPassword: {
 		enabled: true,
 		// Accounts are created by an admin only (POST /api/auth/admin/create-user).
