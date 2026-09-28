@@ -71,7 +71,7 @@
 		"lint-staged": "^17.5.1",
 		"oxfmt": "^0.70.0",
 		"oxlint": "^1.85.0",
-		"oxlint-tsgolint": "^7.0.2002",
+		"oxlint-tsgolint": "^7.0.2003",
 		"svelte": "^5.57.1",
 		"svelte-check": "^4.7.6",
 		"svelte-dnd-action": "^0.9.79",
