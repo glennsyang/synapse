@@ -5,6 +5,8 @@ import {
 	logMealSchema,
 	logWeightSchema,
 	logWorkoutSchema,
+	MAX_WORKOUT_EXERCISES,
+	parseWorkoutExercises,
 	setCalorieTargetSchema,
 	setGoalWeightSchema,
 	updateMealSchema,
@@ -222,5 +224,56 @@ describe('deleteEntrySchema', () => {
 
 	it('rejects a non-UUID id', () => {
 		expect(deleteEntrySchema.safeParse({ id: 'not-a-uuid' }).success).toBe(false);
+	});
+});
+
+describe('parseWorkoutExercises', () => {
+	it('accepts valid exercises and coerces numeric strings', () => {
+		const result = parseWorkoutExercises(
+			JSON.stringify([{ exerciseName: 'Squat', sets: '3', reps: 5, weightLbs: null }])
+		);
+		expect(result).toEqual({
+			success: true,
+			data: [{ exerciseName: 'Squat', sets: 3, reps: 5, weightLbs: null }]
+		});
+	});
+
+	it('drops rows with a blank name before validating', () => {
+		const result = parseWorkoutExercises(
+			JSON.stringify([
+				{ exerciseName: 'Bench', sets: 3, reps: 8, weightLbs: 135 },
+				{ exerciseName: '   ', sets: null, reps: null, weightLbs: null }
+			])
+		);
+		expect(result.success && result.data.map((e) => e.exerciseName)).toEqual(['Bench']);
+	});
+
+	it('rejects non-numeric sets', () => {
+		expect(parseWorkoutExercises('[{"exerciseName":"x","sets":"abc"}]').success).toBe(false);
+	});
+
+	it(`rejects more than ${MAX_WORKOUT_EXERCISES} exercises`, () => {
+		const rows = Array.from({ length: MAX_WORKOUT_EXERCISES + 1 }, (_, i) => ({
+			exerciseName: `Exercise ${i}`
+		}));
+		expect(parseWorkoutExercises(JSON.stringify(rows)).success).toBe(false);
+	});
+
+	it('rejects a name longer than 100 characters', () => {
+		expect(parseWorkoutExercises(JSON.stringify([{ exerciseName: 'a'.repeat(101) }])).success).toBe(
+			false
+		);
+	});
+
+	it('rejects rows missing a name', () => {
+		expect(parseWorkoutExercises('[{"sets":3}]').success).toBe(false);
+	});
+
+	it('rejects malformed JSON', () => {
+		expect(parseWorkoutExercises('[{').success).toBe(false);
+	});
+
+	it('rejects non-array JSON', () => {
+		expect(parseWorkoutExercises('{"exerciseName":"x"}').success).toBe(false);
 	});
 });

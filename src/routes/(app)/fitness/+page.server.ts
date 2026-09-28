@@ -3,13 +3,15 @@ import {
 	logMealSchema,
 	logWeightSchema,
 	logWorkoutSchema,
+	MAX_WORKOUT_EXERCISES,
+	parseWorkoutExercises,
 	setCalorieTargetSchema,
 	setGoalWeightSchema,
 	updateMealSchema,
 	updateWeightSchema,
 	updateWorkoutReminderSchema,
 	updateWorkoutSchema,
-	workoutExerciseSchema,
+	type WorkoutExerciseInput,
 	workoutReminderSchema
 } from '$lib/schemas/fitness';
 import { getUser, requireAuth } from '$lib/server/actions/auth-guard';
@@ -32,11 +34,12 @@ import { logger } from '$lib/server/logger';
 import { getTodayString } from '$lib/utils/date';
 import { fail, redirect } from '@sveltejs/kit';
 import { and, desc, eq } from 'drizzle-orm';
-import { message, superValidate } from 'sveltekit-superforms';
+import { message, setError, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
-import { z } from 'zod';
 
 import type { Actions, PageServerLoad } from './$types';
+
+const INVALID_EXERCISES_MESSAGE = `Exercises are invalid. Each needs a name (max 100 characters) and positive whole numbers, up to ${MAX_WORKOUT_EXERCISES} exercises.`;
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const tab = (() => {
@@ -258,49 +261,53 @@ export const actions = {
 			return fail(400, { form });
 		}
 
+		let exercises: WorkoutExerciseInput[] = [];
+		if (form.data.type === 'strength' && form.data.exercises) {
+			const parsed = parseWorkoutExercises(form.data.exercises);
+			if (!parsed.success) {
+				logger.warn('Invalid exercises in workout log', { userId: user.id });
+				return setError(form, 'exercises', INVALID_EXERCISES_MESSAGE);
+			}
+			exercises = parsed.data;
+		}
+
 		try {
 			const db = getDb();
 			const workoutId = generateId();
 
-			await db.insert(workoutLogs).values({
-				id: workoutId,
-				userId: user.id,
-				date: form.data.date,
-				time: form.data.time || null,
-				type: form.data.type,
-				durationMinutes: form.data.durationMinutes || null,
-				steps: form.data.steps || null,
-				notes: form.data.notes || null,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
-			});
+			// The better-sqlite3 driver runs transaction callbacks synchronously, so every
+			// query inside must use `.run()` instead of `await`.
+			db.transaction((tx) => {
+				tx.insert(workoutLogs)
+					.values({
+						id: workoutId,
+						userId: user.id,
+						date: form.data.date,
+						time: form.data.time || null,
+						type: form.data.type,
+						durationMinutes: form.data.durationMinutes || null,
+						steps: form.data.steps || null,
+						notes: form.data.notes || null,
+						...withAuditFieldsForCreate()
+					})
+					.run();
 
-			// Handle exercises for strength workouts
-			if (form.data.type === 'strength' && form.data.exercises) {
-				try {
-					const exercises = JSON.parse(form.data.exercises);
-					if (Array.isArray(exercises)) {
-						const { workoutExercises } = await import('$lib/server/db/schema');
-
-						for (const exercise of exercises) {
-							if (exercise.exerciseName) {
-								await db.insert(workoutExercises).values({
-									id: generateId(),
-									workoutLogId: workoutId,
-									exerciseName: exercise.exerciseName,
-									sets: exercise.sets || null,
-									reps: exercise.reps || null,
-									weightLbs: exercise.weightLbs || null,
-									createdAt: new Date().toISOString(),
-									updatedAt: new Date().toISOString()
-								});
-							}
-						}
-					}
-				} catch (parseError) {
-					logger.warn('Failed to parse exercises JSON', { error: parseError });
+				if (exercises.length > 0) {
+					tx.insert(workoutExercises)
+						.values(
+							exercises.map((exercise) => ({
+								id: generateId(),
+								workoutLogId: workoutId,
+								exerciseName: exercise.exerciseName,
+								sets: exercise.sets || null,
+								reps: exercise.reps || null,
+								weightLbs: exercise.weightLbs || null,
+								...withAuditFieldsForCreate()
+							}))
+						)
+						.run();
 				}
-			}
+			});
 
 			logger.info('Workout logged', { workoutId, userId: user.id });
 		} catch (error) {
@@ -613,6 +620,16 @@ export const actions = {
 			return fail(400, { form });
 		}
 
+		let parsedExercises: WorkoutExerciseInput[] = [];
+		if (form.data.type === 'strength' && form.data.exercises) {
+			const parsed = parseWorkoutExercises(form.data.exercises);
+			if (!parsed.success) {
+				logger.warn('Invalid exercises in workout update', { userId: user.id });
+				return setError(form, 'exercises', INVALID_EXERCISES_MESSAGE);
+			}
+			parsedExercises = parsed.data;
+		}
+
 		try {
 			const db = getDb();
 			const existing = await db.query.workoutLogs.findFirst({
@@ -621,22 +638,6 @@ export const actions = {
 
 			if (!existing) {
 				return message(form, { type: 'error', text: 'Workout not found.' }, { status: 404 });
-			}
-
-			const exercisesArraySchema = z.array(workoutExerciseSchema);
-			let parsedExercises: Array<z.infer<typeof workoutExerciseSchema>> = [];
-			if (form.data.type === 'strength' && form.data.exercises) {
-				try {
-					const exercisesInput = JSON.parse(form.data.exercises);
-					const parsed = exercisesArraySchema.safeParse(exercisesInput);
-					if (parsed.success) {
-						parsedExercises = parsed.data.filter(
-							(exercise) => exercise.exerciseName.trim().length > 0
-						);
-					}
-				} catch (parseError) {
-					logger.warn('Invalid exercises JSON during workout update', { error: parseError });
-				}
 			}
 
 			// The better-sqlite3 driver runs transaction callbacks synchronously, so every

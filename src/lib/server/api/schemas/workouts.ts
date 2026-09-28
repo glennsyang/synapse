@@ -1,3 +1,4 @@
+import { MAX_WORKOUT_EXERCISES } from '$lib/schemas/fitness';
 import { z } from 'zod';
 
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (use YYYY-MM-DD)');
@@ -6,7 +7,7 @@ const timeString = z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format (use H
 const WorkoutTypeEnum = z.enum(['strength', 'cardio', 'hiit', 'walk', 'stretch', 'other']);
 
 const apiWorkoutExerciseSchema = z.object({
-	exerciseName: z.string().min(1, 'Exercise name is required'),
+	exerciseName: z.string().min(1, 'Exercise name is required').max(100),
 	sets: z.number().int().positive().nullable().optional(),
 	reps: z.number().int().positive().nullable().optional(),
 	weightLbs: z.number().int().positive().nullable().optional()
@@ -19,7 +20,7 @@ export const apiCreateWorkoutSchema = z.object({
 	durationMinutes: z.number().int().positive().optional(),
 	steps: z.number().int().positive().optional(),
 	notes: z.string().optional(),
-	exercises: z.array(apiWorkoutExerciseSchema).optional()
+	exercises: z.array(apiWorkoutExerciseSchema).max(MAX_WORKOUT_EXERCISES).optional()
 });
 
 export const apiUpdateWorkoutSchema = z.object({
@@ -29,7 +30,7 @@ export const apiUpdateWorkoutSchema = z.object({
 	durationMinutes: z.number().int().positive().nullable().optional(),
 	steps: z.number().int().positive().nullable().optional(),
 	notes: z.string().nullable().optional(),
-	exercises: z.array(apiWorkoutExerciseSchema).optional()
+	exercises: z.array(apiWorkoutExerciseSchema).max(MAX_WORKOUT_EXERCISES).optional()
 });
 
 export const apiWorkoutListQuerySchema = z.object({

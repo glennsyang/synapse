@@ -37,12 +37,53 @@ export const setGoalWeightSchema = z.object({
 /**
  * Schema for workout exercise (for strength workouts)
  */
-export const workoutExerciseSchema = z.object({
-	exerciseName: z.string().min(1, 'Exercise name is required'),
+const workoutExerciseSchema = z.object({
+	exerciseName: z.string().min(1, 'Exercise name is required').max(100),
 	sets: z.coerce.number().int().positive().optional().nullable(),
 	reps: z.coerce.number().int().positive().optional().nullable(),
 	weightLbs: z.coerce.number().int().positive().optional().nullable()
 });
+
+export type WorkoutExerciseInput = z.infer<typeof workoutExerciseSchema>;
+
+export const MAX_WORKOUT_EXERCISES = 50;
+
+const workoutExercisesArraySchema = z.array(workoutExerciseSchema).max(MAX_WORKOUT_EXERCISES);
+
+type ParseWorkoutExercisesResult =
+	| { success: true; data: WorkoutExerciseInput[] }
+	| { success: false };
+
+/**
+ * Parse and validate the JSON-encoded exercises field submitted by the workout form.
+ * Rows with a blank name are dropped first, since the form always submits its
+ * empty trailing rows.
+ */
+export function parseWorkoutExercises(json: string): ParseWorkoutExercisesResult {
+	let input: unknown;
+	try {
+		input = JSON.parse(json);
+	} catch {
+		return { success: false };
+	}
+
+	if (!Array.isArray(input)) {
+		return { success: false };
+	}
+
+	const rows = input.filter(
+		(row) =>
+			!(
+				row &&
+				typeof row === 'object' &&
+				typeof row.exerciseName === 'string' &&
+				row.exerciseName.trim().length === 0
+			)
+	);
+
+	const parsed = workoutExercisesArraySchema.safeParse(rows);
+	return parsed.success ? { success: true, data: parsed.data } : { success: false };
+}
 
 const WorkoutTypeEnum = z.enum(['strength', 'cardio', 'hiit', 'walk', 'stretch', 'other']);
 
