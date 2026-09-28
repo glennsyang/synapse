@@ -5,6 +5,7 @@ import type { ColumnDef } from '@tanstack/table-core';
 import DataTableSortButton from './DataTableSortButton.svelte';
 import RoleBadge from './RoleBadge.svelte';
 import StatusBadge from './StatusBadge.svelte';
+import UsersTableActions from './users-table-actions.svelte';
 
 export const columns: ColumnDef<Features, User>[] = [
 	{
@@ -40,5 +41,9 @@ export const columns: ColumnDef<Features, User>[] = [
 		cell: ({ row }) => {
 			return new Date(row.original.createdAt).toLocaleDateString();
 		}
+	},
+	{
+		id: 'actions',
+		cell: ({ row }) => renderComponent(UsersTableActions, { user: row.original })
 	}
 ];

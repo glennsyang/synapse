@@ -6,6 +6,7 @@
 	import AdminApiLogsTable from '$lib/components/admin/AdminApiLogsTable.svelte';
 	import AdminArchivedPersonsTable from '$lib/components/admin/AdminArchivedPersonsTable.svelte';
 	import AdminUsersTable from '$lib/components/admin/AdminUsersTable.svelte';
+	import CreateUserDialog from '$lib/components/admin/CreateUserDialog.svelte';
 	import PageShell from '$lib/components/app/PageShell.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
@@ -37,6 +38,12 @@
 	}
 
 	let revealedKey = $state<string | null>(null);
+	let allowlistCommand = $state<string | null>(null);
+
+	async function copyToClipboard(text: string) {
+		await navigator.clipboard.writeText(text);
+		toast.success('Copied to clipboard.');
+	}
 
 	// svelte-ignore state_referenced_locally
 	const { form, errors, enhance, submitting } = superForm(data.createApiKeyForm, {
@@ -65,12 +72,6 @@
 		} else {
 			$form.scopes = $form.scopes.filter((s) => s !== scope);
 		}
-	}
-
-	async function copyRevealedKey() {
-		if (!revealedKey) return;
-		await navigator.clipboard.writeText(revealedKey);
-		toast.success('Copied to clipboard.');
 	}
 </script>
 
@@ -127,6 +128,54 @@
 		</div>
 
 		<Tabs.Content value="users" class="mt-0 w-full space-y-4">
+			<div class="flex justify-end">
+				<CreateUserDialog
+					formData={data.createUserForm}
+					onAllowlistNeeded={(command) => (allowlistCommand = command)}
+				/>
+			</div>
+
+			{#if allowlistCommand}
+				<Card class="border-amber-300 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950">
+					<CardHeader>
+						<CardTitle class="text-amber-900 dark:text-amber-200">
+							This user can't sign in yet
+						</CardTitle>
+					</CardHeader>
+					<CardContent class="space-y-2">
+						<p class="text-sm text-amber-900 dark:text-amber-200">
+							Their email isn't in <code>ALLOWED_EMAILS</code>, so no welcome email was sent. Run
+							this command, wait for the app to restart, then use
+							<strong>Send welcome email</strong> on their row.
+						</p>
+						<div class="flex gap-2">
+							<Input
+								readonly
+								value={allowlistCommand}
+								class="border-amber-300 bg-white font-mono text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-900 dark:text-amber-100"
+							/>
+							<Button
+								type="button"
+								variant="outline"
+								onclick={() => allowlistCommand && copyToClipboard(allowlistCommand)}
+							>
+								<CopyIcon class="size-4" />
+								Copy
+							</Button>
+						</div>
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							class="text-amber-900 dark:text-amber-200"
+							onclick={() => (allowlistCommand = null)}
+						>
+							Done
+						</Button>
+					</CardContent>
+				</Card>
+			{/if}
+
 			<AdminUsersTable users={data.users} />
 		</Tabs.Content>
 
@@ -157,7 +206,11 @@
 								value={revealedKey}
 								class="border-amber-300 bg-white font-mono text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-900 dark:text-amber-100"
 							/>
-							<Button type="button" variant="outline" onclick={copyRevealedKey}>
+							<Button
+								type="button"
+								variant="outline"
+								onclick={() => revealedKey && copyToClipboard(revealedKey)}
+							>
 								<CopyIcon class="size-4" />
 								Copy
 							</Button>

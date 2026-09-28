@@ -20,13 +20,15 @@ Canonical reference for every environment variable this app or its CI/CD pipelin
 | `ADDRESS_HEADER`       | Rate limiting           | Dockerfile `ENV`               | Yes      | `fly-client-ip`; real client IP for the auth-form rate limiters (else Fly proxy IP)    |
 | `SENTRY_DSN`           | Observability (Sentry)  | Dockerfile `ENV`               | Yes      | Not secret — Sentry DSNs are safe to expose publicly                                   |
 | `LOG_LEVEL`            | Logging                 | Not set in prod (uses default) | No       | `debug` \| `info` \| `warn` \| `error`; defaults to `debug` in dev, `info` in prod     |
+| `FLY_APP_NAME`         | Admin (allowlist hint)  | Set automatically by Fly       | No       | Used in the `fly secrets set … -a <app>` hint shown after creating a user              |
 
 ### Adding a user
 
 Public sign-up is disabled (`emailAndPassword.disableSignUp`), and sign-in is gated by `ALLOWED_EMAILS` (`src/lib/server/auth-allowlist-hook.ts`). To add an account:
 
-1. As an admin, create the user directly via Better Auth's admin endpoint: `POST /api/auth/admin/create-user`.
-2. Add their email to `ALLOWED_EMAILS` (`fly secrets set ALLOWED_EMAILS="a@x.com,b@y.com" -a synapse-dev`).
+1. As an admin, go to **Admin → Users → Add user** and enter their name, email and role. No password is set by you — the server generates a throwaway one and the user sets their own via **Forgot password**.
+2. If their email is already in `ALLOWED_EMAILS`, they're emailed a welcome message with sign-in instructions straight away.
+3. If it isn't, the page shows the exact `fly secrets set ALLOWED_EMAILS="…" -a <app>` command to run (it includes the current list, since `fly secrets set` replaces the value). Once the app restarts with the new secret, use **Send welcome email** on their row in the Users table.
 
 If `ALLOWED_EMAILS` is unset or empty, env validation fails and every request returns 500 (fail closed).
 

@@ -19,6 +19,19 @@ export function parseAllowedEmails(raw: string): Set<string> {
 }
 
 /**
+ * The `fly secrets set` command an admin runs to allowlist `email`. `fly secrets set`
+ * replaces the whole value, so the command carries the current list plus the new email.
+ */
+export function buildAllowlistCommand(
+	allowedEmails: Set<string>,
+	email: string,
+	appName = '<app>'
+): string {
+	const emails = [...new Set([...allowedEmails, email.trim().toLowerCase()])];
+	return `fly secrets set ALLOWED_EMAILS="${emails.join(',')}" -a ${appName}`;
+}
+
+/**
  * Use-time access check for an already-authenticated user (session or API key owner).
  * The sign-in / session-create gates below only run when a session is created, so this
  * is what revokes access for someone later removed from `ALLOWED_EMAILS` or banned.

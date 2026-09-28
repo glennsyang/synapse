@@ -116,7 +116,7 @@ Server actions are named `?/log<Thing>` and `?/update<Thing>` on the same route.
 ## Authentication
 
 - better-auth v1, email+password, `minPasswordLength: 12`, `revokeSessionsOnPasswordReset: true`.
-- Invite-only: public sign-up is disabled (`disableSignUp`) and sign-in is gated to the exact `ALLOWED_EMAILS` list (`src/lib/server/auth-allowlist-hook.ts`). New accounts: admin `POST /api/auth/admin/create-user`, then add the email to `ALLOWED_EMAILS` — see `docs/ENVIRONMENT.md`.
+- Invite-only: public sign-up is disabled (`disableSignUp`) and sign-in is gated to the exact `ALLOWED_EMAILS` list (`src/lib/server/auth-allowlist-hook.ts`). New accounts: **Admin → Users → Add user** (creates the user and sends a welcome email), plus adding the email to `ALLOWED_EMAILS` — see `docs/ENVIRONMENT.md`.
 - Drizzle adapter (`drizzleAdapter`) reusing the app's own SQLite DB.
 - Auth emails (verification, password reset, new-user notice) sent via **Brevo** (`src/lib/server/email/`), not built-in better-auth email.
 - Internal ops alerts (`src/lib/server/notifications/`) ping on auth events like verification-sent — separate from the user-facing emails.

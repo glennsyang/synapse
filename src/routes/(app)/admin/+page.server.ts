@@ -1,18 +1,43 @@
+import { randomBytes } from 'node:crypto';
+
+import { BETTER_AUTH_BASE_URL, FLY_APP_NAME } from '$app/env/private';
 import { scopesToPermissions, type ApiScope } from '$lib/api-scopes';
 import type { AdminApiLogEntry } from '$lib/components/admin/api-logs-columns';
+import { createUserSchema, sendWelcomeEmailSchema } from '$lib/schemas/admin-user';
 import { createApiKeySchema, revokeApiKeySchema } from '$lib/schemas/api-key';
 import { getUser, requireAdmin } from '$lib/server/actions/auth-guard';
-import { auth } from '$lib/server/auth';
+import { allowedEmails, auth } from '$lib/server/auth';
+import { buildAllowlistCommand, formatAlertEmail } from '$lib/server/auth-allowlist-hook';
 import { getDb } from '$lib/server/db';
 import { apiAuditLog, apiKey, people, user, visits } from '$lib/server/db/schema';
 import { withAuditFieldsForUpdate } from '$lib/server/db/utils';
+import { sendWelcomeEmail } from '$lib/server/email';
 import { logger } from '$lib/server/logger';
-import { error, fail } from '@sveltejs/kit';
+import { sendAuthAlerts } from '$lib/server/notifications';
+import { error, fail, isRedirect } from '@sveltejs/kit';
 import { asc, desc, eq, inArray } from 'drizzle-orm';
-import { message, superValidate } from 'sveltekit-superforms';
+import { message, setError, superValidate } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 
 import type { Actions, PageServerLoad } from './$types';
+
+function isAllowlisted(email: string): boolean {
+	return allowedEmails.has(email.trim().toLowerCase());
+}
+
+/**
+ * Sends the welcome email, reporting failure instead of throwing so a Brevo outage after
+ * the account already exists doesn't turn into a 500.
+ */
+async function trySendWelcomeEmail(to: string, name: string): Promise<boolean> {
+	try {
+		await sendWelcomeEmail(to, name, BETTER_AUTH_BASE_URL);
+		return true;
+	} catch {
+		// sendWelcomeEmail already logged the failure.
+		return false;
+	}
+}
 
 // The api-key plugin stores permissions as a JSON string; tolerate a malformed value
 // rather than failing the whole dashboard load.
@@ -29,7 +54,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// Server loads run in parallel with the layout's guard, so check here too.
 	if (getUser(locals).role !== 'admin') error(403, 'Forbidden');
 
-	const createApiKeyForm = await superValidate(zod4(createApiKeySchema), { id: 'createApiKey' });
+	const [createApiKeyForm, createUserForm] = await Promise.all([
+		superValidate(zod4(createApiKeySchema), { id: 'createApiKey' }),
+		superValidate(zod4(createUserSchema), { id: 'createUser' })
+	]);
 
 	try {
 		const db = getDb();
@@ -121,15 +149,131 @@ export const load: PageServerLoad = async ({ locals }) => {
 			})),
 			apiKeys,
 			apiLogs,
-			createApiKeyForm
+			createApiKeyForm,
+			createUserForm
 		};
 	} catch (err) {
 		logger.error('Failed to load admin dashboard data', err);
-		return { users: [], archivedPeople: [], apiKeys: [], apiLogs: [], createApiKeyForm };
+		return {
+			users: [],
+			archivedPeople: [],
+			apiKeys: [],
+			apiLogs: [],
+			createApiKeyForm,
+			createUserForm
+		};
 	}
 };
 
 export const actions = {
+	createUser: requireAdmin(async ({ request }, admin) => {
+		const form = await superValidate(request, zod4(createUserSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		const { name, email, role } = form.data;
+
+		let newUserId: string;
+		try {
+			// A throwaway password the admin never sees; the user sets their own through the
+			// forgot-password flow. No headers → a trusted server call; requireAdmin above is
+			// the authorization, as with createApiKey.
+			const created = await auth.api.createUser({
+				body: { name, email, role, password: randomBytes(32).toString('base64url') }
+			});
+			newUserId = created.user.id;
+		} catch (err) {
+			if (isRedirect(err)) throw err;
+			const code = (err as { body?: { code?: string } })?.body?.code;
+			if (code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL' || code === 'USER_ALREADY_EXISTS') {
+				return setError(form, 'email', 'A user with this email already exists.');
+			}
+			logger.error('Failed to create user', err);
+			return message(
+				form,
+				{ type: 'error', text: 'Failed to create user. Please try again.' },
+				{ status: 500 }
+			);
+		}
+
+		const allowlisted = isAllowlisted(email);
+		const welcomeSent = allowlisted && (await trySendWelcomeEmail(email, name));
+
+		logger.info('User created by admin', {
+			adminId: admin.id,
+			newUserId,
+			role,
+			allowlisted,
+			welcomeSent
+		});
+		await sendAuthAlerts(
+			`👤 Admin ${formatAlertEmail(admin.email)} created ${role} account for ${formatAlertEmail(email)}.`,
+			'Synapse - User Created Alert',
+			3
+		);
+
+		if (!allowlisted) {
+			form.message = {
+				type: 'success',
+				text: `User created. Add ${email} to ALLOWED_EMAILS, then send the welcome email.`
+			};
+			return { form, allowlistCommand: buildAllowlistCommand(allowedEmails, email, FLY_APP_NAME) };
+		}
+
+		if (!welcomeSent) {
+			return message(form, {
+				type: 'error',
+				text: 'User created, but the welcome email failed to send. Use "Send welcome email" to retry.'
+			});
+		}
+
+		return message(form, {
+			type: 'success',
+			text: `User created and welcome email sent to ${email}.`
+		});
+	}),
+
+	sendWelcomeEmail: requireAdmin(async ({ request }, admin) => {
+		const formData = await request.formData();
+		const parsed = sendWelcomeEmailSchema.safeParse({ userId: formData.get('userId') });
+
+		if (!parsed.success) {
+			return fail(400, { error: 'User ID is required' });
+		}
+
+		try {
+			const target = await getDb().query.user.findFirst({ where: eq(user.id, parsed.data.userId) });
+
+			if (!target) {
+				return fail(404, { error: 'User not found' });
+			}
+
+			if (!isAllowlisted(target.email)) {
+				return fail(400, {
+					error: `${target.email} isn't in ALLOWED_EMAILS yet, so they couldn't sign in. Allowlist them first.`
+				});
+			}
+
+			if (!(await trySendWelcomeEmail(target.email, target.name))) {
+				return fail(500, { error: 'Failed to send welcome email' });
+			}
+
+			logger.info('Welcome email sent by admin', { adminId: admin.id, userId: target.id });
+			await sendAuthAlerts(
+				`✉️ Admin ${formatAlertEmail(admin.email)} sent a welcome email to ${formatAlertEmail(target.email)}.`,
+				'Synapse - Welcome Email Alert',
+				3
+			);
+
+			return { success: true, email: target.email };
+		} catch (err) {
+			logger.error('Failed to send welcome email', err);
+			return fail(500, { error: 'Failed to send welcome email' });
+		}
+	}),
+
 	unarchivePerson: requireAdmin(async ({ request }) => {
 		const formData = await request.formData();
 		const personId = formData.get('personId') as string;

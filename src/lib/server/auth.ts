@@ -70,7 +70,7 @@ export const auth = betterAuth({
 	},
 	emailAndPassword: {
 		enabled: true,
-		// Accounts are created by an admin only (POST /api/auth/admin/create-user).
+		// Accounts are created by an admin only (Admin → Users → Add user).
 		disableSignUp: true,
 		autoSignIn: false,
 		requireEmailVerification: true,

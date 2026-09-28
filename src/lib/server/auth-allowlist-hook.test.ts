@@ -15,6 +15,7 @@ vi.mock('./notifications', () => ({
 }));
 
 import {
+	buildAllowlistCommand,
 	createAllowlistBeforeHook,
 	createAllowlistSessionGuard,
 	formatAlertEmail,
@@ -241,5 +242,25 @@ describe('isUserAccessAllowed', () => {
 		expect(
 			isUserAccessAllowed({ email: 'owner@example.com', banned: true, banExpires }, allowed)
 		).toBe(true);
+	});
+});
+
+describe('buildAllowlistCommand', () => {
+	const allowed = parseAllowedEmails('a@example.com,b@example.com');
+
+	it('appends the new email to the current list', () => {
+		expect(buildAllowlistCommand(allowed, ' New@Example.com ', 'synapse')).toBe(
+			'fly secrets set ALLOWED_EMAILS="a@example.com,b@example.com,new@example.com" -a synapse'
+		);
+	});
+
+	it('does not duplicate an already-allowlisted email', () => {
+		expect(buildAllowlistCommand(allowed, 'a@example.com', 'synapse')).toBe(
+			'fly secrets set ALLOWED_EMAILS="a@example.com,b@example.com" -a synapse'
+		);
+	});
+
+	it('falls back to an <app> placeholder', () => {
+		expect(buildAllowlistCommand(allowed, 'c@example.com')).toMatch(/ -a <app>$/);
 	});
 });

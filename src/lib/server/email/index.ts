@@ -1,4 +1,5 @@
 import { BREVO_API_KEY, BREVO_FROM_ADDRESS } from '$app/env/private';
+import { FORGOT_PASSWORD_ROUTE } from '$lib/auth-routes';
 import {
 	buildTasksDueTodayDigestTitle,
 	buildTasksDueTodayEmailHtml,
@@ -125,6 +126,75 @@ export async function sendPasswordResetEmail(to: string, name: string, resetUrl:
 		throw error;
 	}
 	logger.info('Password reset email sent', { to, brevoMessageId: result.messageId });
+}
+
+/**
+ * Sent when an admin creates an account. Links to the forgot-password page rather than
+ * embedding a reset token, since reset tokens expire in 10 minutes and this email may sit
+ * unread for much longer.
+ */
+export async function sendWelcomeEmail(to: string, name: string, appUrl: string) {
+	logger.info('📧 Sending welcome email to:', { to });
+
+	const baseUrl = new URL(appUrl).origin;
+	const forgotPasswordUrl = `${baseUrl}${FORGOT_PASSWORD_ROUTE}`;
+	const profileUrl = `${baseUrl}/profile`;
+
+	let result;
+	try {
+		result = await brevo.transactionalEmails.sendTransacEmail({
+			sender: { name: 'Synapse', email: BREVO_FROM_ADDRESS },
+			to: [{ email: to, name }],
+			subject: '[Synapse] Your account is ready',
+			htmlContent: `
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<meta charset="utf-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Your Synapse account</title>
+				</head>
+				<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+					<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+						<h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Synapse</h1>
+					</div>
+					<div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+						<p style="font-size: 16px; margin-bottom: 20px;">Hi ${escapeHtml(name)},</p>
+						<p style="font-size: 16px; margin-bottom: 20px;">
+							An account has been created for you on Synapse at
+							<a href="${baseUrl}" style="color: #667eea;">${escapeHtml(baseUrl)}</a>.
+						</p>
+						<p style="font-size: 16px; margin-bottom: 10px;"><strong>To sign in for the first time:</strong></p>
+						<ol style="font-size: 16px; margin: 0 0 20px; padding-left: 20px;">
+							<li>Open the <strong>Forgot password</strong> page using the button below.</li>
+							<li>Enter this email address (${escapeHtml(to)}) and follow the link we send you to set your own password (at least 12 characters). No password has been shared with anyone.</li>
+							<li>Sign in. The first time, we'll send you a verification email &mdash; click the link in it to finish setting up your account.</li>
+						</ol>
+						<div style="text-align: center; margin: 30px 0;">
+							<a href="${forgotPasswordUrl}"
+							   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; font-size: 16px;">
+								Set your password
+							</a>
+						</div>
+						<p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
+							You can change your password any time from your <a href="${profileUrl}" style="color: #667eea;">profile page</a>.
+						</p>
+						<p style="font-size: 14px; color: #6b7280; margin-top: 10px;">
+							If you weren't expecting this, you can safely ignore this email.
+						</p>
+					</div>
+					<div style="text-align: center; margin-top: 20px; padding: 20px; color: #9ca3af; font-size: 12px;">
+						<p>Synapse - Your Personal Second Brain</p>
+					</div>
+				</body>
+				</html>
+			`
+		});
+	} catch (error) {
+		logger.error('❌ Failed to send welcome email:', error, { to });
+		throw error;
+	}
+	logger.info('Welcome email sent', { to, brevoMessageId: result.messageId });
 }
 
 export async function sendNewUserEmail(to: string, name: string) {

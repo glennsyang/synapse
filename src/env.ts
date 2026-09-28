@@ -57,6 +57,11 @@ export const variables = defineEnvVars({
 			'Minimum log level to emit (debug, info, warn, error); defaults to debug in dev, info in prod',
 		schema: z.enum(['debug', 'info', 'warn', 'error']).optional()
 	},
+	FLY_APP_NAME: {
+		description:
+			'Fly app name, set automatically by Fly at runtime; used in the admin allowlist hint',
+		schema: z.string().optional()
+	},
 	SENTRY_DSN: {
 		description: 'Sentry DSN for client + server error/log reporting (not secret; safe to commit)',
 		public: true,
