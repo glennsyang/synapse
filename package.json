@@ -28,7 +28,7 @@
 		"db:migrate": "drizzle-kit migrate"
 	},
 	"dependencies": {
-		"@better-auth/api-key": "^1.7.5",
+		"@better-auth/api-key": "^1.7.6",
 		"@getbrevo/brevo": "^6.0.3",
 		"@sentry/sveltekit": "^10.75.2",
 		"better-auth": "^1.7.4",
