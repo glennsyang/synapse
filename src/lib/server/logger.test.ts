@@ -65,6 +65,7 @@ describe('logger PII redaction', () => {
 			email: 'a@b.com',
 			ip: '203.0.113.7',
 			ipAddress: '198.51.100.9',
+			userAgent: 'Mozilla/5.0 TestAgent',
 			requestId: 'req-1'
 		});
 
@@ -73,6 +74,7 @@ describe('logger PII redaction', () => {
 		expect(loggedLine).not.toContain('a@b.com');
 		expect(loggedLine).not.toContain('203.0.113.7');
 		expect(loggedLine).not.toContain('198.51.100.9');
+		expect(loggedLine).not.toContain('TestAgent');
 		expect(loggedLine).toContain('req-1');
 	});
 

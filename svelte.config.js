@@ -30,7 +30,7 @@ const config = {
 				// style="" attributes: unsafe-inline for runtime-computed CSS custom properties
 				// (bits-ui, chart colour vars) that cannot be hashed ahead of time.
 				'style-src-attr': ['unsafe-inline'],
-				'img-src': ['self', 'data:', 'https:'],
+				'img-src': ['self', 'data:'],
 				'font-src': ['self', 'https://fonts.gstatic.com'],
 				'connect-src': [
 					'self',
