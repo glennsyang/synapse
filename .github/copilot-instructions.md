@@ -137,7 +137,7 @@ src/
 - Optional env var: `LOG_LEVEL` (defaults to debug in dev, info in prod)
 - Validated in `src/env.ts` (production fail-fast + build/dev fallbacks)
 - Full canonical reference, including CI/infra-only vars (`APP_URL`, `FLY_API_TOKEN`, `BACKUP_ENCRYPTION_PASSPHRASE`, `SENTRY_AUTH_TOKEN`): `docs/ENVIRONMENT.md`
-- Node.js version: **22.22.3** (required for better-sqlite3 compatibility)
+- Node.js version: **22.23.3** (required for better-sqlite3 compatibility)
 - Application timezone is fixed to Pacific time: `America/Los_Angeles`
 - All app-level date boundaries, `getTodayString()`-style helpers, week calculations, reminder cutoffs, and editability rules must use Pacific time instead of server local time or UTC
 
