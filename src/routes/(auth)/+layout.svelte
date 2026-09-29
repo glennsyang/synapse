@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { ModeWatcher } from 'mode-watcher';
-
 	import '../../app.css';
 </script>
 
-<ModeWatcher />
 <div
 	class="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800"
 >

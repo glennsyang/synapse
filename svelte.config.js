@@ -18,9 +18,11 @@ const config = {
 			directives: {
 				'default-src': ['self'],
 				// No unsafe-eval: layerchart/d3-scale/d3-shape do not use Function()/eval();
-				// the nonce covers SvelteKit-injected scripts. sveltekit-superforms -> arktype
-				// (@ark/util) fires a one-shot `new Function("return false")()` CSP probe on
-				// first import — CSP blocks it (expected), ArkType catches it and runs jitless
+				// the nonce covers SvelteKit-injected scripts and the dark-mode pre-paint script
+				// in app.html (mode-watcher's own head script is disabled — it can't get the nonce).
+				// sveltekit-superforms -> arktype (@ark/util) fires a one-shot
+				// `new Function("return false")()` CSP probe on first import — CSP blocks it
+				// (expected), ArkType catches it and runs jitless
 				// for the session. The console warning is benign; do NOT add 'unsafe-eval'.
 				'script-src': ['self'],
 				// <style> elements: nonce covers SSR-injected ones. unsafe-inline retained for

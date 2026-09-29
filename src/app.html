@@ -11,6 +11,16 @@
 		<meta name="application-name" content="Synapse" />
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="theme-color" content="#667eea" />
+		<!-- Pre-paint dark-mode class, mirroring mode-watcher's setInitialMode. <ModeWatcher>'s own
+		     head script can't carry the CSP nonce, so it's disabled and this nonced copy runs instead. -->
+		<script nonce="%sveltekit.nonce%">
+			const mode = localStorage.getItem('mode-watcher-mode') ?? 'system';
+			const dark =
+				mode === 'dark' ||
+				(mode === 'system' && !window.matchMedia('(prefers-color-scheme: light)').matches);
+			document.documentElement.classList.toggle('dark', dark);
+			document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+		</script>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link

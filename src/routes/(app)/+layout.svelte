@@ -4,7 +4,6 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { ModeWatcher } from 'mode-watcher';
 
 	import { navItems } from './sidebar';
 
@@ -17,7 +16,6 @@
 	});
 </script>
 
-<ModeWatcher />
 <Toaster position="bottom-right" richColors />
 <Tooltip.Provider>
 	<Sidebar.Provider style="--header-height: calc(var(--spacing) * 12);">

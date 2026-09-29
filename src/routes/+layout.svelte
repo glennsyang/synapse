@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser, dev } from '$app/env';
+	import { ModeWatcher } from 'mode-watcher';
 
 	let { children } = $props();
 
@@ -14,4 +15,6 @@
 	}
 </script>
 
+<!-- Head script disabled: app.html runs a nonced copy so CSP doesn't block it. -->
+<ModeWatcher disableHeadScriptInjection />
 {@render children()}
