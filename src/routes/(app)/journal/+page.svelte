@@ -129,9 +129,9 @@
 	<PageSkeleton color="blue" />
 {:else}
 	<PageShell class="min-w-0 overflow-x-hidden">
-		<div class="mobile-stack mb-4 justify-between gap-3 sm:mb-5 sm:flex-wrap lg:flex-nowrap">
+		<div class="mobile-stack ruled mb-6 justify-between gap-3 pb-4 sm:flex-wrap lg:flex-nowrap">
 			<div class="min-w-0 flex-1">
-				<h1 class="font-display text-2xl font-bold sm:text-3xl">Journal</h1>
+				<h1 class="page-title" style="--pen: oklch(var(--color-blue))">Journal</h1>
 				<p class="text-muted-foreground text-sm sm:text-base">
 					A reflective archive of days, fragments, and fully formed thoughts, arranged like a living
 					stack of pages
@@ -140,7 +140,7 @@
 			<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
 				<Button
 					href="/journal/new"
-					class="min-w-0 flex-1 bg-blue-600 hover:bg-blue-700 sm:flex-none"
+					class="bg-pen-journal hover:bg-pen-journal min-w-0 flex-1 sm:flex-none"
 				>
 					<Plus class="mr-2 h-4 w-4" />
 					New Entry
@@ -160,7 +160,7 @@
 								class={[
 									'shrink-0',
 									(filtersOpen || hasActiveFilters) &&
-										'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 dark:border-blue-400/40 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20'
+										'border-pen-journal bg-pen-journal/12 text-pen-journal hover:bg-pen-journal/12 hover:text-pen-journal dark:border-pen-journal/40 dark:bg-pen-journal/10 dark:text-pen-journal dark:hover:bg-pen-journal/20'
 								]}
 							>
 								<ListFilter class="size-4" />
@@ -176,7 +176,7 @@
 			<Collapsible.Content class="w-full">
 				<div
 					id="journal-filter-bar"
-					class="mb-4 grid gap-4 rounded-3xl border border-blue-200/80 bg-blue-50/55 p-4 shadow-[0_18px_60px_-42px_rgba(59,130,246,0.35)] backdrop-blur-xl lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start dark:border-blue-500/25 dark:bg-blue-500/8"
+					class="border-pen-journal/35 bg-pen-journal/8 dark:border-pen-journal/25 dark:bg-pen-journal/8 mb-4 grid gap-4 rounded-3xl border p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
 				>
 					<div class="w-full min-w-0">
 						<div class="relative">
@@ -214,7 +214,7 @@
 										variant="outline"
 										size="icon"
 										href={clearFiltersHref}
-										class="h-10 border-blue-200/70 bg-blue-50 text-blue-800 hover:bg-blue-100"
+										class="border-pen-journal/35 bg-pen-journal/12 text-pen-journal hover:bg-pen-journal/12 h-10"
 										aria-label="Clear journal filters"
 									>
 										<CircleX class="h-4 w-4" />
@@ -231,7 +231,7 @@
 		<div class="space-y-4">
 			{#if data.entries.length === 0}
 				<div
-					class="rounded-3xl border border-dashed border-blue-200/80 bg-white/82 p-10 text-center shadow-[0_18px_60px_-48px_rgba(59,130,246,0.35)] backdrop-blur-xl dark:border-blue-400/20 dark:bg-slate-950/62"
+					class="border-pen-journal/35 bg-card dark:border-pen-journal/20 dark:bg-muted/62 rounded-3xl border border-dashed p-10 text-center"
 				>
 					<Calendar class="mx-auto h-12 w-12 text-[oklch(var(--color-blue)/0.75)]" />
 					<p class="font-display mt-4 text-2xl font-semibold tracking-tight">
@@ -242,7 +242,7 @@
 					</p>
 					<Button
 						href="/journal/new"
-						class="mt-5 border-blue-200/70 bg-blue-50 text-blue-800 hover:bg-blue-100"
+						class="border-pen-journal/35 bg-pen-journal/12 text-pen-journal hover:bg-pen-journal/12 mt-5"
 						variant="outline"
 					>
 						<Plus class="mr-2 h-4 w-4" />
@@ -250,9 +250,9 @@
 					</Button>
 				</div>
 			{:else}
-				<div class="columns-1 gap-4 sm:columns-2">
+				<div class="border-rule border-t">
 					{#each data.entries as entry (entry.id)}
-						<div class="mb-4 break-inside-avoid"><JournalEntryCard {entry} /></div>
+						<JournalEntryCard {entry} />
 					{/each}
 				</div>
 			{/if}

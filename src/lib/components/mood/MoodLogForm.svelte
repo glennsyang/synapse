@@ -44,16 +44,12 @@
 	});
 </script>
 
-<Card.Root
-	class="border-[oklch(var(--color-orange)/0.18)] bg-[radial-gradient(circle_at_top,oklch(var(--color-orange)/0.14),transparent_65%)]"
->
+<Card.Root class="border-[oklch(var(--color-orange)/0.18)]">
 	<Card.Header class="pt-4 pb-3">
 		<div class="flex items-center justify-between gap-3">
 			<Card.Title class="font-display text-xl">How are you feeling today?</Card.Title>
 			{#if todayLog}
-				<div
-					class="border-border/70 bg-background/80 rounded-xl border px-3 py-1.5 text-right shadow-sm"
-				>
+				<div class="border-border/70 bg-background/80 rounded-xl border px-3 py-1.5 text-right">
 					<p class="text-muted-foreground text-xs tracking-[0.18em] uppercase">Logged</p>
 					<p class="font-display text-base font-semibold">{todayLog.resolvedMood}</p>
 				</div>
@@ -74,10 +70,10 @@
 							type="button"
 							onclick={() => ($form.mood = option.value)}
 							class={[
-								'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+								'rounded-[2px] border px-3 py-1.5 text-sm font-medium transition-colors',
 								$form.mood === option.value
-									? 'border-orange-600 bg-orange-600 text-white shadow-sm'
-									: 'border-orange-200 bg-orange-50 text-orange-800 hover:border-orange-300 hover:bg-orange-100'
+									? 'border-pen-tasks bg-pen-tasks text-white'
+									: 'border-pen-tasks/35 bg-pen-tasks/12 text-pen-tasks hover:border-pen-tasks hover:bg-pen-tasks/12'
 							]}
 						>
 							{option.label}
@@ -129,7 +125,7 @@
 			<div class="border-border/60 flex justify-end border-t pt-3">
 				<Button
 					type="submit"
-					class=" bg-orange-600 hover:bg-orange-700"
+					class="bg-pen-tasks hover:bg-pen-tasks"
 					variant="default"
 					disabled={$submitting}
 				>

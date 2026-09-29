@@ -136,12 +136,12 @@
 			useCursorForDetection: true,
 			dropTargetClasses: [
 				'ring-2',
-				'ring-orange-300/70',
+				'ring-pen-tasks/35',
 				'ring-offset-2',
 				'ring-offset-background',
-				'shadow-[inset_0_0_0_1px_rgba(251,146,60,0.22)]',
-				'dark:ring-orange-400/45',
-				'dark:shadow-[inset_0_0_0_1px_rgba(251,146,60,0.26)]'
+				'',
+				'dark:ring-pen-tasks/45',
+				''
 			],
 			delayTouchStart: touchStartDelayMs
 		};
@@ -291,19 +291,18 @@
 			{@const isDoneColumn = column.value === 'done'}
 			<section id={isDoneColumn ? mobileDoneColumnId : undefined} class="space-y-2.5">
 				<div
-					class={[
-						'overflow-hidden rounded-[1.25rem] border-[1.5px] px-3.5 py-3',
-						column.headerClass
-					]}
+					class={['overflow-hidden rounded-[3px] border-[1.5px] px-3.5 py-3', column.headerClass]}
 				>
 					<div class="flex items-center justify-between gap-3">
 						<div class="flex items-baseline gap-2.5">
 							<h3
-								class="text-[1.04rem] font-semibold tracking-[-0.02em] text-slate-950 dark:text-slate-50"
+								class="text-foreground dark:text-foreground text-[1.04rem] font-semibold tracking-[-0.02em]"
 							>
 								{column.label}
 							</h3>
-							<span class="text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+							<span
+								class="text-muted-foreground dark:text-muted-foreground text-[13px] font-semibold"
+							>
 								({column.count})
 							</span>
 						</div>
@@ -315,7 +314,7 @@
 								onclick={() => (showDone = false)}
 								aria-controls={mobileDoneColumnId}
 								aria-expanded={showDone}
-								class="h-7 rounded-full bg-white/80 px-2 text-[11px] font-semibold text-slate-600 shadow-sm hover:bg-white hover:text-slate-950 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-slate-950"
+								class="bg-card text-muted-foreground hover:bg-card hover:text-foreground dark:bg-muted/70 dark:text-foreground dark:hover:bg-muted h-7 rounded-[2px] px-2 text-[11px] font-semibold"
 							>
 								<ChevronLeft class="mr-1 size-4" />
 							</Button>
@@ -328,7 +327,7 @@
 						<Button
 							href={getCreateHref(column.value)}
 							variant="outline"
-							class="h-9 w-full justify-start rounded-xl border border-dashed border-orange-300/80 bg-orange-50/75 px-3.5 text-[13px] font-semibold text-orange-700 shadow-none hover:bg-orange-100/80 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-200 dark:hover:bg-orange-500/15"
+							class="border-pen-tasks/35 bg-pen-tasks/10 text-pen-tasks hover:bg-pen-tasks/10 dark:border-pen-tasks/40 dark:bg-pen-tasks/10 dark:text-pen-tasks dark:hover:bg-pen-tasks/15 h-9 w-full justify-start rounded-xl border border-dashed px-3.5 text-[13px] font-semibold"
 						>
 							<Plus class="mr-2 size-4" />
 							Add task
@@ -338,7 +337,7 @@
 					<div class="relative">
 						<div
 							class={[
-								'flex min-h-28 flex-col gap-2.5 overflow-hidden rounded-[1.45rem] border-[1.5px] border-dashed bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.72),transparent_38%)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-[border-color,background-color,box-shadow] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_42%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+								'dark: flex min-h-28 flex-col gap-2.5 overflow-hidden rounded-[3px] border-[1.5px] border-dashed p-3 transition-[border-color,background-color,box-shadow]',
 								column.emptyClass
 							]}
 							use:dndzone={getDndZoneOptions(boardTasks[column.value])}
@@ -377,22 +376,22 @@
 				aria-controls={mobileDoneColumnId}
 				aria-expanded={showDone}
 				class={[
-					'h-12 w-full justify-between rounded-[1.25rem] border-[1.5px] px-3.5 text-left shadow-none',
+					'h-12 w-full justify-between rounded-[3px] border-[1.5px] px-3.5 text-left',
 					doneColumn.headerClass
 				]}
 			>
 				<span class="flex items-baseline gap-2.5">
 					<span
-						class="text-[1.02rem] font-semibold tracking-[-0.02em] text-slate-950 dark:text-slate-50"
+						class="text-foreground dark:text-foreground text-[1.02rem] font-semibold tracking-[-0.02em]"
 					>
 						Done
 					</span>
-					<span class="text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+					<span class="text-muted-foreground dark:text-muted-foreground text-[13px] font-semibold">
 						({doneColumn.count})
 					</span>
 				</span>
 				<span
-					class="inline-flex items-center gap-1 text-[11px] font-semibold tracking-[0.14em] text-slate-600 uppercase dark:text-slate-300"
+					class="text-muted-foreground dark:text-muted-foreground inline-flex items-center gap-1 text-[11px] font-semibold tracking-[0.14em] uppercase"
 				>
 					Show
 					<ChevronRight class="size-4" />
@@ -413,19 +412,16 @@
 				class="flex min-w-0 flex-col gap-2.5"
 			>
 				<div
-					class={[
-						'overflow-hidden rounded-[1.3rem] border-[1.5px] px-4 py-3.5',
-						column.headerClass
-					]}
+					class={['overflow-hidden rounded-[3px] border-[1.5px] px-4 py-3.5', column.headerClass]}
 				>
 					<div class="flex items-center justify-between gap-3">
 						<div class="flex items-baseline gap-2.5">
 							<h3
-								class="text-[1.04rem] font-semibold tracking-[-0.02em] text-slate-950 dark:text-slate-50"
+								class="text-foreground dark:text-foreground text-[1.04rem] font-semibold tracking-[-0.02em]"
 							>
 								{column.label}
 							</h3>
-							<span class="text-sm font-semibold text-slate-500 dark:text-slate-400">
+							<span class="text-muted-foreground dark:text-muted-foreground text-sm font-semibold">
 								({column.count})
 							</span>
 						</div>
@@ -438,7 +434,7 @@
 								onclick={() => (showDone = false)}
 								aria-controls={desktopDoneColumnId}
 								aria-expanded={showDone}
-								class="h-7 rounded-full bg-white/80 px-2 text-[11px] font-semibold text-slate-600 shadow-sm hover:bg-white hover:text-slate-950 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-slate-950"
+								class="bg-card text-muted-foreground hover:bg-card hover:text-foreground dark:bg-muted/70 dark:text-foreground dark:hover:bg-muted h-7 rounded-[2px] px-2 text-[11px] font-semibold"
 							>
 								<ChevronLeft class="mr-1 size-4" />
 							</Button>
@@ -451,7 +447,7 @@
 						<Button
 							href={getCreateHref(column.value)}
 							variant="outline"
-							class="h-9 w-full justify-start rounded-xl border border-dashed border-orange-300/80 bg-orange-50/75 px-3.5 text-[13px] font-semibold text-orange-700 shadow-none hover:bg-orange-100/80 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-200 dark:hover:bg-orange-500/15"
+							class="border-pen-tasks/35 bg-pen-tasks/10 text-pen-tasks hover:bg-pen-tasks/10 dark:border-pen-tasks/40 dark:bg-pen-tasks/10 dark:text-pen-tasks dark:hover:bg-pen-tasks/15 h-9 w-full justify-start rounded-xl border border-dashed px-3.5 text-[13px] font-semibold"
 						>
 							<Plus class="mr-2 size-4" />
 							Add task
@@ -461,7 +457,7 @@
 					<div class="relative min-h-[calc(100dvh-20rem)] flex-1">
 						<div
 							class={[
-								'flex h-full min-h-full flex-col gap-2.5 overflow-hidden rounded-[1.45rem] border-[1.5px] border-dashed bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.72),transparent_38%)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-[border-color,background-color,box-shadow] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_42%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]',
+								'dark: flex h-full min-h-full flex-col gap-2.5 overflow-hidden rounded-[3px] border-[1.5px] border-dashed p-3 transition-[border-color,background-color,box-shadow]',
 								column.emptyClass
 							]}
 							use:dndzone={getDndZoneOptions(boardTasks[column.value])}
@@ -499,22 +495,22 @@
 				aria-controls={desktopDoneColumnId}
 				aria-expanded={showDone}
 				class={[
-					'group flex h-full w-18 min-w-0 flex-col items-center justify-between rounded-3xl border-[1.5px] px-2 py-3.5 text-center shadow-none transition-transform hover:-translate-y-0.5',
+					'group flex h-full w-18 min-w-0 flex-col items-center justify-between rounded-3xl border-[1.5px] px-2 py-3.5 text-center transition-transform hover:-translate-y-0.5',
 					doneColumn.headerClass
 				]}
 			>
 				<span
-					class="bg-background/90 rounded-full px-2 py-0.5 text-[11px] font-semibold text-slate-600 shadow-sm dark:bg-slate-950/75 dark:text-slate-200"
+					class="bg-background/90 text-muted-foreground dark:bg-muted/75 dark:text-foreground rounded-[2px] px-2 py-0.5 text-[11px] font-semibold"
 				>
 					{doneColumn.count}
 				</span>
 				<span
-					class="text-[10px] font-semibold tracking-[0.18em] text-slate-700 uppercase dark:text-slate-100"
+					class="text-foreground dark:text-foreground text-[10px] font-semibold tracking-[0.18em] uppercase"
 				>
 					Done
 				</span>
 				<span
-					class="flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[0.14em] text-slate-600 uppercase dark:text-slate-300"
+					class="text-muted-foreground dark:text-muted-foreground flex flex-col items-center gap-1 text-[9px] font-semibold tracking-[0.14em] uppercase"
 				>
 					<ChevronRight class="size-4 transition-transform group-hover:translate-x-0.5" />
 				</span>

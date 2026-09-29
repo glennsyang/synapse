@@ -5,7 +5,6 @@
 	import * as Chart from '$lib/components/ui/chart';
 	import type { logMealSchema, setCalorieTargetSchema } from '$lib/schemas/fitness';
 	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
-	import { Flame, Target, TrendingDown, TrendingUp, UtensilsCrossed } from '@lucide/svelte/icons';
 	import { BarChart } from 'layerchart';
 	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
@@ -104,12 +103,13 @@
 	</div>
 
 	<!-- Insight cards -->
-	<div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+	<div
+		class="border-foreground divide-rule grid grid-cols-2 gap-x-4 border-y-2 md:grid-cols-4 md:gap-x-0 md:divide-x"
+	>
 		<FitnessStatusCard
 			label="Today"
 			value={todayCalories}
 			unit="cal"
-			icon={Flame}
 			trend={todayPercentage != null
 				? todayPercentage >= 85 && todayPercentage <= 110
 					? 'positive'
@@ -123,7 +123,6 @@
 			label="Remaining"
 			value={todayOver != null ? `+${todayOver}` : (todayRemaining ?? '—')}
 			unit={target ? 'cal' : ''}
-			icon={Target}
 			trend={todayOver != null ? 'negative' : 'positive'}
 			trendLabel={todayOver != null
 				? 'Over target'
@@ -132,10 +131,9 @@
 					: 'Set a target'}
 		/>
 		<FitnessStatusCard
-			label="7-Day Avg"
+			label="7-day avg"
 			value={sevenDayAvg ?? '—'}
 			unit={sevenDayAvg ? 'cal/day' : ''}
-			icon={UtensilsCrossed}
 			trendLabel={avgDelta != null
 				? avgDelta > 0
 					? `${avgDelta} cal over target avg`
@@ -150,21 +148,20 @@
 				: 'neutral'}
 		/>
 		<FitnessStatusCard
-			label="Top Meal"
+			label="Top meal"
 			value={topMealPeriod ? topMealPeriod.charAt(0).toUpperCase() + topMealPeriod.slice(1) : '—'}
-			icon={avgDelta != null && avgDelta < 0 ? TrendingDown : TrendingUp}
 			trendLabel={topMealPeriod ? 'Most logged meal' : 'Log meals to see'}
 		/>
 	</div>
 
 	<!-- 7-day calorie adherence chart -->
 	{#if meals.length > 0}
-		<Card.Root class="border-0 bg-white shadow-sm dark:bg-zinc-900 dark:shadow-zinc-800/50">
+		<Card.Root class="bg-card dark:bg-muted border-0 dark:shadow-zinc-800/50">
 			<Card.Header>
-				<Card.Title class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+				<Card.Title class="text-foreground dark:text-muted-foreground text-sm font-medium">
 					7-Day Calorie Overview
 				</Card.Title>
-				<Card.Description class="text-xs text-zinc-500 dark:text-zinc-400">
+				<Card.Description class="text-muted-foreground dark:text-muted-foreground text-xs">
 					Daily intake{target ? ` vs ${target} cal target` : ''}
 				</Card.Description>
 			</Card.Header>

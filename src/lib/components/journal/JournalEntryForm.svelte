@@ -89,11 +89,11 @@
 		color="blue"
 		border={false}
 		padding="none"
-		class="-mx-4 overflow-hidden sm:mx-0 sm:border-l-4 sm:border-[oklch(var(--color-blue))] sm:p-6 md:p-8"
+		class="-mx-4 overflow-hidden sm:mx-0 sm:p-6 md:p-8"
 	>
 		<form method="POST" action={formAction} {@attach fromAction(enhance)} class="space-y-6">
 			<div
-				class="px-2 py-3 sm:rounded-2xl sm:border sm:border-[oklch(var(--color-blue)/0.2)] sm:bg-white/88 sm:p-5 sm:shadow-sm md:p-7 sm:dark:bg-slate-950/72"
+				class="sm:bg-card sm:dark:bg-muted/72 px-2 py-3 sm:rounded-2xl sm:border sm:border-[oklch(var(--color-blue)/0.2)] sm:p-5 md:p-7"
 			>
 				<div class="space-y-2">
 					<h2 class="font-display text-foreground text-2xl font-bold md:text-3xl">Today's Story</h2>
@@ -121,7 +121,7 @@
 
 					<Collapsible.Root bind:open={metadataOpen}>
 						<div
-							class="bg-background/92 rounded-2xl border border-[oklch(var(--color-blue)/0.18)] px-4 py-3 shadow-sm md:px-5"
+							class="bg-background/92 rounded-2xl border border-[oklch(var(--color-blue)/0.18)] px-4 py-3 md:px-5"
 						>
 							<Collapsible.Trigger class="w-full text-left">
 								<div class="flex items-center justify-between gap-4">
@@ -226,7 +226,7 @@
 							type="submit"
 							size="sm"
 							disabled={$submitting}
-							class="bg-blue-600 text-white hover:bg-blue-700 sm:min-w-32"
+							class="bg-pen-journal hover:bg-pen-journal text-white sm:min-w-32"
 						>
 							{$submitting ? 'Saving...' : 'Save'}
 						</Button>

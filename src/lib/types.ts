@@ -12,7 +12,10 @@ export type SidebarNav = {
 		description: string;
 		url?: string;
 		icon?: Component;
-		color?: string;
+		/** Pen colour: the --color-<pen> triplet this section writes in. */
+		pen: 'teal' | 'blue' | 'green' | 'orange' | 'purple' | 'pink';
+		/** Label short enough for an index tab. */
+		short: string;
 		items?: { title: string; url: string }[];
 		adminOnly?: boolean;
 	}[];

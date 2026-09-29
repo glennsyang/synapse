@@ -3,14 +3,11 @@
 	import { navigating, page } from '$app/state';
 	import PageShell from '$lib/components/app/PageShell.svelte';
 	import PageSkeleton from '$lib/components/skeletons/PageSkeleton.svelte';
-	import * as Alert from '$lib/components/ui/alert';
-	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { formatDateHeuristic } from '$lib/utils/date';
 	import { getStatusLabel, type VisitStatus } from '$lib/utils/visit-status';
-	import { CalendarCheck, Plus } from '@lucide/svelte';
+	import { Plus } from '@lucide/svelte';
 
 	import type { PageData } from './$types';
 
@@ -108,16 +105,16 @@
 	<PageSkeleton color="pink" />
 {:else}
 	<PageShell class="sm:py-6">
-		<div class="mb-6 flex items-center justify-between">
+		<div class="ruled mb-6 flex items-center justify-between gap-3 pb-4">
 			<div>
-				<h1 class="font-display text-3xl font-bold">Visit Tracking</h1>
+				<h1 class="page-title" style="--pen: oklch(var(--color-pink))">Visit Tracking</h1>
 				<p class="text-muted-foreground mt-1">Track visits made with your group</p>
 			</div>
 			<Button
 				title="Add Person"
 				aria-label="Add Person"
 				href="/visits/people/new"
-				class="bg-pink-600 hover:bg-pink-700"
+				class="bg-pen-people hover:bg-pen-people"
 			>
 				<Plus class="mr-2 h-4 w-4" />
 				Add Person
@@ -132,48 +129,48 @@
 				>
 					<Tabs.Trigger
 						value="all"
-						class="border-b-2 border-transparent data-[state=active]:border-pink-500"
+						class="data-[state=active]:border-pen-people border-b-2 border-transparent"
 					>
 						All ({allPeopleCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="red"
-						class="border-b-2 border-transparent data-[state=active]:border-red-500"
+						class="data-[state=active]:border-destructive border-b-2 border-transparent"
 					>
-						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-red-500"></span>
+						<span class="bg-destructive mr-1 inline-block h-2 w-2 rounded-full"></span>
 						Critical ({criticalCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="yellow"
-						class="border-b-2 border-transparent data-[state=active]:border-yellow-500"
+						class="data-[state=active]:border-pen-warn border-b-2 border-transparent"
 					>
-						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-yellow-500"></span>
+						<span class="bg-pen-warn mr-1 inline-block h-2 w-2 rounded-full"></span>
 						Overdue ({overdueCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="green"
-						class="border-b-2 border-transparent data-[state=active]:border-green-500"
+						class="data-[state=active]:border-pen-fitness border-b-2 border-transparent"
 					>
-						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-green-500"></span>
+						<span class="bg-pen-fitness mr-1 inline-block h-2 w-2 rounded-full"></span>
 						Recent ({recentCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="none"
-						class="border-b-2 border-transparent data-[state=active]:border-gray-500"
+						class="data-[state=active]:border-border border-b-2 border-transparent"
 					>
-						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-gray-400"></span>
+						<span class="bg-muted mr-1 inline-block h-2 w-2 rounded-full"></span>
 						No Visits ({noVisitsCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="exempt"
-						class="border-b-2 border-transparent data-[state=active]:border-gray-600"
+						class="data-[state=active]:border-border border-b-2 border-transparent"
 					>
-						<span class="mr-1 inline-block h-2 w-2 rounded-full bg-gray-500"></span>
+						<span class="bg-muted mr-1 inline-block h-2 w-2 rounded-full"></span>
 						Exempt ({exemptCount})
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="scheduled"
-						class="border-b-2 border-transparent data-[state=active]:border-purple-500"
+						class="data-[state=active]:border-pen-mind border-b-2 border-transparent"
 					>
 						Scheduled ({scheduledCount})
 					</Tabs.Trigger>
@@ -184,108 +181,97 @@
 				<Tabs.Content value={tab} class="w-full">
 					{@const isScheduledTab = tab === 'scheduled'}
 					{@const peopleInTab = peopleForTab(tab as VisitTab)}
-					<div class="grid w-full gap-4 sm:min-h-80 md:grid-cols-2 lg:grid-cols-3">
-						{#if peopleInTab.length === 0}
-							<div class="col-span-full">
-								<Card.Root class="w-full border-dashed">
-									<Card.Content
-										class="flex min-h-56 flex-col items-center justify-center py-12 text-center"
-									>
-										<p class="text-muted-foreground mb-4">
-											{isScheduledTab ? 'No scheduled follow-up visits found.' : 'No people found.'}
-										</p>
-										<Button href="/visits/people/new">Add Your First Person</Button>
-									</Card.Content>
-								</Card.Root>
-							</div>
-						{:else}
+					{#if peopleInTab.length === 0}
+						<div class="border-rule border-y border-dashed py-12 text-center">
+							<p class="text-muted-foreground mb-4">
+								{isScheduledTab ? 'No scheduled follow-up visits found.' : 'No people found.'}
+							</p>
+							<Button href="/visits/people/new">Add Your First Person</Button>
+						</div>
+					{:else}
+						<!-- A ruled register: one line per person, like a planner's address page. -->
+						<div
+							class="text-muted-foreground border-foreground hidden grid-cols-[minmax(0,1.3fr)_7rem_minmax(0,1.4fr)_minmax(0,1fr)_8rem] gap-4 border-b-2 pb-1.5 text-xs font-bold tracking-[0.12em] uppercase md:grid"
+						>
+							<span>Name</span><span>Status</span><span>Last visit</span><span>With</span><span
+								class="text-right">Next change</span
+							>
+						</div>
+						<ul>
 							{#each peopleInTab as person (person.id)}
-								{@const borderColor =
+								{@const statusMark =
 									person.status === 'green'
-										? 'border-l-green-500'
+										? 'bg-pen-fitness'
 										: person.status === 'yellow'
-											? 'border-l-yellow-500'
+											? 'bg-pen-warn'
 											: person.status === 'red'
-												? 'border-l-red-500'
+												? 'bg-destructive'
 												: person.status === 'scheduled'
-													? 'border-l-purple-500'
+													? 'bg-pen-mind'
 													: person.status === 'exempt'
-														? 'border-l-gray-500'
-														: 'border-l-gray-400'}
-								<a href="/visits/{person.id}">
-									<Card.Root class="border-l-4 transition-shadow hover:shadow-md {borderColor}">
-										<Card.Header>
-											<div class="flex items-start justify-between">
-												<Card.Title class="font-display">{person.name}</Card.Title>
-												<div class="flex flex-col items-end gap-2">
-													<Badge
-														variant={person.status === 'green'
-															? 'default'
-															: person.status === 'yellow'
-																? 'secondary'
-																: person.status === 'red'
-																	? 'destructive'
-																	: person.status === 'scheduled'
-																		? 'secondary'
-																		: 'outline'}
-														class={person.status === 'green'
-															? 'bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900 dark:text-green-200'
-															: person.status === 'yellow'
-																? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-200'
-																: person.status === 'red'
-																	? 'bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900 dark:text-red-200'
-																	: person.status === 'scheduled'
-																		? 'bg-purple-100 text-purple-800 hover:bg-purple-100 dark:bg-purple-900 dark:text-purple-200'
-																		: ''}
+														? 'bg-muted-foreground'
+														: 'bg-muted-foreground/50'}
+								{@const statusText =
+									person.status === 'green'
+										? 'text-pen-fitness'
+										: person.status === 'yellow'
+											? 'text-pen-warn'
+											: person.status === 'red'
+												? 'text-destructive'
+												: person.status === 'scheduled'
+													? 'text-pen-mind'
+													: 'text-muted-foreground'}
+								<li>
+									<a
+										href="/visits/{person.id}"
+										class="border-rule hover:bg-muted/50 grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 border-b py-3 text-sm transition-colors md:grid-cols-[minmax(0,1.3fr)_7rem_minmax(0,1.4fr)_minmax(0,1fr)_8rem] md:items-center"
+									>
+										<span class="flex min-w-0 items-center gap-2.5 font-black">
+											<span class="size-2.5 shrink-0 rounded-[1px] {statusMark}" aria-hidden="true"
+											></span>
+											<span class="truncate">{person.name}</span>
+										</span>
+										<span class="text-xs font-bold {statusText}"
+											>{getStatusLabel(person.status)}</span
+										>
+										<span class="text-muted-foreground col-span-2 min-w-0 md:col-span-1">
+											{#if isScheduledTab && person.nextFollowUpDate}
+												<span class="text-pen-mind font-bold">
+													Follow-up {formatDateHeuristic(person.nextFollowUpDate, {
+														fallback: 'short'
+													})}
+												</span>
+											{:else if person.lastVisit}
+												{formatDateHeuristic(person.lastVisit.date, { fallback: 'short' })}
+												{#if person.daysSinceLastVisit !== null}
+													<span class="text-xs">({formatTimeSince(person.daysSinceLastVisit)})</span
 													>
-														{getStatusLabel(person.status)}
-													</Badge>
-												</div>
-											</div>
-										</Card.Header>
-										<Card.Content>
-											{#if person.lastVisit}
-												<div class="text-muted-foreground text-sm">
-													{#if isScheduledTab && person.nextFollowUpDate}
-														<Alert.Root variant="destructive" class="mb-2">
-															<CalendarCheck class="h-4 w-4" />
-															<Alert.Title>Follow-up scheduled:</Alert.Title>
-															<Alert.Description>
-																{formatDateHeuristic(person.nextFollowUpDate, {
-																	fallback: 'short'
-																})}
-															</Alert.Description>
-														</Alert.Root>
-													{/if}
-													<p>
-														Last visit: {formatDateHeuristic(person.lastVisit.date, {
-															fallback: 'short'
-														})}
-														{#if person.daysSinceLastVisit !== null}
-															({formatTimeSince(person.daysSinceLastVisit)})
-														{/if}
-													</p>
-													{#if person.lastVisit.companions && person.lastVisit.companions.length > 0}
-														<p class="mt-1">With: {person.lastVisit.companions.join(', ')}</p>
-													{/if}
-													{#if person.daysUntilStatusChange !== null}
-														<p class="mt-1 text-xs">
-															{person.daysUntilStatusChange}
-															day{person.daysUntilStatusChange !== 1 ? 's' : ''}
-															until
-															{person.status === 'green' ? 'overdue' : 'critical'}
-														</p>
-													{/if}
-												</div>
+												{/if}
 											{:else}
-												<p class="text-muted-foreground text-sm">No visits logged yet</p>
+												No visits logged yet
 											{/if}
-										</Card.Content>
-									</Card.Root>
-								</a>
+										</span>
+										<span class="text-muted-foreground col-span-2 truncate md:col-span-1">
+											{#if person.lastVisit?.companions && person.lastVisit.companions.length > 0}
+												<span class="md:hidden">With: </span>{person.lastVisit.companions.join(
+													', '
+												)}
+											{/if}
+										</span>
+										<span
+											class="text-muted-foreground col-span-2 text-xs tabular-nums md:col-span-1 md:text-right"
+										>
+											{#if person.daysUntilStatusChange !== null}
+												{person.daysUntilStatusChange}
+												day{person.daysUntilStatusChange !== 1 ? 's' : ''} until
+												{person.status === 'green' ? 'overdue' : 'critical'}
+											{/if}
+										</span>
+									</a>
+								</li>
 							{/each}
-						{/if}
-					</div>
+						</ul>
+					{/if}
 				</Tabs.Content>
 			{/each}
 		</Tabs.Root>

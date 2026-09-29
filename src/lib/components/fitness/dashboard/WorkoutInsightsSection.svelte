@@ -3,7 +3,6 @@
 	import LogWorkoutDialog from '$lib/components/fitness/dialogs/LogWorkoutDialog.svelte';
 	import type { logWorkoutSchema } from '$lib/schemas/fitness';
 	import { getTodayString, parseLocalDateString } from '$lib/utils/date';
-	import { Activity, Clock, Dumbbell, Flame } from '@lucide/svelte/icons';
 	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 	import FitnessStatusCard from './FitnessStatusCard.svelte';
@@ -104,12 +103,13 @@
 	</div>
 
 	<!-- Insight cards -->
-	<div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+	<div
+		class="border-foreground divide-rule grid grid-cols-2 gap-x-4 border-y-2 md:grid-cols-4 md:gap-x-0 md:divide-x"
+	>
 		<FitnessStatusCard
-			label="This Week"
+			label="This week"
 			value={insights.thisWeekCount}
 			unit="sessions"
-			icon={Dumbbell}
 			trend={insights.thisWeekCount >= 3
 				? 'positive'
 				: insights.thisWeekCount >= 1
@@ -125,7 +125,6 @@
 			label="Streak"
 			value={insights.streak}
 			unit={insights.streak === 1 ? 'day' : 'days'}
-			icon={Flame}
 			trend={insights.streak >= 3 ? 'positive' : 'neutral'}
 			trendLabel={insights.streak >= 3
 				? 'On a roll'
@@ -134,15 +133,13 @@
 					: 'Start today'}
 		/>
 		<FitnessStatusCard
-			label="Avg Session"
+			label="Avg session"
 			value={insights.avgDuration || '—'}
 			unit={insights.avgDuration ? 'min' : ''}
-			icon={Clock}
 		/>
 		<FitnessStatusCard
-			label="Best Day"
+			label="Best day"
 			value={insights.mostConsistentDay ?? '—'}
-			icon={Activity}
 			trendLabel={insights.mostConsistentDay ? 'Most active day' : 'Log workouts to see'}
 		/>
 	</div>

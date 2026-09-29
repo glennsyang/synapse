@@ -141,7 +141,7 @@
 	{#if !isEditing && open === undefined}
 		<Dialog.Trigger>
 			{#snippet child({ props })}
-				<Button {...props} class="bg-green-600 text-white hover:bg-green-700">
+				<Button {...props} class="bg-pen-fitness hover:bg-pen-fitness text-white">
 					<PlusIcon class="mr-2 h-4 w-4" />
 					Log Workout
 				</Button>
@@ -271,7 +271,7 @@
 				<Button
 					type="submit"
 					disabled={$submitting}
-					class="bg-green-600 text-white hover:bg-green-700"
+					class="bg-pen-fitness hover:bg-pen-fitness text-white"
 				>
 					{$submitting ? 'Saving...' : isEditing ? 'Update' : 'Save'}
 				</Button>

@@ -99,7 +99,7 @@
 						type="number"
 						step="0.1"
 						bind:value={$form.targetWeightLbs}
-						class={$errors.targetWeightLbs ? 'border-red-400' : ''}
+						class={$errors.targetWeightLbs ? 'border-destructive' : ''}
 						placeholder="150.0"
 						required
 					/>
@@ -113,7 +113,7 @@
 				<Button
 					type="submit"
 					disabled={$submitting}
-					class="bg-green-600 text-white hover:bg-green-700"
+					class="bg-pen-fitness hover:bg-pen-fitness text-white"
 					>{$submitting ? 'Setting...' : 'Set Goal'}</Button
 				>
 			</Dialog.Footer>

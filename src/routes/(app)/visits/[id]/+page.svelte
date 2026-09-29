@@ -132,11 +132,11 @@
 	}
 
 	const statusBadge: Record<string, string> = {
-		green: 'bg-green-100 text-green-800',
-		yellow: 'bg-yellow-100 text-yellow-800',
-		red: 'bg-red-100 text-red-800',
-		scheduled: 'bg-purple-100 text-purple-800',
-		exempt: 'bg-gray-100 text-gray-800'
+		green: 'bg-pen-fitness/12 text-pen-fitness',
+		yellow: 'bg-pen-warn/12 text-pen-warn',
+		red: 'bg-destructive/12 text-destructive',
+		scheduled: 'bg-pen-mind/12 text-pen-mind',
+		exempt: 'bg-muted text-foreground'
 	};
 
 	function formatTime(timeString: string): string {
@@ -173,9 +173,9 @@
 				<h1 class="text-3xl font-bold">{data.person.name}</h1>
 				<div class="mt-2 flex items-center gap-2">
 					<span
-						class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold {statusBadge[
+						class="inline-flex items-center rounded-[2px] px-3 py-1 text-sm font-semibold {statusBadge[
 							data.person.status
-						] ?? 'bg-gray-100 text-gray-800'}"
+						] ?? 'bg-muted text-foreground'}"
 					>
 						{getStatusLabel(data.person.status)}
 					</span>

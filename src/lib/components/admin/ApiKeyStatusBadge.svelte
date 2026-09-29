@@ -7,7 +7,7 @@
 {#if enabled}
 	<Badge
 		variant="outline"
-		class="border-green-200 bg-green-100 text-green-800 dark:border-green-500/30 dark:bg-green-900 dark:text-green-200"
+		class="border-pen-fitness/35 bg-pen-fitness/12 text-pen-fitness dark:border-pen-fitness/30 dark:bg-pen-fitness/18 dark:text-pen-fitness"
 	>
 		Active
 	</Badge>

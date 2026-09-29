@@ -4,15 +4,7 @@
 	import WeightChart from '$lib/components/fitness/WeightChart.svelte';
 	import type { logWeightSchema, setGoalWeightSchema } from '$lib/schemas/fitness';
 	import { parseLocalDateString } from '$lib/utils/date';
-	import {
-		ArrowDown,
-		ArrowUp,
-		Minus,
-		Scale,
-		Target,
-		TrendingDown,
-		TrendingUp
-	} from '@lucide/svelte/icons';
+	import { Minus, Target, TrendingDown, TrendingUp } from '@lucide/svelte/icons';
 	import type { Infer, SuperValidated } from 'sveltekit-superforms';
 
 	import FitnessStatusCard from './FitnessStatusCard.svelte';
@@ -92,31 +84,26 @@
 	</div>
 
 	<!-- Stat rail -->
-	<div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+	<div
+		class="border-foreground divide-rule grid grid-cols-2 gap-x-4 border-y-2 md:grid-cols-4 md:gap-x-0 md:divide-x"
+	>
 		<FitnessStatusCard
 			label="Current"
 			value={weightStats.currentWeight ?? '—'}
 			unit={weightStats.currentWeight ? 'lbs' : ''}
-			icon={Scale}
 		/>
 		<FitnessStatusCard
 			label="Goal"
 			value={goalWeight?.targetWeightLbs ?? '—'}
 			unit={goalWeight ? 'lbs' : ''}
-			icon={Target}
 			trendLabel={goalWeight ? 'Target set' : 'Set a goal'}
 		/>
 		<FitnessStatusCard
-			label="To Go"
+			label="To go"
 			value={weightStats.remainingToGoal != null
 				? Math.abs(weightStats.remainingToGoal).toFixed(1)
 				: '—'}
 			unit={weightStats.remainingToGoal != null ? 'lbs' : ''}
-			icon={weightStats.remainingToGoal && weightStats.remainingToGoal > 0
-				? ArrowDown
-				: weightStats.remainingToGoal && weightStats.remainingToGoal < 0
-					? ArrowUp
-					: Minus}
 			trend={remainingTrend}
 			trendLabel={weightStats.remainingToGoal && weightStats.remainingToGoal < 0
 				? 'Past goal weight'
@@ -126,7 +113,6 @@
 			label="Pace"
 			value={weeklyRate != null ? Math.abs(weeklyRate).toFixed(1) : '—'}
 			unit={weeklyRate != null ? 'lbs/wk' : ''}
-			icon={trendIcon}
 			trend={weeklyRate != null && weeklyRate < 0
 				? 'positive'
 				: weeklyRate != null && weeklyRate > 0
@@ -139,9 +125,9 @@
 	<!-- Weight chart -->
 	{#if weightEntries.length === 0}
 		<div
-			class="flex h-40 items-center justify-center rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700"
+			class="border-border dark:border-border flex h-40 items-center justify-center rounded-2xl border border-dashed"
 		>
-			<p class="text-sm text-zinc-500 dark:text-zinc-400">
+			<p class="text-muted-foreground dark:text-muted-foreground text-sm">
 				No weight data yet — start logging to see your trend
 			</p>
 		</div>

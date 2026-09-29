@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	getWorkoutBadgeClass,
-	getWorkoutBorderClass,
 	getWorkoutChartColor,
 	getWorkoutEmoji,
 	getWorkoutLabel,
@@ -25,33 +24,18 @@ describe('getWorkoutLabel', () => {
 	});
 });
 
-describe('getWorkoutBorderClass', () => {
-	it('returns the correct border class for known types', () => {
-		expect(getWorkoutBorderClass('strength')).toBe('border-l-orange-500');
-		expect(getWorkoutBorderClass('cardio')).toBe('border-l-blue-500');
-		expect(getWorkoutBorderClass('hiit')).toBe('border-l-red-500');
-		expect(getWorkoutBorderClass('walk')).toBe('border-l-green-500');
-		expect(getWorkoutBorderClass('stretch')).toBe('border-l-purple-500');
-		expect(getWorkoutBorderClass('other')).toBe('border-l-gray-400');
-	});
-
-	it('falls back to gray border for unknown types', () => {
-		expect(getWorkoutBorderClass('unknown')).toBe('border-l-gray-400');
-	});
-});
-
 describe('getWorkoutBadgeClass', () => {
 	it('returns badge class for each known workout type', () => {
-		expect(getWorkoutBadgeClass('strength')).toContain('orange');
-		expect(getWorkoutBadgeClass('cardio')).toContain('blue');
-		expect(getWorkoutBadgeClass('hiit')).toContain('red');
-		expect(getWorkoutBadgeClass('walk')).toContain('green');
-		expect(getWorkoutBadgeClass('stretch')).toContain('purple');
-		expect(getWorkoutBadgeClass('other')).toContain('gray');
+		expect(getWorkoutBadgeClass('strength')).toContain('pen-tasks');
+		expect(getWorkoutBadgeClass('cardio')).toContain('pen-journal');
+		expect(getWorkoutBadgeClass('hiit')).toContain('destructive');
+		expect(getWorkoutBadgeClass('walk')).toContain('pen-fitness');
+		expect(getWorkoutBadgeClass('stretch')).toContain('pen-mind');
+		expect(getWorkoutBadgeClass('other')).toContain('bg-muted');
 	});
 
 	it('falls back to gray badge for unknown types', () => {
-		expect(getWorkoutBadgeClass('yoga')).toContain('gray');
+		expect(getWorkoutBadgeClass('yoga')).toContain('bg-muted');
 	});
 });
 

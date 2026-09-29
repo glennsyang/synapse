@@ -88,23 +88,23 @@
 	<!-- Stat chips row -->
 	<div class="grid grid-cols-3 gap-3">
 		<div
-			class="flex flex-col items-center rounded-2xl border border-orange-200/70 bg-orange-50/60 px-3 py-3 text-center dark:border-orange-500/20 dark:bg-orange-500/8"
+			class="border-pen-tasks/35 bg-pen-tasks/10 dark:border-pen-tasks/20 dark:bg-pen-tasks/8 flex flex-col items-center rounded-2xl border px-3 py-3 text-center"
 		>
-			<Flame class="mb-1 h-4 w-4 text-orange-500" />
+			<Flame class="text-pen-tasks mb-1 h-4 w-4" />
 			<p class="font-display text-2xl leading-none font-bold">{mood.summary.currentStreak}</p>
 			<p class="text-muted-foreground mt-1 text-xs">Day streak</p>
 		</div>
 		<div
-			class="flex flex-col items-center rounded-2xl border border-orange-200/70 bg-orange-50/60 px-3 py-3 text-center dark:border-orange-500/20 dark:bg-orange-500/8"
+			class="border-pen-tasks/35 bg-pen-tasks/10 dark:border-pen-tasks/20 dark:bg-pen-tasks/8 flex flex-col items-center rounded-2xl border px-3 py-3 text-center"
 		>
-			<ChartArea class="mb-1 h-4 w-4 text-orange-500" />
+			<ChartArea class="text-pen-tasks mb-1 h-4 w-4" />
 			<p class="font-display text-2xl leading-none font-bold">{mood.summary.coveragePercentage}%</p>
 			<p class="text-muted-foreground mt-1 text-xs">Coverage</p>
 		</div>
 		<div
-			class="flex flex-col items-center rounded-2xl border border-orange-200/70 bg-orange-50/60 px-3 py-3 text-center dark:border-orange-500/20 dark:bg-orange-500/8"
+			class="border-pen-tasks/35 bg-pen-tasks/10 dark:border-pen-tasks/20 dark:bg-pen-tasks/8 flex flex-col items-center rounded-2xl border px-3 py-3 text-center"
 		>
-			<TrendingUp class="mb-1 h-4 w-4 text-orange-500" />
+			<TrendingUp class="text-pen-tasks mb-1 h-4 w-4" />
 			<p class="font-display text-2xl leading-none font-bold">{avgMoodLabel}</p>
 			<p class="text-muted-foreground mt-1 text-xs">Avg score</p>
 		</div>

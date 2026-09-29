@@ -67,7 +67,7 @@
 	{#if open === undefined}
 		<Dialog.Trigger>
 			{#snippet child({ props })}
-				<Button {...props} class="bg-green-600 text-white hover:bg-green-700">
+				<Button {...props} class="bg-pen-fitness hover:bg-pen-fitness text-white">
 					<BellPlusIcon class="mr-2 h-4 w-4" />
 					Create Reminder
 				</Button>
@@ -166,7 +166,7 @@
 						<Button {...props} type="button" variant="outline">Cancel</Button>
 					{/snippet}
 				</Dialog.Close>
-				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700">Create</Button>
+				<Button type="submit" class="bg-pen-fitness hover:bg-pen-fitness text-white">Create</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

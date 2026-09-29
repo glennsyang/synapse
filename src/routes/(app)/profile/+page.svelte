@@ -217,9 +217,9 @@
 
 <svelte:head><title>Profile</title></svelte:head>
 
-<div class="px-4 py-6 sm:px-0">
-	<div class="mb-8">
-		<h1 class="text-3xl font-bold tracking-tight">Profile</h1>
+<div class="mx-auto w-full max-w-5xl">
+	<div class="ruled mb-8 pb-4">
+		<h1 class="page-title" style="--pen: oklch(var(--color-teal))">Profile</h1>
 		<p class="text-muted-foreground mt-2">Manage your account information and security settings</p>
 	</div>
 
@@ -245,8 +245,8 @@
 						{#if $profileMessage}
 							<div
 								class="flex items-center gap-2 rounded-md p-3 {isSuccessMessage($profileMessage)
-									? 'border border-green-200 bg-green-50 text-green-700'
-									: 'border border-red-200 bg-red-50 text-red-700'}"
+									? 'border-pen-fitness/35 bg-pen-fitness/12 text-pen-fitness border'
+									: 'border-destructive/35 bg-destructive/12 text-destructive border'}"
 							>
 								{#if isSuccessMessage($profileMessage)}
 									<CircleCheck class="h-4 w-4" />
@@ -266,10 +266,10 @@
 									bind:value={$profileForm.name}
 									disabled={!isEditingProfile}
 									placeholder="Enter your first name"
-									class={$profileErrors.name ? 'border-red-400' : ''}
+									class={$profileErrors.name ? 'border-destructive' : ''}
 								/>
 								{#if $profileErrors.name}
-									<p class="mt-1 text-sm text-red-600">{$profileErrors.name}</p>
+									<p class="text-destructive mt-1 text-sm">{$profileErrors.name}</p>
 								{/if}
 							</div>
 						</div>
@@ -341,8 +341,8 @@
 								class="flex items-center gap-2 rounded-md p-3 {isSuccessMessage(
 									$visitSettingsMessage
 								)
-									? 'border border-green-200 bg-green-50 text-green-700'
-									: 'border border-red-200 bg-red-50 text-red-700'}"
+									? 'border-pen-fitness/35 bg-pen-fitness/12 text-pen-fitness border'
+									: 'border-destructive/35 bg-destructive/12 text-destructive border'}"
 							>
 								{#if isSuccessMessage($visitSettingsMessage)}
 									<CircleCheck class="h-4 w-4" />
@@ -398,11 +398,11 @@
 											type="number"
 											step={$visitSettingsForm.thresholdUnit === 'months' ? '0.01' : '1'}
 											bind:value={$visitSettingsForm.recentToOverdueValue}
-											class={$visitSettingsErrors.recentToOverdueValue ? 'border-red-400' : ''}
+											class={$visitSettingsErrors.recentToOverdueValue ? 'border-destructive' : ''}
 											required
 										/>
 										{#if $visitSettingsErrors.recentToOverdueValue}
-											<p class="mt-1 text-sm text-red-600">
+											<p class="text-destructive mt-1 text-sm">
 												{$visitSettingsErrors.recentToOverdueValue}
 											</p>
 										{/if}
@@ -418,11 +418,13 @@
 											type="number"
 											step={$visitSettingsForm.thresholdUnit === 'months' ? '0.01' : '1'}
 											bind:value={$visitSettingsForm.overdueToCriticalValue}
-											class={$visitSettingsErrors.overdueToCriticalValue ? 'border-red-400' : ''}
+											class={$visitSettingsErrors.overdueToCriticalValue
+												? 'border-destructive'
+												: ''}
 											required
 										/>
 										{#if $visitSettingsErrors.overdueToCriticalValue}
-											<p class="mt-1 text-sm text-red-600">
+											<p class="text-destructive mt-1 text-sm">
 												{$visitSettingsErrors.overdueToCriticalValue}
 											</p>
 										{/if}
@@ -509,8 +511,8 @@
 								class="flex items-center gap-2 rounded-md p-3 {isSuccessMessage(
 									$dashboardGoalSettingsMessage
 								)
-									? 'border border-green-200 bg-green-50 text-green-700'
-									: 'border border-red-200 bg-red-50 text-red-700'}"
+									? 'border-pen-fitness/35 bg-pen-fitness/12 text-pen-fitness border'
+									: 'border-destructive/35 bg-destructive/12 text-destructive border'}"
 							>
 								{#if isSuccessMessage($dashboardGoalSettingsMessage)}
 									<CircleCheck class="h-4 w-4" />
@@ -540,12 +542,12 @@
 										min="1"
 										bind:value={$dashboardGoalSettingsForm.meditationWeeklyGoal}
 										class={$dashboardGoalSettingsErrors.meditationWeeklyGoal
-											? 'border-red-400'
+											? 'border-destructive'
 											: ''}
 										required
 									/>
 									{#if $dashboardGoalSettingsErrors.meditationWeeklyGoal}
-										<p class="mt-1 text-sm text-red-600">
+										<p class="text-destructive mt-1 text-sm">
 											{$dashboardGoalSettingsErrors.meditationWeeklyGoal}
 										</p>
 									{/if}
@@ -564,12 +566,12 @@
 											min="1"
 											bind:value={$dashboardGoalSettingsForm.workoutGreenThreshold}
 											class={$dashboardGoalSettingsErrors.workoutGreenThreshold
-												? 'border-red-400'
+												? 'border-destructive'
 												: ''}
 											required
 										/>
 										{#if $dashboardGoalSettingsErrors.workoutGreenThreshold}
-											<p class="mt-1 text-sm text-red-600">
+											<p class="text-destructive mt-1 text-sm">
 												{$dashboardGoalSettingsErrors.workoutGreenThreshold}
 											</p>
 										{/if}
@@ -587,12 +589,12 @@
 											min="0"
 											bind:value={$dashboardGoalSettingsForm.workoutAmberThreshold}
 											class={$dashboardGoalSettingsErrors.workoutAmberThreshold
-												? 'border-red-400'
+												? 'border-destructive'
 												: ''}
 											required
 										/>
 										{#if $dashboardGoalSettingsErrors.workoutAmberThreshold}
-											<p class="mt-1 text-sm text-red-600">
+											<p class="text-destructive mt-1 text-sm">
 												{$dashboardGoalSettingsErrors.workoutAmberThreshold}
 											</p>
 										{/if}
@@ -678,8 +680,8 @@
 							{#if $passwordMessage}
 								<div
 									class="flex items-center gap-2 rounded-md p-3 {isSuccessMessage($passwordMessage)
-										? 'border border-green-200 bg-green-50 text-green-700'
-										: 'border border-red-200 bg-red-50 text-red-700'}"
+										? 'border-pen-fitness/35 bg-pen-fitness/12 text-pen-fitness border'
+										: 'border-destructive/35 bg-destructive/12 text-destructive border'}"
 								>
 									{#if isSuccessMessage($passwordMessage)}
 										<CircleCheck class="h-4 w-4" />
@@ -699,11 +701,11 @@
 									type="password"
 									bind:value={$passwordForm.currentPassword}
 									placeholder="Enter your current password"
-									class={$passwordErrors.currentPassword ? 'border-red-400' : ''}
+									class={$passwordErrors.currentPassword ? 'border-destructive' : ''}
 									required
 								/>
 								{#if $passwordErrors.currentPassword}
-									<p class="mt-1 text-sm text-red-600">{$passwordErrors.currentPassword}</p>
+									<p class="text-destructive mt-1 text-sm">{$passwordErrors.currentPassword}</p>
 								{/if}
 							</div>
 
@@ -715,11 +717,11 @@
 									type="password"
 									bind:value={$passwordForm.newPassword}
 									placeholder="Enter your new password"
-									class={$passwordErrors.newPassword ? 'border-red-400' : ''}
+									class={$passwordErrors.newPassword ? 'border-destructive' : ''}
 									required
 								/>
 								{#if $passwordErrors.newPassword}
-									<p class="mt-1 text-sm text-red-600">{$passwordErrors.newPassword}</p>
+									<p class="text-destructive mt-1 text-sm">{$passwordErrors.newPassword}</p>
 								{/if}
 							</div>
 
@@ -733,11 +735,11 @@
 									type="password"
 									bind:value={$passwordForm.confirmPassword}
 									placeholder="Confirm your new password"
-									class={$passwordErrors.confirmPassword ? 'border-red-400' : ''}
+									class={$passwordErrors.confirmPassword ? 'border-destructive' : ''}
 									required
 								/>
 								{#if $passwordErrors.confirmPassword}
-									<p class="mt-1 text-sm text-red-600">{$passwordErrors.confirmPassword}</p>
+									<p class="text-destructive mt-1 text-sm">{$passwordErrors.confirmPassword}</p>
 								{/if}
 							</div>
 

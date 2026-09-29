@@ -29,7 +29,7 @@
 
 		<AuthFormMessage message={$message} />
 
-		<div class="bg-card text-card-foreground rounded-lg border p-6 shadow-sm">
+		<div class="grid-paper text-card-foreground rounded-[3px] border p-6">
 			<div class="space-y-4">
 				<div>
 					<h2 class="text-lg font-semibold">Next steps:</h2>
@@ -70,7 +70,7 @@
 				{$submitting ? 'Sending verification email…' : 'Resend verification email'}
 			</Button>
 			{#if $errors.email}
-				<p class="text-sm text-red-600 dark:text-red-400">{$errors.email}</p>
+				<p class="text-destructive dark:text-destructive text-sm">{$errors.email}</p>
 			{/if}
 		</form>
 

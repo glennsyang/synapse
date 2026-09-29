@@ -6,8 +6,7 @@ export const workoutTypeOptions = [
 		label: 'Strength',
 		emoji: '💪',
 		notificationTag: 'muscle',
-		borderClass: 'border-l-orange-500',
-		badgeClass: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+		badgeClass: 'bg-pen-tasks/12 text-pen-tasks dark:bg-pen-tasks/30 dark:text-pen-tasks',
 		chartColor: 'var(--chart-1)'
 	},
 	{
@@ -15,8 +14,7 @@ export const workoutTypeOptions = [
 		label: 'Cardio',
 		emoji: '🏃',
 		notificationTag: 'runner',
-		borderClass: 'border-l-blue-500',
-		badgeClass: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+		badgeClass: 'bg-pen-journal/12 text-pen-journal dark:bg-pen-journal/30 dark:text-pen-journal',
 		chartColor: 'var(--chart-2)'
 	},
 	{
@@ -24,8 +22,7 @@ export const workoutTypeOptions = [
 		label: 'HIIT',
 		emoji: '🔥',
 		notificationTag: 'fire',
-		borderClass: 'border-l-red-500',
-		badgeClass: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+		badgeClass: 'bg-destructive/12 text-destructive dark:bg-destructive/30 dark:text-destructive',
 		chartColor: 'var(--chart-5)'
 	},
 	{
@@ -33,8 +30,7 @@ export const workoutTypeOptions = [
 		label: 'Walk',
 		emoji: '🚶',
 		notificationTag: 'walking',
-		borderClass: 'border-l-green-500',
-		badgeClass: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+		badgeClass: 'bg-pen-fitness/12 text-pen-fitness dark:bg-pen-fitness/30 dark:text-pen-fitness',
 		chartColor: 'var(--chart-4)'
 	},
 	{
@@ -42,8 +38,7 @@ export const workoutTypeOptions = [
 		label: 'Stretch',
 		emoji: '🤸',
 		notificationTag: 'person_doing_cartwheel',
-		borderClass: 'border-l-purple-500',
-		badgeClass: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+		badgeClass: 'bg-pen-mind/12 text-pen-mind dark:bg-pen-mind/30 dark:text-pen-mind',
 		chartColor: 'var(--chart-3)'
 	},
 	{
@@ -51,8 +46,7 @@ export const workoutTypeOptions = [
 		label: 'Other',
 		emoji: '🏋️',
 		notificationTag: 'weight_lifter',
-		borderClass: 'border-l-gray-400',
-		badgeClass: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300',
+		badgeClass: 'bg-muted text-foreground dark:bg-muted/50 dark:text-muted-foreground',
 		chartColor: 'var(--chart-3)'
 	}
 ] as const;
@@ -68,14 +62,10 @@ export function getWorkoutLabel(type: string): string {
 	return getWorkoutOption(type)?.label ?? 'Other';
 }
 
-export function getWorkoutBorderClass(type: string): string {
-	return getWorkoutOption(type)?.borderClass ?? 'border-l-gray-400';
-}
-
 export function getWorkoutBadgeClass(type: string): string {
 	return (
 		getWorkoutOption(type)?.badgeClass ??
-		'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300'
+		'bg-muted text-foreground dark:bg-muted/50 dark:text-muted-foreground'
 	);
 }
 

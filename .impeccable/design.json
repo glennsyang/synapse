@@ -1,0 +1,608 @@
+{
+	"schemaVersion": 2,
+	"generatedAt": "2026-09-29T23:17:19+00:00",
+	"title": "Design System: Synapse",
+	"extensions": {
+		"colorMeta": {
+			"cover-indigo": {
+				"role": "neutral",
+				"displayName": "Aizome Cover Indigo",
+				"canonical": "oklch(0.34 0.08 263)",
+				"dark": "oklch(0.17 0.025 263)",
+				"tonalRamp": [
+					"oklch(0.15 0.08 263)",
+					"oklch(0.264 0.08 263)",
+					"oklch(0.379 0.08 263)",
+					"oklch(0.493 0.08 263)",
+					"oklch(0.607 0.08 263)",
+					"oklch(0.721 0.08 263)",
+					"oklch(0.836 0.08 263)",
+					"oklch(0.95 0.08 263)"
+				]
+			},
+			"cover-indigo-deep": {
+				"role": "neutral",
+				"displayName": "Deep Cover Indigo",
+				"canonical": "oklch(0.28 0.07 263)",
+				"dark": "oklch(0.14 0.02 263)",
+				"tonalRamp": [
+					"oklch(0.15 0.07 263)",
+					"oklch(0.264 0.07 263)",
+					"oklch(0.379 0.07 263)",
+					"oklch(0.493 0.07 263)",
+					"oklch(0.607 0.07 263)",
+					"oklch(0.721 0.07 263)",
+					"oklch(0.836 0.07 263)",
+					"oklch(0.95 0.07 263)"
+				]
+			},
+			"cover-thread": {
+				"role": "neutral",
+				"displayName": "Cover Thread",
+				"canonical": "oklch(0.93 0.025 255)",
+				"dark": "oklch(0.9 0.02 255)",
+				"tonalRamp": [
+					"oklch(0.15 0.025 255)",
+					"oklch(0.264 0.025 255)",
+					"oklch(0.379 0.025 255)",
+					"oklch(0.493 0.025 255)",
+					"oklch(0.607 0.025 255)",
+					"oklch(0.721 0.025 255)",
+					"oklch(0.836 0.025 255)",
+					"oklch(0.95 0.025 255)"
+				]
+			},
+			"cover-thread-muted": {
+				"role": "neutral",
+				"displayName": "Faded Thread",
+				"canonical": "oklch(0.74 0.05 258)",
+				"dark": "oklch(0.66 0.04 258)",
+				"tonalRamp": [
+					"oklch(0.15 0.05 258)",
+					"oklch(0.264 0.05 258)",
+					"oklch(0.379 0.05 258)",
+					"oklch(0.493 0.05 258)",
+					"oklch(0.607 0.05 258)",
+					"oklch(0.721 0.05 258)",
+					"oklch(0.836 0.05 258)",
+					"oklch(0.95 0.05 258)"
+				]
+			},
+			"grid-paper": {
+				"role": "neutral",
+				"displayName": "Cool Grid Paper",
+				"canonical": "oklch(0.978 0.004 170)",
+				"dark": "oklch(0.225 0.013 252)",
+				"tonalRamp": [
+					"oklch(0.15 0.004 170)",
+					"oklch(0.264 0.004 170)",
+					"oklch(0.379 0.004 170)",
+					"oklch(0.493 0.004 170)",
+					"oklch(0.607 0.004 170)",
+					"oklch(0.721 0.004 170)",
+					"oklch(0.836 0.004 170)",
+					"oklch(0.95 0.004 170)"
+				]
+			},
+			"grid-line": {
+				"role": "neutral",
+				"displayName": "Grid Line",
+				"canonical": "oklch(0.88 0.02 235 / 0.5)",
+				"dark": "oklch(0.36 0.016 250 / 0.45)",
+				"tonalRamp": [
+					"oklch(0.15 0.02 235)",
+					"oklch(0.264 0.02 235)",
+					"oklch(0.379 0.02 235)",
+					"oklch(0.493 0.02 235)",
+					"oklch(0.607 0.02 235)",
+					"oklch(0.721 0.02 235)",
+					"oklch(0.836 0.02 235)",
+					"oklch(0.95 0.02 235)"
+				]
+			},
+			"rule-hairline": {
+				"role": "neutral",
+				"displayName": "Rule Hairline",
+				"canonical": "oklch(0.84 0.014 240)",
+				"dark": "oklch(0.34 0.014 250)",
+				"tonalRamp": [
+					"oklch(0.15 0.014 240)",
+					"oklch(0.264 0.014 240)",
+					"oklch(0.379 0.014 240)",
+					"oklch(0.493 0.014 240)",
+					"oklch(0.607 0.014 240)",
+					"oklch(0.721 0.014 240)",
+					"oklch(0.836 0.014 240)",
+					"oklch(0.95 0.014 240)"
+				]
+			},
+			"rule-strong": {
+				"role": "neutral",
+				"displayName": "Strong Rule",
+				"canonical": "oklch(0.3 0.012 250)",
+				"dark": "oklch(0.88 0.01 240)",
+				"tonalRamp": [
+					"oklch(0.15 0.012 250)",
+					"oklch(0.264 0.012 250)",
+					"oklch(0.379 0.012 250)",
+					"oklch(0.493 0.012 250)",
+					"oklch(0.607 0.012 250)",
+					"oklch(0.721 0.012 250)",
+					"oklch(0.836 0.012 250)",
+					"oklch(0.95 0.012 250)"
+				]
+			},
+			"ink": {
+				"role": "neutral",
+				"displayName": "Ink",
+				"canonical": "oklch(0.24 0.014 255)",
+				"dark": "oklch(0.93 0.008 240)",
+				"tonalRamp": [
+					"oklch(0.15 0.014 255)",
+					"oklch(0.264 0.014 255)",
+					"oklch(0.379 0.014 255)",
+					"oklch(0.493 0.014 255)",
+					"oklch(0.607 0.014 255)",
+					"oklch(0.721 0.014 255)",
+					"oklch(0.836 0.014 255)",
+					"oklch(0.95 0.014 255)"
+				]
+			},
+			"ink-muted": {
+				"role": "neutral",
+				"displayName": "Faded Ink",
+				"canonical": "oklch(0.47 0.016 250)",
+				"dark": "oklch(0.72 0.014 245)",
+				"tonalRamp": [
+					"oklch(0.15 0.016 250)",
+					"oklch(0.264 0.016 250)",
+					"oklch(0.379 0.016 250)",
+					"oklch(0.493 0.016 250)",
+					"oklch(0.607 0.016 250)",
+					"oklch(0.721 0.016 250)",
+					"oklch(0.836 0.016 250)",
+					"oklch(0.95 0.016 250)"
+				]
+			},
+			"sheet-card": {
+				"role": "neutral",
+				"displayName": "Sheet White",
+				"canonical": "oklch(0.99 0.003 170)",
+				"dark": "oklch(0.245 0.013 252)",
+				"tonalRamp": [
+					"oklch(0.15 0.003 170)",
+					"oklch(0.264 0.003 170)",
+					"oklch(0.379 0.003 170)",
+					"oklch(0.493 0.003 170)",
+					"oklch(0.607 0.003 170)",
+					"oklch(0.721 0.003 170)",
+					"oklch(0.836 0.003 170)",
+					"oklch(0.95 0.003 170)"
+				]
+			},
+			"wash-muted": {
+				"role": "neutral",
+				"displayName": "Muted Wash",
+				"canonical": "oklch(0.95 0.007 220)",
+				"dark": "oklch(0.28 0.013 252)",
+				"tonalRamp": [
+					"oklch(0.15 0.007 220)",
+					"oklch(0.264 0.007 220)",
+					"oklch(0.379 0.007 220)",
+					"oklch(0.493 0.007 220)",
+					"oklch(0.607 0.007 220)",
+					"oklch(0.721 0.007 220)",
+					"oklch(0.836 0.007 220)",
+					"oklch(0.95 0.007 220)"
+				]
+			},
+			"input-stroke": {
+				"role": "neutral",
+				"displayName": "Input Stroke",
+				"canonical": "oklch(0.8 0.014 240)",
+				"dark": "oklch(0.4 0.016 250)",
+				"tonalRamp": [
+					"oklch(0.15 0.014 240)",
+					"oklch(0.264 0.014 240)",
+					"oklch(0.379 0.014 240)",
+					"oklch(0.493 0.014 240)",
+					"oklch(0.607 0.014 240)",
+					"oklch(0.721 0.014 240)",
+					"oklch(0.836 0.014 240)",
+					"oklch(0.95 0.014 240)"
+				]
+			},
+			"focus-ring": {
+				"role": "primary",
+				"displayName": "Focus Indigo",
+				"canonical": "oklch(0.45 0.13 263)",
+				"dark": "oklch(0.7 0.12 263)",
+				"tonalRamp": [
+					"oklch(0.15 0.13 263)",
+					"oklch(0.264 0.13 263)",
+					"oklch(0.379 0.13 263)",
+					"oklch(0.493 0.13 263)",
+					"oklch(0.607 0.13 263)",
+					"oklch(0.721 0.13 263)",
+					"oklch(0.836 0.13 263)",
+					"oklch(0.95 0.13 263)"
+				]
+			},
+			"destructive-red": {
+				"role": "error",
+				"displayName": "Destructive Red",
+				"canonical": "oklch(0.55 0.2 27)",
+				"dark": "oklch(0.68 0.18 25)",
+				"tonalRamp": [
+					"oklch(0.15 0.2 27)",
+					"oklch(0.264 0.2 27)",
+					"oklch(0.379 0.2 27)",
+					"oklch(0.493 0.2 27)",
+					"oklch(0.607 0.2 27)",
+					"oklch(0.721 0.2 27)",
+					"oklch(0.836 0.2 27)",
+					"oklch(0.95 0.2 27)"
+				]
+			},
+			"pen-brand-aizome": {
+				"role": "primary",
+				"displayName": "Aizome Pen",
+				"canonical": "oklch(0.42 0.11 263)",
+				"dark": "oklch(0.72 0.1 263)",
+				"tonalRamp": [
+					"oklch(0.15 0.11 263)",
+					"oklch(0.264 0.11 263)",
+					"oklch(0.379 0.11 263)",
+					"oklch(0.493 0.11 263)",
+					"oklch(0.607 0.11 263)",
+					"oklch(0.721 0.11 263)",
+					"oklch(0.836 0.11 263)",
+					"oklch(0.95 0.11 263)"
+				]
+			},
+			"pen-journal-ink-blue": {
+				"role": "secondary",
+				"displayName": "Ink Blue",
+				"canonical": "oklch(0.48 0.17 258)",
+				"dark": "oklch(0.72 0.13 255)",
+				"tonalRamp": [
+					"oklch(0.15 0.17 258)",
+					"oklch(0.264 0.17 258)",
+					"oklch(0.379 0.17 258)",
+					"oklch(0.493 0.17 258)",
+					"oklch(0.607 0.17 258)",
+					"oklch(0.721 0.17 258)",
+					"oklch(0.836 0.17 258)",
+					"oklch(0.95 0.17 258)"
+				]
+			},
+			"pen-fitness-green": {
+				"role": "secondary",
+				"displayName": "Leaf Green",
+				"canonical": "oklch(0.52 0.13 155)",
+				"dark": "oklch(0.72 0.13 155)",
+				"tonalRamp": [
+					"oklch(0.15 0.13 155)",
+					"oklch(0.264 0.13 155)",
+					"oklch(0.379 0.13 155)",
+					"oklch(0.493 0.13 155)",
+					"oklch(0.607 0.13 155)",
+					"oklch(0.721 0.13 155)",
+					"oklch(0.836 0.13 155)",
+					"oklch(0.95 0.13 155)"
+				]
+			},
+			"pen-tasks-vermilion": {
+				"role": "secondary",
+				"displayName": "Vermilion",
+				"canonical": "oklch(0.6 0.19 38)",
+				"dark": "oklch(0.74 0.15 42)",
+				"tonalRamp": [
+					"oklch(0.15 0.19 38)",
+					"oklch(0.264 0.19 38)",
+					"oklch(0.379 0.19 38)",
+					"oklch(0.493 0.19 38)",
+					"oklch(0.607 0.19 38)",
+					"oklch(0.721 0.19 38)",
+					"oklch(0.836 0.19 38)",
+					"oklch(0.95 0.19 38)"
+				]
+			},
+			"pen-mind-violet": {
+				"role": "secondary",
+				"displayName": "Violet",
+				"canonical": "oklch(0.5 0.16 300)",
+				"dark": "oklch(0.72 0.13 300)",
+				"tonalRamp": [
+					"oklch(0.15 0.16 300)",
+					"oklch(0.264 0.16 300)",
+					"oklch(0.379 0.16 300)",
+					"oklch(0.493 0.16 300)",
+					"oklch(0.607 0.16 300)",
+					"oklch(0.721 0.16 300)",
+					"oklch(0.836 0.16 300)",
+					"oklch(0.95 0.16 300)"
+				]
+			},
+			"pen-people-magenta": {
+				"role": "secondary",
+				"displayName": "Magenta",
+				"canonical": "oklch(0.56 0.19 350)",
+				"dark": "oklch(0.74 0.15 352)",
+				"tonalRamp": [
+					"oklch(0.15 0.19 350)",
+					"oklch(0.264 0.19 350)",
+					"oklch(0.379 0.19 350)",
+					"oklch(0.493 0.19 350)",
+					"oklch(0.607 0.19 350)",
+					"oklch(0.721 0.19 350)",
+					"oklch(0.836 0.19 350)",
+					"oklch(0.95 0.19 350)"
+				]
+			},
+			"pen-warn-amber": {
+				"role": "tertiary",
+				"displayName": "Amber Warning",
+				"canonical": "oklch(0.66 0.15 70)",
+				"dark": "oklch(0.8 0.13 75)",
+				"tonalRamp": [
+					"oklch(0.15 0.15 70)",
+					"oklch(0.264 0.15 70)",
+					"oklch(0.379 0.15 70)",
+					"oklch(0.493 0.15 70)",
+					"oklch(0.607 0.15 70)",
+					"oklch(0.721 0.15 70)",
+					"oklch(0.836 0.15 70)",
+					"oklch(0.95 0.15 70)"
+				]
+			}
+		},
+		"typographyMeta": {
+			"display": {
+				"displayName": "Day Numeral",
+				"purpose": "Today's day number; journal margin dates at 3-3.75rem. 5.5rem on mobile."
+			},
+			"headline": {
+				"displayName": "Page Title",
+				"purpose": "Page titles led by a 12px pen square; 1.875rem on mobile."
+			},
+			"title": {
+				"displayName": "Ruled Heading",
+				"purpose": "Section headings set on a strong rule, led by a 10px pen square; 1.5rem for the dashboard's two main columns."
+			},
+			"reading": {
+				"displayName": "Pen Reading",
+				"purpose": "Large pen-coloured counts in the margin of readings."
+			},
+			"body": {
+				"displayName": "Body",
+				"purpose": "Lists, registers, meta; list rows at 0.95rem."
+			},
+			"prose": {
+				"displayName": "Journal Prose",
+				"purpose": "Journal entries, max 68ch."
+			},
+			"label": {
+				"displayName": "Label",
+				"purpose": "Washi strips, arrow links, week-strip letters; uppercase 0.12-0.14em only for register column heads and minor list headings."
+			},
+			"running-head": {
+				"displayName": "Running Head",
+				"purpose": "The Synapse wordmark; 0.3em tracking on cover screens."
+			}
+		},
+		"shadows": [
+			{
+				"name": "none-on-paper",
+				"value": "none",
+				"purpose": "shadow-2xs, shadow-xs and shadow-sm resolve to none: nothing on the sheet lifts."
+			},
+			{
+				"name": "float-low",
+				"value": "0 6px 18px -10px oklch(0.2 0.03 260 / 0.35)",
+				"purpose": "Menus, popovers, tooltips (shadow-md)."
+			},
+			{
+				"name": "float-mid",
+				"value": "0 14px 34px -14px oklch(0.2 0.03 260 / 0.4)",
+				"purpose": "Sheets and larger panels (shadow-lg)."
+			},
+			{
+				"name": "float-high",
+				"value": "0 22px 48px -18px oklch(0.2 0.03 260 / 0.45)",
+				"purpose": "Modal dialogs (shadow-xl)."
+			}
+		],
+		"motion": [
+			{
+				"name": "ink-draw",
+				"value": "stroke-dashoffset 220ms cubic-bezier(0.16, 1, 0.3, 1) 60ms",
+				"purpose": "Pen Check tick stroke; removed under prefers-reduced-motion."
+			},
+			{
+				"name": "ink-state",
+				"value": "150-200ms ease-out",
+				"purpose": "Colour, border and index-tab padding changes."
+			},
+			{
+				"name": "page-fade",
+				"value": "fade 160ms",
+				"purpose": "Dashboard content entrance."
+			},
+			{
+				"name": "press",
+				"value": "translateY(1px)",
+				"purpose": "Button active state; paper never bounces or scales."
+			}
+		],
+		"breakpoints": [
+			{
+				"name": "sm",
+				"value": "640px"
+			},
+			{
+				"name": "md",
+				"value": "768px",
+				"purpose": "Index-tab rail and cover frame appear; bottom tab strip hides."
+			},
+			{
+				"name": "lg",
+				"value": "1024px",
+				"purpose": "Dashboard agenda/margin split."
+			}
+		],
+		"textures": [
+			{
+				"name": "grid-paper",
+				"value": "linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 14px 14px; background-position: -1px -1px",
+				"purpose": "The ground of every sheet and the auth/splash sheet."
+			}
+		],
+		"assets": {
+			"raster": [],
+			"fonts": "Zen Kaku Gothic New 400/500/700/900 via npm @fontsource/zen-kaku-gothic-new (latin subsets); no generated or raster imagery ships in this build."
+		}
+	},
+	"components": [
+		{
+			"name": "Ink Button",
+			"kind": "button",
+			"refersTo": "button-ink",
+			"description": "Default action: ink-filled rectangle.",
+			"html": "<button class=\"ds-btn-ink\">Save entry</button>",
+			"css": ".ds-btn-ink{background:var(--primary);color:var(--primary-foreground);height:36px;padding:0 14px;border:1px solid transparent;border-radius:3px;font:700 14px/1 'Zen Kaku Gothic New',ui-sans-serif,sans-serif;letter-spacing:.025em;cursor:pointer;transition:background-color 150ms ease-out}.ds-btn-ink:hover{background:color-mix(in oklch,var(--primary) 80%,transparent)}.ds-btn-ink:active{transform:translateY(1px)}.ds-btn-ink:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}"
+		},
+		{
+			"name": "Pen Button",
+			"kind": "button",
+			"refersTo": "button-pen",
+			"description": "A page's single creation action, filled in the section's pen.",
+			"html": "<button class=\"ds-btn-pen\" style=\"--pen: oklch(var(--color-orange))\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M5 12h14M12 5v14\"/></svg>New Task</button>",
+			"css": ".ds-btn-pen{display:inline-flex;align-items:center;gap:8px;background:var(--pen);color:oklch(0.98 0.004 170);height:36px;padding:0 14px;border:1px solid transparent;border-radius:3px;font:700 14px/1 'Zen Kaku Gothic New',ui-sans-serif,sans-serif;letter-spacing:.025em;cursor:pointer}.ds-btn-pen:active{transform:translateY(1px)}.ds-btn-pen:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}"
+		},
+		{
+			"name": "Outline Button",
+			"kind": "button",
+			"refersTo": "button-outline",
+			"description": "Secondary action: pen-outlined rectangle on sheet white.",
+			"html": "<button class=\"ds-btn-outline\">Cancel</button>",
+			"css": ".ds-btn-outline{background:var(--card);color:var(--foreground);height:36px;padding:0 14px;border:1px solid color-mix(in oklch,var(--foreground) 35%,transparent);border-radius:3px;font:700 14px/1 'Zen Kaku Gothic New',ui-sans-serif,sans-serif;letter-spacing:.025em;cursor:pointer;transition:background-color 150ms ease-out,border-color 150ms ease-out}.ds-btn-outline:hover{background:var(--muted);border-color:color-mix(in oklch,var(--foreground) 60%,transparent)}.ds-btn-outline:active{transform:translateY(1px)}.ds-btn-outline:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}"
+		},
+		{
+			"name": "Washi Tag",
+			"kind": "chip",
+			"refersTo": "washi-tag",
+			"description": "Flat strip of tape in a pen tint for deltas, locations, priorities.",
+			"html": "<span class=\"ds-washi\" style=\"--pen: oklch(var(--color-green))\">+12% vs last week</span>",
+			"css": ".ds-washi{display:inline-flex;align-items:center;padding:1px 8px;font:500 12px/20px 'Zen Kaku Gothic New',ui-sans-serif,sans-serif;border-radius:1px;background:color-mix(in oklch,var(--pen) 12%,transparent);color:var(--pen);font-variant-numeric:tabular-nums}"
+		},
+		{
+			"name": "Index Tabs",
+			"kind": "nav",
+			"refersTo": "index-tab-active",
+			"description": "Desktop binding: pen tabs off the sheet edge; the open tab is cut from the paper.",
+			"html": "<div class=\"ds-rail\"><a class=\"ds-tab\" style=\"--pen: oklch(var(--color-teal))\" href=\"#\">Today</a><a class=\"ds-tab is-active\" style=\"--pen: oklch(var(--color-blue))\" href=\"#\" aria-current=\"page\">Journal</a><a class=\"ds-tab\" style=\"--pen: oklch(var(--color-orange))\" href=\"#\">Tasks</a></div>",
+			"css": ".ds-rail{display:flex;flex-direction:column;align-items:flex-end;gap:6px;width:104px;padding:12px 0;background:var(--cover)}.ds-tab{display:flex;align-items:center;height:44px;padding:0 10px;border-radius:3px 0 0 3px;font:700 11.5px/1 'Zen Kaku Gothic New',ui-sans-serif,sans-serif;letter-spacing:.025em;text-decoration:none;background:color-mix(in oklch,var(--pen) 88%,var(--cover));color:oklch(0.99 0 0);transition:padding 200ms ease-out,background-color 200ms ease-out,color 200ms ease-out}.ds-tab:hover{background:var(--pen);padding-right:16px}.ds-tab.is-active{background:var(--paper);color:var(--pen);padding-right:16px;margin-right:-1px}.ds-tab:focus-visible{outline:2px solid var(--ring);outline-offset:2px}"
+		},
+		{
+			"name": "Pen Check",
+			"kind": "custom",
+			"refersTo": "pen-check",
+			"description": "Signature: a ruled square whose tick draws itself in the row's pen.",
+			"html": "<label class=\"ds-pencheck-row\" style=\"--pen: oklch(var(--color-orange))\"><span class=\"ds-pencheck\"><input type=\"checkbox\"><span class=\"ds-box\"><svg viewBox=\"0 0 16 16\"><path d=\"M3.2 8.6l3.1 3 6.4-7.4\" pathLength=\"1\"/></svg></span></span><span class=\"ds-label\">Bible reading</span></label>",
+			"css": ".ds-pencheck-row{display:flex;align-items:center;gap:8px;min-height:44px;border-bottom:1px solid var(--rule);font:400 15px 'Zen Kaku Gothic New',ui-sans-serif,sans-serif;color:var(--foreground);cursor:pointer}.ds-pencheck{position:relative;display:inline-grid;place-items:center;width:28px;height:28px}.ds-pencheck input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}.ds-box{display:grid;place-items:center;width:17px;height:17px;border:1.5px solid color-mix(in oklch,var(--foreground) 55%,transparent);border-radius:2px;transition:border-color 150ms}.ds-box svg{width:14px;height:14px;overflow:visible}.ds-box path{fill:none;stroke:var(--pen);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 220ms cubic-bezier(0.16,1,0.3,1) 60ms}.ds-pencheck input:checked+.ds-box{border-color:var(--pen)}.ds-pencheck input:checked+.ds-box path{stroke-dashoffset:0}.ds-pencheck input:focus-visible+.ds-box{outline:2px solid var(--ring);outline-offset:2px}.ds-pencheck-row:has(input:checked) .ds-label{color:var(--muted-foreground);text-decoration:line-through;text-decoration-color:color-mix(in oklch,var(--pen) 70%,transparent)}"
+		},
+		{
+			"name": "Ruled Heading",
+			"kind": "custom",
+			"refersTo": "title",
+			"description": "Section heading on a strong rule, led by a pen square, with an optional pen link.",
+			"html": "<div class=\"ds-ruled\" style=\"--pen: oklch(var(--color-green))\"><span class=\"ds-sq\"></span><h2>Workout breakdown</h2><a href=\"#\">Fitness &rarr;</a></div>",
+			"css": ".ds-ruled{display:flex;align-items:baseline;gap:12px;padding-bottom:8px;border-bottom:1px solid var(--rule-strong);font-family:'Zen Kaku Gothic New',ui-sans-serif,sans-serif}.ds-ruled .ds-sq{width:10px;height:10px;align-self:center;border-radius:1px;background:var(--pen)}.ds-ruled h2{margin:0;font-size:18px;font-weight:900;letter-spacing:-.025em;color:var(--foreground)}.ds-ruled a{margin-left:auto;font-size:12px;font-weight:700;color:var(--pen);text-decoration:none}.ds-ruled a:hover{text-decoration:underline}"
+		},
+		{
+			"name": "Pen Reading",
+			"kind": "custom",
+			"refersTo": "reading",
+			"description": "One reading in the margin: pen numeral, bold label, one note.",
+			"html": "<a class=\"ds-reading\" href=\"#\" style=\"--pen: oklch(var(--color-purple))\"><span class=\"ds-num\">3</span><span><b>Meditation sessions</b><small>Goal: 4 sessions this week</small></span></a>",
+			"css": ".ds-reading{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--rule);color:var(--foreground);text-decoration:none;font-family:'Zen Kaku Gothic New',ui-sans-serif,sans-serif}.ds-num{width:64px;font-size:48px;line-height:1;font-weight:900;color:var(--pen);font-variant-numeric:tabular-nums}.ds-reading b{display:block;font-weight:700}.ds-reading small{display:block;margin-top:2px;font-size:14px;color:var(--muted-foreground)}.ds-reading:hover b{text-decoration:underline}"
+		},
+		{
+			"name": "Sheet Card",
+			"kind": "card",
+			"refersTo": "sheet-card",
+			"description": "The rare contained surface: forms, dialogs, separate objects. Hairline ring, no shadow.",
+			"html": "<section class=\"ds-card\"><h2>Log weight</h2><input class=\"ds-input\" placeholder=\"kg\"></section>",
+			"css": ".ds-card{background:var(--card);color:var(--card-foreground);border-radius:3px;box-shadow:0 0 0 1px var(--rule);padding:16px;font-family:'Zen Kaku Gothic New',ui-sans-serif,sans-serif}.ds-card h2{margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--rule-strong);font-size:18px;font-weight:900}.ds-input{width:100%;height:32px;padding:4px 10px;border:1px solid var(--input);border-radius:3px;background:transparent;color:var(--foreground);font:400 14px 'Zen Kaku Gothic New',ui-sans-serif,sans-serif;caret-color:oklch(var(--color-teal));transition:border-color 150ms}.ds-input:focus-visible{outline:none;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}"
+		}
+	],
+	"narrative": {
+		"northStar": "The Daybook",
+		"overview": "Synapse is a one-page-a-day planner. Every screen is a single sheet of cool grid paper bound into an indigo cloth cover; each life domain writes in its own pen colour and owns an index tab that comes off the sheet's edge. The dashboard is today's page: a huge day numeral, a Monday-first week strip, an agenda to tick, and a margin of readings in pen.\n\nDensity is a working planner's, not a dashboard's. Content sits directly on the grid, organised by ruled headings and hairline rows instead of boxed cards; numbers are written large in the domain's pen and labelled plainly beside them. One stationery gothic face carries everything, with weight (900 against 400) doing the hierarchy. The paper is flat; only things that float above the page (menus, popovers, dialogs) cast a shadow. Motion is ink being drawn: strokes appear, paper never bounces.\n\nThe build rejects the category default it was written against: the shadcn card grid, the dark sidebar, the gradient greeting, the rounded stat tile.",
+		"keyCharacteristics": [
+			"Grid paper ground (14px 1px grid) on every sheet, framed by indigo cloth.",
+			"One pen per domain, applied as numerals, marks, index tabs, ticks and low-strength washi tints.",
+			"Ruled section headings (text on a strong hairline) instead of card containers.",
+			"Near-square geometry: 1-3px corners everywhere.",
+			"Zen Kaku Gothic New throughout; huge heavy tabular numerals.",
+			"Flat paper; shadows only on floating layers.",
+			"Ink-drawing motion: 160-220ms ease-out, stroke-dashoffset for ticks."
+		],
+		"rules": [
+			{
+				"name": "The One Pen Per Domain Rule",
+				"body": "Each domain writes in exactly one pen, set once as `--pen` on its container and read by every mark inside it. A pen never appears on another domain's content except as a semantic state (green = positive/met, amber = warning).",
+				"section": "colors"
+			},
+			{
+				"name": "The Pen At Strength Or As Washi Rule",
+				"body": "A pen is either full strength on small, meaningful marks (numerals, squares, ticks, tab faces, link text) or a 8-15% tint behind a washi strip. It is never a large solid field on the paper.",
+				"section": "colors"
+			},
+			{
+				"name": "The Cloth Frames, Paper Holds Rule",
+				"body": "Indigo cloth is only the binding around the sheet. Content never sits on the cover except on the closed-planner screens (splash, auth), where one sheet is laid on it.",
+				"section": "colors"
+			},
+			{
+				"name": "The One Face Rule",
+				"body": "Zen Kaku Gothic New is the only family. Hierarchy comes from weight and size, never from a second display face.",
+				"section": "typography"
+			},
+			{
+				"name": "The Numeral Leads Rule",
+				"body": "When a figure matters, it is written large, black-weight and tabular in its pen, with its label in plain type beside it; the label never outranks the number. All `time` elements and numeric columns are tabular.",
+				"section": "typography"
+			},
+			{
+				"name": "The Ruled Line Rule",
+				"body": "Sections are divided by a heading set on a strong hairline, and entries by rule-hairline rows. Reach for a contained card only when the content is a form, a dialog, or a genuinely separate object.",
+				"section": "layout"
+			},
+			{
+				"name": "The Paper Lies Flat Rule",
+				"body": "Nothing written on the sheet has a drop shadow. If it needs separation, give it a hairline.",
+				"section": "elevation"
+			}
+		],
+		"dos": [
+			"**Do** put every app screen on the grid-paper sheet inside the indigo cover, with the running head at the top.",
+			"**Do** declare a section's pen once as `--pen: oklch(var(--color-<pen>))` and let marks, ticks, squares and links read it.",
+			"**Do** lead page titles with the 12px pen square and section headings with the 10px square, set on a strong rule.",
+			"**Do** write key figures as black-weight tabular numerals in the domain pen, labelled in plain type.",
+			"**Do** separate entries with hairline rows (min 44px) and use dashed hairline bands for empty states.",
+			"**Do** keep corners at 1-3px, and use circles only for the monogram, today's ring and status dots.",
+			"**Do** animate as ink: 150-220ms ease-out on colour and stroke, stroke-dashoffset for ticks, fades of 160ms."
+		],
+		"donts": [
+			"**Don't** put drop shadows on anything written on the sheet; shadows belong only to floating layers.",
+			"**Don't** wrap dashboard readings or list sections in rounded stat tiles or card grids; rule them instead.",
+			"**Don't** use a pen for another domain's content, or fill a large area of paper with a solid pen.",
+			"**Don't** add a second typeface for headings or text, or a gradient greeting.",
+			"**Don't** make pill-shaped buttons, tags or containers.",
+			"**Don't** set a small tracked uppercase label or ID above a heading as a kicker; small uppercase is for register column heads, minor list headings and the wordmark.",
+			"**Don't** let paper bounce: no spring, overshoot or scale-up motion on sheet content."
+		]
+	}
+}

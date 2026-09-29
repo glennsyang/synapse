@@ -74,11 +74,11 @@
 							autocomplete="new-password"
 							bind:value={$form.password}
 							placeholder="••••••••"
-							class={$errors.password ? 'border-red-500' : ''}
+							class={$errors.password ? 'border-destructive' : ''}
 							required
 						/>
 						{#if $errors.password}
-							<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.password}</p>
+							<p class="text-destructive dark:text-destructive mt-1 text-sm">{$errors.password}</p>
 						{/if}
 					</Field>
 
@@ -90,12 +90,14 @@
 							type="password"
 							bind:value={$form.confirmPassword}
 							placeholder="••••••••"
-							class={$errors.confirmPassword ? 'border-red-500' : ''}
+							class={$errors.confirmPassword ? 'border-destructive' : ''}
 							required
 							autocomplete="new-password"
 						/>
 						{#if $errors.confirmPassword}
-							<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.confirmPassword}</p>
+							<p class="text-destructive dark:text-destructive mt-1 text-sm">
+								{$errors.confirmPassword}
+							</p>
 						{/if}
 					</Field>
 

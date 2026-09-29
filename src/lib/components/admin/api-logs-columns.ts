@@ -78,7 +78,7 @@ export const columns: ColumnDef<Features, AdminApiLogEntry>[] = [
 		cell: ({ row }) => {
 			const statusSnippet = createRawSnippet<[number]>((getStatus) => {
 				const status = getStatus();
-				const colorClass = status >= 400 ? 'text-red-600' : 'text-green-600';
+				const colorClass = status >= 400 ? 'text-destructive' : 'text-pen-fitness';
 				return {
 					render: () => `<span class="font-medium ${colorClass}">${status}</span>`
 				};

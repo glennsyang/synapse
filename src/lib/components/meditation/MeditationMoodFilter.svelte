@@ -13,33 +13,33 @@
 	const moodOptions = [
 		{
 			value: 'Anxious',
-			dotClass: 'bg-amber-500',
+			dotClass: 'bg-pen-warn',
 			badgeClass:
-				'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200'
+				'border-pen-warn/35 bg-pen-warn/12 text-pen-warn dark:border-pen-warn/40 dark:bg-pen-warn/10 dark:text-pen-warn'
 		},
 		{
 			value: 'Low Energy',
-			dotClass: 'bg-blue-500',
+			dotClass: 'bg-pen-journal',
 			badgeClass:
-				'border-blue-200 bg-blue-100 text-blue-800 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-200'
+				'border-pen-journal/35 bg-pen-journal/12 text-pen-journal dark:border-pen-journal/40 dark:bg-pen-journal/10 dark:text-pen-journal'
 		},
 		{
 			value: 'Focused',
-			dotClass: 'bg-green-500',
+			dotClass: 'bg-pen-fitness',
 			badgeClass:
-				'border-green-200 bg-green-100 text-green-800 dark:border-green-500/40 dark:bg-green-500/10 dark:text-green-200'
+				'border-pen-fitness/35 bg-pen-fitness/12 text-pen-fitness dark:border-pen-fitness/40 dark:bg-pen-fitness/10 dark:text-pen-fitness'
 		},
 		{
 			value: 'Pre-Sleep',
-			dotClass: 'bg-purple-500',
+			dotClass: 'bg-pen-mind',
 			badgeClass:
-				'border-purple-200 bg-purple-100 text-purple-800 dark:border-purple-500/40 dark:bg-purple-500/10 dark:text-purple-200'
+				'border-pen-mind/35 bg-pen-mind/12 text-pen-mind dark:border-pen-mind/40 dark:bg-pen-mind/10 dark:text-pen-mind'
 		},
 		{
 			value: 'General',
-			dotClass: 'bg-gray-400',
+			dotClass: 'bg-muted',
 			badgeClass:
-				'border-gray-200 bg-gray-100 text-gray-800 dark:border-gray-500/40 dark:bg-gray-700 dark:text-gray-200'
+				'border-border bg-muted text-foreground dark:border-border/40 dark:bg-muted dark:text-foreground'
 		}
 	] as const;
 

@@ -34,24 +34,30 @@
 	</div>
 
 	{#if reminders.length === 0}
-		<Card.Root class="border-dashed border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+		<Card.Root class="border-border bg-card dark:border-border dark:bg-muted border-dashed">
 			<Card.Content class="flex flex-col items-center gap-2 py-8 text-center">
-				<BellOff class="h-8 w-8 text-zinc-400" />
-				<p class="text-sm font-medium text-zinc-600 dark:text-zinc-400">No reminders set</p>
-				<p class="text-xs text-zinc-500">Create a reminder to get email nudges on your schedule</p>
+				<BellOff class="text-muted-foreground h-8 w-8" />
+				<p class="text-muted-foreground dark:text-muted-foreground text-sm font-medium">
+					No reminders set
+				</p>
+				<p class="text-muted-foreground text-xs">
+					Create a reminder to get email nudges on your schedule
+				</p>
 			</Card.Content>
 		</Card.Root>
 	{:else}
-		<Card.Root class="border-0 bg-white shadow-sm dark:bg-zinc-900 dark:shadow-zinc-800/50">
+		<Card.Root class="bg-card dark:bg-muted border-0 dark:shadow-zinc-800/50">
 			<Card.Header class="pb-2">
 				<div class="flex items-center justify-between">
-					<Card.Title class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+					<Card.Title class="text-foreground dark:text-muted-foreground text-sm font-medium">
 						Active Reminders
 					</Card.Title>
-					<div class="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+					<div
+						class="text-muted-foreground dark:text-muted-foreground flex items-center gap-3 text-xs"
+					>
 						{#if activeCount > 0}
 							<span class="flex items-center gap-1">
-								<Bell class="h-3 w-3 text-emerald-500" />
+								<Bell class="text-pen-fitness h-3 w-3" />
 								{activeCount}
 								active
 							</span>

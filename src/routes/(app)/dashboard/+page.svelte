@@ -1,26 +1,31 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { navigating } from '$app/state';
 	import AgendaCompletionChart from '$lib/components/dashboard/AgendaCompletionChart.svelte';
 	import AgendaItemScorecard from '$lib/components/dashboard/AgendaItemScorecard.svelte';
 	import VisitHealthPanel from '$lib/components/dashboard/VisitHealthPanel.svelte';
 	import WorkoutTypeChart from '$lib/components/dashboard/WorkoutTypeChart.svelte';
+	import PenCheck from '$lib/components/shared/PenCheck.svelte';
 	import DashboardSkeleton from '$lib/components/skeletons/DashboardSkeleton.svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { addDaysToDateString, formatMonthDay } from '$lib/utils/date';
 	import {
+		ArrowRight,
 		Book,
-		CalendarCheck,
-		Circle,
 		CircleAlert,
 		CircleCheck,
 		Dumbbell,
 		Heart,
-		ListTodo,
 		Users
 	} from '@lucide/svelte/icons';
+	import { toast } from 'svelte-sonner';
 	import { fade } from 'svelte/transition';
 
 	let { data } = $props();
+
+	// Optimistic ticks: the stroke draws the moment the box is clicked.
+	let pending = $state<Record<string, boolean>>({});
 
 	// Trend direction helpers
 	function trendDelta(current: number, previous: number): number | null {
@@ -52,11 +57,11 @@
 		data.daysSinceLastWorkout === null
 			? 'text-muted-foreground'
 			: data.daysSinceLastWorkout === 0
-				? 'text-[oklch(var(--color-green))]'
+				? 'text-pen-fitness'
 				: data.daysSinceLastWorkout <= 3
 					? 'text-muted-foreground'
 					: data.daysSinceLastWorkout <= 6
-						? 'text-amber-500'
+						? 'text-pen-warn'
 						: 'text-destructive'
 	);
 
@@ -68,9 +73,13 @@
 		return formatMonthDay(dueDate);
 	}
 
+	const doneCount = $derived(
+		data.todayAgendaSummary.items.filter((i) => pending[i.id] ?? i.completed).length
+	);
+
 	const agendaProgressPct = $derived(
 		data.todayAgendaSummary.total > 0
-			? Math.round((data.todayAgendaSummary.completed / data.todayAgendaSummary.total) * 100)
+			? Math.round((doneCount / data.todayAgendaSummary.total) * 100)
 			: 0
 	);
 
@@ -82,25 +91,19 @@
 		if (data.stats.meditationThisWeek >= meditationWeeklyGoal) {
 			return {
 				label: 'Weekly goal met',
-				textClass: 'text-[oklch(var(--color-green))]',
-				iconBgClass: 'bg-[oklch(var(--color-green)/0.15)]',
-				iconClass: 'text-[oklch(var(--color-green))]'
+				textClass: 'text-pen-fitness'
 			};
 		}
 		if (data.todayDowIndex <= 2) {
 			return {
 				label: `Goal: ${meditationWeeklyGoal} session${meditationWeeklyGoal === 1 ? '' : 's'} this week`,
-				textClass: 'text-muted-foreground',
-				iconBgClass: 'bg-[oklch(var(--color-purple)/0.15)]',
-				iconClass: 'text-[oklch(var(--color-purple))]'
+				textClass: 'text-muted-foreground'
 			};
 		}
 		if (data.todayDowIndex <= 5) {
 			return {
 				label: "Don't forget your session this week",
-				textClass: 'text-amber-500',
-				iconBgClass: 'bg-amber-500/15',
-				iconClass: 'text-amber-500'
+				textClass: 'text-pen-warn'
 			};
 		}
 		return {
@@ -112,421 +115,348 @@
 	});
 
 	const activityConfig = {
-		journal: {
-			icon: Book,
-			bgClass: 'bg-[oklch(var(--color-blue)/0.15)]',
-			iconClass: 'text-[oklch(var(--color-blue))]'
-		},
-		workout: {
-			icon: Dumbbell,
-			bgClass: 'bg-[oklch(var(--color-green)/0.15)]',
-			iconClass: 'text-[oklch(var(--color-green))]'
-		},
-		meditation: {
-			icon: Heart,
-			bgClass: 'bg-[oklch(var(--color-purple)/0.15)]',
-			iconClass: 'text-[oklch(var(--color-purple))]'
-		},
-		task: {
-			icon: CircleCheck,
-			bgClass: 'bg-[oklch(var(--color-orange)/0.15)]',
-			iconClass: 'text-[oklch(var(--color-orange))]'
-		},
-		visit: {
-			icon: Users,
-			bgClass: 'bg-[oklch(var(--color-pink)/0.15)]',
-			iconClass: 'text-[oklch(var(--color-pink))]'
-		}
+		journal: { icon: Book, pen: 'blue' },
+		workout: { icon: Dumbbell, pen: 'green' },
+		meditation: { icon: Heart, pen: 'purple' },
+		task: { icon: CircleCheck, pen: 'orange' },
+		visit: { icon: Users, pen: 'pink' }
 	};
+
+	// The planner page header: day numeral plus a Monday-first week strip.
+	const dayNumber = $derived(Number(data.today.slice(8, 10)));
+	const weekDays = $derived(
+		['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((letter, i) => {
+			const date = addDaysToDateString(data.today, i - data.todayDowIndex);
+			return { letter, day: Number(date.slice(8, 10)), isToday: i === data.todayDowIndex };
+		})
+	);
+	const [weekdayLabel, ...restLabel] = $derived(data.todayLabel.split(', '));
+
+	function signed(delta: number) {
+		return `${delta >= 0 ? '+' : ''}${delta}%`;
+	}
 </script>
 
 <svelte:head>
-	<title>Dashboard - Synapse</title>
+	<title>Today - Synapse</title>
 </svelte:head>
+
+{#snippet delta(value: number | null)}
+	{#if value !== null}
+		<span
+			class={[
+				'washi tabular-nums',
+				value >= 0 ? 'bg-pen-fitness/12 text-pen-fitness' : 'bg-destructive/10 text-destructive'
+			]}>{signed(value)} vs last week</span
+		>
+	{/if}
+{/snippet}
+
+{#snippet heading(title: string, pen: string, href?: string, linkLabel?: string)}
+	<div class="ruled mb-4 flex items-baseline gap-3 pb-2" style="--pen: oklch(var(--color-{pen}))">
+		<span
+			class="size-2.5 translate-y-[-1px] self-center rounded-[1px] bg-(--pen)"
+			aria-hidden="true"
+		></span>
+		<h2 class="text-lg font-black tracking-tight">{title}</h2>
+		{#if href}
+			<a
+				{href}
+				class="ml-auto flex items-center gap-1 text-xs font-bold text-(--pen) hover:underline"
+			>
+				{linkLabel}<ArrowRight class="size-3" aria-hidden="true" />
+			</a>
+		{/if}
+	</div>
+{/snippet}
 
 {#if navigating.to?.url.pathname === '/dashboard'}
 	<DashboardSkeleton />
 {:else}
-	<div class="space-y-8" in:fade={{ duration: 200 }}>
-		<!-- ── Hero Band ──────────────────────────────────────────────────────── -->
-		<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-			<div class="space-y-2">
-				<h1 class="font-display text-4xl font-bold tracking-tight md:text-5xl">
-					Hey,
-					<span
-						class="bg-linear-to-r from-[oklch(var(--color-teal))] to-[oklch(var(--color-blue))] bg-clip-text text-transparent"
-					>
-						{data.user.name}
-					</span>
-				</h1>
-				<p class="text-muted-foreground text-sm">{data.todayLabel}</p>
+	<div class="mx-auto w-full max-w-7xl space-y-12" in:fade={{ duration: 160 }}>
+		<!-- ── Page header: the date, as a planner prints it ─────────────────── -->
+		<header class="ruled flex flex-wrap items-end gap-x-6 gap-y-4 pb-5">
+			<div class="flex items-end gap-4">
+				<span
+					class="text-[5.5rem] leading-[0.8] font-black tracking-[-0.04em] tabular-nums md:text-[7.5rem]"
+				>
+					{dayNumber}
+				</span>
+				<div class="pb-1">
+					<p class="text-pen-brand text-xl font-black md:text-2xl">{weekdayLabel}</p>
+					<p class="text-muted-foreground text-sm font-medium">{restLabel.join(', ')}</p>
+					<p class="mt-2 text-sm">Hey, <span class="font-bold">{data.user.name}</span></p>
+				</div>
 			</div>
+
+			<ol class="ml-auto flex gap-1" aria-label="This week">
+				{#each weekDays as d, i (i)}
+					<li
+						class={[
+							'flex w-9 flex-col items-center gap-1 py-1.5 text-xs tabular-nums',
+							d.isToday ? 'text-pen-brand font-black' : 'text-muted-foreground'
+						]}
+						aria-current={d.isToday ? 'date' : undefined}
+					>
+						<span class="text-[0.65rem] font-bold">{d.letter}</span>
+						<span
+							class={[
+								'grid size-7 place-items-center rounded-full text-sm',
+								d.isToday && 'ring-pen-brand ring-[1.5px]'
+							]}>{d.day}</span
+						>
+					</li>
+				{/each}
+			</ol>
 
 			{#if data.taskStats.openHighPriority > 0}
 				<a
 					href="/tasks"
-					class="flex w-fit items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm transition-colors hover:bg-amber-500/20"
+					class="bg-pen-warn/15 text-foreground hover:bg-pen-warn/25 flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors sm:w-auto"
 				>
-					<CircleAlert class="size-4 shrink-0 text-amber-500" />
-					<span class="text-amber-600 dark:text-amber-400">
-						<span class="font-bold">{data.taskStats.openHighPriority}</span>
-						high-priority task{data.taskStats.openHighPriority !== 1 ? 's' : ''}
-						open
+					<CircleAlert class="text-pen-warn size-4 shrink-0" />
+					<span>
+						<span class="font-black">{data.taskStats.openHighPriority}</span>
+						high-priority task{data.taskStats.openHighPriority !== 1 ? 's' : ''} open
 					</span>
 				</a>
 			{/if}
-		</div>
+		</header>
 
-		<!-- ── Primary Row: Workout Hero + Meditation + Today's Agenda ──────── -->
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-			<!-- Workout Hero Card -->
-			<a
-				href="/fitness"
-				class="group bg-card relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
-			>
-				<div class="flex items-start justify-between">
-					<div class="rounded-xl bg-[oklch(var(--color-green)/0.15)] p-2.5">
-						<Dumbbell class="size-5 text-[oklch(var(--color-green))]" />
-					</div>
-					{#if workoutDelta !== null}
-						<span
-							class="rounded-full px-2 py-0.5 text-xs font-semibold {workoutDelta >= 0
-								? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
-								: 'bg-destructive/10 text-destructive'}"
-						>
-							{workoutDelta >= 0 ? '+' : ''}{workoutDelta}%
-						</span>
-					{/if}
-				</div>
-				<div class="mt-4">
-					<div class="font-display text-5xl leading-none font-bold tabular-nums">
-						{data.stats.workoutsThisWeek}
-					</div>
-					<p class="text-muted-foreground mt-1.5 text-sm">Workouts this week</p>
-					<p class="mt-3 text-sm font-medium {workoutGapClass}">{workoutGapLabel}</p>
-				</div>
-				<div
-					class="absolute inset-x-0 bottom-0 h-0.5 bg-[oklch(var(--color-green))] opacity-0 transition-opacity group-hover:opacity-100"
-				></div>
-			</a>
-
-			<!-- Meditation Hero Card -->
-			<a
-				href="/meditation"
-				class="group bg-card relative overflow-hidden rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
-			>
-				<div class="flex items-start justify-between">
-					<div class="rounded-xl p-2.5 transition-colors {meditationGoal.iconBgClass}">
-						<Heart class="size-5 transition-colors {meditationGoal.iconClass}" />
-					</div>
-					{#if meditationDelta !== null}
-						<span
-							class="rounded-full px-2 py-0.5 text-xs font-semibold {meditationDelta >= 0
-								? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
-								: 'bg-destructive/10 text-destructive'}"
-						>
-							{meditationDelta >= 0 ? '+' : ''}{meditationDelta}%
-						</span>
-					{/if}
-				</div>
-				<div class="mt-4">
-					<div class="font-display text-5xl leading-none font-bold tabular-nums">
-						{data.stats.meditationThisWeek}
-					</div>
-					<p class="text-muted-foreground mt-1.5 text-sm">Meditation sessions this week</p>
-					<p class="mt-3 flex items-center gap-1.5 text-sm font-medium {meditationGoal.textClass}">
-						{#if data.stats.meditationThisWeek >= meditationWeeklyGoal}
-							<CircleCheck class="size-4 shrink-0" />
-						{/if}
-						{meditationGoal.label}
-					</p>
-				</div>
-				<div
-					class="absolute inset-x-0 bottom-0 h-0.5 bg-[oklch(var(--color-purple))] opacity-0 transition-opacity group-hover:opacity-100"
-				></div>
-			</a>
-
-			<!-- Today's Agenda Summary -->
-			<a
-				href="/tasks?tab=agenda"
-				class="group bg-card hover:bg-card/80 rounded-2xl border p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
-			>
-				<div class="mb-3 flex items-center justify-between">
-					<div class="flex items-center gap-2">
-						<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
-							<CalendarCheck class="size-4 text-[oklch(var(--color-orange))]" />
-						</div>
-						<div>
-							<h3 class="font-display text-sm font-semibold">Today's Agenda</h3>
-							<p class="text-muted-foreground text-xs">
-								{data.todayAgendaSummary.completed}
-								of {data.todayAgendaSummary.total} done
-							</p>
-						</div>
-					</div>
-					<span
-						class="font-display text-2xl font-bold text-[oklch(var(--color-orange))] tabular-nums"
-					>
-						{agendaProgressPct}%
+		<!-- ── Today's agenda + the margin of readings ──────────────────────── -->
+		<div class="grid grid-cols-1 gap-x-10 gap-y-12 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+			<section aria-labelledby="agenda-h" class="min-w-0">
+				<div class="ruled mb-1 flex items-baseline gap-3 pb-2">
+					<h2 id="agenda-h" class="text-2xl font-black tracking-tight">Today's agenda</h2>
+					<span class="text-muted-foreground text-sm tabular-nums">
+						<span class="text-foreground font-black">{doneCount}</span>
+						/ {data.todayAgendaSummary.total} done
 					</span>
+					<a
+						href="/tasks?tab=agenda"
+						class="text-pen-tasks ml-auto flex items-center gap-1 text-xs font-bold hover:underline"
+						>Open agenda<ArrowRight class="size-3" aria-hidden="true" /></a
+					>
 				</div>
 
 				{#if data.todayAgendaSummary.total === 0}
-					<p class="text-muted-foreground py-4 text-sm">No agenda items for today.</p>
+					<div class="border-rule border-b border-dashed py-8">
+						<p class="text-sm font-medium">No agenda items for today.</p>
+						<a
+							href="/tasks?tab=agenda"
+							class="text-pen-tasks mt-1 inline-block text-sm font-bold hover:underline"
+							>Set up your daily agenda</a
+						>
+					</div>
 				{:else}
-					<div class="bg-muted mb-4 h-1.5 w-full overflow-hidden rounded-full">
+					<div class="bg-rule mb-2 h-1 w-full" aria-hidden="true">
 						<div
-							class="h-full rounded-full bg-[oklch(var(--color-orange))] transition-all duration-500"
+							class="bg-pen-tasks h-full transition-[width] duration-500"
 							style="width: {agendaProgressPct}%"
 						></div>
 					</div>
-					<div class="space-y-2.5">
+					<ul>
 						{#each data.todayAgendaSummary.items as item (item.id)}
-							<div class="flex items-center gap-2.5">
-								{#if item.completed}
-									<CircleCheck class="size-4 shrink-0 text-[oklch(var(--color-green))]" />
-								{:else}
-									<Circle class="text-muted-foreground/40 size-4 shrink-0" />
-								{/if}
+							{@const done = pending[item.id] ?? item.completed}
+							<li class="border-rule flex min-h-11 items-center gap-2 border-b">
+								<form
+									method="POST"
+									action="/tasks?/toggleAgendaEntry"
+									use:enhance={() => {
+										pending[item.id] = !item.completed;
+										return async ({ result }) => {
+											if (result.type !== 'success') {
+												toast.error('Unable to update agenda item.');
+											}
+											await invalidateAll();
+											delete pending[item.id];
+										};
+									}}
+								>
+									<input type="hidden" name="id" value={item.id} />
+									<input type="hidden" name="completed" value={item.completed ? 'false' : 'true'} />
+									<PenCheck
+										checked={done}
+										label={item.title}
+										style="--pen: oklch(var(--color-orange))"
+										onchange={(event) => event.currentTarget.form?.requestSubmit()}
+									/>
+								</form>
 								<span
-									class="text-sm {item.completed
-										? 'text-muted-foreground line-through'
-										: 'text-foreground'}"
+									class={[
+										'text-[0.95rem] transition-colors',
+										done && 'text-muted-foreground decoration-pen-tasks/70 line-through'
+									]}
 								>
 									{item.title}
 								</span>
-							</div>
+							</li>
 						{/each}
-					</div>
+					</ul>
 				{/if}
-			</a>
+			</section>
+
+			<!-- Readings: the week so far, one pen per domain -->
+			<section aria-labelledby="readings-h" class="lg:border-rule min-w-0 lg:border-l lg:pl-10">
+				<h2 id="readings-h" class="ruled mb-1 pb-2 text-2xl font-black tracking-tight">
+					This week
+				</h2>
+				<div class="divide-rule divide-y">
+					<a href="/fitness" class="group flex items-center gap-4 py-4">
+						<span class="text-pen-fitness block w-16 text-5xl leading-none font-black tabular-nums">
+							{data.stats.workoutsThisWeek}
+						</span>
+						<div class="min-w-0 flex-1">
+							<span class="flex flex-wrap items-center gap-2 font-bold group-hover:underline">
+								Workouts {@render delta(workoutDelta)}
+							</span>
+							<p class="mt-0.5 text-sm font-medium {workoutGapClass}">{workoutGapLabel}</p>
+						</div>
+					</a>
+					<a href="/meditation" class="group flex items-center gap-4 py-4">
+						<span class="text-pen-mind block w-16 text-5xl leading-none font-black tabular-nums">
+							{data.stats.meditationThisWeek}
+						</span>
+						<div class="min-w-0 flex-1">
+							<span class="flex flex-wrap items-center gap-2 font-bold group-hover:underline">
+								Meditation sessions {@render delta(meditationDelta)}
+							</span>
+							<p
+								class="mt-0.5 flex items-center gap-1.5 text-sm font-medium {meditationGoal.textClass}"
+							>
+								{#if data.stats.meditationThisWeek >= meditationWeeklyGoal}
+									<CircleCheck class="size-4 shrink-0" />
+								{/if}
+								{meditationGoal.label}
+							</p>
+						</div>
+					</a>
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							{#snippet child({ props })}
+								<a href="/tasks" {...props} class="group flex items-center gap-4 py-4">
+									<span
+										class="text-pen-tasks block w-16 text-5xl leading-none font-black tabular-nums"
+									>
+										{data.taskStats.completedThisWeek}
+									</span>
+									<div class="min-w-0 flex-1">
+										<span class="flex flex-wrap items-center gap-2 font-bold group-hover:underline">
+											Tasks completed {@render delta(taskDelta)}
+										</span>
+										<p class="text-muted-foreground mt-0.5 text-sm tabular-nums">
+											{data.taskStats.completedLastWeek} last week · {data.taskStats.openTotal} open
+										</p>
+									</div>
+								</a>
+							{/snippet}
+						</Tooltip.Trigger>
+						{#if data.taskStats.completedThisWeekTitles.length > 0}
+							<Tooltip.Content>{data.taskStats.completedThisWeekTitles.join(', ')}</Tooltip.Content>
+						{/if}
+					</Tooltip.Root>
+					<a href="/visits" class="group flex items-center gap-4 py-4">
+						<span class="text-pen-people block w-16 text-5xl leading-none font-black tabular-nums">
+							{data.visitHealthCounts.critical + data.visitHealthCounts.overdue}
+						</span>
+						<div class="min-w-0 flex-1">
+							<span class="font-bold group-hover:underline">People to see</span>
+							<p class="text-muted-foreground mt-0.5 truncate text-sm">
+								{[...data.visitHealthNames.critical, ...data.visitHealthNames.overdue].join(', ') ||
+									'Everyone is up to date'}
+							</p>
+						</div>
+					</a>
+				</div>
+
+				{#if data.dueSoonTasks.length > 0}
+					<h3 class="text-muted-foreground mt-6 mb-1 text-xs font-bold tracking-[0.14em] uppercase">
+						Due soon
+					</h3>
+					<ul>
+						{#each data.dueSoonTasks as task (task.id)}
+							<li>
+								<a
+									href="/tasks"
+									class="border-rule hover:bg-muted/60 flex min-h-10 items-center justify-between gap-3 border-b border-dashed text-sm"
+								>
+									<span class="truncate">{task.title}</span>
+									<span
+										class={[
+											'shrink-0 text-xs tabular-nums',
+											task.dueDate === data.today
+												? 'text-pen-tasks font-black'
+												: 'text-muted-foreground'
+										]}>{dueDateLabel(task.dueDate)}</span
+									>
+								</a>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</section>
 		</div>
 
-		<!-- ── Agenda Analytics ───────────────────────────────────────────────── -->
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-			<!-- Agenda Completion Trend -->
-			<div class="bg-card rounded-2xl border p-5 shadow-xs">
-				<div class="mb-4 flex items-center gap-2">
-					<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
-						<CalendarCheck class="size-4 text-[oklch(var(--color-orange))]" />
-					</div>
-					<div>
-						<h3 class="font-display text-sm font-semibold">Daily Agenda Completion</h3>
-						<p class="text-muted-foreground text-xs">8-week trend</p>
-					</div>
-				</div>
+		<!-- ── Agenda over time ───────────────────────────────────────────────── -->
+		<div class="grid grid-cols-1 gap-x-10 gap-y-12 md:grid-cols-2">
+			<section class="min-w-0">
+				{@render heading('Agenda completion', 'orange')}
+				<p class="text-muted-foreground -mt-2 mb-3 text-xs">8-week trend</p>
 				<AgendaCompletionChart trend={data.agendaCompletionTrend} />
-			</div>
-
-			<!-- Agenda Item Scorecard -->
-			<div class="bg-card rounded-2xl border p-5 shadow-xs">
-				<div class="mb-4 flex items-center gap-2">
-					<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
-						<CalendarCheck class="size-4 text-[oklch(var(--color-orange))]" />
-					</div>
-					<div>
-						<h3 class="font-display text-sm font-semibold">Agenda Item Breakdown</h3>
-						<p class="text-muted-foreground text-xs">4-week completion · worst first</p>
-					</div>
-				</div>
+			</section>
+			<section class="min-w-0">
+				{@render heading('Agenda items', 'orange')}
+				<p class="text-muted-foreground -mt-2 mb-3 text-xs">4-week completion · worst first</p>
 				<AgendaItemScorecard items={data.agendaItemStats} />
-			</div>
+			</section>
 		</div>
 
-		<!-- ── Fitness + Tasks ────────────────────────────────────────────────── -->
-		<div class="grid gap-4 md:grid-cols-2">
-			<!-- Workout Type Breakdown -->
-			<div class="bg-card rounded-2xl border p-5 shadow-xs">
-				<div class="mb-4 flex items-center gap-2">
-					<div class="rounded-lg bg-[oklch(var(--color-green)/0.15)] p-1.5">
-						<Dumbbell class="size-4 text-[oklch(var(--color-green))]" />
-					</div>
-					<div>
-						<h3 class="font-display text-sm font-semibold">Workout Breakdown</h3>
-						<p class="text-muted-foreground text-xs">By type, last 4 weeks</p>
-					</div>
-				</div>
+		<!-- ── Body and people ───────────────────────────────────────────────── -->
+		<div class="grid grid-cols-1 gap-x-10 gap-y-12 md:grid-cols-2">
+			<section class="min-w-0">
+				{@render heading('Workout breakdown', 'green', '/fitness', 'Fitness')}
+				<p class="text-muted-foreground -mt-2 mb-3 text-xs">By type, last 4 weeks</p>
 				<WorkoutTypeChart
 					breakdown={data.workoutTypeBreakdown}
 					greenThreshold={data.dashboardGoals.workoutGreenThreshold}
 					amberThreshold={data.dashboardGoals.workoutAmberThreshold}
 				/>
-			</div>
-
-			<!-- Task Stats -->
-			<div class="bg-card rounded-2xl border p-5 shadow-xs">
-				<div class="mb-4 flex items-center gap-2">
-					<div class="rounded-lg bg-[oklch(var(--color-orange)/0.15)] p-1.5">
-						<ListTodo class="size-4 text-[oklch(var(--color-orange))]" />
-					</div>
-					<div>
-						<h3 class="font-display text-sm font-semibold">Tasks</h3>
-						<p class="text-muted-foreground text-xs">This week vs last week</p>
-					</div>
-				</div>
-
-				<Tooltip.Provider>
-					{#if data.dueSoonTasks.length > 0}
-						<div class="mb-4">
-							<p class="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-								Due soon
-							</p>
-							<div class="space-y-1.5">
-								{#each data.dueSoonTasks as task (task.id)}
-									<a
-										href="/tasks"
-										class="hover:bg-muted/60 flex items-center justify-between gap-2 rounded-lg px-1.5 py-1 text-sm transition-colors"
-									>
-										<span class="truncate">{task.title}</span>
-										<span
-											class="text-muted-foreground shrink-0 text-xs {task.dueDate === data.today
-												? 'font-semibold text-amber-500'
-												: ''}"
-										>
-											{dueDateLabel(task.dueDate)}
-										</span>
-									</a>
-								{/each}
-							</div>
-						</div>
-						<div class="bg-border/60 mb-4 h-px"></div>
-					{/if}
-
-					<div class="space-y-4">
-						<Tooltip.Root>
-							<Tooltip.Trigger class="w-full">
-								{#snippet child({ props })}
-									<div {...props} class="flex items-center justify-between">
-										<div class="text-muted-foreground flex items-center gap-2 text-sm">
-											<CircleCheck class="size-4 text-[oklch(var(--color-green))]" />
-											Completed this week
-										</div>
-										<div class="flex items-center gap-2">
-											<span class="font-display text-2xl font-bold tabular-nums">
-												{data.taskStats.completedThisWeek}
-											</span>
-											{#if taskDelta !== null}
-												<span
-													class="rounded-full px-1.5 py-0.5 text-xs font-semibold {taskDelta >= 0
-														? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
-														: 'bg-destructive/10 text-destructive'}"
-												>
-													{taskDelta >= 0 ? '+' : ''}{taskDelta}%
-												</span>
-											{/if}
-										</div>
-									</div>
-								{/snippet}
-							</Tooltip.Trigger>
-							{#if data.taskStats.completedThisWeekTitles.length > 0}
-								<Tooltip.Content
-									>{data.taskStats.completedThisWeekTitles.join(', ')}</Tooltip.Content
-								>
-							{/if}
-						</Tooltip.Root>
-						<div class="bg-border/60 h-px"></div>
-						<div class="flex items-center justify-between">
-							<span class="text-muted-foreground text-sm">Completed last week</span>
-							<span class="font-display text-muted-foreground text-2xl font-bold tabular-nums">
-								{data.taskStats.completedLastWeek}
-							</span>
-						</div>
-						<div class="bg-border/60 h-px"></div>
-						<Tooltip.Root>
-							<Tooltip.Trigger class="w-full">
-								{#snippet child({ props })}
-									<a
-										href="/tasks"
-										{...props}
-										class="flex items-center justify-between hover:underline"
-									>
-										<div class="text-muted-foreground flex items-center gap-2 text-sm">
-											<CircleAlert class="size-4 text-amber-500" />
-											Open high-priority
-										</div>
-										<span class="font-display text-2xl font-bold text-amber-500 tabular-nums">
-											{data.taskStats.openHighPriority}
-										</span>
-									</a>
-								{/snippet}
-							</Tooltip.Trigger>
-							{#if data.taskStats.openHighPriorityTitles.length > 0}
-								<Tooltip.Content>{data.taskStats.openHighPriorityTitles.join(', ')}</Tooltip.Content
-								>
-							{/if}
-						</Tooltip.Root>
-						<div class="bg-border/60 h-px"></div>
-						<Tooltip.Root>
-							<Tooltip.Trigger class="w-full">
-								{#snippet child({ props })}
-									<a
-										href="/tasks"
-										{...props}
-										class="flex items-center justify-between hover:underline"
-									>
-										<span class="text-muted-foreground text-sm">Open total</span>
-										<span class="font-display text-2xl font-bold tabular-nums">
-											{data.taskStats.openTotal}
-										</span>
-									</a>
-								{/snippet}
-							</Tooltip.Trigger>
-							{#if data.taskStats.openTotalTitles.length > 0}
-								<Tooltip.Content>{data.taskStats.openTotalTitles.join(', ')}</Tooltip.Content>
-							{/if}
-						</Tooltip.Root>
-					</div>
-				</Tooltip.Provider>
-			</div>
+			</section>
+			<section class="min-w-0">
+				{@render heading('Visit health', 'pink', '/visits', 'View all')}
+				<VisitHealthPanel
+					counts={data.visitHealthCounts}
+					names={data.visitHealthNames}
+					upcomingVisits={data.upcomingVisits}
+				/>
+			</section>
 		</div>
 
-		<!-- ── Visit Health ───────────────────────────────────────────────────── -->
-		<div class="bg-card rounded-2xl border p-5 shadow-xs">
-			<div class="mb-4 flex items-center gap-2">
-				<div class="rounded-lg bg-[oklch(var(--color-pink)/0.15)] p-1.5">
-					<CalendarCheck class="size-4 text-[oklch(var(--color-pink))]" />
-				</div>
-				<div>
-					<h3 class="font-display text-sm font-semibold">Visit Health</h3>
-					<p class="text-muted-foreground text-xs">
-						<a href="/visits" class="hover:underline">View all →</a>
-					</p>
-				</div>
-			</div>
-			<VisitHealthPanel
-				counts={data.visitHealthCounts}
-				names={data.visitHealthNames}
-				upcomingVisits={data.upcomingVisits}
-			/>
-		</div>
-
-		<!-- ── Recent Activity Feed ───────────────────────────────────────────── -->
-		<div class="bg-card rounded-2xl border shadow-xs">
-			<div class="border-b px-5 py-4">
-				<h3 class="font-display text-sm font-semibold">Recent Activity</h3>
-			</div>
-			<div class="divide-y">
+		<!-- ── Recent activity, as a written log ──────────────────────────────── -->
+		<section class="min-w-0">
+			{@render heading('Recent activity', 'teal')}
+			<ul class="grid grid-cols-1 gap-x-10 md:grid-cols-2">
 				{#each data.recentActivity as item (item.id)}
 					{@const cfg = activityConfig[item.type as keyof typeof activityConfig]}
 					{@const Icon = cfg.icon}
-					<a
-						href={item.href}
-						class="hover:bg-muted/40 flex items-start gap-3 px-5 py-3.5 transition-colors"
-					>
-						<div class="mt-0.5 shrink-0 rounded-md p-1.5 {cfg.bgClass}">
-							<Icon class="size-3.5 {cfg.iconClass}" />
-						</div>
-						<div class="min-w-0 flex-1">
-							<p class="truncate text-sm font-medium">{item.title}</p>
-							<p class="text-muted-foreground mt-0.5 text-xs">{item.meta}</p>
-						</div>
-					</a>
+					<li style="--pen: oklch(var(--color-{cfg.pen}))">
+						<a
+							href={item.href}
+							class="border-rule hover:bg-muted/50 flex min-h-14 items-center gap-3 border-b py-2"
+						>
+							<Icon class="size-4 shrink-0 text-(--pen)" aria-hidden="true" />
+							<span class="min-w-0 flex-1">
+								<span class="block truncate text-sm font-medium">{item.title}</span>
+								<span class="text-muted-foreground block text-xs tabular-nums">{item.meta}</span>
+							</span>
+						</a>
+					</li>
 				{:else}
-					<div class="text-muted-foreground px-5 py-8 text-center text-sm">
+					<li class="text-muted-foreground py-8 text-sm md:col-span-2">
 						No recent activity yet. Start tracking to see your history here.
-					</div>
+					</li>
 				{/each}
-			</div>
-		</div>
+			</ul>
+		</section>
 	</div>
 {/if}

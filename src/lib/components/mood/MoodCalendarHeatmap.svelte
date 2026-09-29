@@ -71,10 +71,10 @@
 	const weekdayHeaders = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 	function scoreToBg(score: number): string {
-		if (score <= 2) return 'bg-orange-200 dark:bg-orange-900/60';
-		if (score <= 4) return 'bg-orange-300 dark:bg-orange-700/70';
-		if (score <= 6) return 'bg-orange-500 dark:bg-orange-500/80';
-		return 'bg-orange-600 dark:bg-orange-400/90';
+		if (score <= 2) return 'bg-pen-tasks/12 dark:bg-pen-tasks/10';
+		if (score <= 4) return 'bg-pen-tasks dark:bg-pen-tasks/10';
+		if (score <= 6) return 'bg-pen-tasks dark:bg-pen-tasks/10';
+		return 'bg-pen-tasks dark:bg-pen-tasks/10';
 	}
 
 	function isFuture(dateStr: string): boolean {
@@ -144,10 +144,10 @@
 			<div class="text-muted-foreground flex items-center justify-end gap-2 pt-1 text-xs">
 				<span>Low</span>
 				<div class="flex gap-0.5">
-					<div class="h-3 w-3 rounded-sm bg-orange-200 dark:bg-orange-900/60"></div>
-					<div class="h-3 w-3 rounded-sm bg-orange-300 dark:bg-orange-700/70"></div>
-					<div class="h-3 w-3 rounded-sm bg-orange-500 dark:bg-orange-500/80"></div>
-					<div class="h-3 w-3 rounded-sm bg-orange-600 dark:bg-orange-400/90"></div>
+					<div class="bg-pen-tasks/12 dark:bg-pen-tasks/10 h-3 w-3 rounded-sm"></div>
+					<div class="bg-pen-tasks dark:bg-pen-tasks/10 h-3 w-3 rounded-sm"></div>
+					<div class="bg-pen-tasks dark:bg-pen-tasks/10 h-3 w-3 rounded-sm"></div>
+					<div class="bg-pen-tasks dark:bg-pen-tasks/10 h-3 w-3 rounded-sm"></div>
 				</div>
 				<span>High</span>
 			</div>

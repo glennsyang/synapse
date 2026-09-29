@@ -291,7 +291,7 @@
 	}
 </script>
 
-<div class="bg-background/90 rounded-xl border border-[oklch(var(--color-blue)/0.22)] shadow-sm">
+<div class="bg-background/90 rounded-xl border border-[oklch(var(--color-blue)/0.22)]">
 	<Tabs.Root bind:value={activeTab} class="gap-0">
 		<div class="flex flex-wrap items-center justify-between gap-3 border-b px-3 py-2">
 			<Tabs.List>

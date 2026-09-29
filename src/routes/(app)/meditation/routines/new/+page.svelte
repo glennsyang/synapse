@@ -127,7 +127,7 @@
 				</div>
 
 				<div class="flex justify-end gap-2 pt-2">
-					<Button type="submit" class="bg-purple-600 hover:bg-purple-700">Create</Button>
+					<Button type="submit" class="bg-pen-mind hover:bg-pen-mind">Create</Button>
 					<Button type="button" variant="outline" href="/meditation">Cancel</Button>
 				</div>
 			</form>

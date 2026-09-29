@@ -187,7 +187,7 @@
 					<Button
 						type="submit"
 						disabled={$submitting}
-						class="bg-orange-600 text-white hover:bg-orange-700"
+						class="bg-pen-tasks hover:bg-pen-tasks text-white"
 					>
 						{$submitting ? 'Creating...' : 'Create'}
 					</Button>

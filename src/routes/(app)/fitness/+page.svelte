@@ -183,13 +183,14 @@
 		/>
 
 		<!-- Daily Status Band: Hero KPI cards -->
-		<div class="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+		<div
+			class="border-foreground divide-rule mb-6 grid grid-cols-2 gap-x-4 border-y-2 md:grid-cols-4 md:gap-x-0 md:divide-x"
+		>
 			<FitnessStatusCard
-				label="This Week"
+				label="This week"
 				value={weeklySessionCount}
 				unit="sessions"
-				icon={Dumbbell}
-				gradient="from-orange-500 to-amber-400"
+				gradient=""
 				trendLabel={weeklySessionCount >= 3
 					? 'Strong week'
 					: weeklySessionCount >= 1
@@ -197,11 +198,10 @@
 						: 'Start today'}
 			/>
 			<FitnessStatusCard
-				label="Day Streak"
+				label="Day streak"
 				value={dayStreak}
 				unit={dayStreak === 1 ? 'day' : 'days'}
-				icon={Flame}
-				gradient="from-rose-500 to-orange-400"
+				gradient=""
 				trendLabel={dayStreak >= 5
 					? 'Excellent consistency'
 					: dayStreak >= 2
@@ -214,8 +214,7 @@
 				label="Weight"
 				value={data.weightStats.currentWeight ?? '—'}
 				unit={data.weightStats.currentWeight ? 'lbs' : ''}
-				icon={Scale}
-				gradient="from-emerald-500 to-teal-400"
+				gradient=""
 				trendLabel={weightDelta != null
 					? weightDelta < 0
 						? `${Math.abs(weightDelta).toFixed(1)} lbs down`
@@ -225,11 +224,10 @@
 					: 'Start logging'}
 			/>
 			<FitnessStatusCard
-				label="Today's Cal"
+				label="Today's cal"
 				value={todayCalories}
 				unit="cal"
-				icon={UtensilsCrossed}
-				gradient="from-sky-500 to-blue-400"
+				gradient=""
 				trendLabel={calorieAdherence != null ? `${calorieAdherence}% of target` : 'No target set'}
 			/>
 		</div>
@@ -245,11 +243,11 @@
 		<!-- Collapsible Sections -->
 		<Accordion.Root type="multiple" class="space-y-4">
 			<!-- Workouts Section -->
-			<Accordion.Item value="workouts" class="rounded-xl border-0 shadow-sm">
+			<Accordion.Item value="workouts" class="rounded-xl border-0">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
-						<Dumbbell class="h-5 w-5 text-orange-500" />
-						<span class="text-lg font-semibold">Workouts</span>
+						<Dumbbell class="text-pen-fitness h-5 w-5" />
+						<span class="text-lg font-black">Workouts</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">
@@ -258,11 +256,11 @@
 			</Accordion.Item>
 
 			<!-- Weight Section -->
-			<Accordion.Item value="weight" class="rounded-xl border-0 shadow-sm">
+			<Accordion.Item value="weight" class="rounded-xl border-0">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
-						<Scale class="h-5 w-5 text-emerald-500" />
-						<span class="text-lg font-semibold">Weight</span>
+						<Scale class="text-pen-fitness h-5 w-5" />
+						<span class="text-lg font-black">Weight</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">
@@ -277,11 +275,11 @@
 			</Accordion.Item>
 
 			<!-- Nutrition Section -->
-			<Accordion.Item value="nutrition" class="rounded-xl border-0 shadow-sm">
+			<Accordion.Item value="nutrition" class="rounded-xl border-0">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
-						<UtensilsCrossed class="h-5 w-5 text-sky-500" />
-						<span class="text-lg font-semibold">Nutrition</span>
+						<UtensilsCrossed class="text-pen-fitness h-5 w-5" />
+						<span class="text-lg font-black">Nutrition</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">
@@ -295,11 +293,11 @@
 			</Accordion.Item>
 
 			<!-- Habits & Reminders Section -->
-			<Accordion.Item value="reminders" class="rounded-xl border-0 shadow-sm">
+			<Accordion.Item value="reminders" class="rounded-xl border-0">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
-						<Flame class="h-5 w-5 text-rose-500" />
-						<span class="text-lg font-semibold">Habits & Reminders</span>
+						<Flame class="text-pen-fitness h-5 w-5" />
+						<span class="text-lg font-black">Habits & Reminders</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">
@@ -319,11 +317,11 @@
 			</Accordion.Item>
 
 			<!-- Recent Activity Section -->
-			<Accordion.Item value="recent-activity" class="rounded-xl border-0 shadow-sm">
+			<Accordion.Item value="recent-activity" class="rounded-xl border-0">
 				<Accordion.Trigger class="px-6 py-4 hover:no-underline data-[state=open]:border-b">
 					<div class="flex items-center gap-3">
-						<Activity class="h-5 w-5 text-purple-500" />
-						<span class="text-lg font-semibold">Recent Activity</span>
+						<Activity class="text-pen-fitness h-5 w-5" />
+						<span class="text-lg font-black">Recent Activity</span>
 					</div>
 				</Accordion.Trigger>
 				<Accordion.Content class="px-6 pb-6">

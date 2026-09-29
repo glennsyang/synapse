@@ -23,14 +23,12 @@
 
 <div class="flex h-full flex-col gap-3">
 	<div class="flex items-end gap-3">
-		<span
-			class="font-display text-5xl leading-none font-bold text-[oklch(var(--color-orange))] tabular-nums"
-		>
+		<span class="text-5xl leading-none font-black text-[oklch(var(--color-orange))] tabular-nums">
 			{currentWeekPct}<span class="text-2xl font-semibold">%</span>
 		</span>
 		{#if delta !== null}
 			<span
-				class="mb-1 rounded-full px-2 py-0.5 text-xs font-semibold {delta >= 0
+				class="mb-1 rounded-[2px] px-2 py-0.5 text-xs font-semibold {delta >= 0
 					? 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]'
 					: 'bg-destructive/10 text-destructive'}"
 			>
@@ -53,7 +51,7 @@
 				y="completionPct"
 				xScale={scalePoint()}
 				axis="x"
-				padding={{ top: 20 }}
+				padding={{ top: 20, left: 22, right: 22, bottom: 20 }}
 				series={[
 					{
 						key: 'completionPct',

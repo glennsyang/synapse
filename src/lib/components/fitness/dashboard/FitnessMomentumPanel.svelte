@@ -35,18 +35,18 @@
 	let { workouts, weightEntries, meals, calorieTarget }: Props = $props();
 
 	const workoutColorMap: Record<string, string> = {
-		'var(--chart-1)': 'bg-orange-400',
-		'var(--chart-2)': 'bg-sky-400',
-		'var(--chart-3)': 'bg-purple-400',
-		'var(--chart-4)': 'bg-green-400',
-		'var(--chart-5)': 'bg-red-400'
+		'var(--chart-1)': 'bg-pen-tasks',
+		'var(--chart-2)': 'bg-pen-journal',
+		'var(--chart-3)': 'bg-pen-mind',
+		'var(--chart-4)': 'bg-pen-fitness',
+		'var(--chart-5)': 'bg-destructive'
 	};
 
 	const workoutLegendItems = workoutTypeOptions
 		.filter((option) => option.value !== 'other')
 		.map((option) => ({
 			label: option.label,
-			color: workoutColorMap[option.chartColor] ?? 'bg-stone-400'
+			color: workoutColorMap[option.chartColor] ?? 'bg-muted'
 		}));
 
 	// Build last 14 days data
@@ -87,8 +87,8 @@
 				workoutTypes: types,
 				color:
 					types.length > 0
-						? (workoutColorMap[getWorkoutChartColor(types[0])] ?? 'bg-stone-400')
-						: 'bg-zinc-700',
+						? (workoutColorMap[getWorkoutChartColor(types[0])] ?? 'bg-muted')
+						: 'bg-muted',
 				hasWeight: !!dayWeight,
 				calories: dayCals > 0 ? dayCals : null
 			});
@@ -118,12 +118,10 @@
 	});
 </script>
 
-<Card.Root
-	class="via-background dark:via-background mb-6 overflow-hidden border border-green-200/75 bg-linear-to-br from-green-100/90 to-green-50/85 p-8 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] dark:border-green-500/25 dark:from-green-500/12 dark:to-green-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)]"
->
+<Card.Root class="border-rule mb-6 overflow-hidden border p-4 md:p-6">
 	<Card.Header class="pb-4">
 		<Card.Title class="font-display text-lg font-semibold">14-Day Momentum</Card.Title>
-		<Card.Description class="text-zinc-400">
+		<Card.Description class="text-muted-foreground">
 			Activity, weight check-ins, and calorie adherence across each day
 		</Card.Description>
 	</Card.Header>
@@ -132,15 +130,17 @@
 		<!-- Day labels -->
 		<div class="grid grid-cols-14 gap-1" style="grid-template-columns: repeat(14, 1fr);">
 			{#each dayData as day (day.date)}
-				<div class="text-center text-[10px] font-medium text-zinc-500">{day.shortLabel}</div>
+				<div class="text-muted-foreground text-center text-[10px] font-medium">
+					{day.shortLabel}
+				</div>
 			{/each}
 		</div>
 
 		<!-- Lane 1: Workout activity -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<Dumbbell class="h-3 w-3 text-zinc-400" />
-				<span class="text-xs font-medium text-zinc-400">Activity</span>
+				<Dumbbell class="text-muted-foreground h-3 w-3" />
+				<span class="text-muted-foreground text-xs font-medium">Activity</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
 				{#each dayData as day (day.date)}
@@ -161,8 +161,8 @@
 		<!-- Lane 2: Weight check-ins -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<Scale class="h-3 w-3 text-zinc-400" />
-				<span class="text-xs font-medium text-zinc-400">Weight</span>
+				<Scale class="text-muted-foreground h-3 w-3" />
+				<span class="text-muted-foreground text-xs font-medium">Weight</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
 				{#each dayData as day (day.date)}
@@ -171,8 +171,8 @@
 							<Tooltip.Trigger>
 								<div
 									class="h-3 w-3 rounded-full transition-all {day.hasWeight
-										? 'bg-emerald-500'
-										: 'bg-zinc-700'}"
+										? 'bg-pen-fitness'
+										: 'bg-muted'}"
 								></div>
 							</Tooltip.Trigger>
 							<Tooltip.Content>
@@ -187,8 +187,8 @@
 		<!-- Lane 3: Calorie adherence -->
 		<div>
 			<div class="mb-1.5 flex items-center gap-1.5">
-				<UtensilsCrossed class="h-3 w-3 text-zinc-400" />
-				<span class="text-xs font-medium text-zinc-400">Calories</span>
+				<UtensilsCrossed class="text-muted-foreground h-3 w-3" />
+				<span class="text-muted-foreground text-xs font-medium">Calories</span>
 			</div>
 			<div class="grid gap-1" style="grid-template-columns: repeat(14, 1fr);">
 				{#each dayData as day (day.date)}
@@ -212,25 +212,25 @@
 		</div>
 
 		<!-- Legend -->
-		<div class="flex flex-wrap gap-3 border-t border-zinc-700 pt-3">
+		<div class="border-border flex flex-wrap gap-3 border-t pt-3">
 			<!-- Workout type legend items -->
 			{#each workoutLegendItems as item (item.label)}
 				<div class="flex items-center gap-1.5">
 					<div class="h-2.5 w-2.5 rounded-sm {item.color}"></div>
-					<span class="text-xs text-zinc-400">{item.label}</span>
+					<span class="text-muted-foreground text-xs">{item.label}</span>
 				</div>
 			{/each}
 			<!-- Calorie legend items -->
 			{#each calorieLegendItems as item, index (item.label)}
 				<div class="{index === 0 ? 'ml-auto ' : ''}flex items-center gap-1.5">
 					<div class="h-2.5 w-2.5 rounded-sm {item.className}"></div>
-					<span class="text-xs text-zinc-400">{item.label}</span>
+					<span class="text-muted-foreground text-xs">{item.label}</span>
 				</div>
 			{/each}
 		</div>
 	</Card.Content>
 
-	<Card.Footer class="mb-6 border bg-white dark:border-zinc-700/50 dark:bg-zinc-900/40">
+	<Card.Footer class="border-rule border-t border-dashed">
 		<p class="text-foreground text-xs italic">{interpretation}</p>
 	</Card.Footer>
 </Card.Root>

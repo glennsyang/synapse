@@ -4,63 +4,63 @@ export const moodOptions = [
 		label: 'Sad',
 		score: 1,
 		chartColor: 'var(--chart-5)',
-		buttonClass: 'border-rose-300 bg-rose-50 text-rose-900 hover:bg-rose-100'
+		buttonClass: 'border-destructive bg-destructive/12 text-destructive hover:bg-destructive/12'
 	},
 	{
 		value: 'anxious',
 		label: 'Anxious',
 		score: 2,
 		chartColor: 'var(--chart-1)',
-		buttonClass: 'border-orange-300 bg-orange-50 text-orange-900 hover:bg-orange-100'
+		buttonClass: 'border-pen-tasks bg-pen-tasks/12 text-pen-tasks hover:bg-pen-tasks/12'
 	},
 	{
 		value: 'overwhelmed',
 		label: 'Overwhelmed',
 		score: 3,
 		chartColor: 'var(--chart-3)',
-		buttonClass: 'border-slate-300 bg-slate-50 text-slate-900 hover:bg-slate-100'
+		buttonClass: 'border-border bg-muted text-foreground hover:bg-muted'
 	},
 	{
 		value: 'tired',
 		label: 'Tired',
 		score: 4,
 		chartColor: 'var(--chart-3)',
-		buttonClass: 'border-slate-300 bg-slate-50 text-slate-900 hover:bg-slate-100'
+		buttonClass: 'border-border bg-muted text-foreground hover:bg-muted'
 	},
 	{
 		value: 'calm',
 		label: 'Calm',
 		score: 5,
 		chartColor: 'var(--chart-2)',
-		buttonClass: 'border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100'
+		buttonClass: 'border-pen-journal bg-pen-journal/12 text-pen-journal hover:bg-pen-journal/12'
 	},
 	{
 		value: 'focused',
 		label: 'Focused',
 		score: 6,
 		chartColor: 'var(--chart-4)',
-		buttonClass: 'border-teal-300 bg-teal-50 text-teal-900 hover:bg-teal-100'
+		buttonClass: 'border-pen-brand bg-pen-brand/12 text-pen-brand hover:bg-pen-brand/12'
 	},
 	{
 		value: 'content',
 		label: 'Content',
 		score: 7,
 		chartColor: 'oklch(var(--color-green))',
-		buttonClass: 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
+		buttonClass: 'border-pen-fitness bg-pen-fitness/12 text-pen-fitness hover:bg-pen-fitness/12'
 	},
 	{
 		value: 'happy',
 		label: 'Happy',
 		score: 8,
 		chartColor: 'var(--chart-2)',
-		buttonClass: 'border-lime-300 bg-lime-50 text-lime-900 hover:bg-lime-100'
+		buttonClass: 'border-pen-fitness bg-pen-fitness/12 text-pen-fitness hover:bg-pen-fitness/12'
 	},
 	{
 		value: 'custom',
 		label: 'Custom',
 		score: 4,
 		chartColor: 'var(--chart-3)',
-		buttonClass: 'border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100'
+		buttonClass: 'border-pen-mind bg-pen-mind/12 text-pen-mind hover:bg-pen-mind/12'
 	}
 ] as const;
 

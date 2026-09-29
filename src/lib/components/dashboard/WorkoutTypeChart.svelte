@@ -29,6 +29,8 @@
 		}))
 	);
 
+	const maxCount = $derived(Math.max(0, ...breakdown.map((d) => d.count)));
+
 	const totalSessions = $derived(breakdown.reduce((sum, d) => sum + d.count, 0));
 
 	// Thresholds come from the user's dashboard goal settings.
@@ -36,14 +38,12 @@
 		if (totalSessions >= greenThreshold) {
 			return {
 				textClass: 'text-[oklch(var(--color-green))]',
-				barColor: 'oklch(var(--color-green))',
 				message: `Great pace — you're hitting ${greenThreshold}+ workouts every 4 weeks.`
 			};
 		}
 		if (totalSessions >= amberThreshold) {
 			return {
-				textClass: 'text-amber-500',
-				barColor: '#f59e0b',
+				textClass: 'text-pen-warn',
 				message: `Below pace — aim for ${greenThreshold} workouts every 4 weeks to catch up.`
 			};
 		}
@@ -78,9 +78,12 @@
 			<BarChart
 				data={chartData}
 				x="type"
-				series={[{ key: 'count', label: 'Sessions', color: workoutPace.barColor }]}
+				bandPadding={0.55}
+				series={[{ key: 'count', label: 'Sessions', color: 'oklch(var(--color-green))' }]}
 				props={{
-					xAxis: { format: (v: string) => v }
+					xAxis: { format: (v: string) => v },
+					yAxis: { ticks: Math.max(1, Math.min(maxCount, 4)), format: 'integer' },
+					bars: { stroke: 'none', radius: 1 }
 				}}
 			>
 				{#snippet tooltip()}

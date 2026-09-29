@@ -197,7 +197,7 @@
 				<div class="flex gap-2">
 					<Button
 						type="submit"
-						class="bg-orange-600 text-white hover:bg-orange-700"
+						class="bg-pen-tasks hover:bg-pen-tasks text-white"
 						disabled={$submitting}
 					>
 						{$submitting ? 'Saving...' : 'Update'}

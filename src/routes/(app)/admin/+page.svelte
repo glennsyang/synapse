@@ -76,8 +76,8 @@
 </script>
 
 <PageShell class="min-w-0 overflow-x-hidden">
-	<div class="mb-4 sm:mb-5">
-		<h1 class="font-display text-2xl font-bold sm:text-3xl">Admin</h1>
+	<div class="ruled mb-6 pb-4">
+		<h1 class="page-title" style="--pen: oklch(var(--color-teal))">Admin</h1>
 		<p class="text-muted-foreground text-sm sm:text-base">
 			Manage users, archived contacts, and API keys
 		</p>
@@ -90,7 +90,7 @@
 			>
 				<Tabs.Trigger
 					value="users"
-					class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
+					class="font-display data-[state=active]:border-destructive border-b-2 border-transparent"
 					onclick={() => {
 						if (activeTab !== 'users') void switchTab('users');
 					}}
@@ -99,7 +99,7 @@
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="archived-persons"
-					class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
+					class="font-display data-[state=active]:border-destructive border-b-2 border-transparent"
 					onclick={() => {
 						if (activeTab !== 'archived-persons') void switchTab('archived-persons');
 					}}
@@ -108,7 +108,7 @@
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="api-keys"
-					class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
+					class="font-display data-[state=active]:border-destructive border-b-2 border-transparent"
 					onclick={() => {
 						if (activeTab !== 'api-keys') void switchTab('api-keys');
 					}}
@@ -117,7 +117,7 @@
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="api-logs"
-					class="font-display border-b-2 border-transparent data-[state=active]:border-red-500"
+					class="font-display data-[state=active]:border-destructive border-b-2 border-transparent"
 					onclick={() => {
 						if (activeTab !== 'api-logs') void switchTab('api-logs');
 					}}
@@ -136,14 +136,14 @@
 			</div>
 
 			{#if allowlistCommand}
-				<Card class="border-amber-300 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950">
+				<Card class="border-pen-warn bg-pen-warn/12 dark:border-pen-warn/30 dark:bg-pen-warn/18">
 					<CardHeader>
-						<CardTitle class="text-amber-900 dark:text-amber-200">
+						<CardTitle class="text-pen-warn dark:text-pen-warn">
 							This user can't sign in yet
 						</CardTitle>
 					</CardHeader>
 					<CardContent class="space-y-2">
-						<p class="text-sm text-amber-900 dark:text-amber-200">
+						<p class="text-pen-warn dark:text-pen-warn text-sm">
 							Their email isn't in <code>ALLOWED_EMAILS</code>, so no welcome email was sent. Run
 							this command, wait for the app to restart, then use
 							<strong>Send welcome email</strong> on their row.
@@ -152,7 +152,7 @@
 							<Input
 								readonly
 								value={allowlistCommand}
-								class="border-amber-300 bg-white font-mono text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-900 dark:text-amber-100"
+								class="border-pen-warn bg-card text-pen-warn dark:border-pen-warn/30 dark:bg-pen-warn/18 dark:text-pen-warn font-mono text-sm"
 							/>
 							<Button
 								type="button"
@@ -167,7 +167,7 @@
 							type="button"
 							variant="ghost"
 							size="sm"
-							class="text-amber-900 dark:text-amber-200"
+							class="text-pen-warn dark:text-pen-warn"
 							onclick={() => (allowlistCommand = null)}
 						>
 							Done
@@ -190,21 +190,21 @@
 			</p>
 
 			{#if revealedKey}
-				<Card class="border-amber-300 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950">
+				<Card class="border-pen-warn bg-pen-warn/12 dark:border-pen-warn/30 dark:bg-pen-warn/18">
 					<CardHeader>
-						<CardTitle class="text-amber-900 dark:text-amber-200">
+						<CardTitle class="text-pen-warn dark:text-pen-warn">
 							Copy your new API key now
 						</CardTitle>
 					</CardHeader>
 					<CardContent class="space-y-2">
-						<p class="text-sm text-amber-900 dark:text-amber-200">
+						<p class="text-pen-warn dark:text-pen-warn text-sm">
 							This is the only time this key will be shown. Store it somewhere safe.
 						</p>
 						<div class="flex gap-2">
 							<Input
 								readonly
 								value={revealedKey}
-								class="border-amber-300 bg-white font-mono text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-900 dark:text-amber-100"
+								class="border-pen-warn bg-card text-pen-warn dark:border-pen-warn/30 dark:bg-pen-warn/18 dark:text-pen-warn font-mono text-sm"
 							/>
 							<Button
 								type="button"
@@ -219,7 +219,7 @@
 							type="button"
 							variant="ghost"
 							size="sm"
-							class="text-amber-900 dark:text-amber-200"
+							class="text-pen-warn dark:text-pen-warn"
 							onclick={() => (revealedKey = null)}
 						>
 							Done

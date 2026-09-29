@@ -31,10 +31,10 @@
 {#if submitted}
 	<div class="space-y-4 text-center">
 		<div
-			class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20"
+			class="bg-pen-fitness/12 dark:bg-pen-fitness/20 mx-auto flex h-16 w-16 items-center justify-center rounded-full"
 		>
 			<svg
-				class="h-8 w-8 text-green-600 dark:text-green-400"
+				class="text-pen-fitness dark:text-pen-fitness h-8 w-8"
 				fill="none"
 				stroke="currentColor"
 				viewBox="0 0 24 24"
@@ -43,13 +43,13 @@
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 			</svg>
 		</div>
-		<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Check your email</h2>
-		<p class="text-sm text-slate-600 dark:text-slate-400">
+		<h2 class="text-foreground text-2xl font-bold dark:text-white">Check your email</h2>
+		<p class="text-muted-foreground dark:text-muted-foreground text-sm">
 			We've sent password reset instructions to your email address.
 		</p>
 		<a
 			href="/sign-in"
-			class="mt-4 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
+			class="text-pen-journal dark:text-pen-journal mt-4 inline-block text-sm hover:underline"
 		>
 			Back to sign in
 		</a>
@@ -74,11 +74,11 @@
 							autocomplete="email"
 							bind:value={$form.email}
 							placeholder="you@example.com"
-							class={$errors.email ? 'border-red-500' : ''}
+							class={$errors.email ? 'border-destructive' : ''}
 							required
 						/>
 						{#if $errors.email}
-							<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.email}</p>
+							<p class="text-destructive dark:text-destructive mt-1 text-sm">{$errors.email}</p>
 						{/if}
 					</Field>
 

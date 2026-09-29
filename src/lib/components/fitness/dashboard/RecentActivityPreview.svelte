@@ -5,7 +5,7 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import type { Workout } from '$lib/types';
 	import { formatDateShort, formatTime12Hour } from '$lib/utils/date';
-	import { getWorkoutBadgeClass, getWorkoutBorderClass, getWorkoutLabel } from '$lib/utils/workout';
+	import { getWorkoutBadgeClass, getWorkoutLabel } from '$lib/utils/workout';
 	import {
 		ChevronRight,
 		Dumbbell,
@@ -94,12 +94,11 @@
 
 <section class="mb-2">
 	<div class="mb-4 flex items-center justify-between">
-		<div class="border-l-4 border-zinc-400 pl-3"></div>
 		<Button
 			variant="ghost"
 			size="sm"
 			onclick={onViewAll}
-			class="gap-1 text-zinc-600 dark:text-zinc-400"
+			class="text-muted-foreground dark:text-muted-foreground gap-1"
 		>
 			View all
 			<ChevronRight class="h-4 w-4" />
@@ -107,33 +106,35 @@
 	</div>
 
 	{#if feed.length === 0}
-		<Card.Root class="border-0 bg-white shadow-sm dark:bg-zinc-900">
-			<Card.Content class="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+		<Card.Root class="bg-card dark:bg-muted border-0">
+			<Card.Content
+				class="text-muted-foreground dark:text-muted-foreground py-8 text-center text-sm"
+			>
 				No activity logged yet — start tracking to see your history here
 			</Card.Content>
 		</Card.Root>
 	{:else}
-		<Card.Root class="overflow-hidden border-0 bg-white shadow-sm dark:bg-zinc-900">
+		<Card.Root class="bg-card dark:bg-muted overflow-hidden border-0">
 			<Card.Content class="p-0">
-				<ul class="divide-y divide-zinc-100 dark:divide-zinc-800">
+				<ul class="divide-border dark:divide-border divide-y">
 					{#each feed as item (item.kind + item.data.id)}
 						{#if item.kind === 'workout'}
 							<li
-								class="group flex items-center gap-3 border-l-4 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 {getWorkoutBorderClass(
-									item.data.type
-								)}"
+								class="group hover:bg-muted/80 dark:hover:bg-muted/40 flex items-center gap-3 px-4 py-3 transition-colors"
 							>
-								<Dumbbell class="h-4 w-4 shrink-0 text-zinc-400" />
+								<Dumbbell class="text-muted-foreground h-4 w-4 shrink-0" />
 								<div class="min-w-0 flex-1">
 									<div class="flex items-center gap-2">
 										<Badge class="text-xs {getWorkoutBadgeClass(item.data.type)}"
 											>{getWorkoutLabel(item.data.type)}</Badge
 										>
 										{#if item.data.durationMinutes}
-											<span class="text-xs text-zinc-500">{item.data.durationMinutes} min</span>
+											<span class="text-muted-foreground text-xs"
+												>{item.data.durationMinutes} min</span
+											>
 										{/if}
 									</div>
-									<p class="mt-0.5 text-xs text-zinc-500">
+									<p class="text-muted-foreground mt-0.5 text-xs">
 										{formatDateShort(item.data.date)}
 										{#if item.data.time}
 											· {formatTime12Hour(item.data.time)}
@@ -182,19 +183,19 @@
 							</li>
 						{:else if item.kind === 'weight'}
 							<li
-								class="group flex items-center gap-3 border-l-4 border-l-emerald-400 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40"
+								class="group hover:bg-muted/80 dark:hover:bg-muted/40 flex items-center gap-3 px-4 py-3 transition-colors"
 							>
-								<Scale class="h-4 w-4 shrink-0 text-zinc-400" />
+								<Scale class="text-muted-foreground h-4 w-4 shrink-0" />
 								<div class="min-w-0 flex-1">
 									<div class="flex items-center gap-2">
 										<span
-											class="font-display text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+											class="font-display text-foreground dark:text-foreground text-sm font-semibold"
 										>
 											{item.data.weightLbs}
 											lbs
 										</span>
 									</div>
-									<p class="mt-0.5 text-xs text-zinc-500">
+									<p class="text-muted-foreground mt-0.5 text-xs">
 										{formatDateShort(item.data.date)}
 										{#if item.data.time}
 											· {formatTime12Hour(item.data.time)}
@@ -240,14 +241,14 @@
 							</li>
 						{:else if item.kind === 'meal'}
 							<li
-								class="group flex items-center gap-3 border-l-4 border-l-amber-400 px-4 py-3 transition-colors hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40"
+								class="group hover:bg-muted/80 dark:hover:bg-muted/40 flex items-center gap-3 px-4 py-3 transition-colors"
 							>
-								<UtensilsCrossed class="h-4 w-4 shrink-0 text-zinc-400" />
+								<UtensilsCrossed class="text-muted-foreground h-4 w-4 shrink-0" />
 								<div class="min-w-0 flex-1">
-									<p class="truncate text-sm text-zinc-800 dark:text-zinc-200">
+									<p class="text-foreground dark:text-foreground truncate text-sm">
 										{item.data.description}
 									</p>
-									<p class="mt-0.5 text-xs text-zinc-500 capitalize">
+									<p class="text-muted-foreground mt-0.5 text-xs capitalize">
 										{item.data.timeOfDay}
 										· {formatDateShort(item.data.date)}
 										{#if item.data.caloriesEstimate}

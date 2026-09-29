@@ -20,7 +20,6 @@ type TaskPriorityMeta = {
 	label: string;
 	valueLabel: string;
 	dotClass: string;
-	railClass: string;
 	badgeClass: string;
 };
 
@@ -43,34 +42,30 @@ export const taskPriorityMeta: Record<TaskPriority, TaskPriorityMeta> = {
 	1: {
 		label: 'Critical',
 		valueLabel: '1 - Critical',
-		dotClass: 'bg-red-600 dark:bg-red-400/65',
-		railClass: 'bg-red-600 dark:bg-red-400/85',
+		dotClass: 'bg-destructive dark:bg-destructive/8',
 		badgeClass:
-			'border-red-300/80 bg-red-100/80 text-red-700 dark:border-red-500/35 dark:bg-red-500/10 dark:text-red-200'
+			'border-destructive/40 bg-destructive/8 text-destructive dark:border-destructive/35 dark:bg-destructive/10 dark:text-destructive'
 	},
 	2: {
 		label: 'High',
 		valueLabel: '2 - High',
-		dotClass: 'bg-orange-500 dark:bg-orange-300/65',
-		railClass: 'bg-orange-500 dark:bg-orange-300/85',
+		dotClass: 'bg-pen-tasks dark:bg-pen-tasks/8',
 		badgeClass:
-			'border-orange-300/80 bg-orange-100/80 text-orange-700 dark:border-orange-500/35 dark:bg-orange-500/10 dark:text-orange-200'
+			'border-pen-tasks/40 bg-pen-tasks/8 text-pen-tasks dark:border-pen-tasks/35 dark:bg-pen-tasks/10 dark:text-pen-tasks'
 	},
 	3: {
 		label: 'Medium',
 		valueLabel: '3 - Medium',
-		dotClass: 'bg-blue-600 dark:bg-blue-400/65',
-		railClass: 'bg-blue-600 dark:bg-blue-400/85',
+		dotClass: 'bg-pen-journal dark:bg-pen-journal/8',
 		badgeClass:
-			'border-blue-300/80 bg-blue-100/80 text-blue-700 dark:border-blue-500/35 dark:bg-blue-500/10 dark:text-blue-200'
+			'border-pen-journal/40 bg-pen-journal/8 text-pen-journal dark:border-pen-journal/35 dark:bg-pen-journal/10 dark:text-pen-journal'
 	},
 	4: {
 		label: 'Low',
 		valueLabel: '4 - Low',
-		dotClass: 'bg-slate-500 dark:bg-slate-400/65',
-		railClass: 'bg-slate-500 dark:bg-slate-400/85',
+		dotClass: 'bg-muted dark:bg-muted/65',
 		badgeClass:
-			'border-slate-300/80 bg-slate-100/90 text-slate-700 dark:border-slate-500/35 dark:bg-slate-500/10 dark:text-slate-300'
+			'border-border/80 bg-muted/90 text-foreground dark:border-border/35 dark:bg-muted/10 dark:text-muted-foreground'
 	}
 };
 
@@ -84,49 +79,51 @@ export const taskPriorityOptions = [
 const taskStateMeta: Record<TaskState, TaskStateMeta> = {
 	new: {
 		label: 'New',
-		dotClass: 'bg-slate-500 dark:bg-slate-400/70',
+		dotClass: 'bg-muted dark:bg-muted/70',
 		badgeClass:
-			'border-slate-300/80 bg-slate-200/80 text-slate-700 dark:border-slate-600/60 dark:bg-slate-600/15 dark:text-slate-300',
+			'border-border/80 bg-muted/80 text-foreground dark:border-border/60 dark:bg-muted/15 dark:text-muted-foreground',
 		headerClass:
-			'border-orange-400/85 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(249,115,22,0.95)] dark:border-orange-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(251,146,60,0.72)]',
-		emptyClass: 'border-slate-300/70 bg-slate-100/55 dark:border-slate-700/70 dark:bg-slate-950/45'
+			'border-pen-tasks/40 bg-muted/92 border-b-[3px] dark:border-pen-tasks/40 dark:bg-muted/82',
+		emptyClass: 'border-border/70 bg-muted/55 dark:border-border/70 dark:bg-muted/45'
 	},
 	in_progress: {
 		label: 'In Progress',
-		dotClass: 'bg-blue-500 dark:bg-blue-300/70',
+		dotClass: 'bg-pen-journal dark:bg-pen-journal/8',
 		badgeClass:
-			'border-blue-300/80 bg-blue-100/85 text-blue-700 dark:border-blue-500/35 dark:bg-blue-500/12 dark:text-blue-200',
+			'border-pen-journal/40 bg-pen-journal/8 text-pen-journal dark:border-pen-journal/35 dark:bg-pen-journal/12 dark:text-pen-journal',
 		headerClass:
-			'border-blue-400/85 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(59,130,246,0.95)] dark:border-blue-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(96,165,250,0.72)]',
-		emptyClass: 'border-blue-300/70 bg-blue-100/50 dark:border-blue-900/60 dark:bg-blue-950/35'
+			'border-pen-journal/40 bg-muted/92 border-b-[3px] dark:border-pen-journal/40 dark:bg-muted/82',
+		emptyClass:
+			'border-pen-journal/40 bg-pen-journal/8 dark:border-pen-journal/40 dark:bg-pen-journal/8'
 	},
 	on_hold: {
 		label: 'On Hold',
-		dotClass: 'bg-amber-500 dark:bg-amber-300/70',
+		dotClass: 'bg-pen-warn dark:bg-pen-warn/8',
 		badgeClass:
-			'border-amber-300/80 bg-amber-100/85 text-amber-800 dark:border-amber-500/35 dark:bg-amber-500/12 dark:text-amber-200',
+			'border-pen-warn/40 bg-pen-warn/8 text-pen-warn dark:border-pen-warn/35 dark:bg-pen-warn/12 dark:text-pen-warn',
 		headerClass:
-			'border-amber-400/90 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(245,158,11,0.95)] dark:border-amber-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(252,211,77,0.72)]',
-		emptyClass: 'border-amber-300/70 bg-amber-100/50 dark:border-amber-900/60 dark:bg-amber-950/35'
+			'border-pen-warn/40 bg-muted/92 border-b-[3px] dark:border-pen-warn/40 dark:bg-muted/82',
+		emptyClass: 'border-pen-warn/40 bg-pen-warn/8 dark:border-pen-warn/40 dark:bg-pen-warn/8'
 	},
 	blocked: {
 		label: 'Blocked',
-		dotClass: 'bg-red-600 dark:bg-red-400/70',
+		dotClass: 'bg-destructive dark:bg-destructive/8',
 		badgeClass:
-			'border-red-300/80 bg-red-100/80 text-red-700 dark:border-red-500/35 dark:bg-red-500/10 dark:text-red-200',
+			'border-destructive/40 bg-destructive/8 text-destructive dark:border-destructive/35 dark:bg-destructive/10 dark:text-destructive',
 		headerClass:
-			'border-red-400/85 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(239,68,68,0.95)] dark:border-red-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(248,113,113,0.72)]',
-		emptyClass: 'border-red-300/70 bg-red-100/50 dark:border-red-900/60 dark:bg-red-950/35'
+			'border-destructive/40 bg-muted/92 border-b-[3px] dark:border-destructive/40 dark:bg-muted/82',
+		emptyClass:
+			'border-destructive/40 bg-destructive/8 dark:border-destructive/40 dark:bg-destructive/8'
 	},
 	done: {
 		label: 'Done',
-		dotClass: 'bg-emerald-600 dark:bg-emerald-400/70',
+		dotClass: 'bg-pen-fitness dark:bg-pen-fitness/8',
 		badgeClass:
-			'border-emerald-300/80 bg-emerald-100/80 text-emerald-700 dark:border-emerald-500/35 dark:bg-emerald-500/10 dark:text-emerald-200',
+			'border-pen-fitness/40 bg-pen-fitness/8 text-pen-fitness dark:border-pen-fitness/35 dark:bg-pen-fitness/10 dark:text-pen-fitness',
 		headerClass:
-			'border-emerald-400/85 bg-slate-100/92 shadow-[inset_0_-4px_0_rgba(34,197,94,0.95)] dark:border-emerald-500/70 dark:bg-slate-900/82 dark:shadow-[inset_0_-4px_0_rgba(74,222,128,0.72)]',
+			'border-pen-fitness/40 bg-muted/92 border-b-[3px] dark:border-pen-fitness/40 dark:bg-muted/82',
 		emptyClass:
-			'border-emerald-300/70 bg-emerald-100/50 dark:border-emerald-900/60 dark:bg-emerald-950/35'
+			'border-pen-fitness/40 bg-pen-fitness/8 dark:border-pen-fitness/40 dark:bg-pen-fitness/8'
 	}
 };
 
@@ -142,23 +139,23 @@ const taskDueDateFilterMeta: Record<TaskDueDateFilter, TaskDueDateFilterMeta> = 
 	overdue: {
 		label: 'Overdue',
 		valueLabel: 'Overdue',
-		dotClass: 'bg-red-600 dark:bg-red-400/65',
+		dotClass: 'bg-destructive dark:bg-destructive/8',
 		badgeClass:
-			'border-red-300/80 bg-red-100/80 text-red-700 dark:border-red-500/35 dark:bg-red-500/10 dark:text-red-200'
+			'border-destructive/40 bg-destructive/8 text-destructive dark:border-destructive/35 dark:bg-destructive/10 dark:text-destructive'
 	},
 	today: {
 		label: 'Due Today',
 		valueLabel: 'Due Today',
-		dotClass: 'bg-orange-500 dark:bg-orange-300/65',
+		dotClass: 'bg-pen-tasks dark:bg-pen-tasks/8',
 		badgeClass:
-			'border-orange-300/80 bg-orange-100/80 text-orange-700 dark:border-orange-500/35 dark:bg-orange-500/10 dark:text-orange-200'
+			'border-pen-tasks/40 bg-pen-tasks/8 text-pen-tasks dark:border-pen-tasks/35 dark:bg-pen-tasks/10 dark:text-pen-tasks'
 	},
 	upcoming: {
 		label: 'Upcoming',
 		valueLabel: 'Upcoming',
-		dotClass: 'bg-blue-600 dark:bg-blue-400/65',
+		dotClass: 'bg-pen-journal dark:bg-pen-journal/8',
 		badgeClass:
-			'border-blue-300/80 bg-blue-100/80 text-blue-700 dark:border-blue-500/35 dark:bg-blue-500/10 dark:text-blue-200'
+			'border-pen-journal/40 bg-pen-journal/8 text-pen-journal dark:border-pen-journal/35 dark:bg-pen-journal/10 dark:text-pen-journal'
 	}
 };
 

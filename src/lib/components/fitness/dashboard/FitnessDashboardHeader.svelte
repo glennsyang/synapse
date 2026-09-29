@@ -7,6 +7,7 @@
 	import SetCalorieTargetDialog from '$lib/components/fitness/dialogs/SetCalorieTargetDialog.svelte';
 	import SetGoalWeightDialog from '$lib/components/fitness/dialogs/SetGoalWeightDialog.svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type {
 		logMealSchema,
@@ -47,69 +48,77 @@
 	let showCreateReminder = $state(false);
 </script>
 
-<div
-	class="via-background dark:via-background mb-4 rounded-2xl border border-green-200/75 bg-linear-to-br from-green-100/90 to-green-50/85 p-6 shadow-[0_26px_70px_-40px_rgba(249,115,22,0.22)] dark:border-green-500/25 dark:from-green-500/12 dark:to-green-500/6 dark:shadow-[0_26px_70px_-44px_rgba(249,115,22,0.14)]"
->
-	<div class="flex items-start justify-between">
-		<div>
-			<h1 class="font-display text-3xl font-bold sm:text-3xl">Fitness Hub</h1>
-			<p class="mt-2 text-sm text-zinc-400">Your momentum, trends, and habits — at a glance</p>
+<div class="ruled mb-6 pb-4">
+	<div class="flex flex-wrap items-end justify-between gap-3">
+		<div class="min-w-0">
+			<h1 class="page-title" style="--pen: oklch(var(--color-green))">Fitness Hub</h1>
+			<p class="text-muted-foreground mt-1 text-sm sm:text-base">
+				Your momentum, trends, and habits — at a glance
+			</p>
 		</div>
 
-		<!-- Dropdown Menu in top right -->
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger
-				class={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'size-10 sm:size-7')}
+		<div class="flex items-center gap-2">
+			<Button
+				class="bg-pen-fitness text-paper hover:bg-pen-fitness/90"
+				onclick={() => (showLogWorkout = true)}
 			>
-				<EllipsisVertical />
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end" class="w-64 sm:w-56">
-				<DropdownMenu.Item
-					class="cursor-pointer py-3 sm:py-1.5"
-					onclick={() => (showLogWorkout = true)}
+				<Dumbbell />
+				Log workout
+			</Button>
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger
+					class={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'size-9')}
 				>
-					<Dumbbell class="mr-3 h-4 w-4" />
-					Log Workout
-				</DropdownMenu.Item>
-				<DropdownMenu.Item
-					class="cursor-pointer py-3 sm:py-1.5"
-					onclick={() => (showLogWeight = true)}
-				>
-					<Scale class="mr-3 h-4 w-4" />
-					Log Weight
-				</DropdownMenu.Item>
-				<DropdownMenu.Item
-					class="cursor-pointer py-3 sm:py-1.5"
-					onclick={() => (showLogMeal = true)}
-				>
-					<UtensilsCrossed class="mr-3 h-4 w-4" />
-					Log Meal
-				</DropdownMenu.Item>
-				<DropdownMenu.Separator />
-				<DropdownMenu.Item
-					class="cursor-pointer py-3 sm:py-1.5"
-					onclick={() => (showSetGoalWeight = true)}
-				>
-					<Target class="mr-3 h-4 w-4" />
-					Set Goal Weight
-				</DropdownMenu.Item>
-				<DropdownMenu.Item
-					class="cursor-pointer py-3 sm:py-1.5"
-					onclick={() => (showSetCalorieTarget = true)}
-				>
-					<Settings class="mr-3 h-4 w-4" />
-					Set Calorie Target
-				</DropdownMenu.Item>
-				<DropdownMenu.Separator />
-				<DropdownMenu.Item
-					class="cursor-pointer py-3 sm:py-1.5"
-					onclick={() => (showCreateReminder = true)}
-				>
-					<BellPlus class="mr-3 h-4 w-4" />
-					Create Reminder
-				</DropdownMenu.Item>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
+					<EllipsisVertical />
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content align="end" class="w-64 sm:w-56">
+					<DropdownMenu.Item
+						class="cursor-pointer py-3 sm:py-1.5"
+						onclick={() => (showLogWorkout = true)}
+					>
+						<Dumbbell class="mr-3 h-4 w-4" />
+						Log Workout
+					</DropdownMenu.Item>
+					<DropdownMenu.Item
+						class="cursor-pointer py-3 sm:py-1.5"
+						onclick={() => (showLogWeight = true)}
+					>
+						<Scale class="mr-3 h-4 w-4" />
+						Log Weight
+					</DropdownMenu.Item>
+					<DropdownMenu.Item
+						class="cursor-pointer py-3 sm:py-1.5"
+						onclick={() => (showLogMeal = true)}
+					>
+						<UtensilsCrossed class="mr-3 h-4 w-4" />
+						Log Meal
+					</DropdownMenu.Item>
+					<DropdownMenu.Separator />
+					<DropdownMenu.Item
+						class="cursor-pointer py-3 sm:py-1.5"
+						onclick={() => (showSetGoalWeight = true)}
+					>
+						<Target class="mr-3 h-4 w-4" />
+						Set Goal Weight
+					</DropdownMenu.Item>
+					<DropdownMenu.Item
+						class="cursor-pointer py-3 sm:py-1.5"
+						onclick={() => (showSetCalorieTarget = true)}
+					>
+						<Settings class="mr-3 h-4 w-4" />
+						Set Calorie Target
+					</DropdownMenu.Item>
+					<DropdownMenu.Separator />
+					<DropdownMenu.Item
+						class="cursor-pointer py-3 sm:py-1.5"
+						onclick={() => (showCreateReminder = true)}
+					>
+						<BellPlus class="mr-3 h-4 w-4" />
+						Create Reminder
+					</DropdownMenu.Item>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+		</div>
 	</div>
 </div>
 

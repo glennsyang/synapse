@@ -14,15 +14,15 @@
 	function pctColorClass(pct: number): string {
 		if (pct < 0) return 'bg-muted text-muted-foreground';
 		if (pct >= 70) return 'bg-[oklch(var(--color-green)/0.15)] text-[oklch(var(--color-green))]';
-		if (pct >= 40) return 'bg-amber-500/15 text-amber-600 dark:text-amber-400';
+		if (pct >= 40) return 'bg-pen-warn/15 text-pen-warn dark:text-pen-warn';
 		return 'bg-destructive/10 text-destructive';
 	}
 
 	function dotColorClass(pct: number): string {
 		if (pct < 0) return 'bg-border/60'; // not scheduled
 		if (pct >= 70) return 'bg-[oklch(var(--color-green))]';
-		if (pct >= 40) return 'bg-amber-400';
-		return 'bg-destructive/70';
+		if (pct >= 40) return 'bg-pen-warn';
+		return 'bg-destructive/10';
 	}
 
 	function trendSymbol(current: number, prev: number): { label: string; cls: string } {
@@ -57,7 +57,7 @@
 						</span>
 					</div>
 					<span
-						class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold {pctColorClass(
+						class="shrink-0 rounded-[2px] px-2 py-0.5 text-xs font-semibold {pctColorClass(
 							item.completionPct
 						)}"
 					>

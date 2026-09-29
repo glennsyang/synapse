@@ -109,7 +109,9 @@
 						<Button {...props} type="button" variant="outline">Cancel</Button>
 					{/snippet}
 				</Dialog.Close>
-				<Button type="submit" class="bg-green-600 text-white hover:bg-green-700">Set Target</Button>
+				<Button type="submit" class="bg-pen-fitness hover:bg-pen-fitness text-white"
+					>Set Target</Button
+				>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

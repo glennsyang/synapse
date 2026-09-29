@@ -33,14 +33,14 @@
 		<form method="POST" use:enhance class="space-y-6">
 			{#if verified}
 				<div
-					class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
+					class="bg-pen-fitness/12 text-pen-fitness dark:bg-pen-fitness/20 dark:text-pen-fitness rounded-lg p-4 text-sm"
 				>
 					Email verified successfully! You can now sign in.
 				</div>
 			{/if}
 			{#if data.resetComplete}
 				<div
-					class="rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400"
+					class="bg-pen-fitness/12 text-pen-fitness dark:bg-pen-fitness/20 dark:text-pen-fitness rounded-lg p-4 text-sm"
 					role="status"
 				>
 					Password reset successfully! You can now sign in with your new password.
@@ -48,7 +48,7 @@
 			{/if}
 			{#if data.invalidVerificationLink}
 				<div
-					class="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
+					class="bg-destructive/12 text-destructive dark:bg-destructive/20 dark:text-destructive rounded-lg p-4 text-sm"
 					role="alert"
 				>
 					That verification link is invalid or has expired. Please sign in or request a new one.
@@ -65,11 +65,11 @@
 						autocomplete="email"
 						bind:value={$form.email}
 						placeholder="you@example.com"
-						class={$errors.email ? 'border-red-500' : ''}
+						class={$errors.email ? 'border-destructive' : ''}
 						required
 					/>
 					{#if $errors.email}
-						<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.email}</p>
+						<p class="text-destructive dark:text-destructive mt-1 text-sm">{$errors.email}</p>
 					{/if}
 				</Field>
 				<Field>
@@ -85,11 +85,11 @@
 						type="password"
 						bind:value={$form.password}
 						placeholder="••••••••"
-						class={$errors.password ? 'border-red-500' : ''}
+						class={$errors.password ? 'border-destructive' : ''}
 						required
 					/>
 					{#if $errors.password}
-						<p class="mt-1 text-sm text-red-600 dark:text-red-400">{$errors.password}</p>
+						<p class="text-destructive dark:text-destructive mt-1 text-sm">{$errors.password}</p>
 					{/if}
 				</Field>
 				<Field>

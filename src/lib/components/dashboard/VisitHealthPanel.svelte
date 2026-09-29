@@ -32,18 +32,16 @@
 			value: counts.critical,
 			names: names.critical,
 			href: '/visits?status=red',
-			dotClass: 'bg-red-500',
-			valueClass: 'text-red-500',
-			bgClass: 'bg-red-500/10 hover:bg-red-500/20'
+			dotClass: 'bg-destructive',
+			valueClass: 'text-destructive'
 		},
 		{
 			label: 'Overdue',
 			value: counts.overdue,
 			names: names.overdue,
 			href: '/visits?status=yellow',
-			dotClass: 'bg-amber-500',
-			valueClass: 'text-amber-500',
-			bgClass: 'bg-amber-500/10 hover:bg-amber-500/20'
+			dotClass: 'bg-pen-warn',
+			valueClass: 'text-pen-warn'
 		},
 		{
 			label: 'Healthy',
@@ -51,8 +49,7 @@
 			names: names.healthy,
 			href: '/visits?status=green',
 			dotClass: 'bg-[oklch(var(--color-green))]',
-			valueClass: 'text-[oklch(var(--color-green))]',
-			bgClass: 'bg-[oklch(var(--color-green)/0.1)] hover:bg-[oklch(var(--color-green)/0.2)]'
+			valueClass: 'text-[oklch(var(--color-green))]'
 		},
 		{
 			label: 'No Visits',
@@ -60,8 +57,7 @@
 			names: names.noVisits,
 			href: '/visits?status=none',
 			dotClass: 'bg-muted-foreground/60',
-			valueClass: 'text-muted-foreground',
-			bgClass: 'bg-muted/60 hover:bg-muted'
+			valueClass: 'text-muted-foreground'
 		}
 	]);
 
@@ -71,9 +67,7 @@
 <Tooltip.Provider>
 	<div class="flex h-full flex-col gap-3">
 		<div class="flex items-end gap-3">
-			<span
-				class="font-display text-5xl leading-none font-bold text-[oklch(var(--color-pink))] tabular-nums"
-			>
+			<span class="text-5xl leading-none font-black text-[oklch(var(--color-pink))] tabular-nums">
 				{counts.total}
 			</span>
 			<span class="text-muted-foreground mb-1 text-sm">
@@ -83,14 +77,14 @@
 		</div>
 
 		{#if urgentCount > 0}
-			<p class="text-xs font-medium text-amber-600 dark:text-amber-400">
+			<p class="text-pen-warn dark:text-pen-warn text-xs font-medium">
 				{urgentCount}
 				need{urgentCount === 1 ? 's' : ''}
 				attention
 			</p>
 		{/if}
 
-		<div class="grid grid-cols-2 gap-2">
+		<div class="border-rule border-t">
 			{#each stats as stat (stat.label)}
 				<Tooltip.Root>
 					<Tooltip.Trigger>
@@ -98,22 +92,21 @@
 							<a
 								href={stat.href}
 								{...props}
-								class="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors {stat.bgClass}"
+								class="border-rule hover:bg-muted/50 flex min-h-10 items-center gap-3 border-b text-sm transition-colors"
 							>
 								<span
-									class="size-2 shrink-0 rounded-full {stat.dotClass} {stat.label === 'Critical' &&
+									class="size-2 shrink-0 rounded-[1px] {stat.dotClass} {stat.label === 'Critical' &&
 									stat.value > 0
 										? 'critical-dot-pulse'
 										: ''}"
 								></span>
-								<div class="min-w-0">
-									<div
-										class="font-display text-xl leading-none font-bold tabular-nums {stat.valueClass}"
-									>
-										{stat.value}
-									</div>
-									<div class="text-muted-foreground mt-0.5 text-xs">{stat.label}</div>
-								</div>
+								<span class="w-20 shrink-0 font-bold">{stat.label}</span>
+								<span class="text-muted-foreground min-w-0 flex-1 truncate text-xs">
+									{stat.names.join(', ')}
+								</span>
+								<span class="text-lg leading-none font-black tabular-nums {stat.valueClass}">
+									{stat.value}
+								</span>
 							</a>
 						{/snippet}
 					</Tooltip.Trigger>

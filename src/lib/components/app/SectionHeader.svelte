@@ -20,15 +20,6 @@
 		children?: import('svelte').Snippet;
 		class?: string;
 	} = $props();
-
-	const colorClasses = {
-		teal: 'border-[oklch(var(--color-teal))]',
-		blue: 'border-[oklch(var(--color-blue))]',
-		green: 'border-[oklch(var(--color-green))]',
-		orange: 'border-[oklch(var(--color-orange))]',
-		purple: 'border-[oklch(var(--color-purple))]',
-		pink: 'border-[oklch(var(--color-pink))]'
-	};
 </script>
 
 <div class={cn('mb-0', className)} {...restProps}>
@@ -52,24 +43,25 @@
 		</Breadcrumb.Root>
 	{/if}
 
-	<div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-		<!-- Title and Description -->
-		<div class="space-y-2">
-			<div>
-				<div class={cn('h-1 w-12 rounded-full', colorClasses[color])}></div>
-				<h1 class="font-display text-3xl font-bold tracking-tight md:text-4xl">{title}</h1>
-			</div>
+	<div
+		class="ruled flex flex-col gap-3 pb-3 md:flex-row md:items-end md:justify-between"
+		style="--pen: oklch(var(--color-{color}))"
+	>
+		<div class="min-w-0 space-y-1">
+			<h1
+				class="flex items-center gap-3 text-3xl leading-tight font-black tracking-tight md:text-4xl"
+			>
+				<span class="size-3 shrink-0 rounded-[2px] bg-(--pen)" aria-hidden="true"></span>
+				{title}
+			</h1>
 			{#if description}
-				<p class="text-muted-foreground text-base md:text-lg">{description}</p>
+				<p class="text-muted-foreground pl-6 text-sm md:text-base">{description}</p>
 			{/if}
 		</div>
 
 		<!-- Actions slot -->
 		{#if children}
-			<div class="flex items-center gap-2">{@render children()}</div>
+			<div class="flex flex-wrap items-center gap-2">{@render children()}</div>
 		{/if}
 	</div>
-
-	<!-- Accent bar -->
-	<div class={cn('mt-4 h-1 rounded-full', colorClasses[color])}></div>
 </div>

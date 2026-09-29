@@ -76,11 +76,11 @@
 	}
 
 	const moodTagColors: Record<string, string> = {
-		Anxious: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
-		'Low Energy': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-		Focused: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-		'Pre-Sleep': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-		General: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+		Anxious: 'bg-pen-warn/12 text-pen-warn dark:bg-pen-warn/18 dark:text-pen-warn',
+		'Low Energy': 'bg-pen-journal/12 text-pen-journal dark:bg-pen-journal/18 dark:text-pen-journal',
+		Focused: 'bg-pen-fitness/12 text-pen-fitness dark:bg-pen-fitness/18 dark:text-pen-fitness',
+		'Pre-Sleep': 'bg-pen-mind/12 text-pen-mind dark:bg-pen-mind/18 dark:text-pen-mind',
+		General: 'bg-muted text-foreground dark:bg-muted dark:text-foreground'
 	};
 
 	let filtersOpen = $state(false);
@@ -162,16 +162,16 @@
 {:else}
 	<PageShell class="min-w-0 overflow-x-hidden">
 		<div
-			class="mobile-stack mb-4 flex items-center justify-between gap-3 sm:mb-5 sm:flex-wrap lg:flex-nowrap"
+			class="mobile-stack ruled mb-6 flex items-center justify-between gap-3 pb-4 sm:flex-wrap lg:flex-nowrap"
 		>
 			<div class="min-w-0 flex-1">
-				<h1 class="font-display text-2xl font-bold sm:text-3xl">Meditation</h1>
+				<h1 class="page-title" style="--pen: oklch(var(--color-purple))">Meditation</h1>
 				<p class="text-muted-foreground text-sm sm:text-base">
 					Manage routines and track your practice
 				</p>
 			</div>
 			<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-				<Button href="/meditation/routines/new" class="bg-purple-600 hover:bg-purple-700">
+				<Button href="/meditation/routines/new" class="bg-pen-mind hover:bg-pen-mind">
 					<Plus class="mr-2 h-4 w-4" />
 					New Routine
 				</Button>
@@ -191,7 +191,7 @@
 									class={[
 										'shrink-0',
 										(filtersOpen || hasActiveFilters) &&
-											'border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800 dark:border-purple-400/40 dark:bg-purple-500/10 dark:text-purple-200 dark:hover:bg-purple-500/20'
+											'border-pen-mind bg-pen-mind/12 text-pen-mind hover:bg-pen-mind/12 hover:text-pen-mind dark:border-pen-mind/40 dark:bg-pen-mind/10 dark:text-pen-mind dark:hover:bg-pen-mind/20'
 									]}
 								>
 									<ListFilter class="size-4" />
@@ -210,7 +210,7 @@
 			>
 				<Tabs.Trigger
 					value="routines"
-					class="font-display border-b-2 border-transparent data-[state=active]:border-purple-500"
+					class="font-display data-[state=active]:border-pen-mind border-b-2 border-transparent"
 					onclick={() => {
 						if (activeTab !== 'routines') void switchTab('routines');
 					}}
@@ -219,7 +219,7 @@
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="history"
-					class="font-display border-b-2 border-transparent data-[state=active]:border-purple-500"
+					class="font-display data-[state=active]:border-pen-mind border-b-2 border-transparent"
 					onclick={() => {
 						if (activeTab !== 'history') void switchTab('history');
 					}}
@@ -235,7 +235,7 @@
 					<Collapsible.Root bind:open={filtersOpen}>
 						<Collapsible.Content id="meditation-filter-bar" class="w-full">
 							<div
-								class="grid gap-4 rounded-3xl border border-purple-200/80 bg-purple-50/55 p-4 shadow-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start dark:border-purple-500/25 dark:bg-purple-500/8"
+								class="border-pen-mind/35 bg-pen-mind/8 dark:border-pen-mind/25 dark:bg-pen-mind/8 grid gap-4 rounded-3xl border p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
 							>
 								<div class="w-full min-w-0">
 									<div class="relative">
@@ -262,68 +262,66 @@
 						</Collapsible.Content>
 					</Collapsible.Root>
 
-					<!-- Routines List -->
-					<div class="grid w-full gap-4 sm:min-h-80 md:grid-cols-2 lg:grid-cols-3">
+					<!-- Routines, ruled one per line -->
+					<ul class="border-foreground border-t-2">
 						{#each data.routines as routine (routine.id)}
-							<Card.Root
-								class="to-lavender-50 border-purple-200 bg-linear-to-br from-purple-50 transition-shadow hover:shadow-lg dark:border-purple-800 dark:from-purple-950/20 dark:to-purple-900/10"
+							<li
+								class="border-rule grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b py-4 md:grid-cols-[4.5rem_minmax(0,1fr)_auto]"
 							>
-								<Card.Header>
-									<div class="flex items-start justify-between">
-										<div class="flex-1">
-											<Card.Title class="font-display text-lg">{routine.title}</Card.Title>
-											{#if routine.description}
-												<p class="text-muted-foreground mt-2 text-sm">{routine.description}</p>
-											{/if}
-										</div>
+								<span
+									class="text-pen-mind row-span-2 hidden text-3xl leading-none font-black tabular-nums md:block"
+								>
+									{routine.durationMinutes}<span
+										class="text-muted-foreground ml-0.5 text-xs font-bold">min</span
+									>
+								</span>
+								<div class="min-w-0">
+									<a
+										href="/meditation/routines/{routine.id}"
+										class="hover:text-pen-mind flex items-center gap-2 font-black transition-colors"
+									>
+										{routine.title}
 										{#if routine.isPredefined}
-											<Badge
-												variant="secondary"
-												class="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-											>
-												<Sparkles class="mr-1 h-3 w-3" />
-												Predefined
-											</Badge>
+											<Sparkles
+												class="text-pen-mind h-3.5 w-3.5 shrink-0"
+												aria-label="Predefined"
+											/>
 										{/if}
-									</div>
-								</Card.Header>
-								<Card.Content class="space-y-3">
-									<div class="text-muted-foreground flex items-center gap-2 text-sm">
-										<Clock class="h-4 w-4" />
-										<span>{routine.durationMinutes} minutes</span>
-									</div>
-									<div class="flex flex-wrap gap-1">
+									</a>
+									{#if routine.description}
+										<p class="text-muted-foreground mt-0.5 text-sm">{routine.description}</p>
+									{/if}
+									<div class="mt-2 flex flex-wrap items-center gap-1.5">
+										<span class="text-muted-foreground flex items-center gap-1 text-xs md:hidden">
+											<Clock class="h-3.5 w-3.5" />{routine.durationMinutes} min
+										</span>
 										{#each routine.moodTags as tag, index (tag + index)}
-											<Badge variant="outline" class={moodTagColors[tag] || 'bg-gray-100'}>
+											<Badge variant="outline" class={moodTagColors[tag] || 'bg-muted'}>
 												{tag}
 											</Badge>
 										{/each}
 									</div>
-								</Card.Content>
-								<Card.Footer class="flex gap-2">
+								</div>
+								<div class="flex shrink-0 items-center gap-1.5 self-start md:self-center">
 									<Button
 										href={routine.linkUrl}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="flex-1 bg-purple-600 hover:bg-purple-700"
+										variant="outline"
+										class="border-pen-mind/60 text-pen-mind hover:bg-pen-mind/8 hover:text-pen-mind"
 									>
-										<CirclePlay class="mr-2 h-4 w-4" />
+										<CirclePlay class="h-4 w-4" />
 										Practice
 									</Button>
-									<Button href="/meditation/routines/{routine.id}" variant="outline">Details</Button
-									>
-								</Card.Footer>
-							</Card.Root>
+									<Button href="/meditation/routines/{routine.id}" variant="ghost">Details</Button>
+								</div>
+							</li>
 						{:else}
-							<Card.Root class="col-span-full">
-								<Card.Content class="py-8 text-center">
-									<p class="text-muted-foreground">
-										No routines found. Try adjusting your filters or create a new routine.
-									</p>
-								</Card.Content>
-							</Card.Root>
+							<li class="text-muted-foreground border-rule border-b py-8 text-center">
+								No routines found. Try adjusting your filters or create a new routine.
+							</li>
 						{/each}
-					</div>
+					</ul>
 				{/if}
 			</Tabs.Content>
 
@@ -370,7 +368,7 @@
 																{...props}
 																variant="ghost"
 																size="icon-sm"
-																class="border border-white/55 bg-white/68 text-slate-700 shadow-sm backdrop-blur-xl hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
+																class="border-border bg-card text-foreground hover:bg-card dark:border-border dark:bg-card dark:text-foreground dark:hover:bg-muted border"
 																aria-label="Edit Session"
 																onclick={() => openEditSession(session)}
 															>
@@ -387,7 +385,7 @@
 																{...props}
 																variant="ghost"
 																size="icon-sm"
-																class="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 border border-white/55 bg-white/68 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+																class="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 border-border bg-card dark:border-border dark:bg-card border"
 																aria-label="Delete Session"
 																onclick={() => {
 																	sessionToDelete = session.id;
@@ -451,7 +449,7 @@
 			</div>
 
 			<div
-				class="rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800 dark:border-purple-800 dark:bg-purple-950/30 dark:text-purple-200"
+				class="border-pen-mind/35 bg-pen-mind/12 text-pen-mind dark:border-pen-mind/40 dark:bg-pen-mind/8 dark:text-pen-mind rounded-lg border p-3 text-sm"
 			>
 				Rate your mood before and after your session to track how meditation affects your wellbeing.
 				<strong>1</strong>
@@ -515,7 +513,7 @@
 			<Dialog.Footer>
 				<Button
 					type="submit"
-					class="bg-purple-600 hover:bg-purple-700"
+					class="bg-pen-mind hover:bg-pen-mind"
 					disabled={$editSessionSubmitting}
 				>
 					{#if $editSessionSubmitting}

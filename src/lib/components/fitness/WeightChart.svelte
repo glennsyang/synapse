@@ -90,12 +90,12 @@
 			<div class="grid gap-2">
 				<div class="flex justify-evenly gap-4">
 					{#if goalWeight}
-						<div class="backdrop-blur-sm">
+						<div class="">
 							<p class="text-muted-foreground text-xs">Goal</p>
 							<p class="text-sm font-semibold">{goalWeight} lbs</p>
 						</div>
 					{/if}
-					<div class="backdrop-blur-sm">
+					<div class="">
 						<p class="text-muted-foreground text-xs">Latest</p>
 						<p class="text-sm font-semibold">{entries[0].weightLbs} lbs</p>
 					</div>
@@ -103,10 +103,10 @@
 						{@const change = entries[0].weightLbs - entries[entries.length - 1].weightLbs}
 						<div class="flex items-center gap-1 text-sm font-semibold">
 							{#if change < 0}
-								<span class="text-green-600"
+								<span class="text-pen-fitness"
 									>Trending down by {Math.abs(change).toFixed(1)} lbs</span
 								>
-								<TrendingDown class="size-4 text-green-600" />
+								<TrendingDown class="text-pen-fitness size-4" />
 							{:else if change > 0}
 								<span class="text-destructive">Trending up by {change.toFixed(1)} lbs</span>
 								<TrendingUp class="text-destructive size-4" />

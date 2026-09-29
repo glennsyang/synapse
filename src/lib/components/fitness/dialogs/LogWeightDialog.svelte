@@ -101,7 +101,7 @@
 	{#if !isEditing && open === undefined}
 		<Dialog.Trigger>
 			{#snippet child({ props })}
-				<Button {...props} class="bg-green-600 text-white hover:bg-green-700">
+				<Button {...props} class="bg-pen-fitness hover:bg-pen-fitness text-white">
 					<PlusIcon class="mr-2 h-4 w-4" />
 					Log Weight
 				</Button>
@@ -127,7 +127,7 @@
 						name="date"
 						type="date"
 						bind:value={$form.date}
-						class={$errors.date ? 'border-red-400' : ''}
+						class={$errors.date ? 'border-destructive' : ''}
 						required
 					/>
 					{#if $errors.date}
@@ -141,7 +141,7 @@
 						name="time"
 						type="time"
 						bind:value={$form.time}
-						class={$errors.time ? 'border-red-400' : ''}
+						class={$errors.time ? 'border-destructive' : ''}
 					/>
 					{#if $errors.time}
 						<p class="text-destructive text-sm">{$errors.time}</p>
@@ -156,7 +156,7 @@
 						placeholder="150.0"
 						step="0.1"
 						bind:value={$form.weightLbs}
-						class={$errors.weightLbs ? 'border-red-400' : ''}
+						class={$errors.weightLbs ? 'border-destructive' : ''}
 						required
 					/>
 					{#if $errors.weightLbs}
@@ -169,7 +169,7 @@
 				<Button
 					type="submit"
 					disabled={$submitting}
-					class="bg-green-600 text-white hover:bg-green-700"
+					class="bg-pen-fitness hover:bg-pen-fitness text-white"
 				>
 					{$submitting ? 'Saving...' : isEditing ? 'Update' : 'Save'}
 				</Button>

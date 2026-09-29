@@ -36,23 +36,21 @@
 	let hasFooterMeta = $derived(Boolean(dueDateLabel) || Boolean(task.tags?.length));
 	let dueDateClass = $derived(
 		dueDateStatus === 'overdue'
-			? 'text-red-600 dark:text-red-300'
+			? 'text-destructive dark:text-destructive'
 			: dueDateStatus === 'today'
-				? 'text-orange-600 dark:text-orange-300'
+				? 'text-pen-tasks dark:text-pen-tasks'
 				: 'text-muted-foreground'
 	);
 </script>
 
 <article
 	class={[
-		'group bg-background/95 relative overflow-hidden rounded-2xl border-[0.5px] p-3.5 pl-4 shadow-[0_1px_0_rgba(15,23,42,0.04)] transition-colors hover:border-slate-300/80 hover:shadow-sm dark:border-slate-800/80 dark:bg-slate-950/75 dark:hover:border-slate-700/80',
+		'group bg-background/95 hover:border-border/80 dark:border-border/80 dark:bg-muted/75 dark:hover:border-border/80 relative overflow-hidden rounded-2xl border-[0.5px] p-3.5 pl-4 transition-colors',
 		isBlockedTask &&
-			'border-red-200/80 bg-[repeating-linear-gradient(-45deg,rgba(248,113,113,0.06)_0px,rgba(248,113,113,0.06)_8px,transparent_8px,transparent_16px)] dark:border-red-900/60 dark:bg-[repeating-linear-gradient(-45deg,rgba(248,113,113,0.09)_0px,rgba(248,113,113,0.09)_8px,rgba(2,6,23,0.78)_8px,rgba(2,6,23,0.78)_16px)]',
+			'border-destructive/35 dark:border-destructive/35 bg-[repeating-linear-gradient(-45deg,rgba(248,113,113,0.06)_0px,rgba(248,113,113,0.06)_8px,transparent_8px,transparent_16px)] dark:bg-[repeating-linear-gradient(-45deg,rgba(248,113,113,0.09)_0px,rgba(248,113,113,0.09)_8px,rgba(2,6,23,0.78)_8px,rgba(2,6,23,0.78)_16px)]',
 		isDoneTask && 'opacity-85'
 	]}
 >
-	<span class={['absolute inset-y-0 left-0 w-1', priorityMeta.railClass]}></span>
-
 	<div class="flex items-start justify-between gap-2">
 		<div class="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
 			<span
@@ -63,7 +61,7 @@
 			<Badge
 				variant="outline"
 				class={[
-					'h-5 rounded-full px-2 text-[10px] font-semibold tracking-[0.14em] uppercase',
+					'h-5 rounded-[2px] px-2 text-[10px] font-semibold tracking-[0.14em] uppercase',
 					priorityMeta.badgeClass
 				]}
 			>
@@ -108,7 +106,7 @@
 	<div class="mt-2.5 space-y-1.5">
 		<a
 			href={editHref}
-			class="text-foreground block text-[15px] leading-5 font-semibold transition-colors hover:text-orange-700 hover:underline dark:hover:text-orange-300"
+			class="text-foreground hover:text-pen-tasks dark:hover:text-pen-tasks block text-[15px] leading-5 font-semibold transition-colors hover:underline"
 		>
 			{task.title}
 		</a>
@@ -123,7 +121,7 @@
 			{#if dueDateLabel}
 				<span
 					class={[
-						'inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-100/80 px-2 py-0.5 font-medium dark:border-slate-800 dark:bg-slate-900/80',
+						'border-border/80 bg-muted/80 dark:border-border dark:bg-muted/80 inline-flex items-center gap-1 rounded-[2px] border px-2 py-0.5 font-medium',
 						dueDateClass
 					]}
 				>
@@ -134,7 +132,7 @@
 
 			{#if task.tags && task.tags.length > 0}
 				{#each task.tags as tag (tag)}
-					<Badge variant="secondary" class="rounded-full px-2 py-0.5 text-[10px] font-medium">
+					<Badge variant="secondary" class="rounded-[2px] px-2 py-0.5 text-[10px] font-medium">
 						{tag}
 					</Badge>
 				{/each}

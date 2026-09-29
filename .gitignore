@@ -43,3 +43,8 @@ docs/structure-review/
 # Sentry Config File
 .env.sentry-build-plugin
 .fallow/
+
+# Impeccable local artifacts (screenshots contain personal data)
+.impeccable/review/
+.impeccable/questions/
+.impeccable/hook.cache.json

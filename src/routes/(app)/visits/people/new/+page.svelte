@@ -57,7 +57,7 @@
 					<div class="flex gap-2">
 						<Button
 							type="submit"
-							class="bg-pink-600 text-white hover:bg-pink-700"
+							class="bg-pen-people hover:bg-pen-people text-white"
 							disabled={$submitting}
 						>
 							{$submitting ? 'Adding...' : 'Add'}

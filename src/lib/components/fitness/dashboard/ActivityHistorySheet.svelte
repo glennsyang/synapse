@@ -128,23 +128,23 @@
 <Sheet.Root bind:open>
 	<Sheet.Content side="right" class="w-full overflow-y-auto sm:max-w-lg">
 		<Sheet.Header>
-			<Sheet.Title class="font-display text-zinc-900 dark:text-zinc-100">
+			<Sheet.Title class="font-display text-foreground dark:text-foreground">
 				Activity History
 			</Sheet.Title>
-			<Sheet.Description class="text-zinc-500 dark:text-zinc-400">
+			<Sheet.Description class="text-muted-foreground dark:text-muted-foreground">
 				All logged workouts, weight entries, and meals
 			</Sheet.Description>
 		</Sheet.Header>
 
 		<!-- Filter tabs -->
-		<div class="mx-2 flex gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
+		<div class="bg-muted dark:bg-muted mx-2 flex gap-1 rounded-xl p-1">
 			{#each filters as f (f.value)}
 				<button
 					type="button"
 					class="flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-all {filter ===
 					f.value
-						? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-zinc-100'
-						: 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'}"
+						? 'bg-card text-foreground dark:bg-muted dark:text-foreground'
+						: 'text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground'}"
 					onclick={() => (filter = f.value)}
 				>
 					{f.label}
@@ -155,13 +155,15 @@
 		<!-- Grouped history -->
 		<div class="mx-4 space-y-6">
 			{#if grouped.length === 0}
-				<p class="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">No entries found</p>
+				<p class="text-muted-foreground dark:text-muted-foreground py-8 text-center text-sm">
+					No entries found
+				</p>
 			{/if}
 
 			{#each grouped as group (group.date)}
 				<div>
 					<h3
-						class="mb-2 text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400"
+						class="text-muted-foreground dark:text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase"
 					>
 						{group.label}
 					</h3>
@@ -169,23 +171,27 @@
 						{#each group.items as item (item.kind + item.data.id)}
 							{#if item.kind === 'workout'}
 								<li
-									class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900"
+									class="border-border bg-card dark:border-border dark:bg-muted flex items-center gap-3 rounded-xl border px-3 py-2.5"
 								>
-									<Dumbbell class="h-4 w-4 shrink-0 text-zinc-400" />
+									<Dumbbell class="text-muted-foreground h-4 w-4 shrink-0" />
 									<div class="min-w-0 flex-1">
 										<div class="flex items-center gap-2">
 											<Badge class="text-xs {getWorkoutBadgeClass(item.data.type)}"
 												>{getWorkoutLabel(item.data.type)}</Badge
 											>
 											{#if item.data.durationMinutes}
-												<span class="text-xs text-zinc-500">{item.data.durationMinutes} min</span>
+												<span class="text-muted-foreground text-xs"
+													>{item.data.durationMinutes} min</span
+												>
 											{/if}
 										</div>
 										{#if item.data.time}
-											<p class="mt-0.5 text-xs text-zinc-400">{formatTime12Hour(item.data.time)}</p>
+											<p class="text-muted-foreground mt-0.5 text-xs">
+												{formatTime12Hour(item.data.time)}
+											</p>
 										{/if}
 										{#if item.data.exercises?.length}
-											<p class="mt-0.5 text-xs text-zinc-400">
+											<p class="text-muted-foreground mt-0.5 text-xs">
 												{item.data.exercises.length}
 												exercises
 											</p>
@@ -236,18 +242,20 @@
 								</li>
 							{:else if item.kind === 'weight'}
 								<li
-									class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900"
+									class="border-border bg-card dark:border-border dark:bg-muted flex items-center gap-3 rounded-xl border px-3 py-2.5"
 								>
-									<Scale class="h-4 w-4 shrink-0 text-emerald-500" />
+									<Scale class="text-pen-fitness h-4 w-4 shrink-0" />
 									<div class="min-w-0 flex-1">
 										<span
-											class="font-display text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+											class="font-display text-foreground dark:text-foreground text-sm font-semibold"
 										>
 											{item.data.weightLbs}
 											lbs
 										</span>
 										{#if item.data.time}
-											<p class="text-xs text-zinc-400">{formatTime12Hour(item.data.time)}</p>
+											<p class="text-muted-foreground text-xs">
+												{formatTime12Hour(item.data.time)}
+											</p>
 										{/if}
 									</div>
 									<div class="flex shrink-0 items-center gap-0.5">
@@ -295,14 +303,14 @@
 								</li>
 							{:else if item.kind === 'meal'}
 								<li
-									class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900"
+									class="border-border bg-card dark:border-border dark:bg-muted flex items-center gap-3 rounded-xl border px-3 py-2.5"
 								>
-									<UtensilsCrossed class="h-4 w-4 shrink-0 text-amber-500" />
+									<UtensilsCrossed class="text-pen-warn h-4 w-4 shrink-0" />
 									<div class="min-w-0 flex-1">
-										<p class="truncate text-sm text-zinc-800 dark:text-zinc-200">
+										<p class="text-foreground dark:text-foreground truncate text-sm">
 											{item.data.description}
 										</p>
-										<p class="mt-0.5 text-xs text-zinc-400 capitalize">
+										<p class="text-muted-foreground mt-0.5 text-xs capitalize">
 											{item.data.timeOfDay}
 											{#if item.data.caloriesEstimate}
 												· {item.data.caloriesEstimate} cal

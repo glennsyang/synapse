@@ -155,9 +155,9 @@
 	<PageSkeleton color="orange" />
 {:else}
 	<PageShell class="min-w-0 overflow-x-hidden">
-		<div class="mobile-stack mb-4 justify-between gap-3 sm:mb-5 sm:flex-wrap lg:flex-nowrap">
+		<div class="mobile-stack ruled mb-6 justify-between gap-3 pb-4 sm:flex-wrap lg:flex-nowrap">
 			<div class="min-w-0 flex-1">
-				<h1 class="font-display text-2xl font-bold sm:text-3xl">Tasks</h1>
+				<h1 class="page-title" style="--pen: oklch(var(--color-orange))">Tasks</h1>
 				<p class="text-muted-foreground text-sm sm:text-base">
 					Switch between your kanban board and your weekly Daily Agenda
 				</p>
@@ -166,7 +166,7 @@
 				{#if data.activeTab === 'agenda'}
 					<Button
 						type="button"
-						class="min-w-0 flex-1 bg-orange-600 text-white hover:bg-orange-700 sm:flex-none"
+						class="bg-pen-tasks hover:bg-pen-tasks min-w-0 flex-1 text-white sm:flex-none"
 						onclick={() => (defaultsDialogOpen = true)}
 					>
 						<CalendarCog class="mr-2 h-4 w-4" />
@@ -177,7 +177,7 @@
 					<Button
 						type="button"
 						href="/tasks/new"
-						class="min-w-0 flex-1 bg-orange-600 text-white hover:bg-orange-700 sm:w-auto sm:flex-none"
+						class="bg-pen-tasks hover:bg-pen-tasks min-w-0 flex-1 text-white sm:w-auto sm:flex-none"
 					>
 						<Plus class="mr-2 h-4 w-4" />
 						New Task
@@ -195,7 +195,7 @@
 								class={[
 									'shrink-0',
 									(filtersOpen || hasActiveFilters) &&
-										'border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-200 dark:hover:bg-orange-500/15 dark:hover:text-orange-100'
+										'border-pen-tasks bg-pen-tasks/12 text-pen-tasks hover:bg-pen-tasks/12 hover:text-pen-tasks dark:border-pen-tasks/40 dark:bg-pen-tasks/10 dark:text-pen-tasks dark:hover:bg-pen-tasks/15 dark:hover:text-pen-tasks'
 								]}
 							>
 								<ListFilter class="size-4" />
@@ -213,7 +213,7 @@
 			>
 				<Tabs.Trigger
 					value="kanban"
-					class="font-display w-full justify-center border-b-2 border-transparent data-[state=active]:border-orange-500"
+					class="font-display data-[state=active]:border-pen-tasks w-full justify-center border-b-2 border-transparent"
 					onclick={() => {
 						if (data.activeTab !== 'kanban') {
 							void openTaskTab('kanban');
@@ -225,7 +225,7 @@
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="agenda"
-					class="font-display w-full justify-center border-b-2 border-transparent data-[state=active]:border-orange-500"
+					class="font-display data-[state=active]:border-pen-tasks w-full justify-center border-b-2 border-transparent"
 					onclick={() => {
 						if (data.activeTab !== 'agenda') {
 							void openTaskTab('agenda');
@@ -237,7 +237,7 @@
 				</Tabs.Trigger>
 				<Tabs.Trigger
 					value="mood"
-					class="font-display w-full justify-center border-b-2 border-transparent data-[state=active]:border-orange-500"
+					class="font-display data-[state=active]:border-pen-tasks w-full justify-center border-b-2 border-transparent"
 					onclick={() => {
 						if (data.activeTab !== 'mood') {
 							void openTaskTab('mood');
@@ -254,7 +254,7 @@
 					<Collapsible.Root bind:open={filtersOpen}>
 						<Collapsible.Content id="tasks-filter-bar" class="w-full">
 							<div
-								class="grid gap-4 rounded-3xl border border-orange-200/80 bg-orange-50/55 p-4 shadow-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start dark:border-orange-500/25 dark:bg-orange-500/8"
+								class="border-pen-tasks/35 bg-pen-tasks/8 dark:border-pen-tasks/25 dark:bg-pen-tasks/8 grid gap-4 rounded-3xl border p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
 							>
 								<div class="w-full min-w-0">
 									<div class="relative">

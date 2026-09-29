@@ -15,8 +15,8 @@
 {#if message}
 	<div
 		class="rounded-lg p-4 text-sm {isSuccess
-			? 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-			: 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400'}"
+			? 'bg-pen-fitness/12 text-pen-fitness dark:bg-pen-fitness/20 dark:text-pen-fitness'
+			: 'bg-destructive/12 text-destructive dark:bg-destructive/20 dark:text-destructive'}"
 		role={isSuccess ? 'status' : undefined}
 	>
 		{message.text}

@@ -110,11 +110,11 @@
 	});
 
 	const moodTagColors: Record<string, string> = {
-		Anxious: 'bg-amber-100 text-amber-800',
-		'Low Energy': 'bg-blue-100 text-blue-800',
-		Focused: 'bg-green-100 text-green-800',
-		'Pre-Sleep': 'bg-purple-100 text-purple-800',
-		General: 'bg-gray-100 text-gray-800'
+		Anxious: 'bg-pen-warn/12 text-pen-warn',
+		'Low Energy': 'bg-pen-journal/12 text-pen-journal',
+		Focused: 'bg-pen-fitness/12 text-pen-fitness',
+		'Pre-Sleep': 'bg-pen-mind/12 text-pen-mind',
+		General: 'bg-muted text-foreground'
 	};
 
 	function getDayName(dayNumber: number) {
@@ -175,7 +175,7 @@
 	</div>
 
 	<!-- Routine Details -->
-	<Card.Root class="mb-6 border-purple-200 dark:border-purple-800">
+	<Card.Root class="border-pen-mind/35 dark:border-pen-mind/40 mb-6">
 		<Card.Header>
 			<div class="flex items-start justify-between">
 				<div class="flex-1">
@@ -214,14 +214,14 @@
 				href={data.routine.linkUrl}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="bg-purple-600 hover:bg-purple-700"
+				class="bg-pen-mind hover:bg-pen-mind"
 			>
 				<CirclePlay class="mr-2 h-4 w-4" />
 				Start Practice
 			</Button>
 			<Button
 				variant="outline"
-				class="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-600 dark:text-purple-300 dark:hover:bg-purple-950/30"
+				class="border-pen-mind text-pen-mind hover:bg-pen-mind/12 dark:border-pen-mind dark:text-pen-mind dark:hover:bg-pen-mind/8"
 				onclick={() => (showSessionDialog = true)}
 			>
 				<CircleCheck class="mr-2 h-4 w-4" />
@@ -260,7 +260,7 @@
 							<span class="font-medium">Status:</span>
 							<Badge
 								variant={data.schedule.enabled ? 'default' : 'secondary'}
-								class="ml-1 bg-purple-600"
+								class="bg-pen-mind ml-1"
 							>
 								{data.schedule.enabled ? 'Active' : 'Inactive'}
 							</Badge>
@@ -278,7 +278,7 @@
 								{...props}
 								variant="ghost"
 								size="icon-sm"
-								class="border border-white/55 bg-white/68 text-slate-700 shadow-sm backdrop-blur-xl hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
+								class="border-border bg-card text-foreground hover:bg-card dark:border-border dark:bg-card dark:text-foreground dark:hover:bg-muted border"
 								aria-label={data.schedule ? 'Edit Schedule' : 'Add Schedule'}
 								onclick={() => (showScheduleDialog = true)}
 							>
@@ -300,7 +300,7 @@
 									{...props}
 									variant="ghost"
 									size="icon-sm"
-									class="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 border border-white/55 bg-white/68 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+									class="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 border-border bg-card dark:border-border dark:bg-card border"
 									aria-label="Delete Schedule"
 									onclick={() => (showDeleteScheduleConfirm = true)}
 								>
@@ -340,7 +340,7 @@
 													{...props}
 													variant="ghost"
 													size="icon-sm"
-													class="border border-white/55 bg-white/68 text-slate-700 shadow-sm backdrop-blur-xl hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
+													class="border-border bg-card text-foreground hover:bg-card dark:border-border dark:bg-card dark:text-foreground dark:hover:bg-muted border"
 													aria-label="Edit Session"
 													onclick={() => openEditSession(session)}
 												>
@@ -357,7 +357,7 @@
 													{...props}
 													variant="ghost"
 													size="icon-sm"
-													class="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 border border-white/55 bg-white/68 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+													class="text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 border-border bg-card dark:border-border dark:bg-card border"
 													aria-label="Delete Session"
 													onclick={() => {
 														sessionToDelete = session.id;
@@ -427,7 +427,7 @@
 								type="button"
 								variant={selectedDays.includes(day.id) ? 'default' : 'outline'}
 								size="sm"
-								class={selectedDays.includes(day.id) ? 'bg-purple-600 hover:bg-purple-700' : ''}
+								class={selectedDays.includes(day.id) ? 'bg-pen-mind hover:bg-pen-mind' : ''}
 								onclick={() => toggleDay(day.id)}
 							>
 								{day.shortName}
@@ -449,11 +449,7 @@
 			</div>
 
 			<Dialog.Footer>
-				<Button
-					type="submit"
-					class="bg-purple-600 hover:bg-purple-700"
-					disabled={$scheduleSubmitting}
-				>
+				<Button type="submit" class="bg-pen-mind hover:bg-pen-mind" disabled={$scheduleSubmitting}>
 					{#if $scheduleSubmitting}
 						Saving...
 					{:else}
@@ -487,7 +483,7 @@
 			</div>
 			<!-- Rating explanation -->
 			<div
-				class="rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800 dark:border-purple-800 dark:bg-purple-950/30 dark:text-purple-200"
+				class="border-pen-mind/35 bg-pen-mind/12 text-pen-mind dark:border-pen-mind/40 dark:bg-pen-mind/8 dark:text-pen-mind rounded-lg border p-3 text-sm"
 			>
 				Rate your mood before and after your session to track how meditation affects your wellbeing.
 				<strong>1</strong>
@@ -549,11 +545,7 @@
 			</div>
 
 			<Dialog.Footer>
-				<Button
-					type="submit"
-					class="bg-purple-600 hover:bg-purple-700"
-					disabled={$sessionSubmitting}
-				>
+				<Button type="submit" class="bg-pen-mind hover:bg-pen-mind" disabled={$sessionSubmitting}>
 					{#if $sessionSubmitting}
 						Saving...
 					{:else}
@@ -626,11 +618,7 @@
 			</div>
 
 			<Dialog.Footer>
-				<Button
-					type="submit"
-					class="bg-purple-600 hover:bg-purple-700"
-					disabled={$updateSubmitting}
-				>
+				<Button type="submit" class="bg-pen-mind hover:bg-pen-mind" disabled={$updateSubmitting}>
 					{#if $updateSubmitting}
 						Updating...
 					{:else}
@@ -694,7 +682,7 @@
 			</div>
 
 			<div
-				class="rounded-lg border border-purple-200 bg-purple-50 p-3 text-sm text-purple-800 dark:border-purple-800 dark:bg-purple-950/30 dark:text-purple-200"
+				class="border-pen-mind/35 bg-pen-mind/12 text-pen-mind dark:border-pen-mind/40 dark:bg-pen-mind/8 dark:text-pen-mind rounded-lg border p-3 text-sm"
 			>
 				Rate your mood before and after your session to track how meditation affects your wellbeing.
 				<strong>1</strong>
@@ -758,7 +746,7 @@
 			<Dialog.Footer>
 				<Button
 					type="submit"
-					class="bg-purple-600 hover:bg-purple-700"
+					class="bg-pen-mind hover:bg-pen-mind"
 					disabled={$editSessionSubmitting}
 				>
 					{#if $editSessionSubmitting}

@@ -103,7 +103,7 @@
 		<div class="flex flex-wrap gap-2">
 			<Badge
 				variant="outline"
-				class="gap-1 border-purple-200 bg-purple-100 text-purple-800 dark:border-purple-500/40 dark:bg-purple-500/10 dark:text-purple-200"
+				class="border-pen-mind/35 bg-pen-mind/12 text-pen-mind dark:border-pen-mind/40 dark:bg-pen-mind/10 dark:text-pen-mind gap-1"
 			>
 				{selectedOption.label}
 				<Button
