@@ -139,9 +139,7 @@
 				'ring-pen-tasks/35',
 				'ring-offset-2',
 				'ring-offset-background',
-				'',
-				'dark:ring-pen-tasks/45',
-				''
+				'dark:ring-pen-tasks/45'
 			],
 			delayTouchStart: touchStartDelayMs
 		};
@@ -337,7 +335,7 @@
 					<div class="relative">
 						<div
 							class={[
-								'dark: flex min-h-28 flex-col gap-2.5 overflow-hidden rounded-[3px] border-[1.5px] border-dashed p-3 transition-[border-color,background-color,box-shadow]',
+								'flex min-h-28 flex-col gap-2.5 overflow-hidden rounded-[3px] border-[1.5px] border-dashed p-3 transition-[border-color,background-color,box-shadow]',
 								column.emptyClass
 							]}
 							use:dndzone={getDndZoneOptions(boardTasks[column.value])}
@@ -457,7 +455,7 @@
 					<div class="relative min-h-[calc(100dvh-20rem)] flex-1">
 						<div
 							class={[
-								'dark: flex h-full min-h-full flex-col gap-2.5 overflow-hidden rounded-[3px] border-[1.5px] border-dashed p-3 transition-[border-color,background-color,box-shadow]',
+								'flex h-full min-h-full flex-col gap-2.5 overflow-hidden rounded-[3px] border-[1.5px] border-dashed p-3 transition-[border-color,background-color,box-shadow]',
 								column.emptyClass
 							]}
 							use:dndzone={getDndZoneOptions(boardTasks[column.value])}
