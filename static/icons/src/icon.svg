@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+	<defs><linearGradient id="cloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a4377"/><stop offset="1" stop-color="#16274b"/></linearGradient></defs>
+	<rect width="512" height="512" fill="#0a0f1a"/>
+	<g transform="translate(-6 0)">
+		<rect x="352" y="132" width="44" height="40" rx="5" fill="#6aa7f4"/>
+		<rect x="352" y="182" width="44" height="40" rx="5" fill="#f8875a"/>
+		<rect x="352" y="232" width="44" height="40" rx="5" fill="#57bc80"/>
+		<rect x="352" y="282" width="44" height="40" rx="5" fill="#b191ea"/>
+		<rect x="352" y="332" width="44" height="40" rx="5" fill="#f180b5"/>
+		<rect x="128" y="100" width="248" height="312" rx="10" fill="url(#cloth)"/>
+		<rect x="128" y="100" width="34" height="312" rx="10" fill="#16274b"/>
+		<g fill="none" stroke="#dde9f9" stroke-linecap="round" opacity="0.9">
+			<circle cx="262" cy="256" r="50" stroke-width="8"/>
+			<path d="M281 233 C276 222 250 218 244 233 C238 250 284 252 280 274 C276 292 246 292 241 279" stroke-width="12"/>
+		</g>
+	</g>
+</svg>
