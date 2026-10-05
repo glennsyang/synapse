@@ -67,7 +67,7 @@
 		"drizzle-kit": "^0.31.11",
 		"embla-carousel-svelte": "^8.6.0",
 		"fallow": "^3.30.0",
-		"layerchart": "^2.5.0",
+		"layerchart": "^2.5.1",
 		"lefthook": "^2.1.14",
 		"lint-staged": "^17.6.0",
 		"oxfmt": "^0.71.0",
