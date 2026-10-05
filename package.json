@@ -54,7 +54,7 @@
 		"@tailwindcss/vite": "^4.3.1",
 		"@tanstack/svelte-table": "^9.2.4",
 		"@tanstack/table-core": "^9.2.4",
-		"@types/better-sqlite3": "^7.6.12",
+		"@types/better-sqlite3": "^9.6.0",
 		"@types/canvas-confetti": "^1.9.0",
 		"@types/d3-scale": "^4.0.9",
 		"@types/d3-shape": "^3.2.0",
