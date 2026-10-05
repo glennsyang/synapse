@@ -63,7 +63,7 @@
 		"@vitest/coverage-v8": "^5.0.2",
 		"bits-ui": "^2.19.3",
 		"clsx": "^2.1.1",
-		"dotenv": "^18.0.4",
+		"dotenv": "^18.0.5",
 		"drizzle-kit": "^0.31.11",
 		"embla-carousel-svelte": "^8.6.0",
 		"fallow": "^3.30.0",
